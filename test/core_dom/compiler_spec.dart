@@ -1174,6 +1174,7 @@ class LazyPane {
   }
 }
 
+@Injectable()
 class LazyPaneHelper {}
 
 @Component(selector: 'pane')
