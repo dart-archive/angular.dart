@@ -8,8 +8,7 @@ main() {
       var ptor = protractor.getInstance().get('index.html');
       var test_div = element(by.id('test_div'));
       expect(test_div.isPresent()).toEqual(true);
-      expect(test_div.getText()).toEqual(
-          'Why hello there, Relative Foo...');
+      expect(test_div.getText()).toEqual('Why hello there, Relative Foo...');
     });
   });
 }
