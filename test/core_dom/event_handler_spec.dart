@@ -50,7 +50,7 @@ main() {
       var e = compile(_,
         '''<div on-my-new-event="invoked=true;"></div>''');
 
-      _.triggerEvent(e, 'myNewEvent');
+      _.triggerEvent(e, 'my-new-event');
       expect(_.rootScope.context['invoked']).toEqual(true);
     });
 
