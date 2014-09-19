@@ -5,15 +5,12 @@
           content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
 
     <!-- 1. Load platform.js for polyfill support. -->
-    <script src="bower_components/platform/platform.js"></script>
+    <script src="packages/core_elements/src/platform/platform.js"></script>
 
     <!-- 2. Use an HTML Import to bring in the element. -->
-    <link rel="import"
-          href="bower_components/paper-progress/paper-progress.html">
-    <link rel="import"
-          href="bower_components/paper-checkbox/paper-checkbox.html">
-    <link rel="import"
-          href="bower_components/paper-slider/paper-slider.html">
+    <link rel="import" href="packages/paper_elements/src/paper-progress/paper-progress.html">
+    <link rel="import" href="packages/paper_elements/src/paper-checkbox/paper-checkbox.html">
+    <link rel="import" href="packages/paper_elements/src/paper-slider/paper-slider.html">
     <script type="application/dart" src="paper.dart"></script>
     <script src="packages/browser/dart.js"></script>
     <style>
@@ -28,11 +25,11 @@
     <p>The max ({{max}}) and value ({{curValue}}) properties are bound through bind-* semantics</p>
 
     <p>Text from Angular: <b>{{text}}</b></p>
-    
+
     <div>
       <paper-progress bind-max=max bind-value=curValue></paper-progress>
     </div>
-     
+
     <p>
       <label>
         Change the value through an ng-model bound input box:
