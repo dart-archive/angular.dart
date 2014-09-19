@@ -226,6 +226,10 @@ class ElementBinder {
           _createAttrMappings(directive, scope, ref.mappings, nodeAttrs, tasks);
         }
 
+        // Component is handled in BoundComponentFactories with the correct scope.
+        if (directive is ScopeAware && !(ref.annotation is Component)) {
+          directive.scope = scope;
+        }
         if (directive is AttachAware) {
           var taskId = (tasks != null) ? tasks.registerTask() : 0;
           Watch watch;
