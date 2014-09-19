@@ -181,7 +181,7 @@ class NgRoutingHelper {
       var viewDef = _templates[path];
       if (viewDef == null) continue;
 
-      NgView view = _portals.lastWhere(
+      NgView view = _portals.firstWhere(
           (NgView v) => path != _routePath(v._parentRoute) &&
                         path.startsWith(_routePath(v._parentRoute)),
           orElse: () => null);
@@ -199,7 +199,7 @@ class NgRoutingHelper {
   }
 
   void _registerPortal(NgView ngView) {
-    _portals.add(ngView);
+    _portals.insert(0, ngView);
   }
 
   void _unregisterPortal(NgView ngView) {
