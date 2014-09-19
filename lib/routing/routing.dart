@@ -13,8 +13,7 @@ class RouteViewFactory {
 
   void _enterHandler(RouteEnterEvent event, String templateUrl,
                      {List<Module> modules, String templateHtml}) {
-    locationService._route(event.route, templateUrl, fromEvent: true,
-        modules: modules, templateHtml: templateHtml);
+    locationService._route(event.route, templateUrl, templateHtml, modules);
   }
 
   void configure(Map<String, NgRouteCfg> config) {
@@ -32,8 +31,7 @@ class RouteViewFactory {
           dontLeaveOnParamChanges: cfg.dontLeaveOnParamChanges,
           enter: (RouteEnterEvent e) {
             if (cfg.view != null || cfg.viewHtml != null) {
-              _enterHandler(e, cfg.view,
-                  modules: newModules, templateHtml: cfg.viewHtml);
+              _enterHandler(e, cfg.view, modules: newModules, templateHtml: cfg.viewHtml);
             }
             if (cfg.enter != null) {
               cfg.enter(e);
@@ -56,11 +54,7 @@ class RouteViewFactory {
               cfg.preEnter(e);
             }
           },
-          preLeave: (RoutePreLeaveEvent e) {
-            if (cfg.preLeave != null) {
-              cfg.preLeave(e);
-            }
-          },
+          preLeave: cfg.preLeave,
           leave: cfg.leave,
           mount: (Route mountRoute) {
             if (cfg.mount != null) {
@@ -71,14 +65,31 @@ class RouteViewFactory {
   }
 }
 
-NgRouteCfg ngRoute({String path, String view, String viewHtml,
-    Map<String, NgRouteCfg> mount, modules(), bool defaultRoute: false,
-    RoutePreEnterEventHandler preEnter, RouteEnterEventHandler enter,
-    RoutePreLeaveEventHandler preLeave, RouteLeaveEventHandler leave,
-    dontLeaveOnParamChanges: false}) =>
-        new NgRouteCfg(path: path, view: view, viewHtml: viewHtml, mount: mount,
-            modules: modules, defaultRoute: defaultRoute, preEnter: preEnter, preLeave: preLeave,
-            enter: enter, leave: leave, dontLeaveOnParamChanges: dontLeaveOnParamChanges);
+/**
+ * Helper function to create a route configuration (`NgRouteCfg`):
+ * - `path`: url section (`/path`),
+ * - `view`: external template,
+ * - `viewHtml`: inline template,
+ * - `mount`: child routes,
+ * - `defaultRoute`: set to `true` for the default route,
+ * - `*EventHandler`: event handlers, see route.dart for details,
+ * - `dontLeaveOnParamChanges`: do not leave the route when only parameters change
+ */
+NgRouteCfg ngRoute({String path,
+                    String view,
+                    String viewHtml,
+                    Map<String, NgRouteCfg> mount,
+                    modules(),
+                    bool defaultRoute: false,
+                    RoutePreEnterEventHandler preEnter,
+                    RouteEnterEventHandler enter,
+                    RoutePreLeaveEventHandler preLeave,
+                    RouteLeaveEventHandler leave,
+                    dontLeaveOnParamChanges: false}) {
+  return new NgRouteCfg(path: path, view: view, viewHtml: viewHtml, mount: mount, modules: modules,
+      defaultRoute: defaultRoute, preEnter: preEnter, preLeave: preLeave, enter: enter,
+      leave: leave, dontLeaveOnParamChanges: dontLeaveOnParamChanges);
+}
 
 class NgRouteCfg {
   final String path;
@@ -125,12 +136,11 @@ typedef void RouteInitializerFn(Router router, RouteViewFactory viewFactory);
 @Injectable()
 class NgRoutingHelper {
   final Router router;
-  final Application _ngApp;
   final _portals = <NgView>[];
   final _templates = <String, _View>{};
 
   NgRoutingHelper(RouteInitializer initializer, Injector injector, this.router,
-                  this._ngApp) {
+                  Application ngApp) {
     // TODO: move this to constructor parameters when di issue is fixed:
     // https://github.com/angular/di.dart/issues/40
     RouteInitializerFn initializerFn = injector.getByKey(ROUTE_INITIALIZER_FN_KEY);
@@ -144,6 +154,8 @@ class NgRoutingHelper {
     } else {
       initializer.init(router, new RouteViewFactory(this));
     }
+
+    // Check if we need to update `ng-view`s when a new route is activated
     router.onRouteStart.listen((RouteStartEvent routeEvent) {
       routeEvent.completed.then((success) {
         if (success) {
@@ -152,34 +164,37 @@ class NgRoutingHelper {
       });
     });
 
-    router.listen(appRoot: _ngApp.element);
+    // Make the router listen to URL change events and click events
+    router.listen(appRoot: ngApp.element);
   }
 
   void _reloadViews({Route startingFrom}) {
-    var alreadyActiveViews = [];
-    var activePath = router.activePath;
+    var activeViews = <NgView>[];
+    Iterable<Route> activePath = router.activePath;
     if (startingFrom != null) {
+      // only consider child routes of the `startingFrom` route
       activePath = activePath.skip(_routeDepth(startingFrom));
     }
-    for (Route route in activePath) {
-      var viewDef = _templates[_routePath(route)];
-      if (viewDef == null) continue;
-      var templateUrl = viewDef.template;
 
-      NgView view = _portals.lastWhere((NgView v) {
-        return _routePath(route) != _routePath(v._route) &&
-            _routePath(route).startsWith(_routePath(v._route));
-      }, orElse: () => null);
-      if (view != null && !alreadyActiveViews.contains(view)) {
-        view._show(viewDef, route, viewDef.modules);
-        alreadyActiveViews.add(view);
+    for (Route route in activePath) {
+      var path = _routePath(route);
+      var viewDef = _templates[path];
+      if (viewDef == null) continue;
+
+      NgView view = _portals.lastWhere(
+          (NgView v) => path != _routePath(v._parentRoute) &&
+                        path.startsWith(_routePath(v._parentRoute)),
+          orElse: () => null);
+
+      if (view != null && !activeViews.contains(view)) {
+        view._show(viewDef, route);
+        activeViews.add(view);
         break;
       }
     }
   }
 
-  void _route(Route route, String template, {bool fromEvent, List<Module> modules,
-      String templateHtml}) {
+  void _route(Route route, String template, String templateHtml, List<Module> modules) {
     _templates[_routePath(route)] = new _View(template, templateHtml, modules);
   }
 
@@ -200,22 +215,20 @@ class _View {
   _View(this.template, this.templateHtml, this.modules);
 }
 
+/// Returns the route full path (ie `grand-parent.parent.current`)
 String _routePath(Route route) {
-  final path = [];
-  var p = route;
-  while (p.parent != null) {
+  final path = <String>[];
+  for (Route p = route; p.parent != null; p = p.parent) {
     path.insert(0, p.name);
-    p = p.parent;
   }
   return path.join('.');
 }
 
+/// Returns the route depth (ie 3 for `grand-parent.parent.current`)
 int _routeDepth(Route route) {
   var depth = 0;
-  var p = route;
-  while (p.parent != null) {
+  for (Route p = route; p.parent != null; p = p.parent) {
     depth++;
-    p = p.parent;
   }
   return depth;
 }
