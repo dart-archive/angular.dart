@@ -378,7 +378,7 @@ void main() {
       });
 
       it('should remove all controls when the scope is destroyed', (Scope scope, TestBed _) {
-        Scope childScope = scope.createChild({});
+        Scope childScope = scope.createChildWithLocals({}, isolate: true);
         _.compile('<form name="myForm">'
                   '  <input type="text" ng-model="one" name="one" />'
                   '  <input type="text" ng-model="two" name="two" />'

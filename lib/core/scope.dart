@@ -379,6 +379,13 @@ class Scope {
     return child;
   }
 
+  Scope createChildWithLocals(Map locals, {isolate: false, copy: true}) {
+    Map localsMap = copy ? new Map.from(locals) : locals;
+    return createChild(
+        isolate ? localsMap : new PrototypeMap.withLocals(context, localsMap)
+    );
+  }
+
   /**
    * Removes the current scope (and all of its children) from the parent scope. Removal implies
    * that calls to [digest] will no longer propagate to the current scope nor its children.

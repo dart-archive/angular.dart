@@ -238,9 +238,9 @@ void main() {
         });
 
         it('children should point to root', (RootScope rootScope) {
-          var child = rootScope.createChild(new PrototypeMap(rootScope.context));
+          var child = rootScope.createChildWithLocals({});
           expect(child.rootScope).toEqual(rootScope);
-          expect(child.createChild(new PrototypeMap(rootScope.context)).rootScope).toEqual(rootScope);
+          expect(child.createChildWithLocals({}).rootScope).toEqual(rootScope);
         });
       });
 
@@ -253,11 +253,37 @@ void main() {
 
 
         it('should point to parent', (RootScope rootScope) {
-          var child = rootScope.createChild(new PrototypeMap(rootScope.context));
+          var child = rootScope.createChildWithLocals({});
           expect(child.id).toEqual(':0');
           expect(rootScope.parentScope).toEqual(null);
           expect(child.parentScope).toEqual(rootScope);
-          expect(child.createChild(new PrototypeMap(rootScope.context)).parentScope).toEqual(child);
+          expect(child.createChildWithLocals({}).parentScope).toEqual(child);
+        });
+      });
+
+      describe('createChildWithLocals', () {
+        it('should copy by default', (RootScope rootScope) {
+          var locals = {};
+          var scope = rootScope.createChildWithLocals(locals);
+          locals['foo'] = 'bar';
+          expect(scope.context['foo']).toBeNull();
+        });
+        it('should not copy with parameter', (RootScope rootScope) {
+          var locals = {};
+          var scope = rootScope.createChildWithLocals(locals, copy: false);
+          locals['foo'] = 'bar';
+          expect(scope.context['foo']).toEqual('bar');
+        });
+
+        it('should fallback by default', (RootScope rootScope) {
+          rootScope.context['foo'] = 'bar';
+          var scope = rootScope.createChildWithLocals({});
+          expect(scope.context['foo']).toEqual('bar');
+        });
+        it('should build isolates', (RootScope rootScope) {
+          rootScope.context['foo'] = 'bar';
+          var scope = rootScope.createChildWithLocals({}, isolate: true);
+          expect(scope.context['foo']).toBeNull();
         });
       });
     });
@@ -274,7 +300,7 @@ void main() {
 
         it(r'should add listener for both emit and broadcast events', (RootScope rootScope) {
           var log = '',
-          child = rootScope.createChild(new PrototypeMap(rootScope.context));
+          child = rootScope.createChildWithLocals({});
 
           eventFn(event) {
             expect(event).not.toEqual(null);
@@ -294,7 +320,7 @@ void main() {
 
         it(r'should return a function that deregisters the listener', (RootScope rootScope) {
           var log = '';
-          var child = rootScope.createChild(new PrototypeMap(rootScope.context));
+          var child = rootScope.createChildWithLocals({});
           var subscription;
 
           eventFn(e) {

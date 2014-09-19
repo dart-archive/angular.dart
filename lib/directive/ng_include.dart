@@ -45,7 +45,7 @@ class NgInclude {
 
   _updateContent(ViewFactory viewFactory) {
     // create a new scope
-    _scope = scope.createChild(new PrototypeMap(scope.context));
+    _scope = scope.createChildWithLocals({});
     _view = viewFactory(_scope, directiveInjector);
 
     _view.nodes.forEach((node) => element.append(node));

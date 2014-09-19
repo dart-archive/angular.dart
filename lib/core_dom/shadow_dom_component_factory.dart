@@ -109,7 +109,7 @@ class BoundShadowDomComponentFactory implements BoundComponentFactory {
         }
 
         //_styleFuture(cssUrl, resolveUri: false)
-        var shadowScope = scope.createChild(new HashMap()); // Isolate
+        var shadowScope = scope.createChildWithLocals({}, isolate:true);
         ComponentDirectiveInjector shadowInjector;
 
         final baseUrls = (_component.useNgBaseCss) ? baseCss.urls : [];

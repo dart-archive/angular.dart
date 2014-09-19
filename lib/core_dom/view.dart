@@ -55,7 +55,7 @@ class ViewPort {
   }
 
   View insertNew(ViewFactory viewFactory, { View insertAfter, Scope viewScope}) {
-    if (viewScope == null) viewScope = scope.createChild(new PrototypeMap(scope.context));
+    if (viewScope == null) viewScope = scope.createChildWithLocals({});
     View view = viewFactory.call(viewScope, directiveInjector);
     return insert(view, insertAfter: insertAfter);
   }

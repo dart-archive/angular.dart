@@ -101,7 +101,7 @@ class BoundTranscludingComponentFactory implements BoundComponentFactory {
       TemplateLoader templateLoader = new TemplateLoader(
           cssFuture.then(shadowBoundary.insertStyleElements).then(initShadowDom));
 
-      Scope shadowScope = scope.createChild(new HashMap());
+      Scope shadowScope = scope.createChildWithLocals({}, isolate: true);
 
       childInjector = new ComponentDirectiveInjector(injector, this._injector,
           eventHandler, shadowScope, templateLoader, shadowRoot, lightDom, view);
