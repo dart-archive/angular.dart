@@ -37,7 +37,7 @@ class ElementBinder {
   final Injector _appInjector;
   Animate _animate;
 
-  final Map onEvents;
+  final List<EventAttribute> onEvents;
   final Map bindAttrs;
 
   // Member fields
@@ -257,9 +257,8 @@ class ElementBinder {
       new AttrMustache(nodeAttrs, ref.value, ref.valueAST, nodeInjector.scope);
     } else if (ref.annotation is Component) {
       assert(ref == componentData.ref);
-
       BoundComponentFactory boundComponentFactory = componentData.factory;
-      Function componentFactory = boundComponentFactory.call(node);
+      Function componentFactory = boundComponentFactory.call(node, onEvents);
       nodeInjector.bindByKey(ref.typeKey, componentFactory,
           boundComponentFactory.callArgs, ref.annotation.visibility);
     } else {
@@ -333,7 +332,7 @@ class ElementBinder {
     }
 
     if (onEvents.isNotEmpty) {
-      onEvents.forEach((event, value) {
+      onEvents.forEach((event) {
         parentEventHandler.register(event);
       });
     }

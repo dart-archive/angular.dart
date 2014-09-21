@@ -41,7 +41,7 @@ class ElementBinderBuilder {
   final FormatterMap _formatters;
 
   /// "on-*" attribute names and values, added by a [DirectiveSelector]
-  final onEvents = new HashMap<String, String>();
+  final onEvents = new List<EventAttribute>();
   /// "bind-*" attribute names and values, added by a [DirectiveSelector]
   final bindAttrs = new HashMap<String, AST>();
 

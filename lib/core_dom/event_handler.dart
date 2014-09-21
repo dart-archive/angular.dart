@@ -39,10 +39,10 @@ class EventHandler {
    * Register an event. This makes sure that  an event (of the specified name)
    * which bubbles to this node, gets processed by this [EventHandler].
    */
-  void register(String eventName) {
-    _listeners.putIfAbsent(eventName, () {
+  void register(EventAttribute eventAttr) {
+    _listeners.putIfAbsent(eventAttr.eventName, () {
       dom.EventListener eventListener = this._eventListener;
-      _rootNode.on[eventName].listen(eventListener);
+      _rootNode.on[eventAttr.eventName].listen(eventListener);
       return eventListener;
     });
   }
@@ -52,7 +52,7 @@ class EventHandler {
     while (element != null && element != _rootNode) {
       var expression;
       if (element is dom.Element) {
-        expression = _readEventAttribute(element, event.type);
+        expression = _readEventAttribute(element, event);
       }
       if (expression != null) {
         try {
@@ -78,35 +78,18 @@ class EventHandler {
     return null;
   }
 
-  String _readEventAttribute(dom.Element element, String eventType) {
-    var attr = element.attributes["on-$eventType"];
+  String _readEventAttribute(dom.Element element, dom.Event event) {
+    var attr = element.attributes["on-${event.type}"];
     if (attr != null) return attr;
-    return element.attributes["(^$eventType)"];
+
+    attr = element.attributes["(^${event.type})"];
+    if (attr != null) return attr;
+
+    attr = element.attributes["(${event.type})"];
+    if (attr != null && event.target == element) return attr;
+
+    return null;
   }
-
-  /**
-  * Converts event name into attribute name.
-  */
-  static String eventNameToAttrName(String eventName) => 'on-$eventName';
-
-  /**
-  * Converts attribute name into event name.
-  */
-  static String attrNameToEventName(String attrName) {
-    if (attrName.startsWith('on-')) {
-      return attrName.substring(3);
-    } else if (attrName.startsWith("(^") && attrName.endsWith(")")) {
-      return attrName.substring(2, attrName.length - 1);
-    } else {
-      throw "Invalid attribute name";
-    }
-  }
-
-  /**
-   * Returns true if an attribute is an event, i.e., it starts with `on-` or `(^.`
-   */
-  static bool isEventAttribute(String attrName) =>
-      attrName.startsWith('on-') || (attrName.startsWith("(^") && attrName.endsWith(")"));
 }
 
 @Injectable()

@@ -60,7 +60,7 @@ class BoundTranscludingComponentFactory implements BoundComponentFactory {
                             VIEW_CACHE_KEY, HTTP_KEY, TEMPLATE_CACHE_KEY,
                             DIRECTIVE_MAP_KEY, NG_BASE_CSS_KEY, EVENT_HANDLER_KEY,
                             SHADOW_BOUNDARY_KEY];
-  Function call(dom.Node node) {
+  Function call(dom.Node node, List<EventAttribute> eventAttrs) {
     var element = node as dom.Element;
     return (DirectiveInjector injector, Scope scope, View view,
             ViewCache viewCache, Http http, TemplateCache templateCache,
@@ -104,7 +104,7 @@ class BoundTranscludingComponentFactory implements BoundComponentFactory {
       Scope shadowScope = scope.createChild(new HashMap());
 
       childInjector = new ComponentDirectiveInjector(injector, this._injector,
-          eventHandler, shadowScope, templateLoader, shadowRoot, lightDom, view);
+          eventHandler, shadowScope, templateLoader, shadowRoot, lightDom, view, null, eventAttrs);
 
       childInjector.bindByKey(_ref.typeKey, _ref.factory, _ref.paramKeys, _ref.annotation.visibility);
 

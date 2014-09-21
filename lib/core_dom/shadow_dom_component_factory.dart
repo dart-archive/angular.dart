@@ -9,7 +9,7 @@ abstract class ComponentFactory {
  */
 abstract class BoundComponentFactory {
   List<Key> get callArgs;
-  Function call(dom.Element element);
+  Function call(dom.Element element, List<EventAttribute> eventAttrs);
 
   static async.Future<ViewFactory> _viewFuture(
         Component component, ViewCache viewCache, DirectiveMap directives,
@@ -94,7 +94,7 @@ class BoundShadowDomComponentFactory implements BoundComponentFactory {
   List<Key> get callArgs => _CALL_ARGS;
   static final _CALL_ARGS = [DIRECTIVE_INJECTOR_KEY, SCOPE_KEY, VIEW_KEY, NG_BASE_CSS_KEY,
       SHADOW_BOUNDARY_KEY];
-  Function call(dom.Element element) {
+  Function call(dom.Element element, List<EventAttribute> eventAttrs) {
     return (DirectiveInjector injector, Scope scope, View view, NgBaseCss baseCss,
         ShadowBoundary parentShadowBoundary) {
       var s = traceEnter(View_createComponent);
@@ -134,7 +134,7 @@ class BoundShadowDomComponentFactory implements BoundComponentFactory {
         var eventHandler = new ShadowRootEventHandler(
             shadowDom, injector.getByKey(EXPANDO_KEY), injector.getByKey(EXCEPTION_HANDLER_KEY));
         shadowInjector = new ComponentDirectiveInjector(injector, _injector, eventHandler, shadowScope,
-            templateLoader, shadowDom, null, view, shadowBoundary);
+            templateLoader, shadowDom, null, view, shadowBoundary, eventAttrs);
 
 
         shadowInjector.bindByKey(_ref.typeKey, _ref.factory, _ref.paramKeys, _ref.annotation.visibility);

@@ -1,5 +1,43 @@
 part of angular.core.dom_internal;
 
+class EventAttribute {
+  final String eventName;
+  final String expression;
+  final bool bubbling;
+
+  EventAttribute(String attrName, this.bubbling, this.expression)
+      : eventName = _attrNameToEventName(attrName);
+
+  bool operator == (EventAttribute ea) =>
+      eventName == ea.eventName && expression == ea.expression && bubbling == ea.bubbling;
+
+  String toString() => "EventAttribute($eventName, $bubbling, $expression)";
+
+  /**
+   * Returns true if an attribute is a bubbling event, i.e., it starts with `on-` or `(^`.
+   */
+  static bool isBubblingEventAttribute(String attrName) =>
+      attrName.startsWith('on-') || (attrName.startsWith("(^") && attrName.endsWith(")"));
+
+  /**
+   * Returns true if an attribute is a non-bubbling event, i.e., it starts with `(`.
+   */
+  static bool isEventAttribute(String attrName) =>
+      attrName.startsWith("(") && attrName.endsWith(")") && !attrName.startsWith("(^");
+
+  static String _attrNameToEventName(String attrName) {
+    if (attrName.startsWith('on-')) {
+      return attrName.substring(3);
+    } else if (attrName.startsWith("(^") && attrName.endsWith(")")) {
+      return attrName.substring(2, attrName.length - 1);
+    } else if (attrName.startsWith("(") && attrName.endsWith(")")) {
+      return attrName.substring(1, attrName.length - 1);
+    } else {
+      throw "Invalid attribute name";
+    }
+  }
+}
+
 /**
  * [DirectiveSelector] is used by the [Compiler] during the template walking to extract the
  * [DirectiveRef]s.
@@ -89,8 +127,10 @@ class DirectiveSelector {
     // Select [attributes]
     element.attributes.forEach((attrName, value) {
 
-      if (EventHandler.isEventAttribute(attrName)) {
-        builder.onEvents[EventHandler.attrNameToEventName(attrName)] = value;
+      if (EventAttribute.isBubblingEventAttribute(attrName)) {
+        builder.onEvents.add(new EventAttribute(attrName, true, value));
+      } else if (EventAttribute.isEventAttribute(attrName)) {
+        builder.onEvents.add(new EventAttribute(attrName, false, value));
       } else if (attrName.startsWith(BIND_PREFIX)) {
         builder.bindAttrs[attrName.substring(BIND_PREFIX_LENGTH)] =
             _astParser(value, formatters: _formatters);

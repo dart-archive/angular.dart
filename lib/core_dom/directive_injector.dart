@@ -11,7 +11,7 @@ import 'package:angular/core/static_keys.dart';
 import 'package:angular/core_dom/static_keys.dart';
 
 import 'package:angular/core/module.dart' show Scope, RootScope;
-import 'package:angular/core/annotation.dart' show Visibility, DirectiveBinder;
+import 'package:angular/core/annotation.dart' show Visibility, DirectiveBinder, EventEmitter;
 import 'package:angular/core_dom/module_internal.dart'
   show Animate, View, ViewFactory, BoundViewFactory, ViewPort, NodeAttrs, ElementProbe,
       NgElement, DestinationLightDom, SourceLightDom, LightDom, TemplateLoader, ShadowRootEventHandler,
@@ -439,20 +439,27 @@ class TemplateDirectiveInjector extends DirectiveInjector {
 }
 
 class ComponentDirectiveInjector extends DirectiveInjector {
+  static final EMPTY_EVENT_EMITTER = (_){};
 
+  final List eventAttrs;
   final TemplateLoader _templateLoader;
   final ShadowRoot _shadowRoot;
 
   ComponentDirectiveInjector(DirectiveInjector parent, Injector appInjector,
                         EventHandler eventHandler, Scope scope,
                         this._templateLoader, this._shadowRoot, LightDom lightDom,
-                        [View view, ShadowBoundary shadowBoundary])
+                        [View view, ShadowBoundary shadowBoundary, this.eventAttrs])
       : super(parent, appInjector, parent._node, parent._nodeAttrs, eventHandler, scope,
               parent._animate, view, shadowBoundary) {
     // A single component creates a ComponentDirectiveInjector and its DirectiveInjector parent,
     // so parent should never be null.
     assert(parent != null);
     _parent.lightDom = lightDom;
+  }
+
+  Object _getByKey(Key key, Injector appInjector) {
+    if (_isEventEmitter(key)) return _buildEventEmitter(key);
+    return super._getByKey(key, appInjector);
   }
 
   Object _getById(int keyId) {
@@ -476,6 +483,21 @@ class ComponentDirectiveInjector extends DirectiveInjector {
   // Add 1 to visibility to allow to skip over current component injector.
   // For example, a local directive is visible from its component injector children.
   num _getDepth(int visType) => super._getDepth(visType) + 1;
+
+  bool _isEventEmitter(Key key) => key == new Key(Function, EventEmitter);
+
+  Function _buildEventEmitter(Key key) {
+    //add support for other event types once https://github.com/angular/di.dart/pull/180
+    //is merged into DI.
+    final eventAttr = eventAttrs.firstWhere((e) => e.eventName == "change" && !e.bubbling,
+        orElse: () => null);
+    if (eventAttr == null) return EMPTY_EVENT_EMITTER;
+
+    final targetScope = _parent.scope;
+    return (event) {
+      targetScope.eval(eventAttr.expression, {"event" : event});
+    };
+  }
 }
 
 

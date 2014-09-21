@@ -24,7 +24,9 @@ export "package:angular/core/annotation_src.dart" show
     NgCallback,
     NgOneWay,
     NgOneWayOneTime,
-    NgTwoWay;
+    NgTwoWay,
+
+    EventEmitter;
 
 
 /**

@@ -1007,8 +1007,27 @@ void main() {
           _.rootScope.apply();
           expect(logger).toEqual([1, null, 8]);
         });
+      });
 
+      describe("event emitter", () {
+        beforeEachModule((Module module) {
+          module.bind(_CaptureEventComponent);
+          module.bind(EventComponent);
+        });
 
+        it("should invoke the event handler", async((_CaptureEventComponent c) {
+          _.compile('<event-comp (change)="invoked=event;"></event-comp>');
+
+          c.component.emitChange("EVENT");
+
+          expect(_.rootScope.context["invoked"]).toEqual("EVENT");
+        }));
+
+        it("should do nothing when no event handler", async((_CaptureEventComponent c) {
+          _.compile('<event-comp (change)="invoked=event;"></event-comp>');
+
+          c.component.emitChange("EVENT");
+        }));
       });
     });
 
@@ -1644,6 +1663,23 @@ class InnerInnerComponent {
     templateUrl: 'template.html'
 )
 class TemplateUrlComponent {
+}
+
+
+class _CaptureEventComponent {
+  EventComponent component;
+}
+
+@Component(
+    selector: 'event-comp',
+    template: ''
+)
+class EventComponent {
+  final Function emitChange;
+
+  EventComponent(@EventEmitter() this.emitChange, _CaptureEventComponent cmp) {
+    cmp.component = this;
+  }
 }
 
 _shadowScope(element){

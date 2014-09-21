@@ -93,6 +93,7 @@ main() {
         "angular.core.annotation_src.DirectiveAnnotation",
         "angular.core.annotation_src.DirectiveBinder",
         "angular.core.annotation_src.DirectiveBinderFn",
+        "angular.core.annotation_src.EventEmitter",
         "angular.core.annotation_src.Formatter",
         "angular.core.annotation_src.NgAttr",
         "angular.core.annotation_src.NgCallback",
