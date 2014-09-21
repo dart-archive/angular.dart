@@ -165,6 +165,30 @@ void main() {
               message: 'Cannot resolve a circular dependency! '
                        '(resolving _TypeC0 -> _TypeC1 -> _TypeC2 -> _TypeC1)');
         });
+
+        it('should throw on invalid visibility', () {
+          var childInjector =
+            new DirectiveInjector(injector, appInjector, null, null, null, null, null);
+
+          var key = new Key(_InvalidVisibility);
+          key.uid = -KEEP_ME_LAST;
+
+          expect(() => childInjector.getByKey(key))
+              .toThrowWith(message: 'Invalid visibility "-$KEEP_ME_LAST"');
+        });
+
+        it('should throw on invalid id', () {
+          var childInjector =
+            new DirectiveInjector(injector, appInjector, null, null, null, null, null);
+
+          var key = new Key(_InvalidId);
+          key.uid = KEEP_ME_LAST;
+
+          expect(() =>childInjector.getByKey(key))
+              .toThrowWith(message: 'No provider found for $KEEP_ME_LAST! '
+                                    '(resolving _InvalidId -> $KEEP_ME_LAST)');
+        });
+
       });
 
       describe('Visibility', () {
@@ -224,3 +248,6 @@ class _TypeA{ final _Type9 type9; _TypeA(this.type9); }
 class _TypeC0 {final _TypeC1 t; _TypeC0(this.t);}
 class _TypeC1 {final _TypeC2 t; _TypeC1(this.t);}
 class _TypeC2 {final _TypeC1 t; _TypeC2(this.t);}
+
+class _InvalidVisibility {}
+class _InvalidId {}

@@ -254,7 +254,7 @@ class DirectiveInjector implements DirectiveBinder {
       case VISIBILITY_LOCAL:        return 0;
       case VISIBILITY_DIRECT_CHILD: return 1;
       case VISIBILITY_CHILDREN:     return _MAX_TREE_DEPTH;
-      default: throw null;
+      default: throw 'Invalid visibility "$visType"';
     }
   }
 
@@ -314,7 +314,7 @@ class DirectiveInjector implements DirectiveBinder {
       case DESTINATION_LIGHT_DOM_KEY_ID:  return _destLightDom;
       case SOURCE_LIGHT_DOM_KEY_ID:       return _sourceLightDom;
       case VIEW_KEY_ID:                   return _view;
-      default: new NoProviderError(_KEYS[keyId]);
+      default: throw new NoProviderError(_KEYS[keyId]);
     }
   }
 
