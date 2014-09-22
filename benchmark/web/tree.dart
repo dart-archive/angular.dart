@@ -171,7 +171,7 @@ class NgFreeTreeScoped implements ShadowRootAware {
     if (treeScope != null) {
       treeScope.destroy();
     }
-    treeScope = scope.createChild({});
+    treeScope = scope.createChildWithLocals({}, isolate: true);
     treeScope.context['tree'] = tree;
     root.innerHtml = '';
     root.append(newFreeTree(treeScope, treeAST));
@@ -200,7 +200,7 @@ class FreeTreeClass {
   Element element() {
     var elt = new Element.tag('ng-free-tree');
     var root = elt.createShadowRoot();
-    var scope = parentScope.createChild(this);
+    var scope = parentScope.createChildWithScope(this, isolate: true);
 
     var s = new SpanElement();
     root.append(s);
@@ -256,7 +256,7 @@ class NgFreeTreeClass implements ShadowRootAware {
     if (treeScope != null) {
       treeScope.destroy();
     }
-    treeScope = scope.createChild({});
+    treeScope = scope.createChildWithLocals({}, isolate: true);
     treeScope.context['tree'] = tree;
     root.innerHtml = '';
     root.append(new FreeTreeClass(treeScope, treeAST).element());

@@ -15,7 +15,7 @@ void main() {
     });
 
     it('should allow for a scope-based compile', (Scope scope) {
-      Scope childScope = scope.createChild({});
+      Scope childScope = scope.createChildWithLocals({}, isolate: true);
 
       _.compile('<div my-directive probe="i"></div>', scope: childScope);
 
