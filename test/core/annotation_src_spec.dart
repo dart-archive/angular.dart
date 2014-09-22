@@ -41,7 +41,7 @@ void main() => describe('annotations', () {
         module: (i){},
         map: {},
         selector: '',
-        visibility: Directive.LOCAL_VISIBILITY,
+        visibility: Visibility.LOCAL,
         exportExpressions: [],
         exportExpressionAttrs: [],
         useShadowDom: true,
@@ -63,7 +63,7 @@ void main() => describe('annotations', () {
           map: {},
           selector: '',
           module: (i){},
-          visibility: Directive.LOCAL_VISIBILITY,
+          visibility: Visibility.LOCAL,
           exportExpressions: [],
           exportExpressionAttrs: [],
           updateBoundElementPropertiesOnEvents: []
@@ -74,6 +74,26 @@ void main() => describe('annotations', () {
 
       // Check that the clone is the same as the original.
       expect(variables(cloneWithNewMap(decorator, {}))).toEqual(variables(decorator));
+    });
+  });
+
+  describe('template', () {
+    it('should set all fields on clone when all the fields are set', () {
+      var template = new Template(
+          map: {},
+          selector: '',
+          module: (i){},
+          visibility: Visibility.LOCAL,
+          exportExpressions: [],
+          exportExpressionAttrs: [],
+          updateBoundElementPropertiesOnEvents: []
+      );
+
+      // Check that no fields are null
+      expect(nullFields(template)).toEqual([]);
+
+      // Check that the clone is the same as the original.
+      expect(variables(cloneWithNewMap(template, {}))).toEqual(variables(template));
     });
   });
 });

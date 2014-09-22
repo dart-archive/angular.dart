@@ -65,8 +65,7 @@ part of angular.directive;
  *     </ul>
  */
 
-@Decorator(
-    children: Directive.TRANSCLUDE_CHILDREN,
+@Template(
     selector: '[ng-repeat]',
     map: const {'.': '@expression'})
 class NgRepeat {

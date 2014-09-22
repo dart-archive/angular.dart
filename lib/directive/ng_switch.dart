@@ -108,9 +108,8 @@ class _Case {
   _Case(this.anchor, this.viewFactory);
 }
 
-@Decorator(
+@Template(
     selector: '[ng-switch-when]',
-    children: Directive.TRANSCLUDE_CHILDREN,
     map: const {'.': '@value'})
 class NgSwitchWhen {
   final NgSwitch ngSwitch;
@@ -123,9 +122,7 @@ class NgSwitchWhen {
   set value(String value) => ngSwitch.addCase('!$value', port, viewFactory);
 }
 
-@Decorator(
-    children: Directive.TRANSCLUDE_CHILDREN,
-    selector: '[ng-switch-default]')
+@Template(selector: '[ng-switch-default]')
 class NgSwitchDefault {
 
   NgSwitchDefault(NgSwitch ngSwitch, ViewPort port,

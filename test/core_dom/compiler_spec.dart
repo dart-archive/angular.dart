@@ -1182,10 +1182,9 @@ class ChildTemplateComponent {
   ChildTemplateComponent() {}
 }
 
-@Decorator(
+@Template(
     selector: '[simple-transclude-in-attach]',
-    visibility: Visibility.LOCAL,
-    children: Directive.TRANSCLUDE_CHILDREN)
+    visibility: Visibility.LOCAL)
 class SimpleTranscludeInAttachAttrDirective {
   SimpleTranscludeInAttachAttrDirective(ViewPort viewPort, BoundViewFactory boundViewFactory, Logger log, RootScope scope) {
     scope.runAsync(() {
@@ -1520,9 +1519,8 @@ class OneTimeDecorator {
   set value(v) => log(v);
 }
 
-@Decorator(
+@Template(
   selector: '[same-name]',
-  children: Directive.TRANSCLUDE_CHILDREN,
   map: const { '.': '@valueTransclude' }
 )
 class SameNameTransclude {

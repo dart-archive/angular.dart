@@ -41,7 +41,7 @@ main() {
       assertSymbolNamesAreOk(ALLOWED_NAMES, libraryInfo);
 
     });
-    
+
     it('should not export unknown symbols from touch', () {
       LibraryInfo libraryInfo;
       try {
@@ -99,6 +99,7 @@ main() {
         "angular.core.annotation_src.NgOneWay",
         "angular.core.annotation_src.NgOneWayOneTime",
         "angular.core.annotation_src.NgTwoWay",
+        "angular.core.annotation_src.Template",
         "angular.core.annotation_src.Visibility",
         "angular.core.dom_internal.Animate",
         "angular.core.dom_internal.Animation",

@@ -78,11 +78,14 @@ abstract class Directive {
    * Compile the child nodes of the element.  This is the default.
    */
   static const String COMPILE_CHILDREN = 'compile';
+
   /**
    * Compile the child nodes for transclusion and makes available
    * [BoundViewFactory], [ViewFactory] and [ViewPort] for injection.
    */
+  @Deprecated('next release. Use @Template instead')
   static const String TRANSCLUDE_CHILDREN = 'transclude';
+
   /**
    * Do not compile/visit the child nodes.  Angular markup on descendant nodes
    * will not be processed.
@@ -370,6 +373,48 @@ class Decorator extends Directive {
           exportExpressions: exportExpressions,
           exportExpressionAttrs: exportExpressionAttrs,
           updateBoundElementPropertiesOnEvents: updateBoundElementPropertiesOnEvents);
+}
+
+/**
+ * Annotation placed on a class which should act as a template.
+ *
+ * Angular directives are instantiated using dependency injection, and can
+ * ask for any injectable object in their constructor. Directives
+ * can also ask for other components or directives declared on the DOM element.
+ *
+ * Directives can implement [AttachAware], [DetachAware] and
+ * declare these optional methods:
+ *
+ * * `attach()` - Called on first [Scope.apply()].
+ * * `detach()` - Called on when owning scope is destroyed.
+ */
+// TODO(vicb) for now extends Decorator as we need to keep BC
+// Extends Directive when transclusion support is removed from Decorator
+class Template extends Decorator {
+  const Template({map,
+                  selector,
+                  DirectiveBinderFn module,
+                  visibility,
+                  exportExpressions,
+                  exportExpressionAttrs,
+                  updateBoundElementPropertiesOnEvents})
+      : super(selector: selector,
+              children: Directive.TRANSCLUDE_CHILDREN,
+              visibility: visibility,
+              map: map,
+              module: module,
+              exportExpressions: exportExpressions,
+              exportExpressionAttrs: exportExpressionAttrs,
+              updateBoundElementPropertiesOnEvents: updateBoundElementPropertiesOnEvents);
+
+  Template _cloneWithNewMap(newMap) =>
+      new Template(map: newMap,
+                   module: module,
+                   selector: selector,
+                   visibility: visibility,
+                   exportExpressions: exportExpressions,
+                   exportExpressionAttrs: exportExpressionAttrs,
+                   updateBoundElementPropertiesOnEvents: updateBoundElementPropertiesOnEvents);
 }
 
 /**
