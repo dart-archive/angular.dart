@@ -9,6 +9,7 @@ import 'package:di/annotations.dart';
 import 'package:di/src/module.dart' show DEFAULT_VALUE, Binding;
 import 'package:angular/core/static_keys.dart';
 import 'package:angular/core_dom/static_keys.dart';
+import 'package:angular/core_dom/query.dart';
 
 import 'package:angular/core/module.dart' show Scope, RootScope;
 import 'package:angular/core/annotation.dart' show Visibility, DirectiveBinder;
@@ -137,6 +138,8 @@ class DirectiveInjector extends LinkedListEntry<DirectiveInjector> implements Di
   NgElement _ngElement;
   ElementProbe _elementProbe;
 
+  QueryRef QueryRef1, QueryRef2, QueryRef3;
+
   Key _key0 = null; dynamic _obj0; List<Key> _pKeys0; Function _factory0;
   Key _key1 = null; dynamic _obj1; List<Key> _pKeys1; Function _factory1;
   Key _key2 = null; dynamic _obj2; List<Key> _pKeys2; Function _factory2;
@@ -182,6 +185,10 @@ class DirectiveInjector extends LinkedListEntry<DirectiveInjector> implements Di
     if (_parent != null) {
       _parent.children.add(this);
       if (_isRootInjectorFor(_view)) _view.addRootDirectiveInjector(this);
+
+      _inheritQuery(_parent.QueryRef1);
+      _inheritQuery(_parent.QueryRef2);
+      _inheritQuery(_parent.QueryRef3);
     }
   }
 
@@ -385,6 +392,7 @@ class DirectiveInjector extends LinkedListEntry<DirectiveInjector> implements Di
     }
     oldTag.makeCurrent();
     if (isFirstConstruction) _constructionDepth = _NO_CONSTRUCTION;
+    _notifyQueries(obj);
     return obj;
   }
 
@@ -416,6 +424,47 @@ class DirectiveInjector extends LinkedListEntry<DirectiveInjector> implements Di
 
   ShadowBoundary _findShadowBoundary() =>
       _shadowBoundary != null ? _shadowBoundary : getFromParentByKey(SHADOW_BOUNDARY_KEY);
+
+  void _assignQueryRef(QueryRef ref) {
+    if (QueryRef1 == null) {
+      QueryRef1 = ref;
+    } else if (QueryRef2 == null) {
+      QueryRef2 = ref;
+    } else if (QueryRef3 == null) {
+      QueryRef3 = ref;
+    } else {
+      throw "Too many queries!";
+    }
+  }
+
+  void _inheritQuery(QueryRef ref) {
+    if (ref == null) return;
+    final child = ref.buildChildRef();
+    if (child == null) return;
+    _assignQueryRef(child);
+  }
+
+  void _notifyQueries(directive) {
+    _notifyQuery(directive, QueryRef1);
+    _notifyQuery(directive, QueryRef2);
+    _notifyQuery(directive, QueryRef3);
+  }
+
+  void _notifyQuery(directive, QueryRef ref) {
+    if (ref != null && ref.query.matches(directive)) {
+      ref.query.invalidate();
+    }
+  }
+
+  void afterMove() {
+    _invalidateQueryRef(QueryRef1);
+    _invalidateQueryRef(QueryRef2);
+    _invalidateQueryRef(QueryRef3);
+  }
+
+  void _invalidateQueryRef(QueryRef ref) {
+    if (ref != null && ref.inherited) ref.query.invalidate();
+  }
 }
 
 class TemplateDirectiveInjector extends DirectiveInjector {
@@ -467,6 +516,21 @@ class ComponentDirectiveInjector extends DirectiveInjector {
     _parent.lightDom = lightDom;
   }
 
+  Object _getByKey(Key key, Injector appInjector) {
+    if (_isQuery(key)) return _buildQuery(key);
+    return super._getByKey(key, appInjector);
+  }
+
+  bool _isQuery(Key key) => key.type == Query;
+
+  Query _buildQuery(Key key) {
+    //TODO: vsavkin: read the type from the key and pass it instead of null
+    //It can be done only after DI #180 is merged into master
+    final q = new Query(this._lightDomDI, Query.DEPTH_DESCENDANTS, null);
+    _lightDomDI._assignQueryRef(new QueryRef(q, false));
+    return q;
+  }
+
   Object _getById(int keyId) {
     switch(keyId) {
       case TEMPLATE_LOADER_KEY_ID: return _templateLoader;
@@ -476,6 +540,10 @@ class ComponentDirectiveInjector extends DirectiveInjector {
       default: return super._getById(keyId);
     }
   }
+
+  Object get component => _obj0;
+
+  DirectiveInjector get _lightDomDI => _parent;
 
   ElementProbe get elementProbe {
     if (_elementProbe == null) {

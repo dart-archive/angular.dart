@@ -207,4 +207,15 @@ class LinkedListEntryGroup<T extends LinkedListEntry<T>> {
       curr = next;
     }
   }
+
+  void forEach(Function fn) {
+    if (isEmpty) return;
+
+    var curr = _first;
+    while (true) {
+      fn(curr);
+      if (curr == _last) return;
+      curr = curr.next;
+    }
+  }
 }

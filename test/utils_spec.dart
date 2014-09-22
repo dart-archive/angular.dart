@@ -123,5 +123,23 @@ main() {
         expect(vals(list)).toEqual(["a", "c", "b"]);
       });
     });
+
+    describe("forEach", () {
+      it("should invoke the given function with every element in the group", () {
+        final list = new LinkedList()..addAll([a, b, c]);
+        final group = new LinkedListEntryGroup()..add(a)..add(b);
+        final recorded = [];
+        group.forEach(recorded.add);
+
+        expect(recorded).toEqual([a,b]);
+      });
+
+      it("should do nothing when an empty group", () {
+        final group = new LinkedListEntryGroup();
+        expect((){
+          group.forEach((_) => throw "BOOM");
+        }).not.toThrow();
+      });
+    });
   });
 }

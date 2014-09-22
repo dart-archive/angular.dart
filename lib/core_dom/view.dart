@@ -42,6 +42,11 @@ class View {
 
   void remove() {
     _rootInjectors.unlink();
+    _rootInjectors.forEach((di) => di.afterMove());
+  }
+
+  void afterMove() {
+    _rootInjectors.forEach((di) => di.afterMove());
   }
 }
 
@@ -95,6 +100,7 @@ class ViewPort {
     dom.Node previousNode = _lastNode(moveAfter);
     views.remove(view);
     _viewsInsertAfter(view, moveAfter);
+    view.afterMove();
     scope.rootScope.domWrite(() {
       _animate.move(view.nodes, placeholder.parentNode, insertBefore: previousNode.nextNode);
       _notifyLightDom();
