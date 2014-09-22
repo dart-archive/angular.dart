@@ -239,6 +239,7 @@ class ViewCache {
   }
 }
 
+@Deprecated('next release')
 class _AnchorAttrs extends NodeAttrs {
   DirectiveRef _directiveRef;
 

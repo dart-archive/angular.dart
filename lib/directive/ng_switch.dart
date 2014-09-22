@@ -110,7 +110,7 @@ class _Case {
 
 @Template(
     selector: '[ng-switch-when]',
-    map: const {'.': '@value'})
+    map: const {'ng-switch-when': '@value'})
 class NgSwitchWhen {
   final NgSwitch ngSwitch;
   final ViewPort port;

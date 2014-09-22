@@ -67,7 +67,7 @@ part of angular.directive;
 
 @Template(
     selector: '[ng-repeat]',
-    map: const {'.': '@expression'})
+    map: const {'ng-repeat': '@expression'})
 class NgRepeat {
   static RegExp _SYNTAX = new RegExp(r'^\s*(.+)\s+in\s+(.*?)\s*(?:track\s+by\s+(.+)\s*)?(\s+lazily\s*)?$');
   static RegExp _LHS_SYNTAX = new RegExp(r'^(?:([$\w]+)|\(([$\w]+)\s*,\s*([$\w]+)\))$');
