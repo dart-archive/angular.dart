@@ -4,9 +4,6 @@ import 'package:analyzer/src/generated/ast.dart';
 import 'package:angular/tools/source_crawler.dart';
 import 'package:angular/tools/common.dart';
 
-const String _COMPONENT = '-component';
-const String _DIRECTIVE = '-directive';
-String _ATTR_DIRECTIVE = '-attr' + _DIRECTIVE;
 RegExp _ATTR_SELECTOR_REGEXP = new RegExp(r'\[([^\]]+)\]');
 const List<String> _specs = const ['=>!', '=>', '<=>', '@', '&'];
 const Map<String, String> _attrAnnotationsToSpec = const {
@@ -35,9 +32,8 @@ class SourceMetadataExtractor {
       dirInfo.selector = meta.selector;
       dirInfo.template = meta.template;
       meta.attributeMappings.forEach((attrName, mappingSpec) {
-        var spec = _specs
-            .firstWhere((specPrefix) => mappingSpec.startsWith(specPrefix),
-                orElse: () => throw '$mappingSpec no matching spec');
+        var spec = _specs.firstWhere((specPrefix) => mappingSpec.startsWith(specPrefix),
+                                      orElse: () => throw '$mappingSpec no matching spec');
         if (spec != '@') {
           dirInfo.expressionAttrs.add(attrName);
         }
@@ -68,30 +64,11 @@ class SourceMetadataExtractor {
         }
       });
 
-
       // No explicit selector specified on the directive, compute one.
       var className = meta.className;
+
       if (dirInfo.selector == null) {
-        if (meta.type == COMPONENT) {
-          if (className.endsWith(_COMPONENT)) {
-            dirInfo.selector = className.
-                substring(0, className.length - _COMPONENT.length);
-          } else {
-            throw "Directive name '$className' must end with $_DIRECTIVE, "
-            "$_ATTR_DIRECTIVE, $_COMPONENT or have a \$selector field.";
-          }
-        } else {
-          if (className.endsWith(_ATTR_DIRECTIVE)) {
-            var attrName = className.
-                substring(0, className.length - _ATTR_DIRECTIVE.length);
-            dirInfo.selector = '[$attrName]';
-          } else if (className.endsWith(_DIRECTIVE)) {
-            dirInfo.selector = className.
-                substring(0, className.length - _DIRECTIVE.length);
-          } else {
-            throw "Directive name '$className' must have a \$selector field.";
-          }
-        }
+        throw new ArgumentError('Missing selector annotation for $className');
       }
       var reprocessedAttrs = <String>[];
       dirInfo.expressionAttrs.forEach((String attr) {
@@ -125,14 +102,13 @@ class DirectiveMetadataCollectingAstVisitor extends RecursiveAstVisitor {
     if (node.methodName.name == 'ngRoute') {
       NamedExpression viewHtmlExpression =
           node.argumentList.arguments
-          .firstWhere((e) => e is NamedExpression &&
-              e.name.label.name == 'viewHtml', orElse: () => null);
+              .firstWhere((e) => e is NamedExpression && e.name.label.name == 'viewHtml',
+                          orElse: () => null);
       if (viewHtmlExpression != null) {
         if (viewHtmlExpression.expression is! StringLiteral) {
           throw 'viewHtml must be a string literal';
         }
-        templates.add(
-            (viewHtmlExpression.expression as StringLiteral).stringValue);
+        templates.add((viewHtmlExpression.expression as StringLiteral).stringValue);
       }
     }
     super.visitMethodInvocation(node);
@@ -144,14 +120,11 @@ class DirectiveMetadataCollectingAstVisitor extends RecursiveAstVisitor {
       if (ann.arguments == null) return; // Ignore non-class annotations.
       // TODO(pavelj): this is not a safe check for the type of the
       // annotations, but good enough for now.
-      if (ann.name.name != 'Component'
-          && ann.name.name != 'Decorator') return;
+      if (ann.name.name != 'Component' &&
+          ann.name.name != 'Decorator' &&
+          ann.name.name != 'Controller') return;
 
-      bool isComponent = ann.name.name == 'Component';
-
-      var meta = new DirectiveMetadata()
-        ..className = clazz.name.name
-        ..type = isComponent ? COMPONENT : DIRECTIVE;
+      var meta = new DirectiveMetadata()..className = clazz.name.name;
       metadata.add(meta);
 
       ann.arguments.arguments.forEach((Expression arg) {
@@ -186,8 +159,8 @@ class DirectiveMetadataCollectingAstVisitor extends RecursiveAstVisitor {
     return super.visitClassDeclaration(clazz);
   }
 
-  _walkSuperclassChain(ClassDeclaration clazz, DirectiveMetadata meta,
-                       metadataExtractor(ClassDeclaration clazz, DirectiveMetadata meta)) {
+  void _walkSuperclassChain(ClassDeclaration clazz, DirectiveMetadata meta,
+                            metadataExtractor(ClassDeclaration clazz, DirectiveMetadata meta)) {
     while (clazz != null) {
       metadataExtractor(clazz, meta);
       if (clazz.element != null && clazz.element.supertype != null) {
@@ -198,7 +171,7 @@ class DirectiveMetadataCollectingAstVisitor extends RecursiveAstVisitor {
     }
   }
 
-  _extractMappingsFromClass(ClassDeclaration clazz, DirectiveMetadata meta) {
+  void _extractMappingsFromClass(ClassDeclaration clazz, DirectiveMetadata meta) {
     // Check fields/getters/setter for presence of attr mapping annotations.
     clazz.members.forEach((ClassMember member) {
       if (member is FieldDeclaration ||
@@ -213,13 +186,12 @@ class DirectiveMetadataCollectingAstVisitor extends RecursiveAstVisitor {
               fieldName = (member as MethodDeclaration).name.name;
             }
             StringLiteral attNameLiteral = ann.arguments.arguments.first;
-            if (meta.attributeMappings
-            .containsKey(attNameLiteral.stringValue)) {
+            if (meta.attributeMappings.containsKey(attNameLiteral.stringValue)) {
               throw 'Attribute mapping already defined for '
-              '${clazz.name}.$fieldName';
+                    '${clazz.name}.$fieldName';
             }
             meta.attributeMappings[attNameLiteral.stringValue] =
-            _attrAnnotationsToSpec[ann.name.name] + fieldName;
+                _attrAnnotationsToSpec[ann.name.name] + fieldName;
           }
         });
       }

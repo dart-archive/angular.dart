@@ -6,6 +6,7 @@ import 'package:angular/tools/transformer/expression_generator.dart';
 import 'package:angular/tools/transformer/metadata_generator.dart';
 import 'package:angular/tools/transformer/static_angular_generator.dart';
 import 'package:angular/tools/transformer/html_dart_references_generator.dart';
+import 'package:angular/tools/transformer/type_relative_uri_generator.dart';
 import 'package:angular/tools/transformer/options.dart';
 import 'package:barback/barback.dart';
 import 'package:code_transformers/resolver.dart';
@@ -35,7 +36,6 @@ TransformOptions _parseSettings(Map args) {
   var annotations = [
       'di.annotations.Injectable',
       'angular.core.annotation_src.Decorator',
-      'angular.core.annotation_src.Controller',
       'angular.core.annotation_src.Component',
       'angular.core.annotation_src.Formatter'];
   annotations.addAll(_readStringListValue(args, 'injectable_annotations'));
@@ -116,18 +116,22 @@ Map<String, String> _readStringMapValue(Map args, String name) {
   return value;
 }
 
-List<List<Transformer>> _createPhases(TransformOptions options) {
+Transformer _staticGenerator(TransformOptions options) {
   var resolvers = new Resolvers(options.sdkDirectory);
-  return [
-    [ new HtmlDartReferencesGenerator(options) ],
-    [ new di.InjectorGenerator(options.diOptions, resolvers) ],
-    [ new _SerialTransformer([
+  return new _SerialTransformer([
+      new TypeRelativeUriGenerator(options, resolvers),
       new ExpressionGenerator(options, resolvers),
       new MetadataGenerator(options, resolvers),
       new StaticAngularGenerator(options, resolvers)
-    ])]
-  ];
+  ]);
 }
+
+List<List<Transformer>> _createPhases(TransformOptions options) =>
+  [
+    [ new HtmlDartReferencesGenerator(options) ],
+    [ new di.InjectorGenerator(options.diOptions, new Resolvers(options.sdkDirectory)) ],
+    [ _staticGenerator(options) ]
+  ];
 
 /// Helper which runs a group of transformers serially and ensures that
 /// transformers with shared data are always applied in a specific order.

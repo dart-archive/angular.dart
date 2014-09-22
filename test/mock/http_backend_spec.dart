@@ -80,7 +80,8 @@ void main() {
       hb.when('GET', '/url1').respond(200, 'content');
       expect(() {
         hb('GET', '/xxx', noop);
-      }).toThrow('Unexpected request: GET /xxx\nNo more requests expected');
+        hb.flush();
+      }).toThrowWith(message: 'Unexpected request: GET /xxx\nNo more requests expected');
     });
 
 
@@ -93,7 +94,7 @@ void main() {
         });
         hb.flush();
         microLeap();
-      }).toThrow('exceptiona');
+      }).toThrowWith(message: 'exceptiona');
     }));
 
 
@@ -226,12 +227,10 @@ void main() {
 
     describe('expect()', () {
       it('should require specified order', () {
-        hb.expect('GET', '/url1').respond(200, '');
-        hb.expect('GET', '/url2').respond(200, '');
-
         expect(() {
           hb('GET', '/url2', noop, headers: {});
-        }).toThrow('Unexpected request: GET /url2\nExpected GET /url1');
+          hb.flushExpected('GET', '/url1').respond(200, '');
+        }).toThrowWith(message: 'Unexpected request: GET /url2\nExpected GET /url1');
       });
 
 
@@ -256,7 +255,8 @@ void main() {
 
         expect(() {
           hb('GET', '/match', noop, headers: {});
-        }).toThrow('Expected GET /match with different headers\n' +
+          hb.flush();
+        }).toThrowWith(message: 'Expected GET /match with different headers\n' +
         'EXPECTED: {"Content-Type":"application/json"}\nGOT:      {}');
       });
 
@@ -267,7 +267,8 @@ void main() {
 
         expect(() {
           hb('GET', '/match', noop, data: 'different');
-        }).toThrow('Expected GET /match with different data\n' +
+          hb.flush();
+        }).toThrowWith(message: 'Expected GET /match with different data\n' +
         'EXPECTED: some-data\nGOT:      different');
       });
 
@@ -318,19 +319,19 @@ void main() {
         hb.when('GET').respond(200, '');
         hb('GET', '/url', callback);
 
-        expect(() {hb.flush(2);}).toThrow('No more pending request to flush !');
+        expect(() {hb.flush(2); }).toThrowWith(message: 'No more pending request to flush !');
         expect(callback).toHaveBeenCalledOnce();
       });
 
 
       it('should throw exception when no request to flush', () {
-        expect(() {hb.flush();}).toThrow('No pending request to flush !');
+        expect(() {hb.flush();}).toThrowWith(message: 'No pending request to flush !');
 
         hb.when('GET').respond(200, '');
         hb('GET', '/some', callback);
         hb.flush();
 
-        expect(() {hb.flush();}).toThrow('No pending request to flush !');
+        expect(() {hb.flush();}).toThrowWith(message: 'No pending request to flush !');
       });
 
 
@@ -339,7 +340,7 @@ void main() {
         hb.expect('GET', '/url2').respond();
 
         hb('GET', '/url1', noop);
-        expect(() {hb.flush();}).toThrow('Unsatisfied requests: GET /url2');
+        expect(() {hb.flush();}).toThrowWith(message: 'Unsatisfied requests: GET /url2');
       });
     });
 
@@ -352,6 +353,7 @@ void main() {
       });
 
       hb('GET', '/url1', callback, timeout: new _Chain(then: then));
+      hb.flush();
       expect(canceler is Function).toBe(true);
 
       canceler();  // simulate promise resolution
@@ -366,7 +368,8 @@ void main() {
       hb.when('GET', '/test');
       expect(() {
         hb('GET', '/test', callback);
-      }).toThrow('No response defined !');
+        hb.flush();
+      }).toThrowWith(message: 'No response defined !');
     });
 
 
@@ -374,9 +377,9 @@ void main() {
       hb.expect('GET', '/url');
       expect(() {
         hb('GET', '/url', callback);
-      }).toThrow('No response defined !');
+        hb.flush();
+      }).toThrowWith(message: 'No response defined !');
     });
-
 
     it('should respond undefined when JSONP method', () {
       hb.when('JSONP', '/url1').respond(200);
@@ -395,9 +398,11 @@ void main() {
         hb.expect('POST', '/u3').respond(201, '', {});
 
         hb('POST', '/u1', noop, data: 'ddd', headers: {});
+        expect(() {hb.flush(1); }).toThrow();
 
-        expect(() {hb.verifyNoOutstandingExpectation();}).
-        toThrow('Unsatisfied requests: GET /u2, POST /u3');
+        expect(() {
+          hb.verifyNoOutstandingExpectation();
+        }).toThrowWith(message: 'Unsatisfied requests: GET /u2, POST /u3');
       });
 
 
@@ -415,6 +420,7 @@ void main() {
 
         hb('GET', '/u2', noop);
         hb('POST', '/u3', noop);
+        hb.flush();
 
         expect(() {hb.verifyNoOutstandingExpectation();}).not.toThrow();
       });
@@ -428,7 +434,7 @@ void main() {
 
         expect(() {
           hb.verifyNoOutstandingRequest();
-        }).toThrow('Unflushed requests: 1');
+        }).toThrowWith(message: 'Unflushed requests: 1');
       });
     });
 
@@ -501,24 +507,57 @@ void main() {
     });
 
 
+    describe("flushExpected()", () {
+      it("flushes all the requests until a matching one is found", () {
+        hb.when("GET", '/first').respond("OK");
+
+        hb("GET", '/first', callback);
+        hb("GET", '/second', callback);
+        hb("GET", '/third', callback);
+
+        hb.flushExpected("GET", "/second").respond("OK");
+
+        expect(hb.requests.length).toEqual(1);
+        expect(hb.requests.first.url).toEqual("/third");
+      });
+    });
+
+
+    describe('flush shortcuts', () {
+      [[(x, r) => hb.flushGET(x).respond(r), 'GET'],
+      [(x, r) => hb.flushPOST(x).respond(r), 'POST'],
+      [(x, r) => hb.flushPUT(x).respond(r), 'PUT'],
+      [(x, r) => hb.flushPATCH(x).respond(r), 'PATCH'],
+      [(x, r) => hb.flushDELETE(x).respond(r), 'DELETE'],
+      [(x, r) => hb.flushJSONP(x).respond(r), 'JSONP']
+      ].forEach((step) {
+        var shortcut = step[0], method = step[1];
+        it('should provide $shortcut  shortcut method', () {
+          hb(method, '/foo', callback);
+          shortcut('/foo', 'bar');
+          expect(callback).toHaveBeenCalledOnceWith(200, 'bar', '');
+        });
+      });
+    });
+
     describe('MockHttpExpectation', () {
 
       it('should accept url as regexp', () {
         var exp = new MockHttpExpectation('GET', new RegExp('^\/x'));
 
-        expect(exp.match('GET', '/x')).toBe(true);
-        expect(exp.match('GET', '/xxx/x')).toBe(true);
-        expect(exp.match('GET', 'x')).toBe(false);
-        expect(exp.match('GET', 'a/x')).toBe(false);
+        expect(exp.match(new RecordedRequest(method: 'GET', url: '/x'))).toBe(true);
+        expect(exp.match(new RecordedRequest(method: 'GET', url: '/xxx/x'))).toBe(true);
+        expect(exp.match(new RecordedRequest(method: 'GET', url: 'x'))).toBe(false);
+        expect(exp.match(new RecordedRequest(method: 'GET', url: 'a/x'))).toBe(false);
       });
 
 
       it('should accept data as regexp', () {
         var exp = new MockHttpExpectation('POST', '/url', new RegExp('\{.*?\}'));
 
-        expect(exp.match('POST', '/url', '{"a": "aa"}')).toBe(true);
-        expect(exp.match('POST', '/url', '{"one": "two"}')).toBe(true);
-        expect(exp.match('POST', '/url', '{"one"')).toBe(false);
+        expect(exp.match(new RecordedRequest(method: 'POST', url: '/url', data: '{"a": "aa"}'))).toBe(true);
+        expect(exp.match(new RecordedRequest(method: 'POST', url: '/url', data: '{"one": "two"}'))).toBe(true);
+        expect(exp.match(new RecordedRequest(method: 'POST', url: '/url', data: '{"one"'))).toBe(false);
       });
 
 
@@ -527,8 +566,9 @@ void main() {
           return h['Content-Type'] == 'application/json';
         });
 
-        expect(exp.matchHeaders({})).toBe(false);
-        expect(exp.matchHeaders({'Content-Type': 'application/json', 'X-Another': 'true'})).toBe(true);
+        expect(exp.matchHeaders(new RecordedRequest(headers: {}))).toBe(false);
+        expect(exp.matchHeaders(new RecordedRequest(
+            headers: {'Content-Type': 'application/json', 'X-Another': 'true'}))).toBe(true);
       });
     });
   });

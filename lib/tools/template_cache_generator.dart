@@ -292,12 +292,16 @@ class TemplateCollectingVisitor {
     }
   }
 
+  String _resolveInTemplateRoots(String uri, List<String> templateRoots) {
+    var paths = templateRoots.map((r) => '$r/$uri');
+    return paths.firstWhere((p) => new File(p).existsSync(),
+        orElse: () => paths.first);
+  }
+
   String findAssetLocation(String uri, Source srcPath, List<String>
       templateRoots) {
     if (uri.startsWith('/')) {
-      var paths = templateRoots.map((r) => '$r/$uri');
-      return paths.firstWhere((p) => new File(p).existsSync(),
-          orElse: () => paths.first);
+      return _resolveInTemplateRoots(uri, templateRoots);
     }
     // Otherwise let the sourceFactory resolve for packages, and relative paths.
     Source source = sourceCrawler.context.sourceFactory

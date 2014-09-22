@@ -7,7 +7,7 @@ echo '==========='
 echo '== BUILD =='
 echo '==========='
 
-SIZE_TOO_BIG_COUNT=0
+SIZE_UNEXPECTED_COUNT=0
 
 export SAUCE_ACCESS_KEY=`echo $SAUCE_ACCESS_KEY | rev`
 
@@ -15,17 +15,37 @@ function checkSize() {
   file=$1
   if [[ ! -e $file ]]; then
     echo Could not find file: $file
-    SIZE_TOO_BIG_COUNT=$((SIZE_TOO_BIG_COUNT + 1));
+    SIZE_UNEXPECTED_COUNT=$((SIZE_UNEXPECTED_COUNT + 1));
   else
     expected=$2
     actual=`cat $file | gzip | wc -c`
     if (( 100 * $actual >= 105 * $expected )); then
       echo ${file} is too large expecting ${expected} was ${actual}.
-      SIZE_TOO_BIG_COUNT=$((SIZE_TOO_BIG_COUNT + 1));
+      SIZE_UNEXPECTED_COUNT=$((SIZE_UNEXPECTED_COUNT + 1));
+    fi
+    if (( 100 * $actual <= 95 * $expected )); then
+      echo ${file} is too small expecting ${expected} was ${actual}.
+      echo Please update scripts/travis/build.sh with the correct value.
+      SIZE_UNEXPECTED_COUNT=$((SIZE_UNEXPECTED_COUNT + 1));
     fi
   fi
 }
 
+function checkAllSizes() {(
+    echo '-----------------------------------'
+    echo '-- BUILDING: verify dart2js size --'
+    echo '-----------------------------------'
+    cd $NGDART_BASE_DIR/example
+    checkSize build/web/animation.dart.js 224697
+    checkSize build/web/bouncing_balls.dart.js 223927
+    checkSize build/web/hello_world.dart.js 221838
+    checkSize build/web/todo.dart.js 224414
+    if ((SIZE_UNEXPECTED_COUNT > 0)); then
+      exit 1
+    else
+      echo Generated JavaScript file size check OK.
+    fi
+)}
 
 # E2E tests only?
 if [[ $JOB == e2e-* ]]; then
@@ -44,27 +64,14 @@ if [[ $TESTS == "dart2js" ]]; then
   echo '------------------------'
 
   if [[ $CHANNEL == "DEV" ]]; then
-    $DART "$NGDART_BASE_DIR/bin/pub_build.dart" -p example \
+    ($DART "$NGDART_BASE_DIR/bin/pub_build.dart" -p example \
         -e "$NGDART_BASE_DIR/example/expected_warnings.json"
+     checkAllSizes
+    ) &
   else
-    ( cd example; pub build )
+    (cd example; pub build ; checkAllSizes) &
   fi
 
-  (
-    echo '-----------------------------------'
-    echo '-- BUILDING: verify dart2js size --'
-    echo '-----------------------------------'
-    cd $NGDART_BASE_DIR/example
-    checkSize build/web/animation.dart.js 208021
-    checkSize build/web/bouncing_balls.dart.js 202325
-    checkSize build/web/hello_world.dart.js 199919
-    checkSize build/web/todo.dart.js 203121
-    if ((SIZE_TOO_BIG_COUNT > 0)); then
-      exit 1
-    else
-      echo Generated JavaScript file size check OK.
-    fi
-  )
 else
   echo '--------------'
   echo '-- TEST: io --'
@@ -108,27 +115,37 @@ echo '-----------------------'
 echo '-- TEST: AngularDart --'
 echo '-----------------------'
 echo BROWSER=$BROWSERS
-$NGDART_BASE_DIR/node_modules/jasmine-node/bin/jasmine-node playback_middleware/spec/ &&
-node "node_modules/karma/bin/karma" start karma.conf \
-    --reporters=junit,dots --port=8765 --runner-port=8766 \
-    --browsers=$BROWSERS --single-run --no-colors 2>&1 | tee karma-output.log
 
-if grep -q "WARN: iit" karma-output.log; then
-  echo "ERROR: iit caused some tests to be excluded"
-  exit 1
-fi
+_run_karma_tests() {(
+  $NGDART_BASE_DIR/node_modules/jasmine-node/bin/jasmine-node playback_middleware/spec/
 
-if grep -q "WARN: ddescribe" karma-output.log; then
-  echo "ERROR: ddescribe caused some tests to be excluded"
-  exit 1
-fi
+  _run_once() {
+    export KARMA_SHARD_ID=$1
+    node "node_modules/karma/bin/karma" start karma.conf \
+        --reporters=junit,dots --port=$((8765+KARMA_SHARD_ID)) \
+        --browsers=$BROWSERS --single-run
+  }
+  export -f _run_once
 
+  if [[ $TESTS == "dart2js" ]]; then
+    # Ref: test/_specs.dart: _numKarma shards.
+    # Prime the dart2jsaas cache.
+    NUM_KARMA_SHARDS=0 BROWSERS=SL_Chrome _run_once 0
+    # Run sharded karma tests.
+    export NUM_KARMA_SHARDS=4
+    seq 0 $((NUM_KARMA_SHARDS-1)) | xargs -n 1 -P $NUM_KARMA_SHARDS -I SHARD_ID \
+      bash -c '_run_once SHARD_ID'
+  else
+    _run_once
+  fi
+)}
 
+_run_karma_tests
 
 echo '-------------------------'
 echo '-- DOCS: Generate Docs --'
 echo '-------------------------'
-if [[ $TESTS == "dart2js" ]]; then
+if [[ ${TRAVIS_JOB_NUMBER:(-2)} == ".1" ]]; then
   echo $NGDART_SCRIPT_DIR/generate-documentation.sh;
   $NGDART_SCRIPT_DIR/generate-documentation.sh;
 fi

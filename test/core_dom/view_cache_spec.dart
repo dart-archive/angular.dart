@@ -20,14 +20,10 @@ main() {
 
       expect(cache.fromHtml(HTML, directives)).toBe(firstFactory);
 
-      // Also for fromUrl
-      backend.whenGET('template.url').respond(200, HTML);
-
       var httpFactory;
-      cache.fromUrl('template.url', directives).then((f) => httpFactory = f);
+      cache.fromUrl('template.url', directives, Uri.base).then((f) => httpFactory = f);
 
-      microLeap();
-      backend.flush();
+      backend.flushGET('template.url').respond(200, HTML);
       microLeap();
 
       expect(httpFactory).toBe(firstFactory);

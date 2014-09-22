@@ -1,3 +1,19 @@
+var env = process.env;
+
+function getClientArgs() {
+  if (env.TRAVIS == null || env.TESTS != "dart2js" ||
+      env.NUM_KARMA_SHARDS == null || env.KARMA_SHARD_ID == "") {
+    return null;
+  }
+  return {
+    travis: {
+      numKarmaShards: parseInt(env.NUM_KARMA_SHARDS),
+      karmaShardId: parseInt(env.KARMA_SHARD_ID)
+    }
+  };
+}
+
+
 module.exports = function(config) {
   config.set({
     //logLevel: config.LOG_DEBUG,
@@ -20,6 +36,11 @@ module.exports = function(config) {
       {pattern: 'lib/**/*.dart', watched: true, included: false, served: true},
       'packages/browser/dart.js'
     ],
+
+    client: {
+      args: [],
+      clientArgs: getClientArgs()
+    },
 
     exclude: [
       'test/io/**',
@@ -59,6 +80,28 @@ module.exports = function(config) {
           browserName: 'firefox',
           version: '30'
       },
+      'SL_Safari6': {
+          base: 'SauceLabs',
+          browserName: 'safari',
+          version: '6'
+      },
+      'SL_Safari7': {
+          base: 'SauceLabs',
+          browserName: 'safari',
+          version: '7'
+      },
+      'SL_IE10': {
+          base: 'SauceLabs',
+          browserName: 'internet explorer',
+          platform: 'Windows 8',
+          version: '10'
+      },
+      'SL_IE11': {
+          base: 'SauceLabs',
+          browserName: 'internet explorer',
+          platform: 'Windows 8.1',
+          version: '11'
+      },
       DartiumWithWebPlatform: {
         base: 'Dartium',
         flags: ['--enable-experimental-web-platform-features'] }
@@ -76,11 +119,13 @@ module.exports = function(config) {
     },
     sauceLabs: {
         testName: 'AngularDart',
-        tunnelIdentifier: process.env.TRAVIS_JOB_NUMBER,
+        tunnelIdentifier: env.TRAVIS_JOB_NUMBER,
         startConnect: false,
         options:  {
             'selenium-version': '2.41.0',
-            'max-duration': 2700
+            'command-timeout': 600,
+            'idle-timeout': 600,
+            'max-duration': 5400
         }
     }
   });

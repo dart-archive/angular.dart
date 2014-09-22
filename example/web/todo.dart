@@ -6,6 +6,8 @@ import 'package:angular/angular.dart';
 import 'package:angular/application_factory.dart';
 import 'package:angular/playback/playback_http.dart';
 
+import 'package:quiver/collection.dart';
+
 class Item {
   String text;
   bool done;
@@ -53,10 +55,7 @@ class HttpServer implements Server {
   }
 }
 
-
-@Controller(
-    selector: '[todo-controller]',
-    publishAs: 'todo')
+@Injectable()
 class Todo {
   var items = <Item>[];
   Item newItem;
@@ -92,20 +91,25 @@ class Todo {
   int remaining() => items.fold(0, (count, item) => count += item.done ? 0 : 1);
 }
 
+
+// Temporary workaround, because context needs to extend Map.
+@Injectable()
+class TodoHashMap extends DelegatingMap {
+  final Map _delegate;
+  TodoHashMap(Todo todo) : _delegate = new Map() {
+    _delegate['todo'] = todo;
+  }
+  Map get delegate => _delegate;
+}
+
 main() {
   print(window.location.search);
-  var module = new Module()
-      ..bind(Todo)
-      ..bind(PlaybackHttpBackendConfig);
+  var module = new Module()..bind(PlaybackHttpBackendConfig)..bind(Todo);
 
   // If these is a query in the URL, use the server-backed
   // TodoController.  Otherwise, use the stored-data controller.
   var query = window.location.search;
-  if (query.contains('?')) {
-    module.bind(Server, toImplementation: HttpServer);
-  } else {
-    module.bind(Server, toImplementation: NoOpServer);
-  }
+  module.bind(Server, toImplementation: query.contains('?') ? HttpServer : NoOpServer);
 
   if (query == '?record') {
     print('Using recording HttpBackend');
@@ -119,5 +123,8 @@ main() {
     module.bind(HttpBackend, toImplementation: PlaybackHttpBackend);
   }
 
-  applicationFactory().addModule(module).run();
+  applicationFactory()
+      .rootContextType(TodoHashMap)
+      .addModule(module)
+      .run();
 }

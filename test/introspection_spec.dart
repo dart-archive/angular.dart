@@ -10,8 +10,8 @@ void main() {
     it('should retrieve ElementProbe', (TestBed _) {
       _.compile('<div ng-bind="true"></div>');
       ElementProbe probe = ngProbe(_.rootElement);
-      expect(probe.injector.appInjector).toBe(_.injector);
-      expect(ngInjector(_.rootElement).appInjector).toBe(_.injector);
+      expect(probe.injector.get(Injector)).toBe(_.injector);
+      expect(ngInjector(_.rootElement).get(Injector)).toBe(_.injector);
       expect(probe.directives[0] is NgBind).toBe(true);
       expect(ngDirectives(_.rootElement)[0] is NgBind).toBe(true);
       expect(probe.scope).toBe(_.rootScope);
@@ -78,7 +78,7 @@ void main() {
             });
           } else {
             it('should throw an exception', () {
-              expect(() => getTestability(elt)).toThrow(
+              expect(() => getTestability(elt)).toThrowWith(message:
                   "Could not find an ElementProbe for div.  This might happen "
                   "either because there is no Angular directive for that node OR "
                   "because your application is running with ElementProbes "

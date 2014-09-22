@@ -24,40 +24,46 @@ class ViewFactory implements Function {
   final List<dom.Node> templateNodes;
   final List<NodeLinkingInfo> nodeLinkingInfos;
   final Profiler _perf;
+  String _debugHtml;
 
   ViewFactory(templateNodes, this.elementBinders, this._perf) :
       nodeLinkingInfos = computeNodeLinkingInfos(templateNodes),
-      templateNodes = templateNodes;
+      templateNodes = templateNodes
+  {
+    if (traceEnabled) {
+      _debugHtml = templateNodes.map((dom.Node e) {
+        if (e is dom.Element) {
+          return (e as dom.Element).outerHtml;
+        } else if (e is dom.Comment) {
+          return '<!--${(e as dom.Comment).text}-->';
+        } else {
+          return e.text;
+        }
+      }).toList().join('');
+    }
+  }
 
   @deprecated
   BoundViewFactory bind(DirectiveInjector directiveInjector) =>
       new BoundViewFactory(this, directiveInjector);
 
-  static Key _EVENT_HANDLER_KEY = new Key(EventHandler);
-
   View call(Scope scope, DirectiveInjector directiveInjector,
             [List<dom.Node> nodes /* TODO: document fragment */]) {
+    var s = traceEnter1(View_create, _debugHtml);
     assert(scope != null);
     if (nodes == null) {
       nodes = cloneElements(templateNodes);
     }
-    var timerId;
-    try {
-      assert((timerId = _perf.startTimer('ng.view')) != false);
-      Animate animate = directiveInjector.getByKey(ANIMATE_KEY);
-      EventHandler eventHandler = directiveInjector.getByKey(EVENT_HANDLER_KEY);
-      var view = new View(nodes, scope, eventHandler);
-      _link(view, scope, nodes, eventHandler, animate, directiveInjector);
-      return view;
-    } finally {
-      assert(_perf.stopTimer(timerId) != false);
-    }
+    var view = new View(nodes, scope);
+    _link(view, scope, nodes, directiveInjector);
+    traceLeave(s);
+
+    return view;
   }
 
   void _bindTagged(TaggedElementBinder tagged, int elementBinderIndex,
                    DirectiveInjector rootInjector,
-                   List<DirectiveInjector> elementInjectors, View view, boundNode, Scope scope,
-                   EventHandler eventHandler, Animate animate) {
+                   List<DirectiveInjector> elementInjectors, View view, boundNode, Scope scope) {
     var binder = tagged.binder;
     DirectiveInjector parentInjector =
         tagged.parentBinderOffset == -1 ? rootInjector : elementInjectors[tagged.parentBinderOffset];
@@ -70,7 +76,7 @@ class ViewFactory implements Function {
       if (parentInjector != rootInjector && parentInjector.scope != null) {
         scope = parentInjector.scope;
       }
-      elementInjector = binder.bind(view, scope, parentInjector, boundNode, eventHandler, animate);
+      elementInjector = binder.bind(view, scope, parentInjector, boundNode);
     }
     // TODO(misko): Remove this after we remove controllers. No controllers -> 1to1 Scope:View.
     if (elementInjector != rootInjector && elementInjector.scope != null) {
@@ -82,13 +88,12 @@ class ViewFactory implements Function {
       for (var k = 0; k < tagged.textBinders.length; k++) {
         TaggedTextBinder taggedText = tagged.textBinders[k];
         var childNode = boundNode.childNodes[taggedText.offsetIndex];
-        taggedText.binder.bind(view, scope, elementInjector, childNode, eventHandler, animate);
+        taggedText.binder.bind(view, scope, elementInjector, childNode);
       }
     }
   }
 
-  View _link(View view, Scope scope, List<dom.Node> nodeList, EventHandler eventHandler,
-             Animate animate, DirectiveInjector rootInjector) {
+  View _link(View view, Scope scope, List<dom.Node> nodeList, DirectiveInjector rootInjector) {
     var elementInjectors = new List<DirectiveInjector>(elementBinders.length);
     var directiveDefsByName = {};
 
@@ -110,7 +115,7 @@ class ViewFactory implements Function {
         if (linkingInfo.containsNgBinding) {
           var tagged = elementBinders[elementBinderIndex];
           _bindTagged(tagged, elementBinderIndex, rootInjector,
-              elementInjectors, view, node, scope, eventHandler, animate);
+              elementInjectors, view, node, scope);
           elementBinderIndex++;
         }
 
@@ -119,7 +124,7 @@ class ViewFactory implements Function {
           for (int j = 0; j < elts.length; j++, elementBinderIndex++) {
             TaggedElementBinder tagged = elementBinders[elementBinderIndex];
             _bindTagged(tagged, elementBinderIndex, rootInjector, elementInjectors,
-                        view, elts[j], scope, eventHandler, animate);
+                        view, elts[j], scope);
           }
         }
       } else {
@@ -127,7 +132,7 @@ class ViewFactory implements Function {
         assert(tagged.binder != null || tagged.isTopLevel);
         if (tagged.binder != null) {
           _bindTagged(tagged, elementBinderIndex, rootInjector,
-              elementInjectors, view, node, scope, eventHandler, animate);
+              elementInjectors, view, node, scope);
         }
         elementBinderIndex++;
       }
@@ -198,27 +203,34 @@ class ViewCache {
   final TemplateCache templateCache;
   final Compiler compiler;
   final dom.NodeTreeSanitizer treeSanitizer;
+  final dom.HtmlDocument parseDocument =
+      dom.document.implementation.createHtmlDocument('');
+  final ResourceUrlResolver resourceResolver;
 
-  ViewCache(this.http, this.templateCache, this.compiler, this.treeSanitizer, CacheRegister cacheRegister) {
-    cacheRegister.registerCache('ViewCache', viewFactoryCache);
+  ViewCache(this.http, this.templateCache, this.compiler, this.treeSanitizer, this.resourceResolver, CacheRegister cacheRegister) {
+    cacheRegister.registerCache('viewCache', viewFactoryCache);
   }
 
-  ViewFactory fromHtml(String html, DirectiveMap directives) {
+  ViewFactory fromHtml(String html, DirectiveMap directives, [Uri baseUri]) {
     ViewFactory viewFactory = viewFactoryCache.get(html);
+    html = resourceResolver.resolveHtml(html, baseUri);
+
+    var div = parseDocument.createElement('div');
+    div.setInnerHtml(html, treeSanitizer: treeSanitizer);
+
     if (viewFactory == null) {
-      var div = new dom.DivElement();
-      div.setInnerHtml(html, treeSanitizer: treeSanitizer);
       viewFactory = compiler(div.nodes, directives);
       viewFactoryCache.put(html, viewFactory);
     }
     return viewFactory;
   }
 
-  async.Future<ViewFactory> fromUrl(String url, DirectiveMap directives) {
+  async.Future<ViewFactory> fromUrl(String url, DirectiveMap directives, [Uri baseUri]) {
     ViewFactory viewFactory = viewFactoryCache.get(url);
     if (viewFactory == null) {
       return http.get(url, cache: templateCache).then((resp) {
-        var viewFactoryFromHttp = fromHtml(resp.responseText, directives);
+        var viewFactoryFromHttp = fromHtml(resourceResolver.resolveHtml(
+                                           resp.responseText, baseUri), directives);
         viewFactoryCache.put(url, viewFactoryFromHttp);
         return viewFactoryFromHttp;
       });

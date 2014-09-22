@@ -11,15 +11,9 @@
  *     import 'package:angular/angular.dart';
  *     import 'package:angular/application_factory_static.dart';
  *
- *     class MyModule extends Module {
- *       MyModule() {
- *         bind(HelloWorldController);
- *       }
- *     }
- *
  *     main() {
  *       staticApplicationFactory()
- *           .addModule(new MyModule())
+ *           .rootContextType(HelloWorldController)
  *           .run();
  *     }
  *
@@ -34,7 +28,7 @@ import 'package:angular/application.dart';
 import 'package:angular/core/registry.dart';
 import 'package:angular/core/parser/parser.dart';
 import 'package:angular/core/parser/static_closure_map.dart';
-import 'package:angular/core/parser/dynamic_parser.dart';
+import 'package:angular/core_dom/type_to_uri_mapper.dart';
 import 'package:angular/core/registry_static.dart';
 import 'package:angular/change_detection/change_detection.dart';
 import 'package:angular/change_detection/dirty_checking_change_detector_static.dart';
@@ -48,8 +42,10 @@ class _StaticApplication extends Application {
                Map<Type, Object> metadata,
                Map<String, FieldGetter> fieldGetters,
                Map<String, FieldSetter> fieldSetters,
-               Map<String, Symbol> symbols) {
+               Map<String, Symbol> symbols,
+               TypeToUriMapper uriMapper) {
     ngModule
+        ..bind(TypeToUriMapper, toValue: uriMapper)
         ..bind(MetadataExtractor, toValue: new StaticMetadataExtractor(metadata))
         ..bind(FieldGetterFactory, toValue: new StaticFieldGetterFactory(fieldGetters))
         ..bind(ClosureMap, toValue: new StaticClosureMap(fieldGetters, fieldSetters, symbols));
@@ -67,7 +63,7 @@ class _StaticApplication extends Application {
  *
  *     main() {
  *       applicationFactory()
- *       .addModule(new Module()..bind(HelloWorld))
+ *       .rootContextType(HelloWorld)
  *       .run();
  *       }
  *
@@ -79,14 +75,29 @@ class _StaticApplication extends Application {
  *           generated_static_expressions.getters,
  *           generated_static_expressions.setters,
  *           generated_static_expressions.symbols)
- *         .addModule(new Module()..bind(HelloWorldController))
+ *         .rootContextType(HelloWorld)
  *         .run();
  *
  */
+
+class _NullUriMapper extends TypeToUriMapper {
+  Uri uriForType(Type type) {
+    throw "You did not pass in a TypeToUriMapper to your StaticApplicationFactory."
+    "(This would have been automatic if you used Dart transformers.) You must pass "
+    "in a valid TypeTpUriMapper when constructing your Static Application";
+  }
+}
 Application staticApplicationFactory(
     Map<Type, Object> metadata,
     Map<String, FieldGetter> fieldGetters,
     Map<String, FieldSetter> fieldSetters,
-    Map<String, Symbol> symbols) {
-  return new _StaticApplication(metadata, fieldGetters, fieldSetters, symbols);
+    Map<String, Symbol> symbols,
+    [TypeToUriMapper uriMapper]) {
+  // TODO(chirayu): uriMapper is optional for backwards compatibility.  Make it
+  // a required parameter by the next release.
+  if (uriMapper == null) {
+    uriMapper = new _NullUriMapper();
+  }
+  return new _StaticApplication(metadata, fieldGetters, fieldSetters,
+      symbols, uriMapper);
 }

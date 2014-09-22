@@ -225,11 +225,11 @@ main() {
     it('should throws exception for invalid exponent', () {
       expect(() {
         lex("0.5E-");
-      }).toThrow('Lexer Error: Invalid exponent at column 4 in expression [0.5E-]');
+      }).toThrowWith(message: 'Lexer Error: Invalid exponent at column 4 in expression [0.5E-]');
 
       expect(() {
         lex("0.5E-A");
-      }).toThrow('Lexer Error: Invalid exponent at column 4 in expression [0.5E-A]');
+      }).toThrowWith(message: 'Lexer Error: Invalid exponent at column 4 in expression [0.5E-A]');
     });
 
     it('should tokenize number starting with a dot', () {
@@ -240,7 +240,7 @@ main() {
     it('should throw error on invalid unicode', () {
       expect(() {
         lex("'\\u1''bla'");
-      }).toThrow("Lexer Error: Invalid unicode escape [\\u1''b] at column 2 in expression ['\\u1''bla']");
+      }).toThrowWith(message: "Lexer Error: Invalid unicode escape [\\u1''b] at column 2 in expression ['\\u1''bla']");
     });
   });
 }

@@ -262,7 +262,7 @@ void main() {
         expect(logger).toEqual(['hello', 'hello2', 'bye']);
       });
 
-      it('should reuse handlers', () {
+      it('should not reuse handlers', () {
         var user1 = {'first': 'misko', 'last': 'hevery'};
         var user2 = {'first': 'misko', 'last': 'Hevery'};
 
@@ -293,7 +293,7 @@ void main() {
         watchLast.remove();
         expect(watchGrp.fieldCost).toEqual(0);
 
-        expect(() => watch.remove()).toThrow('Already deleted!');
+        expect(() => watch.remove()).toThrowWith(message: 'Already deleted!');
       });
 
       it('should eval pure FunctionApply', () {
@@ -770,12 +770,12 @@ void main() {
         );
         var watch = watchGrp.watch(ast, (v, p) => logger(v));
 
-        expect(watchGrp.detectChanges()).not.toBe(null);
+        expect(watchGrp.detectChanges()).not.toBe(0);
         expect(logger).toEqual([-2]);
         logger.clear();
 
         context['a'] = 2;
-        expect(watchGrp.detectChanges()).not.toBe(null);
+        expect(watchGrp.detectChanges()).not.toBe(0);
         expect(logger).toEqual([-3]);
       });
     });

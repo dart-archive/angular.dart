@@ -3,6 +3,7 @@ library directive_injector_spec;
 import '../_specs.dart';
 import 'package:angular/core_dom/directive_injector.dart';
 import 'package:angular/core_dom/static_keys.dart';
+import 'dart:html' as dom;
 
 void main() {
   describe('DirectiveInjector', () {
@@ -15,12 +16,14 @@ void main() {
     describe('base', () {
       DirectiveInjector injector;
       Scope scope;
+      View view;
       Animate animate;
 
-      addDirective(Type type, [Visibility visibility]) {
+      addDirective(Type type, [Visibility visibility, DirectiveInjector targetInjector]) {
+        if (targetInjector == null) targetInjector = injector;
         if (visibility == null) visibility = Visibility.LOCAL;
         var reflector = Module.DEFAULT_REFLECTOR;
-        injector.bindByKey(
+        targetInjector.bindByKey(
             new Key(type),
             reflector.factoryFor(type),
             reflector.parameterKeysFor(type),
@@ -30,15 +33,16 @@ void main() {
       beforeEach((Scope _scope, Animate _animate) {
         scope = _scope;
         animate = _animate;
-        injector = new DirectiveInjector(null, appInjector, div, new NodeAttrs(div), eventHandler, scope, animate);
+        view = new View([], scope);
+        injector = new DirectiveInjector(null, appInjector, div, new NodeAttrs(div), eventHandler,
+            scope, animate, view);
       });
 
       it('should return basic types', () {
-        expect(injector.appInjector).toBe(appInjector);
         expect(injector.scope).toBe(scope);
         expect(injector.get(Injector)).toBe(appInjector);
-        expect(injector.get(DirectiveInjector)).toBe(injector);
         expect(injector.get(Scope)).toBe(scope);
+        expect((injector.get(View))).toBe(view);
         expect(injector.get(Node)).toBe(div);
         expect(injector.get(Element)).toBe(div);
         expect((injector.get(NodeAttrs) as NodeAttrs).element).toBe(div);
@@ -50,7 +54,8 @@ void main() {
       it('should support get from parent methods', () {
         var newDiv = new DivElement();
         var childInjector = new DirectiveInjector(
-            injector, appInjector, newDiv, new NodeAttrs(newDiv), eventHandler, scope, animate);
+            injector, appInjector, newDiv, new NodeAttrs(newDiv), eventHandler,
+            scope, animate, view);
 
         expect(childInjector.get(Node)).toBe(newDiv);
         expect(childInjector.getFromParent(Node)).toBe(div);
@@ -69,11 +74,97 @@ void main() {
         addDirective(_Type3);
         addDirective(_Type4);
         expect(() => addDirective(_TypeA))
-            .toThrow('Maximum number of directives per element reached.');
+            .toThrowWith(message: 'Maximum number of directives per element reached.');
         var root = injector.get(_Root);
         expect((injector.get(_Type9) as _Type9).type8.type7.type6.type5.type4.type3.type2.type1.type0.root)
             .toBe(root);
-        expect(() => injector.get(_TypeA)).toThrow('No provider found for _TypeA');
+        expect(() => injector.get(_TypeA)).toThrowWith(message: 'No provider found for _TypeA');
+      });
+
+      describe("returning SourceLightDom", () {
+        it('should return the light dom of the closest host element', () {
+          final lightDom = new LightDom(null, null);
+
+          final componentInjector = new ComponentDirectiveInjector(
+              injector, null, null, null, null, null, lightDom, null);
+          final childInjector = new DirectiveInjector(componentInjector, null, null, null, null, null, null, null);
+          final grandChildInjector = new DirectiveInjector(childInjector, null, null, null, null, null,null, null);
+
+          expect(grandChildInjector.getByKey(SOURCE_LIGHT_DOM_KEY)).toBe(lightDom);
+        });
+
+        it('should return null otherwise', () {
+          expect(injector.getByKey(SOURCE_LIGHT_DOM_KEY)).toBe(null);
+        });
+      });
+
+      describe("returning DestinationLightDom", () {
+        it('should return the light dom of the parent injector', () {
+          final lightDom = new LightDom(null, null);
+          injector.lightDom = lightDom;
+
+          final childInjector = new DirectiveInjector(injector, null, null, null, null, null, null, null);
+
+          expect(childInjector.getByKey(DESTINATION_LIGHT_DOM_KEY)).toBe(lightDom);
+        });
+      });
+
+      describe("returning ShadowBoundary", () {
+        it('should return the shadow bounary of the injector', () {
+          final root = new dom.DivElement().createShadowRoot();
+          final boundary = new ShadowRootBoundary(root);
+          final childInjector = new DirectiveInjector(injector, null, null, null, null, null,
+              null, null, boundary);
+
+          expect(childInjector.getByKey(SHADOW_BOUNDARY_KEY)).toBe(boundary);
+        });
+
+        it('should return the shadow bounary of the parent injector', () {
+          final root = new dom.DivElement().createShadowRoot();
+          final boundary = new ShadowRootBoundary(root);
+          final parentInjector = new DirectiveInjector(injector, null, null, null, null, null,
+              null, null, boundary);
+          final childInjector = new DirectiveInjector(parentInjector, null, null, null, null, null,
+              null, null, null);
+
+          expect(childInjector.getByKey(SHADOW_BOUNDARY_KEY)).toBe(boundary);
+        });
+
+        it('should throw we cannot find a shadow boundary', () {
+          final childInjector = new DirectiveInjector(injector, null, null, null, null, null,
+              null, null, null);
+
+          expect(() => childInjector.getByKey(SHADOW_BOUNDARY_KEY)).toThrow("No provider found");
+        });
+      });
+
+      describe('error handling', () {
+        it('should throw circular dependency error', () {
+          addDirective(_TypeC0);
+          addDirective(_TypeC1, Visibility.CHILDREN);
+          addDirective(_TypeC2, Visibility.CHILDREN);
+          expect(() => injector.get(_TypeC0)).toThrowWith(
+              where: (e) {
+                expect(e is CircularDependencyError).toBeTrue();
+              },
+              message: 'Cannot resolve a circular dependency! '
+                       '(resolving _TypeC0 -> _TypeC1 -> _TypeC2 -> _TypeC1)');
+        });
+
+        it('should throw circular dependency error accross injectors', () {
+          var childInjector =
+            new DirectiveInjector(injector, appInjector, null, null, null, null, null);
+
+          addDirective(_TypeC0, Visibility.LOCAL, childInjector);
+          addDirective(_TypeC1, Visibility.CHILDREN);
+          addDirective(_TypeC2, Visibility.CHILDREN);
+          expect(() => childInjector.get(_TypeC0)).toThrowWith(
+              where: (e) {
+                expect(e is CircularDependencyError).toBeTrue();
+              },
+              message: 'Cannot resolve a circular dependency! '
+                       '(resolving _TypeC0 -> _TypeC1 -> _TypeC2 -> _TypeC1)');
+        });
       });
 
       describe('Visibility', () {
@@ -81,14 +172,14 @@ void main() {
         DirectiveInjector leafInjector;
 
         beforeEach(() {
-          childInjector = new DirectiveInjector(injector, appInjector, span, null, null, null, null);
-          leafInjector = new DirectiveInjector(childInjector, appInjector, span, null, null, null, null);
+          childInjector = new DirectiveInjector(injector, appInjector, span, null, null, null, null, null);
+          leafInjector = new DirectiveInjector(childInjector, appInjector, span, null, null, null, null, null);
         });
 
         it('should not allow reseting visibility', () {
           addDirective(_Type0, Visibility.LOCAL);
-          expect(() => addDirective(_Type0, Visibility.DIRECT_CHILD)).toThrow(
-              'Can not set Visibility: DIRECT_CHILD on _Type0, it alread has Visibility: LOCAL');
+          expect(() => addDirective(_Type0, Visibility.DIRECT_CHILD)).toThrowWith(
+              message: 'Can not set Visibility: DIRECT_CHILD on _Type0, it alread has Visibility: LOCAL');
         });
 
         it('should allow child injector to see types declared at parent injector', () {
@@ -130,3 +221,6 @@ class _Type8{ final _Type7 type7; _Type8(this.type7); }
 class _Type9{ final _Type8 type8; _Type9(this.type8); }
 class _TypeA{ final _Type9 type9; _TypeA(this.type9); }
 
+class _TypeC0 {final _TypeC1 t; _TypeC0(this.t);}
+class _TypeC1 {final _TypeC2 t; _TypeC1(this.t);}
+class _TypeC2 {final _TypeC1 t; _TypeC2(this.t);}

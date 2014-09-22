@@ -2,7 +2,7 @@ part of angular.core.dom_internal;
 
 List<dom.Node> cloneElements(List<dom.Node> elements) {
   int length = elements.length;
-  var clones = new List<dom.Node>(length);
+  var clones = new List(length);
   for(var i=0; i < length; i++) {
     clones[i] = elements[i].clone(true);
   }
@@ -43,23 +43,4 @@ class DirectiveRef {
            'ast: ${valueAST == null ? 'null' : '$valueAST'}, '
            'type: $type }';
   }
-}
-
-/**
- * Creates a child injector that allows loading new directives, formatters and
- * services from the provided modules.
- */
-Injector forceNewDirectivesAndFormatters(Injector injector, DirectiveInjector dirInjector,
-                                         List<Module> modules) {
-  modules.add(new Module()
-      ..bind(Scope, toFactory: (Injector injector) {
-          var scope = injector.parent.getByKey(SCOPE_KEY);
-          return scope.createChild(new PrototypeMap(scope.context));
-        }, inject: [INJECTOR_KEY])
-      ..bind(DirectiveMap)
-      ..bind(FormatterMap)
-      ..bind(DirectiveInjector,
-              toFactory: () => new DefaultDirectiveInjector.newAppInjector(dirInjector, injector)));
-
-  return new ModuleInjector(modules, injector);
 }

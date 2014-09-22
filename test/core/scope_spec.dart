@@ -874,8 +874,8 @@ void main() {
 
       it(r'should properly reset phase on exception', (RootScope rootScope) {
         var error = 'MyError';
-        expect(() => rootScope.apply(() { throw error; })).toThrow(error);
-        expect(() => rootScope.apply(() { throw error; })).toThrow(error);
+        expect(() => rootScope.apply(() { throw error; })).toThrowWith(message: error);
+        expect(() => rootScope.apply(() { throw error; })).toThrowWith(message: error);
       });
     });
 
@@ -963,7 +963,7 @@ void main() {
 
           retValue = 2;
           expect(rootScope.flush).
-          toThrow('Observer reaction functions should not change model. \n'
+          toThrowWith(message: 'Observer reaction functions should not change model. \n'
           'These watch changes were detected: logger("watch"): 2 <= 1\n'
           'These observe changes were detected: ');
         });
@@ -1155,7 +1155,7 @@ void main() {
         rootScope.watch('name', (a, b) {
           expect(() {
             rootScope.digest();
-          }).toThrow(r'digest already in progress');
+          }).toThrowWith(message: 'digest already in progress');
           callCount++;
         });
         rootScope.context['name'] = 'a';
@@ -1218,7 +1218,7 @@ void main() {
 
         expect(() {
           rootScope.digest();
-        }).toThrow('Model did not stabilize in 10 digests. '
+        }).toThrowWith(message: 'Model did not stabilize in 10 digests. '
                    'Last 3 iterations:\n'
                    'a: 7 <= 6, b: 7 <= 6\n'
                    'a: 8 <= 7, b: 8 <= 7\n'
@@ -1232,7 +1232,7 @@ void main() {
 
         expect(() {
           rootScope.digest();
-        }).toThrow('Model did not stabilize in 10 digests. '
+        }).toThrowWith(message: 'Model did not stabilize in 10 digests. '
         'Last 3 iterations:\n'
         'async:1\n'
         'async:1\n'
@@ -1558,7 +1558,7 @@ void main() {
         module.bind(ExceptionHandler, toImplementation: LoggingExceptionHandler);
       });
 
-      it(r'should run writes before reads', (RootScope rootScope, Logger logger, ExceptionHandler e) {
+      it('should run writes before reads', (RootScope rootScope, Logger logger, ExceptionHandler e) {
         LoggingExceptionHandler exceptionHandler = e as LoggingExceptionHandler;
         rootScope.domWrite(() {
           logger('write1');
@@ -1578,6 +1578,40 @@ void main() {
         expect(exceptionHandler.errors.length).toEqual(2);
         expect(exceptionHandler.errors[0].error).toEqual('write1');
         expect(exceptionHandler.errors[1].error).toEqual('read1');
+      });
+
+      it("should run writes of child scopes first", (RootScope rootScope, Logger logger) {
+        final childScope = rootScope.createChild({});
+        childScope.domWrite(() {
+          logger("child1");
+        });
+        rootScope.domWrite(() {
+          logger("root");
+        });
+        childScope.domWrite(() {
+          logger("child2");
+        });
+
+        rootScope.flush();
+
+        expect(logger).toEqual(['child1', 'child2', 'root']);
+      });
+
+      it("should run reads of child scopes first", (RootScope rootScope, Logger logger) {
+        final childScope = rootScope.createChild({});
+        childScope.domRead(() {
+          logger("child1");
+        });
+        rootScope.domRead(() {
+          logger("root");
+        });
+        childScope.domRead(() {
+          logger("child2");
+        });
+
+        rootScope.flush();
+
+        expect(logger).toEqual(['child1', 'child2', 'root']);
       });
     });
 

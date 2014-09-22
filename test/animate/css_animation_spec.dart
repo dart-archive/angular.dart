@@ -10,7 +10,7 @@ main() {
     afterEach(() => _.rootElements.forEach((e) => e.remove()));
     
     it('should correctly respond to an animation lifecycle', async(() {
-      _.compile("<style>.event { transition: all 500ms; }</style>"
+      _.compile("<style>.event { transition: all 500ms; -webkit-transition: all 500ms; }</style>"
           +"<div class='always remove-start remove-end'></div>");
       
       _.rootElements.forEach((e) => document.body.append(e));
@@ -66,7 +66,7 @@ main() {
     }));
     
     it('should swap removeAtEnd class if initial style is display none', async(() {
-      _.compile("<style>.event { transition: all 500ms; display: none; }</style>"
+      _.compile("<style>.event { transition: all 500ms; -webkit-transition: all 500ms; display: none; }</style>"
           "<div class='remove-at-end'></div>");
       _.rootElements.forEach((e) => document.body.append(e));
       var element = _.rootElements[1];
@@ -88,7 +88,7 @@ main() {
     }));
     
     it('should add classes at end', async(() {
-      _.compile("<style>.event { transition: all 500ms; }</style><div></div>");
+      _.compile("<style>.event { transition: all 500ms; -webkit-transition: all 500ms; }</style><div></div>");
       _.rootElements.forEach((e) => document.body.append(e));
       var element = _.rootElements[1];
 
@@ -107,7 +107,7 @@ main() {
     }));
 
     it('should remove the cssClassToRemove', async(() {
-      _.compile("<style>.event { transition: all 500ms; }</style>"
+      _.compile("<style>.event { transition: all 500ms; -webkit-transition: all 500ms; }</style>"
           +"<div class=\"remove-end\"></div>");
       _.rootElements.forEach((e) => document.body.append(e));
       var element = _.rootElements[1];
@@ -123,7 +123,7 @@ main() {
     }));
     
     it('should clean up event classes when canceled after read', async(() {
-      _.compile("<style>.event { transition: all 500ms; }</style><div></div>");
+      _.compile("<style>.event { transition: all 500ms; -webkit-transition: all 500ms; }</style><div></div>");
       _.rootElements.forEach((e) => document.body.append(e));
       var element = _.rootElements[1];
       var animation = new CssAnimation(element, "event", "event-active",
@@ -137,7 +137,7 @@ main() {
     }));
     
     it('should clean up event classes when canceled after update', async(() {
-      _.compile("<style>.event { transition: all 500ms; }</style><div></div>");
+      _.compile("<style>.event { transition: all 500ms; -webkit-transition: all 500ms; }</style><div></div>");
       _.rootElements.forEach((e) => document.body.append(e));
       var element = _.rootElements[1];
 

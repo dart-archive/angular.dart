@@ -16,6 +16,8 @@ import 'package:angular/change_detection/change_detection.dart';
 import 'package:angular/change_detection/dirty_checking_change_detector_dynamic.dart';
 import 'package:angular/core/registry_dynamic.dart';
 import 'package:angular/core/parser/dynamic_closure_map.dart';
+import 'package:angular/core_dom/type_to_uri_mapper.dart';
+import 'package:angular/core_dom/type_to_uri_mapper_dynamic.dart';
 import 'dart:html';
 
 /**
@@ -40,8 +42,9 @@ import 'dart:html';
     'angular.routing',
     'angular.core.annotation_src',
     'angular.core.parser.Parser',
-    'angular.core.parser.dynamic_parser',
+    'angular.core.parser',
     'angular.core.parser.lexer',
+    'angular.core_dom.type_to_uri_mapper_dynamic',
     'angular.core_dynamic.DynamicMetadataExtractor',
     'perf_api',
     List,
@@ -50,7 +53,6 @@ import 'dart:html';
 metaTargets: const [
     Injectable,
     Decorator,
-    Controller,
     Component,
     Formatter
 ])
@@ -59,6 +61,7 @@ import 'dart:mirrors' show MirrorsUsed;
 class _DynamicApplication extends Application {
   _DynamicApplication() {
     ngModule
+        ..bind(TypeToUriMapper, toImplementation: DynamicTypeToUriMapper)
         ..bind(MetadataExtractor, toImplementation: DynamicMetadataExtractor)
         ..bind(FieldGetterFactory, toImplementation: DynamicFieldGetterFactory)
         ..bind(ClosureMap, toImplementation: DynamicClosureMap);

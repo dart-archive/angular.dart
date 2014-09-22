@@ -2,19 +2,64 @@
 
 set -e -o pipefail
 
-sh -e /etc/init.d/xvfb start
+# Fail fasts.
 
-DARTIUM_ZIP=http://storage.googleapis.com/dart-archive/channels/$CHANNEL/release/latest/dartium/dartium-linux-x64-release.zip
-FF_TAR=http://ftp.mozilla.org/pub/mozilla.org/firefox/releases/$FIREFOX_VERSION/linux-x86_64/en-US/firefox-$FIREFOX_VERSION.tar.bz2
-CHROME_DEB=https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+git merge-base --is-ancestor 44577768e6bd4ac649703f6172c2490bce4f9132 HEAD && \
+  G3V1X_LINEAGE=1 || G3V1X_LINEAGE=0
 
-shopt -s nocasematch
+if [[ "$USE_G3" == "YES" && "$G3V1X_LINEAGE" == "1" ]]; then
+  exec > >(tee SKIP_TRAVIS_TESTS)
+  echo '==================================================================='
+  echo '== SKIPPING script: The current SHA is already a descendent of   =='
+  echo '== g3v1x making USE_G3 redundant.                                =='
+  echo '==================================================================='
+  exit 0
+fi
 
-if [[ $BROWSERS =~ "dartium" ]]; then
-  echo "Installing Dartium from $DARTIUM_ZIP"
-  curl -L $DARTIUM_ZIP > dartium.zip
-  unzip dartium.zip > /dev/null
-  rm -rf dartium
-  rm dartium.zip
+AVAILABLE_DART_VERSION=$(curl "https://storage.googleapis.com/dart-archive/channels/$CHANNEL/release/latest/VERSION" | python -c \
+    'import sys, json; print(json.loads(sys.stdin.read())["version"])')
+
+echo Fetch Dart channel: $CHANNEL
+
+SVN_REVISION=latest
+# TODO(chirayu): Remove this once issue 20896 is fixed.
+# Dart 1.7.0-dev.1.0 and 1.7.0-dev.2.0 are both broken so use version
+# 1.7.0-dev.0.1 instead.
+if [[ "$AVAILABLE_DART_VERSION" == "1.7.0-dev.2.0" ]]; then
+  SVN_REVISION=39661  # Use version 1.7.0-dev.0.1
+fi
+
+URL_PREFIX=https://storage.googleapis.com/dart-archive/channels/$CHANNEL/release/$SVN_REVISION
+DART_SDK_URL=$URL_PREFIX/sdk/dartsdk-linux-x64-release.zip
+if [[ "${BROWSERS,,}" =~ "dartium" ]]; then
+  DARTIUM_URL=$URL_PREFIX/dartium/dartium-linux-x64-release.zip
+fi
+
+parallel_get() {(
+  _download_and_unzip() {
+    # TODO(chirayu):  Hack to run npm in parallel.  Better to refactor and run
+    # both npm install and pub install in parallel.  Both must be run AFTER any
+    # rebasing onto g3v1x.  Also "pub install" can only happen after the Dart
+    # SDK is unzipped and the path has been updated.
+    if [[ "$1" == "npm" ]]; then
+      npm install
+      return
+    fi
+
+    ZIPFILE=${1/*\//}
+    curl -O -L $1 && unzip -q $ZIPFILE && rm $ZIPFILE
+  }
+  export -f _download_and_unzip
+
+  echo "$@" | xargs -d ' ' -n 1 -P 2 -I URL bash -c '_download_and_unzip URL'
+)}
+
+parallel_get npm $DART_SDK_URL $DARTIUM_URL
+
+echo Fetched new dart version $(<dart-sdk/version)
+
+if [[ -n $DARTIUM_URL ]]; then
   mv dartium-* chromium
 fi
+
+sh -e /etc/init.d/xvfb start

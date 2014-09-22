@@ -1,5 +1,6 @@
 part of angular.core.dom_internal;
 
+
 class TemplateElementBinder extends ElementBinder {
   final DirectiveRef template;
   ViewFactory templateViewFactory;
@@ -14,10 +15,10 @@ class TemplateElementBinder extends ElementBinder {
     return _directiveCache = [template];
   }
 
-  TemplateElementBinder(perf, expando, parser, config,
+  TemplateElementBinder(perf, expando, parser, config, appInjector,
                         this.template, this.templateBinder,
                         onEvents, bindAttrs, childMode)
-      : super(perf, expando, parser, config,
+      : super(perf, expando, parser, config, appInjector,
           null, null, onEvents, bindAttrs, childMode);
 
   String toString() => "[TemplateElementBinder template:$template]";
@@ -33,6 +34,8 @@ class ElementBinder {
   final Expando _expando;
   final Parser _parser;
   final CompilerConfig _config;
+  final Injector _appInjector;
+  Animate _animate;
 
   final Map onEvents;
   final Map bindAttrs;
@@ -46,13 +49,29 @@ class ElementBinder {
   final String childMode;
 
   ElementBinder(this._perf, this._expando, this._parser, this._config,
-                this.componentData, this.decorators,
-                this.onEvents, this.bindAttrs, this.childMode);
+                this._appInjector, this.componentData, this.decorators,
+                this.onEvents, this.bindAttrs, this.childMode) {
+    _animate = _appInjector.getByKey(ANIMATE_KEY);
+  }
 
   final bool hasTemplate = false;
 
   bool get shouldCompileChildren =>
       childMode == Directive.COMPILE_CHILDREN;
+
+  List<String> _bindAssignablePropsOnCache;
+  List<String> get _bindAssignablePropsOn {
+    if (_bindAssignablePropsOnCache != null) return _bindAssignablePropsOnCache;
+    _bindAssignablePropsOnCache = [];
+    _usableDirectiveRefs.forEach((DirectiveRef ref) {
+      var eventNames = ref.annotation.updateBoundElementPropertiesOnEvents;
+      if (eventNames != null) {
+        _bindAssignablePropsOnCache.addAll(eventNames);
+      }
+    });
+    if (_bindAssignablePropsOnCache.isEmpty) _bindAssignablePropsOnCache.add('change');
+    return _bindAssignablePropsOnCache;
+  }
 
   var _directiveCache;
   List<DirectiveRef> get _usableDirectiveRefs {
@@ -186,39 +205,44 @@ class ElementBinder {
   }
 
   void _link(DirectiveInjector directiveInjector, Scope scope, nodeAttrs) {
+    var s;
     for(var i = 0; i < _usableDirectiveRefs.length; i++) {
       DirectiveRef ref = _usableDirectiveRefs[i];
       var key = ref.typeKey;
+      var directiveName = traceEnabled ? ref.typeKey.toString() : null;
       if (identical(key, TEXT_MUSTACHE_KEY) || identical(key, ATTR_MUSTACHE_KEY)) continue;
-      var directive = directiveInjector.getByKey(ref.typeKey);
 
-      if (ref.annotation is Controller) {
-        scope.parentScope.context[(ref.annotation as Controller).publishAs] = directive;
-      }
+      s = traceEnter1(Directive_create, directiveName);
+      var directive;
+      try {
+        directive = directiveInjector.getByKey(ref.typeKey);
 
-      var tasks = directive is AttachAware ? new _TaskList(() {
-        if (scope.isAttached) directive.attach();
-      }) : null;
+        var tasks = directive is AttachAware ? new _TaskList(() {
+          if (scope.isAttached) directive.attach();
+        }) : null;
 
-      if (ref.mappings.isNotEmpty) {
-        if (nodeAttrs == null) nodeAttrs = new _AnchorAttrs(ref);
-        _createAttrMappings(directive, scope, ref.mappings, nodeAttrs, tasks);
-      }
+        if (ref.mappings.isNotEmpty) {
+          if (nodeAttrs == null) nodeAttrs = new _AnchorAttrs(ref);
+          _createAttrMappings(directive, scope, ref.mappings, nodeAttrs, tasks);
+        }
 
-      if (directive is AttachAware) {
-        var taskId = (tasks != null) ? tasks.registerTask() : 0;
-        Watch watch;
-        watch = scope.watch('1', // Cheat a bit.
-            (_, __) {
-          watch.remove();
-          if (tasks != null) tasks.completeTask(taskId);
-        });
-      }
+        if (directive is AttachAware) {
+          var taskId = (tasks != null) ? tasks.registerTask() : 0;
+          Watch watch;
+          watch = scope.watch('"attach()"', // Cheat a bit.
+              (_, __) {
+            watch.remove();
+            if (tasks != null) tasks.completeTask(taskId);
+          });
+        }
 
-      if (tasks != null) tasks.doneRegistering();
+        if (tasks != null) tasks.doneRegistering();
 
-      if (directive is DetachAware) {
-        scope.on(ScopeEvent.DESTROY).listen((_) => directive.detach());
+        if (directive is DetachAware) {
+          scope.on(ScopeEvent.DESTROY).listen((_) => directive.detach());
+        }
+      } finally {
+        traceLeave(s);
       }
     }
   }
@@ -243,28 +267,26 @@ class ElementBinder {
 
   DirectiveInjector bind(View view, Scope scope,
                          DirectiveInjector parentInjector,
-                         dom.Node node, EventHandler eventHandler, Animate animate) {
+                         dom.Node node) {
     var nodeAttrs = node is dom.Element ? new NodeAttrs(node) : null;
 
     var directiveRefs = _usableDirectiveRefs;
     if (!hasDirectivesOrEvents) return parentInjector;
 
     DirectiveInjector nodeInjector;
+    var parentEventHandler = parentInjector == null ?
+        _appInjector.getByKey(EVENT_HANDLER_KEY) :
+        eventHandler(parentInjector);
     if (this is TemplateElementBinder) {
-      nodeInjector = new TemplateDirectiveInjector(parentInjector, parentInjector.appInjector,
-          node, nodeAttrs, eventHandler, scope, animate,
-          (this as TemplateElementBinder).templateViewFactory);
+      nodeInjector = new TemplateDirectiveInjector(parentInjector, _appInjector,
+          node, nodeAttrs, parentEventHandler, scope, _animate, (this as TemplateElementBinder).templateViewFactory, view);
     } else {
-      nodeInjector = new DirectiveInjector(parentInjector, parentInjector.appInjector,
-          node, nodeAttrs, eventHandler, scope, animate);
+      nodeInjector = new DirectiveInjector(parentInjector, _appInjector, node, nodeAttrs, parentEventHandler, scope, _animate, view);
     }
 
     for(var i = 0; i < directiveRefs.length; i++) {
       DirectiveRef ref = directiveRefs[i];
       Directive annotation = ref.annotation;
-      if (ref.annotation is Controller) {
-        scope = nodeInjector.scope = scope.createChild(new PrototypeMap(scope.context));
-      }
       _createDirectiveFactories(ref, nodeInjector, node, nodeAttrs);
       if (ref.annotation.module != null) {
         DirectiveBinderFn config = ref.annotation.module;
@@ -286,6 +308,7 @@ class ElementBinder {
     var jsNode;
     List bindAssignableProps = [];
     bindAttrs.forEach((String prop, AST ast) {
+      prop = camelCase(prop);
       if (jsNode == null) jsNode = new js.JsObject.fromBrowserObject(node);
       scope.watchAST(ast, (v, _) {
         jsNode[prop] = v;
@@ -297,16 +320,19 @@ class ElementBinder {
     });
 
     if (bindAssignableProps.isNotEmpty) {
-      node.addEventListener('change', (_) {
-        bindAssignableProps.forEach((propAndExp) {
-          propAndExp[1].assign(scope.context, jsNode[propAndExp[0]]);
-        });
-      });
+      // due to https://code.google.com/p/dart/issues/detail?id=17406
+      // we have to manually run the zone.
+      var zone = Zone.current;
+      _bindAssignablePropsOn.forEach((String eventName) =>
+	      node.addEventListener(eventName, (_) =>
+	        zone.run(() =>
+	          bindAssignableProps.forEach((propAndExp) =>
+	            propAndExp[1].assign(scope.context, jsNode[propAndExp[0]])))));
     }
 
     if (onEvents.isNotEmpty) {
       onEvents.forEach((event, value) {
-        view.registerEvent(EventHandler.attrNameToEventName(event));
+        parentEventHandler.register(EventHandler.attrNameToEventName(event));
       });
     }
     return nodeInjector;

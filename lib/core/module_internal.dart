@@ -11,6 +11,7 @@ import 'package:di/annotations.dart';
 import 'package:angular/core/parser/parser.dart';
 import 'package:angular/core/parser/lexer.dart';
 import 'package:angular/utils.dart';
+import 'package:angular/ng_tracing.dart';
 
 import 'package:angular/core/annotation_src.dart';
 
@@ -41,16 +42,15 @@ class CoreModule extends Module {
     bind(Interpolate);
     bind(RootScope);
     bind(Scope, toInstanceOf: RootScope);
-    bind(ClosureMap, toFactory: () => throw "Must provide dynamic/static ClosureMap.", inject: []);
+    bind(ClosureMap, toFactory: () => throw "Must provide dynamic/static ClosureMap.");
     bind(ScopeStats);
     bind(ScopeStatsEmitter);
     bind(ScopeStatsConfig);
     bind(Object, toValue: {}); // RootScope context
 
-    bind(Parser, toInstanceOf: DynamicParser);
-    bind(ParserBackend, toInstanceOf: DynamicParserBackend);
-    bind(DynamicParser);
-    bind(DynamicParserBackend);
+    bind(Parser);
+    bind(RuntimeParserBackend);
+    bind(ParserBackend, toInstanceOf: RuntimeParserBackend);
     bind(Lexer);
     bind(ASTParser);
   }

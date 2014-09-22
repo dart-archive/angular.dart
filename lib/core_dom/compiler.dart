@@ -1,5 +1,6 @@
 part of angular.core.dom_internal;
 
+
 @Injectable()
 class Compiler implements Function {
   final Profiler _perf;
@@ -8,6 +9,7 @@ class Compiler implements Function {
   Compiler(this._perf, this._expando);
 
   ViewFactory call(List<dom.Node> elements, DirectiveMap directives) {
+    var s = traceEnter(Compiler_compile);
     var timerId;
     assert((timerId = _perf.startTimer('ng.compile', _html(elements))) != false);
     final elementBinders = <TaggedElementBinder>[];
@@ -19,6 +21,7 @@ class Compiler implements Function {
         elements, _removeUnusedBinders(elementBinders), _perf);
 
     assert(_perf.stopTimer(timerId) != false);
+    traceLeave(s);
     return viewFactory;
   }
 
@@ -128,7 +131,7 @@ class Compiler implements Function {
           isTopLevel, directParentElementBinder);
     } while (domCursor.moveNext());
 
-     return elementBinders;
+    return elementBinders;
   }
 
   ViewFactory _compileTransclusion(
@@ -136,6 +139,7 @@ class Compiler implements Function {
       DirectiveRef directiveRef,
       ElementBinder transcludedElementBinder,
       DirectiveMap directives) {
+    var s = traceEnter(Compiler_template);
     var anchorName = directiveRef.annotation.selector +
         (directiveRef.value != null ? '=' + directiveRef.value : '');
 
@@ -146,7 +150,7 @@ class Compiler implements Function {
 
     var viewFactory = new ViewFactory(transcludeCursor.elements,
         _removeUnusedBinders(elementBinders), _perf);
-
+    traceLeave(s);
     return viewFactory;
   }
 

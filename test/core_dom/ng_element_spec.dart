@@ -2,6 +2,11 @@ library ng_element_spec;
 
 import '../_specs.dart';
 
+class _MockLightDom extends Mock implements DestinationLightDom {
+  // Prevent analyzer from complaining about missing method impl
+  noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
 void main() {
   describe('ngElement', () {
 
@@ -142,6 +147,21 @@ void main() {
 
       expect(element).toHaveAttribute('id', 'foo');
 
+    });
+  });
+
+  describe('light dom notification', () {
+    it('should notify light dom on dom write',
+        (RootScope scope, Animate animate) {
+
+      var element = e('<div></div>');
+      var lightDom = new _MockLightDom();
+      var ngElement = new NgElement(element, scope, animate, lightDom);
+
+      ngElement.setAttribute('id', 'foo');
+      scope.apply();
+
+      lightDom.getLogs(callsTo('redistribute')).verify(happenedOnce);
     });
   });
 }

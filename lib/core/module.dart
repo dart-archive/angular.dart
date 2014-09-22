@@ -13,10 +13,7 @@ export "package:angular/change_detection/watch_group.dart" show
     ReactionFn;
 
 export "package:angular/core/parser/parser.dart" show
-    Parser;
-
-export "package:angular/core/parser/dynamic_parser.dart" show
-    ClosureMap;
+    Parser, ClosureMap;
 
 export "package:angular/change_detection/change_detection.dart" show
     AvgStopwatch,
@@ -59,6 +56,8 @@ export "package:angular/core_dom/module_internal.dart" show
     RequestInterceptor,
     Response,
     ResponseError,
+    ResourceResolverConfig,
+    ResourceUrlResolver,
     UrlRewriter,
     TemplateCache,
     View,
@@ -76,6 +75,7 @@ export "package:angular/core/module_internal.dart" show
     PrototypeMap,
     RootScope,
     Scope,
+    ScopeAware,
     ScopeDigestTTL,
     ScopeEvent,
     ScopeStats,

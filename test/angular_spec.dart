@@ -3,7 +3,6 @@ library angular_spec;
 import 'dart:mirrors';
 
 import '_specs.dart';
-import 'package:angular/utils.dart';
 import 'package:angular/tools/symbol_inspector/symbol_inspector.dart';
 
 main() {
@@ -13,34 +12,6 @@ main() {
         dynamic v = 6;
         String s = v;
       }).toThrow();
-    });
-  });
-
-  describe('relaxFnApply', () {
-    it('should work with 6 arguments', () {
-      var sixArgs = [1, 1, 2, 3, 5, 8];
-      expect(relaxFnApply(() => "none", sixArgs)).toEqual("none");
-      expect(relaxFnApply((a) => a, sixArgs)).toEqual(1);
-      expect(relaxFnApply((a, b) => a + b, sixArgs)).toEqual(2);
-      expect(relaxFnApply((a, b, c) => a + b + c, sixArgs)).toEqual(4);
-      expect(relaxFnApply((a, b, c, d) => a + b + c + d, sixArgs)).toEqual(7);
-      expect(relaxFnApply((a, b, c, d, e) => a + b + c + d + e, sixArgs)).toEqual(12);
-    });
-
-    it('should work with 0 arguments', () {
-      var noArgs = [];
-      expect(relaxFnApply(() => "none", noArgs)).toEqual("none");
-      expect(relaxFnApply(([a]) => a, noArgs)).toEqual(null);
-      expect(relaxFnApply(([a, b]) => b, noArgs)).toEqual(null);
-      expect(relaxFnApply(([a, b, c]) => c, noArgs)).toEqual(null);
-      expect(relaxFnApply(([a, b, c, d]) => d, noArgs)).toEqual(null);
-      expect(relaxFnApply(([a, b, c, d, e]) => e, noArgs)).toEqual(null);
-    });
-
-    it('should fail with not enough arguments', () {
-      expect(() {
-        relaxFnApply((required, alsoRequired) => "happy", [1]);
-      }).toThrow('Unknown function type, expecting 0 to 5 args.');
     });
   });
 
@@ -66,6 +37,23 @@ main() {
           "angular.animate.AnimationFrame",
           "angular.animate.AnimationList",
           "angular.animate.LoopedAnimation"
+      ];
+      assertSymbolNamesAreOk(ALLOWED_NAMES, libraryInfo);
+
+    });
+    
+    it('should not export unknown symbols from touch', () {
+      LibraryInfo libraryInfo;
+      try {
+        libraryInfo = getSymbolsFromLibrary("angular.touch");
+      } on UnimplementedError catch (e) {
+        return; // Not implemented, quietly skip.
+      }
+
+      var ALLOWED_NAMES = [
+          "angular.touch.NgSwipeLeft",
+          "angular.touch.NgSwipeRight",
+          "angular.touch.TouchModule"
       ];
       assertSymbolNamesAreOk(ALLOWED_NAMES, libraryInfo);
 
@@ -99,7 +87,6 @@ main() {
         "angular.core.annotation.ShadowRootAware",
         "angular.core.annotation_src.AttachAware",
         "angular.core.annotation_src.Component",
-        "angular.core.annotation_src.Controller",
         "angular.core.annotation_src.Decorator",
         "angular.core.annotation_src.DetachAware",
         "angular.core.annotation_src.Directive",
@@ -140,6 +127,8 @@ main() {
         "angular.core.dom_internal.RequestErrorInterceptor",
         "angular.core.dom_internal.RequestInterceptor",
         "angular.core.dom_internal.Response",
+        "angular.core_dom.resource_url_resolver.ResourceResolverConfig",
+        "angular.core_dom.resource_url_resolver.ResourceUrlResolver",
         "angular.core.dom_internal.ResponseError",
         "angular.core.dom_internal.TemplateCache",
         "angular.core.dom_internal.UrlRewriter",
@@ -147,17 +136,20 @@ main() {
         "angular.core.dom_internal.ViewCache",
         "angular.core.dom_internal.ViewFactory",
         "angular.core.dom_internal.ViewPort",
+        "angular.core.parser.Parser",
+        "angular.core.parser.ClosureMap",
         "angular.core_internal.ExceptionHandler",
         "angular.core_internal.Interpolate",
         "angular.core_internal.RootScope",
         "angular.core_internal.Scope",
+        "angular.core_internal.ScopeAware",
         "angular.core_internal.ScopeDigestTTL",
         "angular.core_internal.ScopeEvent",
         "angular.core_internal.ScopeStats",
         "angular.core_internal.ScopeStatsConfig",
         "angular.core_internal.ScopeStatsEmitter",
         "angular.core_internal.VmTurnZone",
-        "angular.core.parser.dynamic_parser.ClosureMap",
+        "angular.core.parser.ClosureMap",
         "angular.core.parser.Parser",
         "angular.directive.AHref",
         "angular.directive.ContentEditable",
@@ -187,7 +179,6 @@ main() {
         "angular.directive.NgIf",
         "angular.directive.NgInclude",
         "angular.directive.NgModel",
-        "angular.directive.NgModelOptions",
         "angular.directive.NgModelColorValidator",
         "angular.directive.NgModelConverter",
         "angular.directive.NgModelEmailValidator",
@@ -196,6 +187,7 @@ main() {
         "angular.directive.NgModelMinLengthValidator",
         "angular.directive.NgModelMinNumberValidator",
         "angular.directive.NgModelNumberValidator",
+        "angular.directive.NgModelOptions",
         "angular.directive.NgModelPatternValidator",
         "angular.directive.NgModelRequiredValidator",
         "angular.directive.NgModelUrlValidator",
@@ -216,7 +208,7 @@ main() {
         "angular.directive.NgValidator",
         "angular.directive.NgValue",
         "angular.directive.OptionValue",
-        "angular.formatter_internal.FormatterModule",
+        "angular.formatter_internal.Arrayify",
         "angular.formatter_internal.Currency",
         "angular.formatter_internal.Date",
         "angular.formatter_internal.Filter",
@@ -224,7 +216,6 @@ main() {
         "angular.formatter_internal.Json",
         "angular.formatter_internal.LimitTo",
         "angular.formatter_internal.Lowercase",
-        "angular.formatter_internal.Arrayify",
         "angular.formatter_internal.Number",
         "angular.formatter_internal.OrderBy",
         "angular.formatter_internal.Stringify",
@@ -237,7 +228,6 @@ main() {
         "angular.introspection.ngScope",
         "angular.node_injector.DirectiveInjector",
         "angular.routing.NgBindRoute",
-        "angular.routing.ngRoute",
         "angular.routing.NgRouteCfg",
         "angular.routing.NgRoutingHelper",
         "angular.routing.NgRoutingUsePushState",
@@ -247,26 +237,36 @@ main() {
         "angular.routing.RouteProvider",
         "angular.routing.RouteViewFactory",
         "angular.routing.RoutingModule",
+        "angular.routing.ngRoute",
+        "angular.tracing.traceAsyncEnd",
+        "angular.tracing.traceAsyncStart",
+        "angular.tracing.traceCreateScope",
+        "angular.tracing.traceDetectWTF",
+        "angular.tracing.traceEnabled",
+        "angular.tracing.traceEnter",
+        "angular.tracing.traceEnter1",
+        "angular.tracing.traceLeave",
+        "angular.tracing.traceLeaveVal",
         "angular.watch_group.PrototypeMap",
         "angular.watch_group.ReactionFn",
         "angular.watch_group.Watch",
         "change_detection.AvgStopwatch",
         "change_detection.FieldGetterFactory",
-        "di.key.Key",
-        "di.key.key",
-        "di.injector.Injector",
-        "di.injector.ModuleInjector",
-        "di.module.Module",
-        "di.module.Binding",
-        "di.module.DEFAULT_VALUE",
-        "di.reflector.TypeReflector",
-        "di.errors.ResolvingError",
-        "di.errors.CircularDependencyError",
-        "di.errors.NoProviderError",
-        "di.errors.DynamicReflectorError",
-        "di.errors.NoGeneratedTypeFactoryError",
         "di.annotations.Injectable",
         "di.annotations.Injectables",
+        "di.errors.CircularDependencyError",
+        "di.errors.DynamicReflectorError",
+        "di.errors.NoGeneratedTypeFactoryError",
+        "di.errors.NoProviderError",
+        "di.errors.ResolvingError",
+        "di.injector.Injector",
+        "di.injector.ModuleInjector",
+        "di.key.Key",
+        "di.key.key",
+        "di.module.Binding",
+        "di.module.DEFAULT_VALUE",
+        "di.module.Module",
+        "di.reflector.TypeReflector",
         "route.client.Routable",
         "route.client.Route",
         "route.client.RouteEnterEvent",
@@ -276,14 +276,12 @@ main() {
         "route.client.RouteImpl",
         "route.client.RouteLeaveEvent",
         "route.client.RouteLeaveEventHandler",
-        "route.client.RoutePreLeaveEvent",
-        "route.client.RoutePreLeaveEventHandler",
         "route.client.RoutePreEnterEvent",
         "route.client.RoutePreEnterEventHandler",
         "route.client.RoutePreLeaveEvent",
         "route.client.RoutePreLeaveEventHandler",
-        "route.client.Router",
         "route.client.RouteStartEvent",
+        "route.client.Router",
         "url_matcher.UrlMatch",
         "url_matcher.UrlMatcher"
       ];

@@ -8,15 +8,9 @@
  *     import 'package:angular/angular.dart';
  *     import 'package:angular/application_factory.dart';
  *
- *     class MyModule extends Module {
- *       MyModule() {
- *         bind(HelloWorldController);
- *       }
- *     }
- *
  *     main() {
  *       applicationFactory()
- *           .addModule(new MyModule())
+ *           .rootContextType(HelloWorldController)
  *           .run();
  *     }
  *
@@ -68,6 +62,7 @@
 library angular.app;
 
 import 'dart:html' as dom;
+import 'dart:js' show context;
 
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:di/di.dart';
@@ -76,12 +71,12 @@ import 'package:angular/perf/module.dart';
 import 'package:angular/cache/module.dart';
 import 'package:angular/cache/js_cache_register.dart';
 import 'package:angular/core/module_internal.dart';
-import 'package:angular/core/registry.dart';
 import 'package:angular/core_dom/module_internal.dart';
 import 'package:angular/directive/module.dart';
 import 'package:angular/formatter/module_internal.dart';
 import 'package:angular/routing/module.dart';
 import 'package:angular/introspection.dart';
+import 'package:angular/ng_tracing.dart';
 
 import 'package:angular/core_dom/static_keys.dart';
 import 'package:angular/core_dom/directive_injector.dart';
@@ -150,6 +145,7 @@ abstract class Application {
   dom.Element selector(String selector) => element = _find(selector);
 
   Application(): element = _find('[ng-app]', dom.window.document.documentElement) {
+    traceDetectWTF(context);
     modules.add(ngModule);
     ngModule..bind(VmTurnZone, toValue: zone)
             ..bind(Application, toValue: this)
@@ -172,26 +168,31 @@ abstract class Application {
   }
 
   Injector run() {
-    publishToJavaScript();
-    return zone.run(() {
-      var rootElements = [element];
-      Injector injector = createInjector();
-      ExceptionHandler exceptionHandler = injector.getByKey(EXCEPTION_HANDLER_KEY);
-      // Publish cache register interface
-      injector.getByKey(JS_CACHE_REGISTER_KEY);
-      initializeDateFormatting(null, null).then((_) {
-        try {
-          Compiler compiler = injector.getByKey(COMPILER_KEY);
-          DirectiveMap directiveMap = injector.getByKey(DIRECTIVE_MAP_KEY);
-          RootScope rootScope = injector.getByKey(ROOT_SCOPE_KEY);
-          ViewFactory viewFactory = compiler(rootElements, directiveMap);
-          viewFactory(rootScope, injector.get(DirectiveInjector), rootElements);
-        } catch (e, s) {
-          exceptionHandler(e, s);
-        }
+    var scope = traceEnter(Application_bootstrap);
+    try {
+      publishToJavaScript();
+      return zone.run(() {
+        var rootElements = [element];
+        injector = createInjector();
+        ExceptionHandler exceptionHandler = injector.getByKey(EXCEPTION_HANDLER_KEY);
+        // Publish cache register interface
+        injector.getByKey(JS_CACHE_REGISTER_KEY);
+        initializeDateFormatting(null, null).then((_) {
+          try {
+            Compiler compiler = injector.getByKey(COMPILER_KEY);
+            DirectiveMap directiveMap = injector.getByKey(DIRECTIVE_MAP_KEY);
+            RootScope rootScope = injector.getByKey(ROOT_SCOPE_KEY);
+            ViewFactory viewFactory = compiler(rootElements, directiveMap);
+            viewFactory(rootScope, null, rootElements);
+          } catch (e, s) {
+            exceptionHandler(e, s);
+          }
+        });
+        return injector;
       });
-      return injector;
-    });
+    } finally {
+      traceLeave(scope);
+    }
   }
 
   /**

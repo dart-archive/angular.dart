@@ -60,33 +60,45 @@ class BFormatter {
   call(value) => value;
 }
 
+class _MockLightDom extends Mock implements DestinationLightDom {
+  // Prevent analyzer from complaining about missing method impl
+  noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
 
 main() {
   describe('View', () {
-    ViewPort viewPort;
     Element rootElement;
+
+    var expando = new Expando();
+    View a, b;
     var viewCache;
 
-    beforeEach(() {
+    ViewPort createViewPort({Injector injector, DestinationLightDom lightDom}) {
+      final scope = injector.get(Scope);
+      final view = new View([], scope);
+      final di = new DirectiveInjector(null, injector, null, null, null, null, null, view);
+      return new ViewPort(di, scope, rootElement.childNodes[0], injector.get(Animate), lightDom);
+    }
+
+    View createView(Injector injector, String html) {
+      final scope = injector.get(Scope);
+      final c = injector.get(Compiler);
+      return c(es(html), injector.get(DirectiveMap))(scope, null);
+    }
+
+    beforeEach((Injector injector, Profiler perf) {
       rootElement = e('<div></div>');
+      rootElement.innerHtml = '<!-- anchor -->';
+
+      a = createView(injector, "<span>A</span>a");
+      b = createView(injector, "<span>B</span>b");
     });
 
     describe('mutation', () {
-      var a, b;
+      ViewPort viewPort;
 
-      View createView(Injector injector, String html) {
-        final scope = injector.get(Scope);
-        final c = injector.get(Compiler);
-        return c(es(html), injector.get(DirectiveMap))(scope, injector.get(DirectiveInjector));
-      }
-
-      beforeEach((Injector injector, Profiler perf) {
-        rootElement.innerHtml = '<!-- anchor -->';
-        var scope = injector.get(Scope);
-        viewPort = new ViewPort(injector.get(DirectiveInjector), scope, rootElement.childNodes[0],
-          injector.get(Animate));
-        a = createView(injector, "<span>A</span>a");
-        b = createView(injector, "<span>B</span>b");
+      beforeEach((Injector injector) {
+        viewPort = createViewPort(injector: injector);
       });
 
 
@@ -203,7 +215,72 @@ main() {
           expect(rootElement).toHaveHtml('<!-- anchor --><span>B</span>b<span>A</span>a');
         });
       });
+
+
+      describe("light dom notification", () {
+        ViewPort viewPort;
+        _MockLightDom lightDom;
+        Scope scope;
+
+        beforeEach((Injector injector) {
+          lightDom = new _MockLightDom();
+
+          viewPort = createViewPort(injector: injector, lightDom: lightDom);
+        });
+
+        it('should notify light dom on insert', (RootScope scope) {
+          viewPort.insert(a);
+          scope.flush();
+
+          lightDom.getLogs(callsTo('redistribute')).verify(happenedOnce);
+        });
+
+        it('should notify light dom on remove', (RootScope scope) {
+          viewPort.insert(a);
+          scope.flush();
+          lightDom.clearLogs();
+
+          viewPort.remove(a);
+          scope.flush();
+
+          lightDom.getLogs(callsTo('redistribute')).verify(happenedOnce);
+        });
+
+        it('should notify light dom on move', (RootScope scope) {
+          viewPort.insert(a);
+          viewPort.insert(b, insertAfter: a);
+          scope.flush();
+          lightDom.clearLogs();
+
+          viewPort.move(a, moveAfter: b);
+          scope.flush();
+
+          lightDom.getLogs(callsTo('redistribute')).verify(happenedOnce);
+        });
+      });
     });
+
+    describe("nodes", () {
+      ViewPort viewPort;
+
+      beforeEach((Injector injector) {
+        viewPort = createViewPort(injector: injector);
+      });
+
+      it("should return all the nodes from all the views", (RootScope scope) {
+        viewPort.insert(a);
+        viewPort.insert(b, insertAfter: a);
+
+        scope.flush();
+
+        expect(viewPort.nodes).toHaveText("AaBb");
+      });
+
+      it("should return an empty list when no views", () {
+        expect(viewPort.nodes).toEqual([]);
+      });
+    });
+
 
     describe('deferred', () {
 
@@ -223,7 +300,7 @@ main() {
 
         Compiler compiler = rootInjector.get(Compiler);
         DirectiveMap directives = rootInjector.get(DirectiveMap);
-        compiler(es('<dir-a>{{\'a\' | formatterA}}</dir-a><dir-b></dir-b>'), directives)(rootScope, rootInjector.get(DirectiveInjector));
+        compiler(es('<dir-a>{{\'a\' | formatterA}}</dir-a><dir-b></dir-b>'), directives)(rootScope, null);
         rootScope.apply();
 
         expect(log.log, equals(['AFormatter', 'ADirective']));
@@ -233,12 +310,12 @@ main() {
           ..bind(BFormatter)
           ..bind(BDirective);
 
-        var childInjector = forceNewDirectivesAndFormatters(rootInjector, null, [childModule]);
+        var childInjector = NgView.createChildInjectorWithReload(rootInjector, [childModule]);
 
         DirectiveMap newDirectives = childInjector.get(DirectiveMap);
         var scope = childInjector.get(Scope);
         compiler(es('<dir-a probe="dirA"></dir-a>{{\'a\' | formatterA}}'
-            '<dir-b probe="dirB"></dir-b>{{\'b\' | formatterB}}'), newDirectives)(scope, childInjector.get(DirectiveInjector));
+            '<dir-b probe="dirB"></dir-b>{{\'b\' | formatterB}}'), newDirectives)(scope, null);
         rootScope.apply();
 
         expect(log.log, equals(['AFormatter', 'ADirective', 'BFormatter', 'ADirective', 'BDirective']));

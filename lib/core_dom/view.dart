@@ -14,12 +14,24 @@ part of angular.core.dom_internal;
 class View {
   final Scope scope;
   final List<dom.Node> nodes;
-  final EventHandler eventHandler;
+  final List insertionPoints = [];
 
-  View(this.nodes, this.scope, this.eventHandler);
+  View(this.nodes, this.scope);
 
-  void registerEvent(String eventName) {
-    eventHandler.register(eventName);
+  void addViewPort(ViewPort viewPort) {
+    insertionPoints.add(viewPort);
+  }
+
+  void addContent(Content content) {
+    insertionPoints.add(content);
+  }
+
+  void domWrite(fn()) {
+    scope.domWrite(fn);
+  }
+
+  void domRead(fn()) {
+    scope.domRead(fn);
   }
 }
 
@@ -32,9 +44,15 @@ class ViewPort {
   final Scope scope;
   final dom.Node placeholder;
   final Animate _animate;
-  final _views = <View>[];
+  final DestinationLightDom _lightDom;
+  final View _parentView;
+  final views = <View>[];
 
-  ViewPort(this.directiveInjector, this.scope, this.placeholder, this._animate);
+  ViewPort(DirectiveInjector directiveInjector, this.scope, this.placeholder, this._animate, [this._lightDom, View parentView])
+      : directiveInjector = directiveInjector,
+      _parentView = parentView != null ? parentView : directiveInjector.getByKey(VIEW_KEY) {
+    _parentView.addViewPort(this);
+  }
 
   View insertNew(ViewFactory viewFactory, { View insertAfter, Scope viewScope}) {
     if (viewScope == null) viewScope = scope.createChild(new PrototypeMap(scope.context));
@@ -47,32 +65,47 @@ class ViewPort {
       dom.Node previousNode = _lastNode(insertAfter);
       _viewsInsertAfter(view, insertAfter);
       _animate.insert(view.nodes, placeholder.parentNode, insertBefore: previousNode.nextNode);
+      _notifyLightDom();
     });
     return view;
   }
 
   View remove(View view) {
     view.scope.destroy();
-    _views.remove(view);
+    views.remove(view);
     scope.rootScope.domWrite(() {
       _animate.remove(view.nodes);
+      _notifyLightDom();
     });
     return view;
   }
 
   View move(View view, { View moveAfter }) {
     dom.Node previousNode = _lastNode(moveAfter);
-    _views.remove(view);
+    views.remove(view);
     _viewsInsertAfter(view, moveAfter);
     scope.rootScope.domWrite(() {
       _animate.move(view.nodes, placeholder.parentNode, insertBefore: previousNode.nextNode);
+      _notifyLightDom();
     });
     return view;
   }
 
   void _viewsInsertAfter(View view, View insertAfter) {
-    int index = insertAfter == null ? 0 : _views.indexOf(insertAfter) + 1;
-    _views.insert(index, view);
+    int index = insertAfter == null ? 0 : views.indexOf(insertAfter) + 1;
+    views.insert(index, view);
+  }
+
+  List<dom.Node> get nodes {
+    final r = [];
+    for(final v in views) {
+      r.addAll(v.nodes);
+    }
+    return r;
+  }
+
+  void _notifyLightDom() {
+    if (_lightDom != null) _lightDom.redistribute();
   }
 
   dom.Node _lastNode(View insertAfter) =>

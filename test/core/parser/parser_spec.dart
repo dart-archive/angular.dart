@@ -57,17 +57,6 @@ main() {
       module.bind(SubstringFormatter);
     });
 
-    describe('DynamicParser', () {
-      // This is important because the DynamicParser expects to be a singleton
-      // to share its cache.  It therefore registers with the CacheRegister and
-      // having more than one instance will result in a duplicate registration.
-      it('should be identical to Parser in dynamic mode', (Parser p, DynamicParser dp) {
-        if (p is DynamicParser) {
-          expect(identical(p, dp)).toBeTruthy();;
-        }
-      });
-    });
-
     beforeEach((Parser injectedParser, FormatterMap injectedFormatters) {
       parser = injectedParser;
       formatters = injectedFormatters;
@@ -174,119 +163,113 @@ main() {
         parser = p;
       });
 
-      // We only care about the error strings in the DynamicParser.
-      var errStr = (x) {
-        if (parser is DynamicParser) { return x; }
-        return null;
-      };
-
       // PARSER ERRORS
       it('should throw a reasonable error for unconsumed tokens', () {
-        expectEval(")").toThrow('Parser Error: Unconsumed token ) at column 1 in [)]');
+        expectEval(")").toThrowWith(message: 'Parser Error: Unconsumed token ) at column 1 in [)]');
       });
 
 
       it('should throw on missing expected token', () {
-        expectEval("a(b").toThrow('Parser Error: Missing expected ) the end of the expression [a(b]');
+        expectEval("a(b").toThrowWith(message: 'Parser Error: Missing expected ) the end of the expression [a(b]');
       });
 
 
       it('should throw on bad assignment', () {
-        expectEval("5=4").toThrow('Parser Error: Expression 5 is not assignable at column 2 in [5=4]');
-        expectEval("array[5=4]").toThrow('Parser Error: Expression 5 is not assignable at column 8 in [array[5=4]]');
+        expectEval("5=4").toThrowWith(message: 'Parser Error: Expression 5 is not assignable at column 2 in [5=4]');
+        expectEval("array[5=4]").toThrowWith(message: 'Parser Error: Expression 5 is not assignable at column 8 in [array[5=4]]');
       });
 
 
       it('should throw on incorrect ternary operator syntax', () {
-        expectEval("true?1").toThrow('Parser Error: Conditional expression true?1 requires all 3 expressions');
+        expectEval("true?1").toThrowWith(message: 'Parser Error: Conditional expression true?1 requires all 3 expressions');
       });
 
 
       it('should throw on non-function function calls', () {
-        expectEval("4()").toThrow('4 is not a function');
+        expectEval("4()").toThrowWith(message: '4 is not a function');
       });
 
       it("should throw on an unexpected token", (){
         expectEval("[1,2] trac")
-            .toThrow('Parser Error: \'trac\' is an unexpected token at column 7 in [[1,2] trac]');
+            .toThrowWith(message: 'Parser Error: \'trac\' is an unexpected token at column 7 in [[1,2] trac]');
       });
 
       it('should fail gracefully when invoking non-function', () {
         expect(() {
           parser('a[0]()').eval({'a': [4]});
-        }).toThrow('a[0] is not a function');
+        }).toThrowWith(message:'a[0] is not a function');
 
         expect(() {
           parser('a[x()]()').eval({'a': [4], 'x': () => 0});
-        }).toThrow('a[x()] is not a function');
+        }).toThrowWith(message:'a[x()] is not a function');
 
         expect(() {
           parser('{}()').eval({});
-        }).toThrow('{} is not a function');
+        }).toThrowWith(message:'{} is not a function');
       });
 
 
       it('should throw on undefined functions (relaxed message)', () {
-        expectEval("notAFn()").toThrow('notAFn');
+        expectEval("notAFn()").toThrowWith(message:'notAFn');
       });
 
 
       it('should fail gracefully when missing a function (relaxed message)', () {
         expect(() {
           parser('doesNotExist()').eval({});
-        }).toThrow('doesNotExist');
+        }).toThrowWith(message:'doesNotExist');
 
         expect(() {
           parser('exists(doesNotExist())').eval({'exists': () => true});
-        }).toThrow('doesNotExist');
+        }).toThrowWith(message:'doesNotExist');
 
         expect(() {
           parser('doesNotExists(exists())').eval({'exists': () => true});
-        }).toThrow('doesNotExist');
+        }).toThrowWith(message:'doesNotExist');
 
         expect(() {
           parser('doesNotExist(1)').eval({});
-        }).toThrow('doesNotExist');
+        }).toThrowWith(message:'doesNotExist');
 
         expect(() {
           parser('doesNotExist(1, 2)').eval({});
-        }).toThrow('doesNotExist');
+        }).toThrowWith(message:'doesNotExist');
 
         expect(() {
           parser('doesNotExist()').eval(new TestData());
-        }).toThrow('doesNotExist');
+        }).toThrowWith(message:'doesNotExist');
 
         expect(() {
           parser('doesNotExist(1)').eval(new TestData());
-        }).toThrow('doesNotExist');
+        }).toThrowWith(message:'doesNotExist');
 
         expect(() {
           parser('doesNotExist(1, 2)').eval(new TestData());
-        }).toThrow('doesNotExist');
+        }).toThrowWith(message:'doesNotExist');
 
         expect(() {
           parser('a.doesNotExist()').eval({'a': {}});
-        }).toThrow('doesNotExist');
+        }).toThrowWith(message:'doesNotExist');
 
         expect(() {
           parser('a.doesNotExist(1)').eval({'a': {}});
-        }).toThrow('doesNotExist');
+        }).toThrowWith(message:'doesNotExist');
 
         expect(() {
           parser('a.doesNotExist(1, 2)').eval({'a': {}});
-        }).toThrow('doesNotExist');
+        }).toThrowWith(message:'doesNotExist');
 
         expect(() {
           parser('a.doesNotExist()').eval({'a': new TestData()});
-        }).toThrow('doesNotExist');
+        }).toThrowWith(message:'doesNotExist');
 
         expect(() {
           parser('a.doesNotExist(1)').eval({'a': new TestData()});
-        }).toThrow('doesNotExist');
+        }).toThrowWith(message:'doesNotExist');
 
         expect(() {
           parser('a.doesNotExist(1, 2)').eval({'a': new TestData()});
-        }).toThrow('doesNotExist');
+        }).toThrowWith(message:'doesNotExist');
       });
 
 
@@ -295,7 +278,7 @@ main() {
 
         expect(eval('null')).toBe(null);
         expect(() => eval('map.null'))
-            .toThrow("Identifier 'null' is a reserved word.");
+            .toThrowWith(message:"Identifier 'null' is a reserved word.");
       });
 
 
@@ -321,14 +304,14 @@ main() {
       it('should pass exceptions through getters', () {
         expect(() {
           parser('boo').eval(new ScopeWithErrors());
-        }).toThrow('boo to you');
+        }).toThrowWith(message:'boo to you');
       });
 
 
       it('should pass noSuchMethodExceptions through getters', () {
         expect(() {
           parser('getNoSuchMethod').eval(new ScopeWithErrors());
-        }).toThrow("null");
+        }).toThrowWith(message:"null");
         // Dartium throws: The null object does not have a method 'iDontExist'
         // Chrome throws: NullError: Cannot call "iDontExist$0" on null
         // Firefox throws: NullError: null has no properties
@@ -338,14 +321,14 @@ main() {
       it('should pass exceptions through methods', () {
         expect(() {
           parser('foo()').eval(new ScopeWithErrors());
-        }).toThrow('foo to you');
+        }).toThrowWith(message:'foo to you');
       });
 
 
       it('should fail if reflected object has no property', () {
         expect(() {
           parser('notAProperty').eval(new TestData());
-        }).toThrow("notAProperty");
+        }).toThrowWith(message:"notAProperty");
       });
 
 
@@ -361,22 +344,22 @@ main() {
 
 
       it('should only allow identifier or keyword as formatter names', () {
-        expect(() => parser('"Foo"|(')).toThrow('identifier or keyword');
-        expect(() => parser('"Foo"|1234')).toThrow('identifier or keyword');
-        expect(() => parser('"Foo"|"uppercase"')).toThrow('identifier or keyword');
+        expect(() => parser('"Foo"|(')).toThrowWith(message:'identifier or keyword');
+        expect(() => parser('"Foo"|1234')).toThrowWith(message:'identifier or keyword');
+        expect(() => parser('"Foo"|"uppercase"')).toThrowWith(message:'identifier or keyword');
       });
 
 
       it('should only allow identifier or keyword as member names', () {
-        expect(() => parser('x.(')).toThrow('identifier or keyword');
-        expect(() => parser('x. 1234')).toThrow('identifier or keyword');
-        expect(() => parser('x."foo"')).toThrow('identifier or keyword');
+        expect(() => parser('x.(')).toThrowWith(message:'identifier or keyword');
+        expect(() => parser('x. 1234')).toThrowWith(message:'identifier or keyword');
+        expect(() => parser('x."foo"')).toThrowWith(message:'identifier or keyword');
       });
 
 
       it('should only allow identifier, string, or keyword as object literal key', () {
-        expect(() => parser('{(:0}')).toThrow('expected identifier, keyword, or string');
-        expect(() => parser('{1234:0}')).toThrow('expected identifier, keyword, or string');
+        expect(() => parser('{(:0}')).toThrowWith(message:'expected identifier, keyword, or string');
+        expect(() => parser('{1234:0}')).toThrowWith(message:'expected identifier, keyword, or string');
       });
     });
 
@@ -450,7 +433,7 @@ main() {
       it('should rethrow an error from a function', () {
         expect(() {
           parser("causeException()").eval(new TestData());
-        }).toThrow('NoSuchMethodError');
+        }).toThrowWith(message:'NoSuchMethodError');
       });
 
 
@@ -458,7 +441,7 @@ main() {
         context['obj'] = new SetterObject();
         expect(() {
           eval('obj.integer = "hello"');
-        }).toThrow("Eval Error: Caught type 'String' is not a subtype of type 'int' of 'value'. while evaling [obj.integer = \"hello\"]");
+        }).toThrowWith(message:"Eval Error: Caught type 'String' is not a subtype of type 'int' of 'value'. while evaling [obj.integer = \"hello\"]");
       });
     });
 
@@ -485,7 +468,7 @@ main() {
         for (String reserved in RESERVED_WORDS) {
           expect(() {
             parser("o.$reserved()").eval({ 'o': new Object() });
-          }).toThrow('Undefined function $reserved');
+          }).toThrowWith(message:'Undefined function $reserved');
           expect(parser("o.$reserved()").eval({ 'o': { reserved: () => reserved }})).toEqual(reserved);
         }
       });
@@ -516,7 +499,7 @@ main() {
           if ([ "true", "false", "null"].contains(reserved)) continue;
           expect(() {
             parser("$reserved()").eval(new Object());
-          }).toThrow('Undefined function $reserved');
+          }).toThrowWith(message:'Undefined function $reserved');
           expect(parser("$reserved()").eval({ reserved: () => reserved })).toEqual(reserved);
         }
       });
@@ -661,7 +644,7 @@ main() {
 
       it('should catch NoSuchMethod', () {
         context = {'a': {'b': 23}};
-        expect(() => eval('a.b.c.d')).toThrow('NoSuchMethod');
+        expect(() => eval('a.b.c.d')).toThrowWith(message:'NoSuchMethod');
       });
 
 
@@ -833,7 +816,7 @@ main() {
       it('should throw exception on non-closed bracket', () {
         expect(() {
           eval('[].count(');
-        }).toThrow('Unexpected end of expression: [].count(');
+        }).toThrowWith(message:'Unexpected end of expression: [].count(');
       });
 
 
@@ -1075,16 +1058,16 @@ main() {
 
 
       it('should be an error to use the same name twice', () {
-        expect(() => parser('foo(a: 0, a: 1)')).toThrow("Duplicate argument named 'a' at column 11");
-        expect(() => parser('foo(a: 0, b: 1, a: 2)')).toThrow("Duplicate argument named 'a' at column 17");
-        expect(() => parser('foo(0, a: 1, a: 2)')).toThrow("Duplicate argument named 'a' at column 14");
-        expect(() => parser('foo(0, a: 1, b: 2, a: 3)')).toThrow("Duplicate argument named 'a' at column 20");
+        expect(() => parser('foo(a: 0, a: 1)')).toThrowWith(message:"Duplicate argument named 'a' at column 11");
+        expect(() => parser('foo(a: 0, b: 1, a: 2)')).toThrowWith(message:"Duplicate argument named 'a' at column 17");
+        expect(() => parser('foo(0, a: 1, a: 2)')).toThrowWith(message:"Duplicate argument named 'a' at column 14");
+        expect(() => parser('foo(0, a: 1, b: 2, a: 3)')).toThrowWith(message:"Duplicate argument named 'a' at column 20");
       });
 
 
       it('should be an error to use Dart reserved words as names', () {
-        expect(() => parser('foo(if: 0)')).toThrow("Cannot use Dart reserved word 'if' as named argument at column 5");
-        expect(() => parser('foo(a: 0, class: 0)')).toThrow("Cannot use Dart reserved word 'class' as named argument at column 11");
+        expect(() => parser('foo(if: 0)')).toThrowWith(message:"Cannot use Dart reserved word 'if' as named argument at column 5");
+        expect(() => parser('foo(a: 0, class: 0)')).toThrowWith(message:"Cannot use Dart reserved word 'class' as named argument at column 11");
       });
 
 
@@ -1146,10 +1129,10 @@ main() {
       it('should parse formatters', () {
         expect(() {
           eval("1|nonexistent");
-        }).toThrow('No formatter \'nonexistent\' found!');
+        }).toThrowWith(message:'No formatter \'nonexistent\' found!');
         expect(() {
           eval("1|nonexistent", formatters);
-        }).toThrow('No formatter \'nonexistent\' found!');
+        }).toThrowWith(message:'No formatter \'nonexistent\' found!');
 
         context['offset'] =  3;
         expect(eval("'abcd'|substring:1:offset")).toEqual("bc");
@@ -1160,7 +1143,7 @@ main() {
         var expression = parser("'World'|hello");
         expect(() {
           expression.eval({}, formatters);
-        }).toThrow('No formatter \'hello\' found!');
+        }).toThrowWith(message:'No formatter \'hello\' found!');
 
         var module = new Module()
             ..bind(FormatterMap)
@@ -1174,10 +1157,10 @@ main() {
       it('should not allow formatters in a chain', () {
         expect(() {
           parser("1;'World'|hello");
-        }).toThrow('Cannot have a formatter in a chain the end of the expression [1;\'World\'|hello]');
+        }).toThrowWith(message:'Cannot have a formatter in a chain the end of the expression [1;\'World\'|hello]');
         expect(() {
           parser("'World'|hello;1");
-        }).toThrow('Cannot have a formatter in a chain at column 15 in [\'World\'|hello;1]');
+        }).toThrowWith(message:'Cannot have a formatter in a chain at column 15 in [\'World\'|hello;1]');
       });
     });
   });

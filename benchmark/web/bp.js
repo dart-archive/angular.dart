@@ -271,9 +271,10 @@ bp.Document.addLinks = function() {
 
   [
     // Add new benchmark suites here
-    ['tree.html', 'TreeComponent']
+    ['/tree.html', 'TreeComponent'],
+    ['/view_factory/view_factory.html', 'ViewFactory']
   ].forEach((function (link) {
-    linkHtml += '<a href="'+ link[0] +'">'+ link[1] +'</a>';
+    linkHtml += '<a href="'+ link[0] +'">'+ link[1] +'</a> ';
   }));
 
   if (linkDiv) {

@@ -1,7 +1,7 @@
 library angular.core.parser.utils;
 
 import 'package:angular/core/parser/syntax.dart' show Expression;
-import 'package:angular/core/module_internal.dart';
+import 'package:angular/core/formatter.dart' show FormatterMap;
 export 'package:angular/utils.dart' show relaxFnApply, relaxFnArgs, toBool;
 
 /// Marker for an uninitialized value.

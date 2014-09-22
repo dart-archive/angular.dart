@@ -8,7 +8,6 @@ part of angular.mock;
  */
 class TestBed {
   final Injector injector;
-  final DirectiveInjector directiveInjector;
   final Scope rootScope;
   final Compiler compiler;
   final Parser _parser;
@@ -18,11 +17,10 @@ class TestBed {
   List<Node> rootElements;
   View rootView;
 
-  TestBed(this.injector, this.directiveInjector, this.rootScope, this.compiler, this._parser, this.expando);
+  TestBed(this.injector, this.rootScope, this.compiler, this._parser, this.expando);
 
   TestBed.fromInjector(Injector i) :
-    this(i, i.get(DirectiveInjector), i.get(RootScope), i.get(Compiler),
-        i.get(Parser), i.get(Expando));
+    this(i, i.get(RootScope), i.get(Compiler), i.get(Parser), i.get(Expando));
 
 
   /**
@@ -54,7 +52,7 @@ class TestBed {
     if (directives == null) {
       directives = injector.getByKey(DIRECTIVE_MAP_KEY);
     }
-    rootView = compiler(rootElements, directives)(scope, injector.get(DirectiveInjector), rootElements);
+    rootView = compiler(rootElements, directives)(scope, null, rootElements);
     return rootElement;
   }
 
@@ -63,7 +61,8 @@ class TestBed {
    */
   List<Element> toNodeList(html) {
     var div = new DivElement();
-    div.setInnerHtml(html, treeSanitizer: new NullTreeSanitizer());
+    var sanitizedHtml = _handleWhitespace(html);
+    div.setInnerHtml(sanitizedHtml, treeSanitizer: new NullTreeSanitizer());
     var nodes = [];
     for (var node in div.nodes) {
       nodes.add(node);
@@ -101,4 +100,12 @@ class TestBed {
   }
 
   getScope(Node node) => getProbe(node).scope;
+
+  String _handleWhitespace(html) {
+    return html.split('\n')
+               .map((line) {
+                 var trimmed = line.trim();
+                 return trimmed + (trimmed.isEmpty || trimmed.endsWith('>') ? '' : ' ');})
+               .join();
+  }
 }

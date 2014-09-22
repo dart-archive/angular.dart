@@ -23,9 +23,9 @@ main() {
         ViewFactory viewFactory = compiler([element], _directives);
         Injector blockInjector = injector;
         if (scope != null) {
-          viewFactory.bind(injector.get(DirectiveInjector))(scope);
+          viewFactory.bind(null)(scope);
         } else {
-          viewFactory(rootScope, injector.get(DirectiveInjector), [element]);
+          viewFactory(rootScope, null, [element]);
         }
         return element;
       };
@@ -35,7 +35,7 @@ main() {
     it(r'should set create a list of items', (Scope scope, Compiler compiler, Injector injector) {
       var element = es('<div><div ng-repeat="item in items">{{item}}</div></div>');
       ViewFactory viewFactory = compiler(element, directives);
-      View view = viewFactory(scope, injector.get(DirectiveInjector), element);
+      View view = viewFactory(scope, null, element);
       scope.context['items'] = ['a', 'b'];
       scope.apply();
       expect(element).toHaveText('ab');
@@ -50,7 +50,7 @@ main() {
       });
       var element = es('<div><div ng-repeat="item in items">{{item}}</div></div>');
       ViewFactory viewFactory = compiler(element, directives);
-      View view = viewFactory(scope, injector.get(DirectiveInjector), element);
+      View view = viewFactory(scope, null, element);
       scope.apply();
       expect(element).toHaveText('ab');
     });
@@ -60,7 +60,7 @@ main() {
         (Scope scope, Compiler compiler, Injector injector) {
       var element = es('<div><div ng-repeat="item in items">{{item}}</div></div>');
       ViewFactory viewFactory = compiler(element, directives);
-      View view = viewFactory(scope, injector.get(DirectiveInjector), element);
+      View view = viewFactory(scope, null, element);
       scope.context['items'] = ['a', 'b'].map((i) => i); // makes an iterable
       scope.apply();
       expect(element).toHaveText('ab');
@@ -301,7 +301,7 @@ main() {
     it(r'should error on wrong parsing of ngRepeat', () {
       expect(() {
         compile('<ul><li ng-repeat="i dont parse"></li></ul>')();
-      }).toThrow("[NgErr7] ngRepeat error! Expected expression in form of "
+      }).toThrowWith(message: "[NgErr7] ngRepeat error! Expected expression in form of "
                  "'_item_ in _collection_[ track by _id_]' but got "
                  "'i dont parse'.");
     });
@@ -310,7 +310,7 @@ main() {
     it("should throw error when left-hand-side of ngRepeat can't be parsed", () {
         expect(() {
           compile('<ul><li ng-repeat="i dont parse in foo"></li></ul>')();
-        }).toThrow("[NgErr8] ngRepeat error! '_item_' in '_item_ in "
+        }).toThrowWith(message: "[NgErr8] ngRepeat error! '_item_' in '_item_ in "
                   "_collection_' should be an identifier or '(_key_, _value_)' "
                   "expression, but got 'i dont parse'.");
     });
@@ -550,7 +550,7 @@ main() {
       compile = (html) {
         element = e(html);
         var viewFactory = compiler([element], _directives);
-        viewFactory(scope, child.get(DirectiveInjector), [element]);
+        viewFactory(scope, null, [element]);
         return element;
       };
       directives = _directives;

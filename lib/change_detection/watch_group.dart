@@ -2,6 +2,7 @@ library angular.watch_group;
 
 import 'package:angular/change_detection/change_detection.dart';
 import 'dart:collection';
+import 'package:angular/ng_tracing.dart';
 
 part 'linked_list.dart';
 part 'ast.dart';
@@ -52,8 +53,6 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
 
   /** [ChangeDetector] used for field watching */
   final ChangeDetectorGroup<_Handler> _changeDetector;
-  /** A cache for sharing sub expression watching. Watching `a` and `a.b` will
-  * watch `a` only once. */
   final RootWatchGroup _rootGroup;
 
   /// STATS: Number of field watchers which are in use.
@@ -270,9 +269,8 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
   /**
    * Create a new child [WatchGroup].
    *
-   * - [context] if present the the child [WatchGroup] expressions will evaluate
-   * against the new [context]. If not present than child expressions will
-   * evaluate on same context allowing the reuse of the expression cache.
+   * - [context] if present the the child [WatchGroup] expressions will evaluate against the new
+   *   [context]. If not present than child expressions will evaluate on same context.
    */
   WatchGroup newGroup([Object context]) {
     _EvalWatchRecord prev = _childWatchGroupTail._evalWatchTail;
@@ -392,6 +390,8 @@ class RootWatchGroup extends WatchGroup {
                       AvgStopwatch evalStopwatch,
                       AvgStopwatch processStopwatch}) {
     // Process the Records from the change detector
+    var sDetect = traceEnter(ChangeDetector_check);
+    var sFields = traceEnter(ChangeDetector_fields);
     Iterator<Record<_Handler>> changedRecordIterator =
         (_changeDetector as ChangeDetector<_Handler>).collectChanges(
             exceptionHandler:exceptionHandler,
@@ -404,11 +404,13 @@ class RootWatchGroup extends WatchGroup {
                                        record.previousValue);
       record.handler.onChange(record);
     }
+    traceLeave(sFields);
     if (processStopwatch != null) processStopwatch.stop();
 
     if (evalStopwatch != null) evalStopwatch.start();
     // Process our own function evaluations
     _EvalWatchRecord evalRecord = _evalWatchHead;
+    var sEval = traceEnter(ChangeDetector_eval);
     int evalCount = 0;
     while (evalRecord != null) {
       try {
@@ -423,11 +425,15 @@ class RootWatchGroup extends WatchGroup {
       }
       evalRecord = evalRecord._nextEvalWatch;
     }
+
+    traceLeave(sEval);
+    traceLeave(sDetect);
     if (evalStopwatch != null) evalStopwatch..stop()..increment(evalCount);
 
     // Because the handler can forward changes between each other synchronously
     // We need to call reaction functions asynchronously. This processes the
     // asynchronous reaction function queue.
+    var sReaction = traceEnter(ChangeDetector_reaction);
     int count = 0;
     if (processStopwatch != null) processStopwatch.start();
     Watch dirtyWatch = _dirtyWatchHead;
@@ -451,6 +457,7 @@ class RootWatchGroup extends WatchGroup {
       _dirtyWatchTail = null;
       root._removeCount = 0;
     }
+    traceLeaveVal(sReaction, count);
     if (processStopwatch != null) processStopwatch..stop()..increment(count);
     return count;
   }
@@ -496,7 +503,12 @@ class Watch {
   void invoke() {
     if (_deleted || !_dirty) return;
     _dirty = false;
-    reactionFn(_record.currentValue, _record.previousValue);
+    var s = traceEnabled ? traceEnter1(ChangeDetector_invoke, expression) : null;
+    try {
+      reactionFn(_record.currentValue, _record.previousValue);
+    } finally {
+      if (traceEnabled) traceLeave(s);
+    }
   }
 
   void remove() {
@@ -558,8 +570,6 @@ abstract class _Handler implements _LinkedList, _LinkedListItem, _WatchList {
   bool release() {
     if (_WatchList._isEmpty(this) && _LinkedList._isEmpty(this)) {
       _releaseWatch();
-      // Remove ourselves from cache, or else new registrations will go to us,
-      // but we are dead
 
       if (forwardingHandler != null) {
         // TODO(misko): why do we need this check?
