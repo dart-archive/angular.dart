@@ -169,7 +169,6 @@ void main() {
         expect(form).not.toBeValid();
 
         expect(element).toHaveClass('ng-invalid');
-        expect(element).not.toHaveClass('ng-valid');
 
         model.removeError('some-error');
         model.validate();
@@ -177,7 +176,6 @@ void main() {
 
         expect(form).toBeValid();
         expect(element).not.toHaveClass('ng-invalid');
-        //expect(element).toHaveClass('ng-valid');
       });
 
       it('should set the validity with respect to all existing validations when error states are set is used', (Scope scope, TestBed _) {
