@@ -8,7 +8,6 @@ part of angular.directive;
  * user input with NgModel.
  */
 abstract class NgControl implements AttachAware, DetachAware {
-  static const NG_VALID          = "ng-valid";
   static const NG_INVALID        = "ng-invalid";
   static const NG_PRISTINE       = "ng-pristine";
   static const NG_DIRTY          = "ng-dirty";

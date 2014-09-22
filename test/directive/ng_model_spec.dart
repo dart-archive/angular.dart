@@ -1259,7 +1259,6 @@ void main() {
 
         expect(model.valid).toEqual(false);
         expect(model.invalid).toEqual(true);
-        //expect(element).not.toHaveClass('ng-valid');
         expect(element).toHaveClass('ng-invalid');
 
         model.removeError('ng-required');
@@ -1269,7 +1268,6 @@ void main() {
         expect(model.valid).toEqual(true);
         expect(model.invalid).toEqual(false);
         expect(element).not.toHaveClass('ng-invalid');
-        // expect(element).toHaveClass('ng-valid');
       });
 
       it('should set the validity with respect to all existing validations when setValidity() is used', (Scope scope) {
