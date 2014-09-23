@@ -1065,12 +1065,26 @@ void main() {
         expect(log.result()).toEqual('IncludeTransclude; SimpleTransclude');
       }));
 
-      it('should call scope setter on ScopeAware components', async((TestBed _, Logger log) {
+      it('should call scope setter on ScopeAware components', async((TestBed _, Logger log, CompilerConfig config) {
         var element = _.compile('<scope-aware-cmp></scope-aware-cmp>');
 
         _.rootScope.apply();
 
         expect(log.result()).toEqual('Scope set');
+
+        if (config.elementProbeEnabled) {
+          expect(ngInjector(element).get(ScopeAwareComponent).
+              scope.context['foo']).toEqual('bar');
+        }
+      }));
+
+      it('should call scope setter on ScopeAware decorators', async((TestBed _, Logger log) {
+        var element = _.compile('<div scope-aware-dec></div>');
+
+        _.rootScope.apply();
+
+        expect(log.result()).toEqual('Scope set');
+        expect(_.rootScope.context['foo']).toEqual('bar');
       }));
     });
 
@@ -1547,12 +1561,19 @@ class SameNameDecorator {
 @Component(
     selector: 'scope-aware-cmp'
 )
+@Decorator(
+    selector: '[scope-aware-dec]'
+)
 class ScopeAwareComponent implements ScopeAware {
   Logger log;
+  Scope _scope;
   ScopeAwareComponent(this.log) {}
   void set scope(Scope scope) {
     log('Scope set');
+    scope.context['foo'] = 'bar';
+    _scope = scope;
   }
+  Scope get scope => _scope;
 }
 
 @Component(
