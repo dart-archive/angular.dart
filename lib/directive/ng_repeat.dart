@@ -172,9 +172,9 @@ class NgRepeat {
 
     addFn((CollectionChangeItem addition) {
       changeFunctions[addition.currentIndex] = (index, previousView) {
-        var childContext = _updateContext(new PrototypeMap(_scope.context), index,length)
+        var childScope = _scope.createProtoChild();
+        var childContext = _updateContext(childScope.context, index, length)
             ..[_valueIdentifier] = addition.item;
-        var childScope = _scope.createChild(childContext);
         var view = views[index] = _boundViewFactory(childScope);
         _viewPort.insert(view, insertAfter: previousView);
       };
@@ -222,7 +222,7 @@ class NgRepeat {
     _views = views;
   }
 
-  PrototypeMap _updateContext(PrototypeMap context, int index, int length) {
+  Map _updateContext(Map context, int index, int length) {
     var first = (index == 0);
     var last = (index == length - 1);
     return context
