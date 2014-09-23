@@ -379,6 +379,11 @@ class Scope {
     return child;
   }
 
+  /// Creates a child [Scope] that is prototypal with respect to current scope.
+  Scope createProtoChild() {
+    return createChild(new PrototypeMap(context));
+  }
+
   /**
    * Removes the current scope (and all of its children) from the parent scope. Removal implies
    * that calls to [digest] will no longer propagate to the current scope nor its children.

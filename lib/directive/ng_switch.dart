@@ -81,7 +81,7 @@ class NgSwitch {
     val = '!$val';
     (cases.containsKey(val) ? cases[val] : cases['?'])
         .forEach((_Case caze) {
-          Scope childScope = scope.createChild(new PrototypeMap(scope.context));
+          Scope childScope = scope.createProtoChild();
           var view = caze.viewFactory(childScope);
           caze.anchor.insert(view);
           currentViews.add(new _ViewScopePair(view, caze.anchor,
