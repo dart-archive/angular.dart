@@ -121,9 +121,8 @@ class Compiler implements Function {
                     List<TaggedElementBinder> elementBinders,
                     bool isTopLevel) {
     assert(parentElementBinderOffset != null && parentElementBinderOffset < elementBinders.length);
-    if (domCursor.current == null) return null;
 
-    do {
+    while (domCursor.moveNext()) {
       _compileNode(domCursor,
                    _elementBinderForNode(domCursor, binderForElement, directives),
                    directives,
@@ -131,7 +130,7 @@ class Compiler implements Function {
                    parentElementBinderOffset,
                    isTopLevel,
                    directParentElementBinder);
-    } while (domCursor.moveNext());
+    }
   }
 
   /// Compiles a transclusion:

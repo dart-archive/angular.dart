@@ -1,15 +1,18 @@
 part of angular.core.dom_internal;
 
-class NodeCursor {
+class NodeCursor implements Iterator<dom.Node> {
   final stack = [];
   List<dom.Node> elements;  // may be a fixed length list.
-  int index = 0;
+  int index = -1;
 
   NodeCursor(this.elements);
 
   bool moveNext() => ++index < elements.length;
 
-  dom.Node get current => index < elements.length ? elements[index] : null;
+  dom.Node get current {
+    assert(index > -1 && index < elements.length);
+    return elements[index];
+  }
 
   bool descend() {
     var childNodes = elements[index].nodes;
@@ -18,7 +21,7 @@ class NodeCursor {
     if (hasChildren) {
       stack..add(index)..add(elements);
       elements = childNodes;
-      index = 0;
+      index = -1;
     }
 
     return hasChildren;

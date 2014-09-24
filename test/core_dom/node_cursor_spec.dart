@@ -19,25 +19,28 @@ main() {
     it('should allow single level traversal', () {
       var cursor = new NodeCursor([a, b]);
 
+      expect(cursor.moveNext()).toBeTrue();
       expect(cursor.current, equals(a));
-      expect(cursor.moveNext(), equals(true));
+      expect(cursor.moveNext()).toBeTrue();
       expect(cursor.current, equals(b));
-      expect(cursor.moveNext(), equals(false));
+      expect(cursor.moveNext()).toBeFalse();
     });
 
 
     it('should descend and ascend', () {
       var cursor = new NodeCursor([d, c]);
 
-      expect(cursor.descend(), equals(true));
-      expect(cursor.current, equals(a));
-      expect(cursor.moveNext(), equals(true));
-      expect(cursor.current, equals(b));
-      expect(cursor.moveNext(), equals(false));
+      expect(cursor.moveNext()).toBeTrue();
+      expect(cursor.descend()).toBeTrue();
+      expect(cursor.moveNext()).toBeTrue();
+      expect(cursor.current).toEqual(a);
+      expect(cursor.moveNext()).toBeTrue();
+      expect(cursor.current).toEqual(b);
+      expect(cursor.moveNext()).toBeFalse();
       cursor.ascend();
-      expect(cursor.moveNext(), equals(true));
-      expect(cursor.current, equals(c));
-      expect(cursor.moveNext(), equals(false));
+      expect(cursor.moveNext()).toBeTrue();
+      expect(cursor.current).toEqual(c);
+      expect(cursor.moveNext()).toBeFalse();
     });
 
     it('should descend and ascend two levels', () {
@@ -50,29 +53,34 @@ main() {
       l2.append(g);
       var cursor = new NodeCursor([l1, c]);
 
-      expect(cursor.descend(), equals(true));
-      expect(cursor.current, equals(l2));
-      expect(cursor.descend(), equals(true));
-      expect(cursor.current, equals(g));
+      expect(cursor.moveNext()).toBeTrue();
+      expect(cursor.descend()).toBeTrue();
+      expect(cursor.moveNext()).toBeTrue();
+      expect(cursor.current).toEqual(l2);
+      expect(cursor.descend()).toBeTrue();
+      expect(cursor.moveNext()).toBeTrue();
+      expect(cursor.current).toEqual(g);
       cursor.ascend();
-      expect(cursor.moveNext(), equals(true));
-      expect(cursor.current, equals(f));
-      expect(cursor.moveNext(), equals(false));
+      expect(cursor.moveNext()).toBeTrue();
+      expect(cursor.current).toEqual(f);
+      expect(cursor.moveNext()).toBeFalse();
       cursor.ascend();
-      expect(cursor.moveNext(), equals(true));
-      expect(cursor.current, equals(c));
-      expect(cursor.moveNext(), equals(false));
+      expect(cursor.moveNext()).toBeTrue();
+      expect(cursor.current).toEqual(c);
+      expect(cursor.moveNext()).toBeFalse();
     });
 
 
     it('should create child cursor upon replace of top level', () {
       var parentCursor = new NodeCursor([a]);
+      expect(parentCursor.moveNext()).toBeTrue();
       var childCursor = parentCursor.replaceWithAnchor('child');
 
       expect(parentCursor.elements.length, equals(1));
       expect(STRINGIFY(parentCursor.elements[0]), equals('<!--ANCHOR: child-->'));
       expect(childCursor.elements, equals([a]));
 
+      expect(childCursor.moveNext()).toBeTrue();
       var leafCursor = childCursor.replaceWithAnchor('leaf');
 
       expect(childCursor.elements.length, equals(1));
@@ -84,7 +92,9 @@ main() {
     it('should create child cursor upon replace of mid level', () {
       var dom = es('<div><span>text</span></div>');
       var parentCursor = new NodeCursor(dom);
+      expect(parentCursor.moveNext()).toBeTrue();
       parentCursor.descend(); // <span>
+      expect(parentCursor.moveNext()).toBeTrue();
 
       var childCursor = parentCursor.replaceWithAnchor('child');
       expect(STRINGIFY(dom), equals('[<div><!--ANCHOR: child--></div>]'));
@@ -95,7 +105,7 @@ main() {
     it('should preserve the top-level elements', () {
       var dom = es('<span>text</span>MoreText<div>other</div>');
       var parentCursor = new NodeCursor(dom);
-
+      expect(parentCursor.moveNext()).toBeTrue();
       var childCursor = parentCursor.replaceWithAnchor('child');
       expect(STRINGIFY(dom), equals('[<!--ANCHOR: child-->, MoreText, <div>other</div>]'));
 
