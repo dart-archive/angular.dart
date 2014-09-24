@@ -296,8 +296,8 @@ class ElementBinder {
         DirectiveBinderFn config = ref.annotation.module;
         if (config != null) config(nodeInjector);
       }
-      if (_config.elementProbeEnabled && ref.valueAST != null) {
-        nodeInjector.elementProbe.bindingExpressions.add(ref.valueAST.expression);
+      if (_config.elementProbeEnabled && ref.bindingExpressions != null) {
+        nodeInjector.elementProbe.bindingExpressions.addAll(ref.bindingExpressions);
       }
     }
 
