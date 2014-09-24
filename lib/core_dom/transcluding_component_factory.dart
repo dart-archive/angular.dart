@@ -46,7 +46,7 @@ class BoundTranscludingComponentFactory implements BoundComponentFactory {
         _f.uriMapper,
         _f.resourceResolver,
         _ref.type);
-    
+
     _tag = _ref.annotation.selector.toLowerCase();
     _styleElementsFuture = _f.cssLoader(_tag, _component.cssUrls, type: _ref.type);
 
@@ -57,14 +57,12 @@ class BoundTranscludingComponentFactory implements BoundComponentFactory {
 
   List<Key> get callArgs => _CALL_ARGS;
   static var _CALL_ARGS = [ DIRECTIVE_INJECTOR_KEY, SCOPE_KEY, VIEW_KEY,
-                            VIEW_CACHE_KEY, HTTP_KEY, TEMPLATE_CACHE_KEY,
-                            DIRECTIVE_MAP_KEY, NG_BASE_CSS_KEY, EVENT_HANDLER_KEY,
-                            SHADOW_BOUNDARY_KEY];
+                            NG_BASE_CSS_KEY, EVENT_HANDLER_KEY, SHADOW_BOUNDARY_KEY];
+
   Function call(dom.Node node) {
     var element = node as dom.Element;
     return (DirectiveInjector injector, Scope scope, View view,
-            ViewCache viewCache, Http http, TemplateCache templateCache,
-            DirectiveMap directives, NgBaseCss baseCss, EventHandler eventHandler,
+            NgBaseCss baseCss, EventHandler eventHandler,
             ShadowBoundary shadowBoundary) {
 
       DirectiveInjector childInjector;
