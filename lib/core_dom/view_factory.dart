@@ -31,15 +31,17 @@ class ViewFactory implements Function {
       templateNodes = templateNodes
   {
     if (traceEnabled) {
-      _debugHtml = templateNodes.map((dom.Node e) {
-        if (e is dom.Element) {
-          return (e as dom.Element).outerHtml;
-        } else if (e is dom.Comment) {
-          return '<!--${(e as dom.Comment).text}-->';
-        } else {
-          return e.text;
-        }
-      }).toList().join('');
+      _debugHtml = templateNodes
+          .map((dom.Node e) {
+            if (e is dom.Element) {
+              return (e as dom.Element).outerHtml;
+            } else if (e is dom.Comment) {
+              return '<!--${(e as dom.Comment).text}-->';
+            } else {
+              return e.text;
+            }
+          })
+          .join('');
     }
   }
 
@@ -55,7 +57,7 @@ class ViewFactory implements Function {
       nodes = cloneElements(templateNodes);
     }
     var view = new View(nodes, scope);
-    _link(view, scope, nodes, directiveInjector);
+    _link(view, scope, directiveInjector);
     traceLeave(s);
 
     return view;
@@ -65,23 +67,14 @@ class ViewFactory implements Function {
                    DirectiveInjector rootInjector,
                    List<DirectiveInjector> elementInjectors, View view, boundNode, Scope scope) {
     var binder = tagged.binder;
-    DirectiveInjector parentInjector =
-        tagged.parentBinderOffset == -1 ? rootInjector : elementInjectors[tagged.parentBinderOffset];
+    DirectiveInjector parentInjector = tagged.parentBinderOffset == -1 ?
+        rootInjector :
+        elementInjectors[tagged.parentBinderOffset];
 
-    var elementInjector;
-    if (binder == null) {
-      elementInjector = parentInjector;
-    } else {
-      // TODO(misko): Remove this after we remove controllers. No controllers -> 1to1 Scope:View.
-      if (parentInjector != rootInjector && parentInjector.scope != null) {
-        scope = parentInjector.scope;
-      }
-      elementInjector = binder.bind(view, scope, parentInjector, boundNode);
-    }
-    // TODO(misko): Remove this after we remove controllers. No controllers -> 1to1 Scope:View.
-    if (elementInjector != rootInjector && elementInjector.scope != null) {
-      scope = elementInjector.scope;
-    }
+    var elementInjector = binder == null ?
+        parentInjector :
+        binder.bind(view, scope, parentInjector, boundNode);
+
     elementInjectors[elementBinderIndex] = elementInjector;
 
     if (tagged.textBinders != null) {
@@ -93,20 +86,17 @@ class ViewFactory implements Function {
     }
   }
 
-  View _link(View view, Scope scope, List<dom.Node> nodeList, DirectiveInjector rootInjector) {
+  View _link(View view, Scope scope, DirectiveInjector rootInjector) {
     var elementInjectors = new List<DirectiveInjector>(elementBinders.length);
-    var directiveDefsByName = {};
 
     var elementBinderIndex = 0;
-    for (int i = 0; i < nodeList.length; i++) {
-      dom.Node node = nodeList[i];
+    for (int i = 0; i < view.nodes.length; i++) {
+      dom.Node node = view.nodes[i];
       NodeLinkingInfo linkingInfo = nodeLinkingInfos[i];
 
       // if node isn't attached to the DOM, create a parent for it.
       var parentNode = node.parentNode;
-      var fakeParent = false;
       if (parentNode == null) {
-        fakeParent = true;
         parentNode = new dom.DivElement();
         parentNode.append(node);
       }
@@ -136,11 +126,6 @@ class ViewFactory implements Function {
         }
         elementBinderIndex++;
       }
-
-      if (fakeParent) {
-        // extract the node from the parentNode.
-        nodeList[i] = parentNode.nodes[0];
-      }
     }
     return view;
   }
@@ -168,22 +153,22 @@ class NodeLinkingInfo {
   NodeLinkingInfo(this.containsNgBinding, this.isElement, this.ngBindingChildren);
 }
 
-computeNodeLinkingInfos(List<dom.Node> nodeList) {
+List<NodeLinkingInfo> computeNodeLinkingInfos(List<dom.Node> nodeList) {
   List<NodeLinkingInfo> list = new List<NodeLinkingInfo>(nodeList.length);
 
   for (int i = 0; i < nodeList.length; i++) {
     dom.Node node = nodeList[i];
 
     assert(node.nodeType == dom.Node.ELEMENT_NODE ||
-    node.nodeType == dom.Node.TEXT_NODE ||
-    node.nodeType == dom.Node.COMMENT_NODE);
+           node.nodeType == dom.Node.TEXT_NODE ||
+           node.nodeType == dom.Node.COMMENT_NODE);
 
     bool isElement = node.nodeType == dom.Node.ELEMENT_NODE;
 
     list[i] = new NodeLinkingInfo(
         isElement && (node as dom.Element).classes.contains('ng-binding'),
         isElement,
-        isElement && (node as dom.Element).querySelectorAll('.ng-binding').length > 0);
+        isElement && (node as dom.Element).querySelectorAll('.ng-binding').isNotEmpty);
   }
   return list;
 }
@@ -203,11 +188,11 @@ class ViewCache {
   final TemplateCache templateCache;
   final Compiler compiler;
   final dom.NodeTreeSanitizer treeSanitizer;
-  final dom.HtmlDocument parseDocument =
-      dom.document.implementation.createHtmlDocument('');
+  final dom.HtmlDocument parseDocument = dom.document.implementation.createHtmlDocument('');
   final ResourceUrlResolver resourceResolver;
 
-  ViewCache(this.http, this.templateCache, this.compiler, this.treeSanitizer, this.resourceResolver, CacheRegister cacheRegister) {
+  ViewCache(this.http, this.templateCache, this.compiler, this.treeSanitizer, this.resourceResolver,
+            CacheRegister cacheRegister) {
     cacheRegister.registerCache('viewCache', viewFactoryCache);
   }
 
@@ -229,8 +214,8 @@ class ViewCache {
     ViewFactory viewFactory = viewFactoryCache.get(url);
     if (viewFactory == null) {
       return http.get(url, cache: templateCache).then((resp) {
-        var viewFactoryFromHttp = fromHtml(resourceResolver.resolveHtml(
-                                           resp.responseText, baseUri), directives);
+        var viewFactoryFromHttp = fromHtml(resourceResolver.resolveHtml(resp.responseText, baseUri),
+                                           directives);
         viewFactoryCache.put(url, viewFactoryFromHttp);
         return viewFactoryFromHttp;
       });

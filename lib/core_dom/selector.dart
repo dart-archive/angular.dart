@@ -21,8 +21,8 @@ part of angular.core.dom_internal;
  *  * [*=/abc/]
  */
 class DirectiveSelector {
-  static String BIND_PREFIX = "bind-";
-  static int BIND_PREFIX_LENGTH = 5;
+  static final String BIND_PREFIX = "bind-";
+  static final int BIND_PREFIX_LENGTH = 5;
 
   ElementBinderFactory _binderFactory;
   DirectiveMap _directives;
@@ -64,7 +64,8 @@ class DirectiveSelector {
   ElementBinder matchElement(dom.Node node) {
     assert(node is dom.Element);
 
-    ElementBinderBuilder builder = _binderFactory.builder(_formatters, _directives, _injector);
+    ElementBinderBuilder builder =
+        _binderFactory.builder(_formatters, _directives, _injector, node);
     List<_ElementSelector> partialSelection;
     final classes = new Set<String>();
     final attrs = new HashMap<String, String>();
@@ -107,8 +108,7 @@ class DirectiveSelector {
             // Pre-compute the AST to watch this value.
             String expression = _interpolate(value);
             AST valueAST = _astParser(expression, formatters: _formatters);
-            builder.addDirective(new DirectiveRef(
-                node, tuple.type, tuple.directive, new Key(tuple.type), attrName, valueAST));
+            builder.addDirective(new DirectiveRef(tuple.type, tuple.directive, attrName, valueAST));
           });
         }
       }
@@ -135,7 +135,8 @@ class DirectiveSelector {
   }
 
   ElementBinder matchText(dom.Node node) {
-    ElementBinderBuilder builder = _binderFactory.builder(_formatters, _directives, _injector);
+    ElementBinderBuilder builder =
+        _binderFactory.builder(_formatters, _directives, _injector, node);
 
     var value = node.nodeValue;
     for (var k = 0; k < textSelector.length; k++) {
@@ -145,16 +146,15 @@ class DirectiveSelector {
           // Pre-compute the AST to watch this value.
           String expression = _interpolate(value);
           var valueAST = _astParser(expression, formatters: _formatters);
-
-          builder.addDirective(new DirectiveRef(node, tuple.type,
-              tuple.directive, new Key(tuple.type), value, valueAST));
+          builder.addDirective(new DirectiveRef(tuple.type, tuple.directive, value, valueAST));
         });
       }
     }
     return builder.binder;
   }
 
-  ElementBinder matchComment(dom.Node node) => _binderFactory.builder(null, null, _injector).binder;
+  ElementBinder matchComment(dom.Node node) =>
+      _binderFactory.builder(null, null, _injector, node).binder;
 }
 
 /**
@@ -205,9 +205,9 @@ class _ContainsSelector {
 }
 
 final _SELECTOR_REGEXP = new RegExp(
-    r'^(?:([-\w]+)|'                      // "tag"
-    r'(?:\.([-\w]+))|'                    // ".class"
-    r'(?:\[([-\w*]+)(?:=([^\]]*))?\]))'); // "[name]", "[name=value]" or "[name*=value]"
+    r'^([-\w]+)|'                     // "tag"
+    r'^\.([-\w]+)|'                   // ".class"
+    r'^\[([-\w*]+)=?([^\]]*)\]');     // "[name]", "[name=value]" or "[name*=value]"
 final _CONTAINS_REGEXP = new RegExp(r'^:contains\(\/(.+)\/\)$'); // ":contains(/text/)"
 final _ATTR_CONTAINS_REGEXP = new RegExp(r'^\[\*=\/(.+)\/\]$');  // "[*=/value/]
 
@@ -232,13 +232,6 @@ class _SelectorPart {
          ? (attrValue == '' ? '[$attrName]' : '[$attrName=$attrValue]')
          : '.$className')
       : element;
-}
-
-_addRefs(ElementBinderBuilder builder, List<_Directive> directives, dom.Node node,
-         [String attrValue]) {
-  directives.forEach((directive) {
-    builder.addDirective(new DirectiveRef(node, directive.type, directive.annotation, new Key(directive.type), attrValue));
-  });
 }
 
 class _ElementSelector {
@@ -296,7 +289,7 @@ class _ElementSelector {
                                     List<_ElementSelector> partialSelection,
                                     dom.Node node, String nodeName) {
     if (_elementMap.containsKey(nodeName)) {
-      _addRefs(builder, _elementMap[nodeName], node);
+      builder.addAllDirectives(_elementMap[nodeName]);
     }
     if (_elementPartialMap.containsKey(nodeName)) {
       if (partialSelection == null) {
@@ -311,7 +304,7 @@ class _ElementSelector {
                                      List<_ElementSelector> partialSelection,
                                      dom.Node node, String className) {
     if (_classMap.containsKey(className)) {
-      _addRefs(builder, _classMap[className], node);
+      builder.addAllDirectives(_classMap[className]);
     }
     if (_classPartialMap.containsKey(className)) {
       if (partialSelection == null) {
@@ -332,10 +325,10 @@ class _ElementSelector {
     if (matchingKey != null) {
       Map<String, List<_Directive>> valuesMap = _attrValueMap[matchingKey];
       if (valuesMap.containsKey('')) {
-        _addRefs(builder, valuesMap[''], node, attrValue);
+        builder.addAllDirectives(valuesMap[''], attrValue);
       }
       if (attrValue != '' && valuesMap.containsKey(attrValue)) {
-        _addRefs(builder, valuesMap[attrValue], node, attrValue);
+        builder.addAllDirectives(valuesMap[attrValue], attrValue);
       }
     }
     if (_attrValuePartialMap.containsKey(attrName)) {

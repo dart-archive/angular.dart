@@ -2,7 +2,7 @@ library angular.dom.selector_spec;
 
 import '../_specs.dart';
 
-const _aBElement               = const Decorator(selector:'b'); 
+const _aBElement               = const Decorator(selector:'b');
 const _aBClass                 = const Decorator(selector:'.b');
 const _aDirectiveAttr          = const Decorator(selector:'[directive]');
 const _aWildcardDirectiveAttr  = const Decorator(selector:'[wildcard-*]');
@@ -255,8 +255,9 @@ class DirectiveInfosMatcher extends Matcher {
   Map expectedTemplate;
   Map expectedComponent;
 
-  safeToString(a) => "${a['element']} ${a['selector']} ${a['value']}";
-  safeToStringRef(a) => "${a.element} ${a.annotation.selector} ${a.value}";
+  String safeToString(a) => "${a['selector']} ${a['value']}";
+
+  String safeToStringRef(a) => "${a.annotation.selector} ${a.value}";
 
   DirectiveInfosMatcher(this.expected, {this.expectedTemplate, this.expectedComponent}) {
     if (expected != null) {
@@ -268,11 +269,10 @@ class DirectiveInfosMatcher extends Matcher {
       description..add(expected.toString());
 
   bool _refMatches(DirectiveRef directiveRef, Map expectedMap) =>
-    directiveRef.element == expectedMap['element'] &&
-    directiveRef.annotation.selector == expectedMap['selector'] &&
-    directiveRef.value == expectedMap['value'] &&
-    (expectedMap['annotation'] == null || directiveRef.annotation == expectedMap['annotation']) &&
-    (directiveRef.valueAST == null || directiveRef.valueAST.expression == expectedMap['ast']);
+      directiveRef.annotation.selector == expectedMap['selector'] &&
+      directiveRef.value == expectedMap['value'] &&
+      (expectedMap['annotation'] == null || directiveRef.annotation == expectedMap['annotation']) &&
+      (directiveRef.valueAST == null || directiveRef.valueAST.expression == expectedMap['ast']);
 
 
   bool matches(ElementBinder binder, matchState) {

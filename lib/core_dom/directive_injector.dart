@@ -411,20 +411,18 @@ class TemplateDirectiveInjector extends DirectiveInjector {
   ViewPort _viewPort;
   BoundViewFactory _boundViewFactory;
 
-  TemplateDirectiveInjector(DirectiveInjector parent, Injector appInjector,
-                       Node node, NodeAttrs nodeAttrs, EventHandler eventHandler,
-                       Scope scope, Animate animate, this._viewFactory,
-                       [View view, ShadowBoundary shadowBoundary])
-    : super(parent, appInjector, node, nodeAttrs, eventHandler, scope, animate,
-        view, shadowBoundary);
-
+  TemplateDirectiveInjector(DirectiveInjector parent, Injector appInjector, Node node,
+                            NodeAttrs nodeAttrs, EventHandler eventHandler,
+                            Scope scope, Animate animate, this._viewFactory,
+                            [View view, ShadowBoundary shadowBoundary])
+      : super(parent, appInjector, node, nodeAttrs, eventHandler, scope, animate, view,
+              shadowBoundary);
 
   Object _getById(int keyId) {
     switch(keyId) {
       case VIEW_FACTORY_KEY_ID: return _viewFactory;
-      case VIEW_PORT_KEY_ID: return ((_viewPort) == null) ?
-            _viewPort = _createViewPort() : _viewPort;
-      case BOUND_VIEW_FACTORY_KEY_ID: return (_boundViewFactory == null) ?
+      case VIEW_PORT_KEY_ID: return _viewPort == null ? _viewPort = _createViewPort() : _viewPort;
+      case BOUND_VIEW_FACTORY_KEY_ID: return _boundViewFactory == null ?
             _boundViewFactory = _viewFactory.bind(_parent) : _boundViewFactory;
       default: return super._getById(keyId);
     }
@@ -435,20 +433,19 @@ class TemplateDirectiveInjector extends DirectiveInjector {
     if (_destLightDom != null) _destLightDom.addViewPort(viewPort);
     return viewPort;
   }
-
 }
 
 class ComponentDirectiveInjector extends DirectiveInjector {
-
   final TemplateLoader _templateLoader;
   final ShadowRoot _shadowRoot;
 
   ComponentDirectiveInjector(DirectiveInjector parent, Injector appInjector,
-                        EventHandler eventHandler, Scope scope,
-                        this._templateLoader, this._shadowRoot, LightDom lightDom,
-                        [View view, ShadowBoundary shadowBoundary])
+                             EventHandler eventHandler, Scope scope,
+                             this._templateLoader, this._shadowRoot, LightDom lightDom,
+                             [View view, ShadowBoundary shadowBoundary])
       : super(parent, appInjector, parent._node, parent._nodeAttrs, eventHandler, scope,
-              parent._animate, view, shadowBoundary) {
+              parent._animate, view, shadowBoundary)
+  {
     // A single component creates a ComponentDirectiveInjector and its DirectiveInjector parent,
     // so parent should never be null.
     assert(parent != null);
@@ -504,5 +501,4 @@ class _CircularDependencyError extends CircularDependencyError {
         ..write(")");
     return buffer.toString();
   }
-
 }
