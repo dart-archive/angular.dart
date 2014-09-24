@@ -1072,14 +1072,6 @@ void main() {
 
         expect(log.result()).toEqual('Scope set');
       }));
-
-      it('should call scope setter on ScopeAware decorators', async((TestBed _, Logger log) {
-        var element = _.compile('<div scope-aware-dec></div>');
-
-        _.rootScope.apply();
-
-        expect(log.result()).toEqual('Scope set');
-      }));
     });
 
 
@@ -1554,9 +1546,6 @@ class SameNameDecorator {
 
 @Component(
     selector: 'scope-aware-cmp'
-)
-@Decorator(
-    selector: '[scope-aware-dec]'
 )
 class ScopeAwareComponent implements ScopeAware {
   Logger log;

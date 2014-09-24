@@ -226,8 +226,6 @@ class ElementBinder {
           _createAttrMappings(directive, scope, ref.mappings, nodeAttrs, tasks);
         }
 
-        if (directive is ScopeAware) directive.scope = scope;
-
         if (directive is AttachAware) {
           var taskId = (tasks != null) ? tasks.registerTask() : 0;
           Watch watch;

@@ -110,29 +110,28 @@ class ScopeLocals implements Map {
 }
 
 /**
- * When a [Directive] or the root context class implements [ScopeAware] the scope
- * setter will be called to set the [Scope] on this component.
+ * When a [Component] or the root context class implements [ScopeAware] the scope setter will be
+ * called to set the [Scope] on this component.
  *
- * The order of calls is as follows:
- * - [Component] instance is created.
- * - [Scope] instance is created (taking [Component] instance as evaluation context).
- * - if [Component] is [ScopeAware], set scope method is called with scope instance.
+ * Typically classes implementing [ScopeAware] will declare a `Scope scope` property which will get
+ * initialized after the [Scope] is available. For this reason the `scope` property will not be
+ * initialized during the execution of the constructor - it will be immediately after.
  *
- * [ScopeAware] is guaranteed to be called before [AttachAware] or [DetachAware] methods.
+ * However, if you need to execute some code as soon as the scope is available you should implement
+ * a `scope` setter:
  *
- * Example:
  *     @Component(...)
  *     class MyComponent implements ScopeAware {
  *       Watch watch;
  *
  *       MyComponent(Dependency myDep) {
- *         // It is an error to add a Scope argument to the ctor and will result in a DI
- *         // circular dependency error - the scope has a dependency on the component instance.
+ *         // It is an error to add a Scope / RootScope argument to the ctor and will result in a DI
+ *         // circular dependency error - the scope is never accessible in the class constructor
  *       }
  *
  *       void set scope(Scope scope) {
  *          // This setter gets called to initialize the scope
- *          watch = scope.watch("expression", (v, p) => ...);
+ *          watch = scope.rootScope.watch("expression", (v, p) => ...);
  *       }
  *     }
  */
