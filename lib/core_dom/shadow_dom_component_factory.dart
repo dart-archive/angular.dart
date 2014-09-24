@@ -5,10 +5,12 @@ abstract class ComponentFactory {
 }
 
 /**
- * A Component factory with has been bound to a specific component type.
+ * A Component factory bound to a specific component type.
  */
 abstract class BoundComponentFactory {
+  /// Parameters to pass to the component factory
   List<Key> get callArgs;
+
   Function call(dom.Element element);
 
   static async.Future<ViewFactory> _viewFuture(
@@ -64,7 +66,7 @@ class ShadowDomComponentFactory implements ComponentFactory {
         componentCssRewriter, treeSanitizer, styleElementCache, resourceResolver);
   }
 
-  bind(DirectiveRef ref, directives, injector) =>
+  BoundShadowDomComponentFactory bind(DirectiveRef ref, directives, injector) =>
       new BoundShadowDomComponentFactory(this, ref, directives, injector);
 }
 
@@ -93,7 +95,8 @@ class BoundShadowDomComponentFactory implements BoundComponentFactory {
 
   List<Key> get callArgs => _CALL_ARGS;
   static final _CALL_ARGS = [DIRECTIVE_INJECTOR_KEY, SCOPE_KEY, VIEW_KEY, NG_BASE_CSS_KEY,
-      SHADOW_BOUNDARY_KEY];
+                             SHADOW_BOUNDARY_KEY];
+
   Function call(dom.Element element) {
     return (DirectiveInjector injector, Scope scope, View view, NgBaseCss baseCss,
         ShadowBoundary parentShadowBoundary) {
@@ -120,8 +123,7 @@ class BoundShadowDomComponentFactory implements BoundComponentFactory {
           if (_viewFuture == null) return new async.Future.value(shadowDom);
           return _viewFuture.then((ViewFactory viewFactory) {
             if (shadowScope.isAttached) {
-              shadowDom.nodes.addAll(
-                  viewFactory.call(shadowInjector.scope, shadowInjector).nodes);
+              shadowDom.nodes.addAll(viewFactory.call(shadowInjector.scope, shadowInjector).nodes);
             }
             return shadowDom;
           });
@@ -136,7 +138,6 @@ class BoundShadowDomComponentFactory implements BoundComponentFactory {
         shadowInjector = new ComponentDirectiveInjector(injector, _injector, eventHandler, shadowScope,
             templateLoader, shadowDom, null, view, shadowBoundary);
 
-
         shadowInjector.bindByKey(_ref.typeKey, _ref.factory, _ref.paramKeys, _ref.annotation.visibility);
 
         if (_componentFactory.config.elementProbeEnabled) {
@@ -144,12 +145,12 @@ class BoundShadowDomComponentFactory implements BoundComponentFactory {
           shadowScope.on(ScopeEvent.DESTROY).listen((ScopeEvent) => _componentFactory.expando[shadowDom] = null);
         }
 
-        var controller = shadowInjector.getByKey(_ref.typeKey);
-        if (controller is ScopeAware) controller.scope = shadowScope;
-        BoundComponentFactory._setupOnShadowDomAttach(controller, templateLoader, shadowScope);
-        shadowScope.context[_component.publishAs] = controller;
+        var cmpInstance = shadowInjector.getByKey(_ref.typeKey);
+        if (cmpInstance is ScopeAware) cmpInstance.scope = shadowScope;
+        BoundComponentFactory._setupOnShadowDomAttach(cmpInstance, templateLoader, shadowScope);
+        shadowScope.context[_component.publishAs] = cmpInstance;
 
-        return controller;
+        return cmpInstance;
       } finally {
         traceLeave(s);
       }

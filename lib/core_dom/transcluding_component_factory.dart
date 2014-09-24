@@ -110,11 +110,11 @@ class BoundTranscludingComponentFactory implements BoundComponentFactory {
         childInjectorCompleter.complete(childInjector);
       }
 
-      var controller = childInjector.getByKey(_ref.typeKey);
-      shadowScope.context[component.publishAs] = controller;
-      if (controller is ScopeAware) controller.scope = shadowScope;
-      BoundComponentFactory._setupOnShadowDomAttach(controller, templateLoader, shadowScope);
-      return controller;
+      var cmpInstance = childInjector.getByKey(_ref.typeKey);
+      shadowScope.context[component.publishAs] = cmpInstance;
+      if (cmpInstance is ScopeAware) cmpInstance.scope = shadowScope;
+      BoundComponentFactory._setupOnShadowDomAttach(cmpInstance, templateLoader, shadowScope);
+      return cmpInstance;
     };
   }
 }

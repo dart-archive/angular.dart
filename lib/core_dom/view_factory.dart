@@ -105,7 +105,7 @@ class ViewFactory implements Function {
         if (linkingInfo.containsNgBinding) {
           var tagged = elementBinders[elementBinderIndex];
           _bindTagged(tagged, elementBinderIndex, rootInjector,
-              elementInjectors, view, node, scope);
+                      elementInjectors, view, node, scope);
           elementBinderIndex++;
         }
 
@@ -122,7 +122,7 @@ class ViewFactory implements Function {
         assert(tagged.binder != null || tagged.isTopLevel);
         if (tagged.binder != null) {
           _bindTagged(tagged, elementBinderIndex, rootInjector,
-              elementInjectors, view, node, scope);
+                      elementInjectors, view, node, scope);
         }
         elementBinderIndex++;
       }

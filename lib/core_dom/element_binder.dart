@@ -273,6 +273,7 @@ class ElementBinder {
         _appInjector.getByKey(EVENT_HANDLER_KEY) :
         eventHandler(parentInjector);
 
+    // Create the node injector
     if (this is TemplateElementBinder) {
       nodeInjector = new TemplateDirectiveInjector(parentInjector, _appInjector, node, nodeAttrs,
           parentEventHandler, scope, _animate, (this as TemplateElementBinder).templateViewFactory,
@@ -282,6 +283,9 @@ class ElementBinder {
           parentEventHandler, scope, _animate, view);
     }
 
+    // Setup the node injector by:
+    // - adding directive factories,
+    // - executing  `annotation.module` when provided by the directive.
     for(var i = 0; i < directiveRefs.length; i++) {
       DirectiveRef ref = directiveRefs[i];
       _createDirectiveFactories(ref, nodeInjector, node, nodeAttrs);
