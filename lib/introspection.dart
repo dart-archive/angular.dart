@@ -176,31 +176,10 @@ js.JsObject _jsScopeFromProbe(ElementProbe probe) =>
 // Proxies a Dart function that accepts up to 10 parameters.
 js.JsFunction _jsFunction(Function fn) {
   const Object X = __varargSentinel;
-  Function fnCopy = fn;  // workaround a bug.
   return new js.JsFunction.withThis(
       (thisArg, [o1=X, o2=X, o3=X, o4=X, o5=X, o6=X, o7=X, o8=X, o9=X, o10=X]) {
-        // Work around a bug in dart 1.4.0 where the closurized variable, fn,
-        // gets mysteriously replaced with our own closure function leading to a
-        // stack overflow.
-        fn = fnCopy;
-        if (o10 == null && identical(o9, X)) {
-          // Work around another bug in dart 1.4.0.  This bug is not present in
-          // dart 1.5.0-dev.2.0.
-          // In dart 1.4.0, when running in Dartium (not dart2js), if you invoke
-          // a JsFunction from Dart code (either by calling .apply([args]) on it
-          // or by calling .callMethod(jsFuncName, [args]) on a JsObject
-          // containing the JsFunction, regardless of whether you specified the
-          // thisArg keyword parameter, the Dart function is called with the
-          // first argument in the thisArg param causing all the arguments to be
-          // shifted by one.  We can detect this by the fact that o10 is null
-          // but o9 is X (should only happen when o9 got a default value) and
-          // work around it by using thisArg as the first parameter.
-          return __invokeFn(fn, thisArg, o1, o2, o3, o4, o5, o6, o7, o8, o9);
-        } else {
-          return __invokeFn(fn, o1, o2, o3, o4, o5, o6, o7, o8, o9, o10);
-        }
-      }
-      );
+        return __invokeFn(fn, o1, o2, o3, o4, o5, o6, o7, o8, o9, o10);
+      });
 }
 
 
