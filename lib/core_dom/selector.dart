@@ -105,10 +105,10 @@ class DirectiveSelector {
           // the value. Yes it is a bit of a hack.
           _directives[selectorRegExp.selector].forEach((DirectiveTypeTuple tuple) {
             // Pre-compute the AST to watch this value.
-            String expression = _interpolate(value);
-            AST valueAST = _astParser(expression, formatters: _formatters);
+            Interpolation interpolation = _interpolate(value);
+            AST valueAST = _astParser(interpolation.expression, formatters: _formatters);
             builder.addDirective(new DirectiveRef(
-                node, tuple.type, tuple.directive, new Key(tuple.type), attrName, valueAST));
+                node, tuple.type, tuple.directive, new Key(tuple.type), attrName, valueAST, interpolation.bindingExpressions));
           });
         }
       }
@@ -143,11 +143,11 @@ class DirectiveSelector {
       if (selectorRegExp.regexp.hasMatch(value)) {
         _directives[selectorRegExp.selector].forEach((tuple) {
           // Pre-compute the AST to watch this value.
-          String expression = _interpolate(value);
-          var valueAST = _astParser(expression, formatters: _formatters);
+          Interpolation interpolation = _interpolate(value);
+          var valueAST = _astParser(interpolation.expression, formatters: _formatters);
 
           builder.addDirective(new DirectiveRef(node, tuple.type,
-              tuple.directive, new Key(tuple.type), value, valueAST));
+              tuple.directive, new Key(tuple.type), value, valueAST, interpolation.bindingExpressions));
         });
       }
     }

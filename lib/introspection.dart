@@ -73,6 +73,14 @@ List<ElementProbe> _findAllProbesInTree(dom.Node node) {
 }
 
 
+dom.Element _nearestElementAncestory(dom.Node node) {
+  if (node.nodeType == dom.Node.ELEMENT_NODE) {
+    return node;
+  } else {
+    return _nearestElementAncestory(node.parentNode);
+  }
+}
+
 /**
  * Return the [ElementProbe] object for the closest [Element] in the hierarchy.
  *
@@ -279,21 +287,26 @@ class _Testability implements _JsObjectProxyable {
    * Returns a list of all nodes in the selected tree that have an `ng-model`
    * binding specified by the [modelString].  If the optional [exactMatch]
    * parameter is provided and true, it restricts the searches to bindings that
-   * are exact matches for [modelString].
+   * are exact matches for [modelString].  If the optional [allowNonElementNodes]
+   * parameter is true, returned values will be the nearest parent node which is
+   * an element.
    */
-  List<dom.Node> findModels(String modelString, [bool exactMatch]) => _findByExpression(
-      modelString, exactMatch, (ElementProbe probe) => probe.modelExpressions);
+  List<dom.Node> findModels(String modelString, [bool exactMatch, bool allowNonElementNodes]) => _findByExpression(
+      modelString, exactMatch, allowNonElementNodes, (ElementProbe probe) => probe.modelExpressions);
 
   /**
    * Returns a list of all nodes in the selected tree that have `ng-bind` or
    * mustache bindings specified by the [bindingString].  If the optional
    * [exactMatch] parameter is provided and true, it restricts the searches to
-   * bindings that are exact matches for [bindingString].
+   * bindings that are exact matches for [bindingString].  If the optional
+   * [allowNonElementNodes] parameter is true, returned values will be the nearest parent
+   * node which is an element.
    */
-  List<dom.Node> findBindings(String bindingString, [bool exactMatch]) => _findByExpression(
-      bindingString, exactMatch, (ElementProbe probe) => probe.bindingExpressions);
+  List<dom.Node> findBindings(String bindingString, [bool exactMatch, bool allowNonElementNodes]) => _findByExpression(
+      bindingString, exactMatch, allowNonElementNodes, (ElementProbe probe) => probe.bindingExpressions);
 
-  List<dom.Node> _findByExpression(String query, bool exactMatch, _GetExpressionsFromProbe getExpressions) {
+  List<dom.Node> _findByExpression(String query, bool exactMatch, bool allowNonElementNodes, _GetExpressionsFromProbe getExpressions) {
+
     List<ElementProbe> probes = _findAllProbesInTree(node);
     if (probes.length == 0) {
       probes.add(_findProbeWalkingUp(node));
@@ -301,8 +314,15 @@ class _Testability implements _JsObjectProxyable {
     List<dom.Node> results = [];
     for (ElementProbe probe in probes) {
       for (String expression in getExpressions(probe)) {
-        if(exactMatch == true ? expression == query : expression.indexOf(query) >= 0) {
-          results.add(probe.element);
+        if (exactMatch == true ? expression == query : expression.indexOf(query) >= 0) {
+          if (allowNonElementNodes == true) {
+            results.add(probe.element);
+          } else {
+            var nearestElement = _nearestElementAncestory(probe.element);
+            if (!results.contains(nearestElement)) {
+              results.add(nearestElement);
+            }
+          }
         }
       }
     }
@@ -319,10 +339,10 @@ class _Testability implements _JsObjectProxyable {
   js.JsObject _toJsObject() {
     return _jsify({
         'allowAnimations': allowAnimations,
-        'findBindings': (bindingString, [exactMatch]) =>
-            findBindings(bindingString, exactMatch),
-        'findModels': (modelExpressions, [exactMatch]) =>
-            findModels(modelExpressions, exactMatch),
+        'findBindings': (bindingString, [exactMatch, allowNonElementNodes]) =>
+            findBindings(bindingString, exactMatch, allowNonElementNodes),
+        'findModels': (modelExpressions, [exactMatch, allowNonElementNodes]) =>
+            findModels(modelExpressions, exactMatch, allowNonElementNodes),
         'whenStable': (callback) =>
             whenStable(() => callback.apply([])),
         'notifyWhenNoOutstandingRequests': (callback) {

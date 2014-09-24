@@ -168,7 +168,7 @@ class NgPluralize {
   void _setAndWatch(template) {
     if (_watch != null) _watch.remove();
     var expression = _expressionCache.putIfAbsent(template, () =>
-        _interpolate(template, false, r'${', '}'));
+        _interpolate(template, false, r'${', '}').expression);
     _watch = _scope.watch(expression, _updateMarkup, formatters: _formatters);
   }
 

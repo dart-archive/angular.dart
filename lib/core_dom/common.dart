@@ -29,8 +29,9 @@ class DirectiveRef {
   final String value;
   final AST valueAST;
   final mappings = <MappingParts>[];
+  final List<String> bindingExpressions;
 
-  DirectiveRef(this.element, type, this.annotation, this.typeKey, [ this.value, this.valueAST ])
+  DirectiveRef(this.element, type, this.annotation, this.typeKey, [ this.value, this.valueAST, this.bindingExpressions ])
       : type = type,
         factory = Module.DEFAULT_REFLECTOR.factoryFor(type),
         paramKeys = Module.DEFAULT_REFLECTOR.parameterKeysFor(type);
