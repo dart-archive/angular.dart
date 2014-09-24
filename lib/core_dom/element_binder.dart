@@ -264,10 +264,9 @@ class ElementBinder {
   }
 
   DirectiveInjector bind(View view, Scope scope, DirectiveInjector parentInjector, dom.Node node) {
-    var nodeAttrs = node is dom.Element ? new NodeAttrs(node) : null;
-
-    var directiveRefs = _usableDirectiveRefs;
     if (!hasDirectivesOrEvents) return parentInjector;
+    var nodeAttrs = node is dom.Element ? new NodeAttrs(node) : null;
+    var directiveRefs = _usableDirectiveRefs;
 
     DirectiveInjector nodeInjector;
     var parentEventHandler = parentInjector == null ?
@@ -285,12 +284,9 @@ class ElementBinder {
 
     for(var i = 0; i < directiveRefs.length; i++) {
       DirectiveRef ref = directiveRefs[i];
-      Directive annotation = ref.annotation;
       _createDirectiveFactories(ref, nodeInjector, node, nodeAttrs);
-      if (ref.annotation.module != null) {
-        DirectiveBinderFn config = ref.annotation.module;
-        if (config != null) config(nodeInjector);
-      }
+      DirectiveBinderFn config = ref.annotation.module;
+      if (config != null) config(nodeInjector);
       if (_config.elementProbeEnabled && ref.valueAST != null) {
         nodeInjector.elementProbe.bindingExpressions.add(ref.valueAST.expression);
       }
