@@ -297,7 +297,7 @@ class ElementBinder {
         if (config != null) config(nodeInjector);
       }
       if (_config.elementProbeEnabled && ref.valueAST != null) {
-        nodeInjector.elementProbe.bindingExpressions.add(ref.valueAST.expression);
+        nodeInjector.elementProbe.bindingExpressions.addAll(ref.valueAST.getBindings());
       }
     }
 

@@ -2,6 +2,86 @@ library angular.core.parser.unparser;
 
 import 'package:angular/core/parser/syntax.dart';
 
+class BindingUnparser extends Visitor {
+  List<String> bindings;
+
+  BindingUnparser(this.bindings);
+
+  static List<String> unparse(Expression expression) {
+    List<String> bindings = [];
+    BindingUnparser unparser = new BindingUnparser(bindings);
+    unparser.visit(expression);
+    return bindings;
+  }
+
+  void visitChain(Chain chain) {
+    for (int i = 0; i < chain.expressions.length; i++) {
+      visit(chain.expressions[i]);
+    }
+  }
+
+  void visitFormatter(Formatter formatter) {
+    visit(formatter.expression);
+    for (int i = 0; i < formatter.arguments.length; i++) {
+      visit(formatter.arguments[i]);
+    }
+  }
+
+  void visitAssign(Assign assign) {
+    visit(assign.target);
+    visit(assign.value);
+  }
+
+  void visitConditional(Conditional conditional) {
+    visit(conditional.condition);
+    visit(conditional.yes);
+    visit(conditional.no);
+  }
+
+  void visitAccessMember(AccessMember access) {
+    visit(access.object);
+  }
+
+  void visitAccessKeyed(AccessKeyed access) {
+    visit(access.object);
+    visit(access.key);
+  }
+
+  void visitCallFunction(CallFunction call) {
+    visit(call.function);
+  }
+
+  void visitCallMember(CallMember call) {
+    visit(call.object);
+  }
+
+  void visitPrefix(Prefix prefix) {
+    visit(prefix.expression);
+  }
+
+  void visitBinary(Binary binary) {
+    visit(binary.left);
+    visit(binary.right);
+  }
+
+  void visitLiteralArray(LiteralArray literal) {
+    for (int i = 0; i < literal.elements.length; i++) {
+      visit(literal.elements[i]);
+    }
+  }
+
+  void visitLiteralObject(LiteralObject literal) {
+    List<String> keys = literal.keys;
+    for (int i = 0; i < keys.length; i++) {
+      visit(literal.values[i]);
+    }
+  }
+
+  void visitAccessScope(AccessScope access) {
+    bindings.add(access.name);
+  }
+}
+
 class Unparser extends Visitor {
   final StringBuffer buffer;
   Unparser(this.buffer);

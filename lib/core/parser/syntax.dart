@@ -1,7 +1,7 @@
 library angular.core.parser.syntax;
 
 import 'package:angular/core/parser/parser.dart' show LocalsWrapper;
-import 'package:angular/core/parser/unparser.dart' show Unparser;
+import 'package:angular/core/parser/unparser.dart' show Unparser, BindingUnparser;
 import 'package:angular/core/parser/utils.dart' show EvalError;
 import 'package:angular/core/formatter.dart' show FormatterMap;
 
@@ -48,6 +48,7 @@ abstract class Expression {
 
   accept(Visitor visitor);
   String toString() => Unparser.unparse(this);
+  List<String> getBindings() => BindingUnparser.unparse(this);
 }
 
 class BoundExpression {

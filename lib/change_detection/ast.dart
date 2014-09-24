@@ -19,6 +19,7 @@ abstract class AST {
   }
   WatchRecord<_Handler> setupWatch(WatchGroup watchGroup);
   String toString() => expression;
+  List<String> getBindings() => parsedExp.getBindings();
 }
 
 /**
