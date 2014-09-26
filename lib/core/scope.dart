@@ -516,6 +516,7 @@ class Scope {
       rootScope._domReadCounter --;
       _domReadHead = _domReadHead._next;
     }
+    _domReadTail = null;
   }
 
 
