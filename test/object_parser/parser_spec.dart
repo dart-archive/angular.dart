@@ -1,9 +1,9 @@
-library converter_spec;
+library object_parser_spec;
 import '../_specs.dart';
-import 'package:angular/converter/module.dart';
+import 'package:angular/object_parser/module.dart';
 
 main() {
-  describe('converter', () {
+  describe('object_parser', () {
     describe('JsonParser reviver', () {
       it('should decode datetime iso formats without timezone', () {
         DateTime standardDate = new DateTime(1970, 1, 1);
@@ -59,7 +59,7 @@ main() {
         JsonParser parser = new JsonParser();
         expect(parser.toEncodable(dateTime)).toEqual(dateTime.toIso8601String());
       });
-      it('should use return the item if not date', () {
+      it('should return the item if not date', () {
         String item = "Item";
         JsonParser parser = new JsonParser();
         expect(parser.toEncodable(item)).toEqual(item);
