@@ -77,7 +77,7 @@ import 'package:angular/formatter/module_internal.dart';
 import 'package:angular/routing/module.dart';
 import 'package:angular/introspection.dart';
 import 'package:angular/ng_tracing.dart';
-import 'package:angular/converter/module.dart';
+import 'package:angular/object_parser/module.dart';
 
 import 'package:angular/core_dom/static_keys.dart';
 import 'package:angular/core_dom/directive_injector.dart';
@@ -102,7 +102,7 @@ class AngularModule extends Module {
     install(new JsCacheModule());
     install(new PerfModule());
     install(new RoutingModule());
-    install(new ConverterModule());
+    install(new ParserModule());
 
     bind(Expando, toValue: elementExpando);
   }

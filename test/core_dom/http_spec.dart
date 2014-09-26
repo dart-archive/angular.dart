@@ -3,7 +3,7 @@ library http_spec;
 import '../_specs.dart';
 
 import 'dart:async';
-import 'package:angular/converter/module.dart';
+import 'package:angular/object_parser/module.dart';
 
 var VALUE = 'val';
 var CACHED_VALUE = 'cached_value';
@@ -1327,7 +1327,7 @@ void main() {
           describe('with custom JsonParser',(){
             beforeEachModule((Module module) {
               var duration = new Duration(milliseconds: 100);
-              module.bind(JsonParser, toValue: new CustomJsonParser());
+              module.bind(ObjectParser, toValue: new CustomJsonParser());
             });
 
             it('should transform json using custom parser', async((){
@@ -1437,7 +1437,7 @@ void main() {
           describe('with custom JsonParser',(){
             beforeEachModule((Module module) {
               var duration = new Duration(milliseconds: 100);
-              module.bind(JsonParser, toValue: new CustomJsonParser());
+              module.bind(ObjectParser, toValue: new CustomJsonParser());
             });
 
             it('should deserialize objects using custom json reviver function', async(() {
@@ -1526,7 +1526,7 @@ class FakeFile implements File {
   Blob slice([int start, int end, String contentType]) => null;
   int get lastModified => new DateTime.now().millisecondsSinceEpoch;
 }
-class CustomJsonParser implements JsonParser {
+class CustomJsonParser extends JsonParser {
   @override
   dynamic toEncodable(dynamic item){
     if(item is DateTime){

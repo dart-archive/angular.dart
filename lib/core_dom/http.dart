@@ -76,20 +76,20 @@ class HttpInterceptor {
 * parse them into [Map]s.
 */
 class DefaultTransformDataHttpInterceptor implements HttpInterceptor {
-  static JsonParser _jsonParser;
+  static ObjectParser _parser;
 
-  DefaultTransformDataHttpInterceptor([JsonParser parser]) {
+  DefaultTransformDataHttpInterceptor([ObjectParser parser]) {
     if(parser != null) {
-      _jsonParser = parser;
+      _parser = parser;
     }else {
-      _jsonParser = new JsonParser();
+      _parser = new JsonParser();
     }
   }
   
   Function request = (HttpResponseConfig config) {
     if (config.data != null && config.data is! String &&
         config.data is! dom.File) {
-      config.data = JSON.encode(config.data, toEncodable: _jsonParser.toEncodable );
+      config.data = _parser.encode(config.data);
     }
     return config;
   };
@@ -101,7 +101,7 @@ class DefaultTransformDataHttpInterceptor implements HttpInterceptor {
     if (r.data is String) {
       var d = r.data.replaceFirst(_PROTECTION_PREFIX, '');
       if (d.contains(_JSON_START) && d.contains(_JSON_END)) {
-        d = JSON.decode(d, reviver: _jsonParser.reviver);
+        d = _parser.decode(d);
       }
       return new HttpResponse.copy(r, data: d);
     }
@@ -139,9 +139,9 @@ class HttpInterceptors {
   }
 
   /**
-   * Default constructor. Inject a JsonParser
+   * Default constructor. Inject a Parser
    */
-  HttpInterceptors([JsonParser parser]) {
+  HttpInterceptors([ObjectParser parser]) {
     _interceptors = [new DefaultTransformDataHttpInterceptor(parser)];
   }
 

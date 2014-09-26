@@ -1,10 +1,9 @@
-part of angular.converter;
+part of angular.object_parser;
 /**
  * This parser is used for Http Service Interceptor to create and consume
  * Json Serialization
  */
-@Injectable()
-class JsonParser {
+class JsonParser implements ObjectParser {
   /**
    * This function is called for serialization. It follow dart SDK JSON.encode toEncodable function signature
    */
@@ -38,5 +37,15 @@ class JsonParser {
       }
     }
     return value;
+  }
+
+  @override
+  String encode(Object source) {
+    return JSON.encode(source, toEncodable: toEncodable);
+  }
+
+  @override
+  dynamic decode(String source) {
+    return JSON.decode(source, reviver: reviver);
   }
 }
