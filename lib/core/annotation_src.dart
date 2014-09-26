@@ -492,3 +492,10 @@ class Formatter {
 
   String toString() => 'Formatter: $name';
 }
+
+/**
+ * Use the @[EventEmitter] class annotation to inject event emitters into a component.
+ */
+class EventEmitter {
+  const EventEmitter();
+}

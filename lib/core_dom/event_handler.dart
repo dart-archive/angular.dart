@@ -39,10 +39,10 @@ class EventHandler {
    * Register an event. This makes sure that  an event (of the specified name)
    * which bubbles to this node, gets processed by this [EventHandler].
    */
-  void register(String eventName) {
-    _listeners.putIfAbsent(eventName, () {
+  void register(EventAttribute eventAttr) {
+    _listeners.putIfAbsent(eventAttr.eventName, () {
       dom.EventListener eventListener = this._eventListener;
-      _rootNode.on[eventName].listen(eventListener);
+      _rootNode.on[eventAttr.eventName].listen(eventListener);
       return eventListener;
     });
   }
@@ -51,12 +51,13 @@ class EventHandler {
     dom.Node element = event.target;
     while (element != null && element != _rootNode) {
       var expression;
-      if (element is dom.Element)
-        expression = (element as dom.Element).attributes[eventNameToAttrName(event.type)];
+      if (element is dom.Element) {
+        expression = _readEventAttribute(element, event);
+      }
       if (expression != null) {
         try {
           var scope = _getScope(element);
-          if (scope != null) scope.eval(expression);
+          if (scope != null) scope.eval(expression, {"event" : event});
         } catch (e, s) {
           _exceptionHandler(e, s);
         }
@@ -77,17 +78,17 @@ class EventHandler {
     return null;
   }
 
-  /**
-  * Converts event name into attribute name.
-  */
-  static String eventNameToAttrName(String eventName) => 'on-$eventName';
+  String _readEventAttribute(dom.Element element, dom.Event event) {
+    var attr = element.attributes["on-${event.type}"];
+    if (attr != null) return attr;
 
-  /**
-  * Converts attribute name into event name.
-  */
-  static String attrNameToEventName(String attrName) {
-    assert(attrName.startsWith('on-'));
-    return attrName.substring(3);
+    attr = element.attributes["(^${event.type})"];
+    if (attr != null) return attr;
+
+    attr = element.attributes["(${event.type})"];
+    if (attr != null && event.target == element) return attr;
+
+    return null;
   }
 }
 

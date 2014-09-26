@@ -209,7 +209,23 @@ main() {
 
       it('should collect on-* attributes', () {
         ElementBinder binder = selector(e('<input on-click="foo" on-blah="fad"></input>'));
-        expect(binder.onEvents).toEqual({'on-click': 'foo', 'on-blah': 'fad'});
+
+        expect(binder.onEvents).toContain(new EventAttribute('on-click', true, 'foo'));
+        expect(binder.onEvents).toContain(new EventAttribute('on-blah', true, 'fad'));
+      });
+
+      it('should collect (^*) attributes', () {
+        ElementBinder binder = selector(e('<input (^click)="foo" (^blah)="fad"></input>'));
+
+        expect(binder.onEvents).toContain(new EventAttribute('on-click', true, 'foo'));
+        expect(binder.onEvents).toContain(new EventAttribute('on-blah', true, 'fad'));
+      });
+
+      it('should collect (*) attributes', () {
+        ElementBinder binder = selector(e('<input (click)="foo" (blah)="fad"></input>'));
+
+        expect(binder.onEvents).toContain(new EventAttribute('on-click', false, 'foo'));
+        expect(binder.onEvents).toContain(new EventAttribute('on-blah', false, 'fad'));
       });
 
       it('should collect bind-* attributes', () {

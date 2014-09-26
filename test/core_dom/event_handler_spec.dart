@@ -38,20 +38,51 @@ main() {
       return ngAppElement.firstChild;
     }
 
-    it('should register and handle event', (TestBed _) {
-      var e = compile(_,
-        '''<div on-abc="invoked=true;"></div>''');
+    it('should register and handle event using on-* syntax', (TestBed _) {
+      var e = compile(_, '''<div on-abc="invoked=true;"></div>''');
 
       _.triggerEvent(e, 'abc');
-      expect(_.rootScope.context['invoked']).toEqual(true);
+
+      expect(_.rootScope.context['invoked']).toBeTrue();
+    });
+
+    it('should expose event', (TestBed _) {
+      var e = compile(_, '''<div on-abc="storedEvent=event;"></div>''');
+
+      _.triggerEvent(e, 'abc', 'MouseEvent');
+
+      expect(_.rootScope.context['storedEvent']).toBeAnInstanceOf(MouseEvent);
+    });
+
+    it('should register and handle event using (^*) syntax', (TestBed _) {
+      var e = compile(_, '''<div (^abc)="invoked=true;"></div>''');
+
+      _.triggerEvent(e, 'abc');
+
+      expect(_.rootScope.context['invoked']).toBeTrue();
+    });
+
+    it('should register and handle event using (*) syntax', (TestBed _) {
+      var e = compile(_, '''<div (abc)="invoked=true;"></div>''');
+
+      _.triggerEvent(e, 'abc');
+
+      expect(_.rootScope.context['invoked']).toBeTrue();
+    });
+
+    it('should call (*) event handlers only when the target is the element it self', (TestBed _) {
+      var e = compile(_, '''<div (abc)="invoked=true;"><span></span></div>''');
+
+      _.triggerEvent(e.querySelector("span"), 'abc');
+
+      expect(_.rootScope.context['invoked']).toBeNull();
     });
 
     it('shoud register and handle event with long name', (TestBed _) {
-      var e = compile(_,
-        '''<div on-my-new-event="invoked=true;"></div>''');
+      var e = compile(_, '''<div on-my-new-event="invoked=true;"></div>''');
 
       _.triggerEvent(e, 'my-new-event');
-      expect(_.rootScope.context['invoked']).toEqual(true);
+      expect(_.rootScope.context['invoked']).toBeTrue();
     });
 
     it('shoud have model updates applied correctly', (TestBed _) {
