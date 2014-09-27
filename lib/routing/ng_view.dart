@@ -65,36 +65,38 @@ class NgView implements DetachAware, RouteProvider {
   final DirectiveInjector _dirInjector;
   final Element _element;
   final Scope _scope;
-  RouteHandle _route;
+  RouteHandle _parentRoute;
 
   View _view;
   Scope _childScope;
   Route _viewRoute;
 
-  NgView(this._element, this._viewCache, DirectiveInjector dirInjector, this._appInjector,
-         Router router, this._scope)
-      : _dirInjector = dirInjector,
-        _locationService = dirInjector.getByKey(NG_ROUTING_HELPER_KEY)
+  NgView(this._element, this._viewCache, this._dirInjector, this._appInjector,
+         Router router, this._scope, this._locationService)
   {
-    RouteProvider routeProvider = dirInjector.getFromParentByKey(NG_VIEW_KEY);
-    _route = routeProvider != null ?
+    RouteProvider routeProvider = _dirInjector.getFromParentByKey(NG_VIEW_KEY);
+    // Get the parent route
+    // - from the parent `NgView` when it exists,
+    // - from the router root otherwise.
+    _parentRoute = routeProvider != null ?
         routeProvider.route.newHandle() :
         router.root.newHandle();
     _locationService._registerPortal(this);
     _maybeReloadViews();
   }
 
+  /// Reload the child views when the `_parentRoute` is active
   void _maybeReloadViews() {
-    if (_route.isActive) _locationService._reloadViews(startingFrom: _route);
+    if (_parentRoute.isActive) _locationService._reloadViews(startingFrom: _parentRoute);
   }
 
   void detach() {
-    _route.discard();
+    _parentRoute.discard();
     _locationService._unregisterPortal(this);
     _cleanUp();
   }
 
-  void _show(_View viewDef, Route route, List<Module> modules) {
+  void _show(_View viewDef, Route route) {
     assert(route.isActive);
 
     if (_viewRoute != null) return;
@@ -110,14 +112,15 @@ class NgView implements DetachAware, RouteProvider {
 
     Injector viewInjector = _appInjector;
 
-    if (modules != null) {
-      viewInjector = createChildInjectorWithReload(_appInjector, modules);
-    }
+    List<Module> modules = viewDef.modules;
+    if (modules != null) viewInjector = createChildInjectorWithReload(_appInjector, modules);
 
     var newDirectives = viewInjector.getByKey(DIRECTIVE_MAP_KEY);
+
     var viewFuture = viewDef.templateHtml != null ?
         new Future.value(_viewCache.fromHtml(viewDef.templateHtml, newDirectives)) :
         _viewCache.fromUrl(viewDef.template, newDirectives, Uri.base);
+
     viewFuture.then((ViewFactory viewFactory) {
       _cleanUp();
       _childScope = _scope.createProtoChild();
@@ -135,19 +138,22 @@ class NgView implements DetachAware, RouteProvider {
     _childScope = null;
   }
 
+  /// implements `RouteProvider.route`
   Route get route => _viewRoute;
 
+  /// implements `RouteProvider.routeName`
   String get routeName => _viewRoute.name;
 
+  /// implements `RouteProvider.parameters`
   Map<String, String> get parameters {
     var res = new HashMap<String, String>();
     var p = _viewRoute;
-    while (p != null) {
+    for (Route p = _viewRoute; p != null; p = p.parent) {
       res.addAll(p.parameters);
-      p = p.parent;
     }
     return res;
   }
+
   /**
    * Creates a child injector that allows loading new directives, formatters and
    * services from the provided modules.
