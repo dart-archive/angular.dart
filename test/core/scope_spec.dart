@@ -11,7 +11,6 @@ void main() {
     beforeEachModule((Module module) {
       Map context = {};
       module
-          ..bind(ChangeDetector, toImplementation: DirtyCheckingChangeDetector)
           ..bind(Object, toValue: context)
           ..bind(Map, toValue: context)
           ..bind(RootScope)
@@ -1761,6 +1760,7 @@ class FormatterTwo {
   }
 }
 
+@Injectable()
 class MockScopeStatsEmitter implements ScopeStatsEmitter {
   bool invoked = false;
 

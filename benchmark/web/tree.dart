@@ -30,7 +30,7 @@ class TreeComponent {
     publishAs: 'ctrl',
     useShadowDom: false)
 class TranscludingTreeComponent extends TreeComponent {}
-  
+
 
 @Component(
     selector: 'tree-url',
@@ -209,19 +209,19 @@ class FreeTreeClass {
         s.text = " $v";
       }
     });
-    
+
     scope.watchAST(treeRightNotNullAST, (v, _) {
       if (v != true) return;
       s.append(new SpanElement()
           ..append(new FreeTreeClass(scope, treeRightAST).element()));
     });
-    
+
     scope.watchAST(treeLeftNotNullAST, (v, _) {
       if (v != true) return;
       s.append(new SpanElement()
         ..append(new FreeTreeClass(scope, treeLeftAST).element()));
     });
-    
+
     return elt;
   }
 }
@@ -264,22 +264,28 @@ class NgFreeTreeClass implements ShadowRootAware {
 }
 
 
+class AppModule extends Module {
+  AppModule() {
+    bind(TreeComponent);
+    bind(TranscludingTreeComponent);
+    bind(TreeUrlComponent);
+    bind(TranscludingTreeUrlComponent);
+    bind(NgFreeTree);
+    bind(NgFreeTreeScoped);
+    bind(NgFreeTreeClass);
+    bind(ScopeDigestTTL, toFactory: () => new ScopeDigestTTL.value(15), inject: []);
+    bind(CompilerConfig, toValue: new CompilerConfig.withOptions(elementProbeEnabled: false));
+  }
+}
+
 // Main function runs the benchmark.
 main() {
   var cleanup, createDom;
 
-  var module = new Module()
-      ..bind(TreeComponent)
-      ..bind(TranscludingTreeComponent)
-      ..bind(TreeUrlComponent)
-      ..bind(TranscludingTreeUrlComponent)
-      ..bind(NgFreeTree)
-      ..bind(NgFreeTreeScoped)
-      ..bind(NgFreeTreeClass)
-      ..bind(ScopeDigestTTL, toFactory: () => new ScopeDigestTTL.value(15), inject: [])
-      ..bind(CompilerConfig, toValue: new CompilerConfig.withOptions(elementProbeEnabled: false));
+  var injector = applicationFactory()
+      .addModule(new AppModule())
+      .run();
 
-  var injector = applicationFactory().addModule(module).run();
   assert(injector != null);
 
   // Set up ASTs

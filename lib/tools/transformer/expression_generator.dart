@@ -14,6 +14,7 @@ import 'package:angular/tools/transformer/referenced_uris.dart';
 import 'package:barback/barback.dart';
 import 'package:code_transformers/resolver.dart';
 import 'package:di/di.dart';
+import 'package:di/annotations.dart';
 import 'package:di/src/reflector_dynamic.dart';
 import 'package:path/path.dart' as path;
 
@@ -156,6 +157,7 @@ class _LibrarySourceCrawler implements SourceCrawler {
   }
 }
 
+@Injectable()
 class _ParserGetterSetter {
   final Parser parser;
   final ParserBackend backend;

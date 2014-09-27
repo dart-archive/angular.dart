@@ -18,7 +18,7 @@ packages:
   barback:
     description: barback
     source: hosted
-    version: "0.14.0+3"
+    version: "0.14.2"
   browser:
     description: browser
     source: hosted
@@ -34,7 +34,7 @@ packages:
   di:
     description: di
     source: hosted
-    version: "2.0.2"
+    version: "3.1.1"
   html5lib:
     description: html5lib
     source: hosted
@@ -42,7 +42,7 @@ packages:
   intl:
     description: intl
     source: hosted
-    version: "0.11.6"
+    version: "0.11.8"
   logging:
     description: logging
     source: hosted
@@ -59,6 +59,14 @@ packages:
     description: perf_api
     source: hosted
     version: "0.0.9"
+  petitparser:
+    description: petitparser
+    source: hosted
+    version: "1.2.2"
+  pool:
+    description: pool
+    source: hosted
+    version: "1.0.1"
   quiver:
     description: quiver
     source: hosted
@@ -78,7 +86,7 @@ packages:
   stack_trace:
     description: stack_trace
     source: hosted
-    version: "0.9.3+2"
+    version: "1.0.2"
   typed_mock:
     description: typed_mock
     source: hosted
@@ -94,4 +102,4 @@ packages:
   web_components:
     description: web_components
     source: hosted
-    version: "0.6.0+1"
+    version: "0.7.0+1"

@@ -228,25 +228,44 @@ var _CHILDREN = new Key(_Local);
 var _LOCAL = new Key(_Local);
 var _TYPE0 = new Key(_Local);
 
+@Injectable()
 class _Children{}
+@Injectable()
 class _Local{}
+@Injectable()
 class _Direct{}
+@Injectable()
 class _Any{}
+@Injectable()
 class _Root{ }
+@Injectable()
 class _Type0{ final _Root root;   _Type0(this.root); }
+@Injectable()
 class _Type1{ final _Type0 type0; _Type1(this.type0); }
+@Injectable()
 class _Type2{ final _Type1 type1; _Type2(this.type1); }
+@Injectable()
 class _Type3{ final _Type2 type2; _Type3(this.type2); }
+@Injectable()
 class _Type4{ final _Type3 type3; _Type4(this.type3); }
+@Injectable()
 class _Type5{ final _Type4 type4; _Type5(this.type4); }
+@Injectable()
 class _Type6{ final _Type5 type5; _Type6(this.type5); }
+@Injectable()
 class _Type7{ final _Type6 type6; _Type7(this.type6); }
+@Injectable()
 class _Type8{ final _Type7 type7; _Type8(this.type7); }
+@Injectable()
 class _Type9{ final _Type8 type8; _Type9(this.type8); }
+@Injectable()
 class _TypeA{ final _Type9 type9; _TypeA(this.type9); }
 
+@Injectable()
 class _TypeC0 {final _TypeC1 t; _TypeC0(this.t);}
+@Injectable()
 class _TypeC1 {final _TypeC2 t; _TypeC1(this.t);}
+@Injectable()
 class _TypeC2 {final _TypeC1 t; _TypeC2(this.t);}
 
 class _InvalidVisibility {}
