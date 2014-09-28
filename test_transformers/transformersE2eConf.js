@@ -27,7 +27,7 @@ var config = {
       showColors: true, // print colors to the terminal.
       includeStackTrace: true, // include stack traces in failures.
       defaultTimeoutInterval: 80000 // wait time in ms before failing a test.
-    },
+    }
 };
 
 configQuery.updateConfigForBrowsers(config, process.env.BROWSERS.split(","), 1);
