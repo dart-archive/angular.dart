@@ -2,6 +2,7 @@ library compiler_spec;
 
 import '../_specs.dart';
 import 'package:angular/core_dom/directive_injector.dart';
+import 'package:angular/core_dom/query.dart';
 
 
 withElementProbeConfig(fn) {
@@ -1117,6 +1118,54 @@ void main() {
         expect(logger).toContain('LazyPane-0');
       }));
     });
+
+    describe("Query", () {
+      beforeEachModule((Module m) {
+        m.bind(QueriedComponent);
+        m.bind(QueryingComponent);
+      });
+
+      it("should update the query when the component gets compiled", async((Logger log) {
+        _.compile("<querying-component>"
+          "<queried-component name='a'></<queried-component>"
+          "<queried-component name='b'></<queried-component>"
+        "</querying-component>");
+
+        _.rootScope.apply();
+        microLeap();
+
+        expect(log).toEqual(["ab"]);
+      }));
+
+      it("should update the query when the elements are removed", async((Logger log) {
+        _.rootScope.context['show'] = true;
+
+        _.compile("<querying-component>"
+          "<queried-component name='a'></<queried-component>"
+          "<span ng-if='show'><queried-component name='b'></<queried-component></span>"
+        "</querying-component>");
+        _.rootScope.apply();
+
+        _.rootScope.context['show'] = false;
+        _.rootScope.apply();
+
+        expect(log).toEqual(["a", "ab", "a"]);
+      }));
+
+      it("should update the query when the elements are moved", async((Logger log) {
+        _.rootScope.context["names"] = ['a', 'b'];
+
+        _.compile("<querying-component>"
+          """<queried-component ng-repeat="name in names" name='{{name}}'></<queried-component>"""
+        "</querying-component>");
+        _.rootScope.apply();
+
+        _.rootScope.context["names"] = ['b', 'a'];
+        _.rootScope.apply();
+
+        expect(log).toEqual(["ab", "ba"]);
+      }));
+    });
   }));
 }
 
@@ -1654,6 +1703,28 @@ class InnerInnerComponent {
     templateUrl: 'template.html'
 )
 class TemplateUrlComponent {
+}
+
+@Component(
+    selector: 'querying-component',
+    template: "<content></content>"
+)
+class QueryingComponent {
+  Query children;
+
+  QueryingComponent(this.children, Logger log) {
+    children.onChange = () {
+      log(children.map((c) => c.name).join(""));
+    };
+  }
+}
+
+@Component(
+    selector: 'queried-component',
+    template: 'queried-component'
+)
+class QueriedComponent {
+  @NgAttr("name") String name;
 }
 
 _shadowScope(element){

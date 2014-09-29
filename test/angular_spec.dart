@@ -227,6 +227,7 @@ main() {
         "angular.introspection.ngQuery",
         "angular.introspection.ngScope",
         "angular.node_injector.DirectiveInjector",
+        "angular.query.Query",
         "angular.routing.NgBindRoute",
         "angular.routing.NgRouteCfg",
         "angular.routing.NgRoutingHelper",

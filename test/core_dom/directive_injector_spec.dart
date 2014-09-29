@@ -220,6 +220,14 @@ void main() {
           expect(() => leafInjector.get(_LOCAL)).toThrow();
         });
       });
+
+      describe("children", () {
+        it("should maintain a list of children", () {
+          final c1 = new DirectiveInjector(injector, appInjector, span, null, null, null, null, null);
+          final c2 = new DirectiveInjector(injector, appInjector, span, null, null, null, null, null);
+          expect(injector.children).toEqual([c1, c2]);
+        });
+      });
     });
   });
 }
