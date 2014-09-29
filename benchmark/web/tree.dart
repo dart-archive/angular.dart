@@ -263,11 +263,11 @@ class NgFreeTreeClass implements ShadowRootAware {
   }
 }
 
-class Tree {
+class TreeNode {
   var value;
   var left;
   var right;
-  Tree([this.value, this.left, this.right]);
+  TreeNode([this.value, this.left, this.right]);
   operator[](key) {
     switch (key) {
       case 'value': return value;
@@ -308,17 +308,17 @@ main() {
   Scope scope = injector.get(Scope);
 
   scope.context['initData'] =
-      new Tree("top", new Tree("left"), new Tree(null, "right"));
+      new TreeNode("top", new TreeNode("left"), new TreeNode(null, "right"));
 
   buildTree(maxDepth, values, curDepth) {
-    if (maxDepth == curDepth) return new Tree();
-    return new Tree(
+    if (maxDepth == curDepth) return new TreeNode();
+    return new TreeNode(
         values[curDepth],
         buildTree(maxDepth, values, curDepth+1),
         buildTree(maxDepth, values, curDepth+1));
   }
   cleanup = (_) => zone.run(() {
-    scope.context['initData'] = new Tree();
+    scope.context['initData'] = new TreeNode();
   });
 
   var count = 0;
