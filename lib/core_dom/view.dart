@@ -80,6 +80,12 @@ class ViewPort {
     return view;
   }
 
+  void removeAll() {
+    while (views.isNotEmpty) {
+      remove(views.first);
+    }
+  }
+
   View move(View view, { View moveAfter }) {
     dom.Node previousNode = _lastNode(moveAfter);
     views.remove(view);
