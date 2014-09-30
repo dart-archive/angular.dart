@@ -7,7 +7,7 @@
     "url": "https://github.com/angular/angular.dart.git"
   },
   "devDependencies": {
-    "karma" : "~0.12.0",
+    "karma" : "git://github.com/karma-runner/karma.git#master",
     "karma-dart" : "~0.2.8",
     "karma-sauce-launcher": "^0.2.3",
     "karma-script-launcher": "*",
