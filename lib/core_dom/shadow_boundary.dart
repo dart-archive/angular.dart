@@ -16,19 +16,39 @@ abstract class ShadowBoundary {
     if (elements.isEmpty) return;
 
     final newStyles = _newStyles(elements);
-    final cloned = newStyles.map((el) => el.clone(true));
+    if (newStyles.isEmpty) return;
 
-    cloned.forEach((style) {
-      if (_lastStyleElement != null && !prepend) {
-        _lastStyleElement = root.insertBefore(style, _lastStyleElement.nextNode);
-      } else if (root.hasChildNodes()) {
-        _lastStyleElement = root.insertBefore(style, root.firstChild);
-      } else {
-        _lastStyleElement = root.append(style);
-      }
-    });
+    final cloned = newStyles.map((el) => el.clone(true)).toList();
+    if (_lastStyleElement == null) {
+      _insertFirstStyles(cloned);
+    } else {
+      _insertStyles(cloned, prepend);
+    }
 
     _addInsertedStyles(newStyles);
+  }
+
+  _insertFirstStyles(List<dom.StyleElement> elements) {
+    elements.reversed.forEach(_insertFrontNode);
+    _lastStyleElement = elements.last;
+  }
+
+  _insertStyles(List<dom.StyleElement> elements, bool prepend) {
+    if (prepend) {
+      elements.reversed.forEach(_insertFrontNode);
+    } else {
+      final next = _lastStyleElement.nextNode;
+      root.insertAllBefore(elements, next);
+      _lastStyleElement = elements.last;
+    }
+  }
+
+  _insertFrontNode(dom.StyleElement style) {
+    if (root.hasChildNodes()) {
+      return root.insertBefore(style, root.firstChild);
+    } else {
+      return root.append(style);
+    }
   }
 
   Iterable<dom.StyleElement> _newStyles(Iterable<dom.StyleElement> elements) {
