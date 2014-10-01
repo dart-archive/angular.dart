@@ -42,6 +42,7 @@ class NgInclude {
   }
 
   _updateContent(ViewFactory viewFactory) {
+    if (scope.isDestroyed) return;
     // create a new scope
     _childScope = scope.createProtoChild();
     _view = viewFactory(_childScope, directiveInjector);
