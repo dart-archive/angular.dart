@@ -4,6 +4,8 @@ import 'dart:collection';
 import 'package:angular/change_detection/change_detection.dart';
 import 'package:angular/change_detection/watch_group.dart';
 
+class ValueUnavaiable{}
+
 /**
  * [DirtyCheckingChangeDetector] determines which object properties have changed
  * by comparing them to the their previous value.
@@ -388,6 +390,10 @@ class DirtyCheckingRecord<H> implements WatchRecord<H> {
   static const int _MODE_MAP_FIELD_ = 5;
   static const int _MODE_ITERABLE_ = 6;
   static const int _MODE_MAP_ = 7;
+  
+  
+  
+  static ValueUnavaiable _VALUE_UNAVAIABLE_ = new ValueUnavaiable();
 
   final DirtyCheckingChangeDetectorGroup _group;
   final FieldGetterFactory _fieldGetterFactory;
@@ -488,6 +494,15 @@ class DirtyCheckingRecord<H> implements WatchRecord<H> {
     }
   }
 
+  dynamic _safeGetter(object){
+    try{
+      return _getter(object);
+    }
+    catch(ex){
+      return _VALUE_UNAVAIABLE_;
+    }
+  }
+  
   bool check() {
     assert(_mode != null);
     var current;
@@ -497,7 +512,7 @@ class DirtyCheckingRecord<H> implements WatchRecord<H> {
       case _MODE_NOOP_:
         return false;
       case _MODE_GETTER_:
-        current = _getter(object);
+        current = _safeGetter(object);
         break;
       case _MODE_GETTER_OR_METHOD_CLOSURE_:
         // NOTE: When Dart looks up a method "foo" on object "x", it returns a
@@ -505,8 +520,8 @@ class DirtyCheckingRecord<H> implements WatchRecord<H> {
         // identical().  There's no point getting a new value each time and
         // decide it's the same so we'll skip further checking after the first
         // time.
-        current = _getter(object);
-        if (current is Function && !identical(current, _getter(object))) {
+        current = _safeGetter(object);
+        if (current is Function && !identical(current, _safeGetter(object))) {
           _mode = _MODE_NOOP_;
         } else {
           _mode = _MODE_GETTER_;
@@ -528,7 +543,7 @@ class DirtyCheckingRecord<H> implements WatchRecord<H> {
     }
 
     var last = currentValue;
-    if (!_looseIdentical(last, current)) {
+    if (!_looseIdentical(last, current) && current != _VALUE_UNAVAIABLE_) {
       previousValue = currentValue;
       currentValue = current;
       return true;
