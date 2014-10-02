@@ -23,10 +23,8 @@ echo Fetch Dart channel: $CHANNEL
 
 SVN_REVISION=latest
 # TODO(chirayu): Remove this once issue 20896 is fixed.
-# Dart 1.7.0-dev.1.0 and 1.7.0-dev.2.0 are both broken so use version
-# 1.7.0-dev.0.1 instead.
-if [[ "$AVAILABLE_DART_VERSION" == "1.7.0-dev.2.0" ]]; then
-  SVN_REVISION=39661  # Use version 1.7.0-dev.0.1
+if [[ "$AVAILABLE_DART_VERSION" == "1.7.0-dev.1.0" ]]; then
+  SVN_REVISION=39661  # Use prior working version (1.7.0-dev.0.1)
 fi
 
 URL_PREFIX=https://storage.googleapis.com/dart-archive/channels/$CHANNEL/release/$SVN_REVISION
