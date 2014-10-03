@@ -105,7 +105,19 @@ class ElementBinderBuilder {
         // Look up the value of attrName and compute an AST
         AST ast;
         if (mode != '@' && mode != '&') {
-          var value = attrName == "." ? ref.value : (ref.element as dom.Element).attributes[attrName];
+          // todo(vicb) remove the "." special case when the "." syntax is removed
+          var value;
+          if (attrName == ".") {
+            value = ref.value;
+            print("DEPRECATION WARNING: The usage of '.' has been deprecated in the directive "
+                  "map for '${annotation.selector}', use the attribute name instead.");
+          } else {
+            // Saves a DOM read by getting the value from the `DirectiveRef` when possible
+            value = annotation.selector == '[$attrName]' ?
+                ref.value :
+                (ref.element as dom.Element).getAttribute(attrName);
+          }
+
           if (value == null || value.isEmpty) { value = "''"; }
           ast = _factory.astParser(value, formatters: _formatters);
         }

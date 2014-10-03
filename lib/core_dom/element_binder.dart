@@ -124,13 +124,19 @@ class ElementBinder {
   }
 
 
-  void _createAttrMappings(directive, scope, List<MappingParts> mappings, nodeAttrs, tasks) {
+  void _createAttrMappings(directive, scope, DirectiveRef ref, nodeAttrs, tasks) {
     Scope directiveScope; // Only created if there is a two-way binding in the element.
+    List<MappingParts> mappings = ref.mappings;
+    // TODO(vicb): Change to `ref.annotation is Template` when former syntax is deprecated
+    var isTemplate = nodeAttrs is _AnchorAttrs;
+
     for(var i = 0; i < mappings.length; i++) {
       MappingParts p = mappings[i];
       var attrName = p.attrName;
       var attrValueAST = p.attrValueAST;
       AST dstAST = p.dstAST;
+
+      var attrValue = isTemplate ? ref.value : nodeAttrs[attrName];
 
       if (!dstAST.parsedExp.isAssignable) {
         throw "Expression '${dstAST.expression}' is not assignable in mapping '${p.originalValue}' "
@@ -157,14 +163,18 @@ class ElementBinder {
       switch (p.mode) {
         case '@': // string
           var taskId = (tasks != null) ? tasks.registerTask() : 0;
-          nodeAttrs.observe(attrName, (value) {
-            dstAST.parsedExp.assign(directive, value);
-            if (tasks != null) tasks.completeTask(taskId);
-          });
+          if (isTemplate) {
+            dstAST.parsedExp.assign(directive, attrValue);
+          } else {
+            nodeAttrs.observe(attrName, (value) {
+              dstAST.parsedExp.assign(directive, value);
+              if (tasks != null) tasks.completeTask(taskId);
+            });
+          }
           break;
 
         case '<=>': // two-way
-          if (nodeAttrs[attrName] == null) continue;
+          if (attrValue == null) continue;
           if (directiveScope == null) {
             directiveScope = scope.createChild(directive);
           }
@@ -173,12 +183,12 @@ class ElementBinder {
           break;
 
         case '=>': // one-way
-          if (nodeAttrs[attrName] == null) continue;
+          if (attrValue == null) continue;
           _bindOneWay(tasks, attrValueAST, scope, dstAST, directive);
           break;
 
         case '=>!': //  one-way, one-time
-          if (nodeAttrs[attrName] == null) continue;
+          if (attrValue == null) continue;
 
           var watch;
           var lastOneTimeValue;
@@ -198,7 +208,7 @@ class ElementBinder {
           break;
 
         case '&': // callback
-          _bindCallback(dstAST.parsedExp, directive, nodeAttrs[attrName], scope);
+          _bindCallback(dstAST.parsedExp, directive, attrValue, scope);
           break;
       }
     }
@@ -222,8 +232,9 @@ class ElementBinder {
         }) : null;
 
         if (ref.mappings.isNotEmpty) {
+          // TODO(vicb): remove when the '.' syntax is removed for Templates
           if (nodeAttrs == null) nodeAttrs = new _AnchorAttrs(ref);
-          _createAttrMappings(directive, scope, ref.mappings, nodeAttrs, tasks);
+          _createAttrMappings(directive, scope, ref, nodeAttrs, tasks);
         }
 
         // Component is handled in BoundComponentFactories with the correct scope.

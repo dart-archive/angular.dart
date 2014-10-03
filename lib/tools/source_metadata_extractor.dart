@@ -122,7 +122,8 @@ class DirectiveMetadataCollectingAstVisitor extends RecursiveAstVisitor {
       // annotations, but good enough for now.
       if (ann.name.name != 'Component' &&
           ann.name.name != 'Decorator' &&
-          ann.name.name != 'Controller') return;
+          ann.name.name != 'Controller' &&
+          ann.name.name != 'Template') return;
 
       var meta = new DirectiveMetadata()..className = clazz.name.name;
       metadata.add(meta);
