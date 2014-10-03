@@ -1,5 +1,15 @@
 part of angular.core.dom_internal;
 
+/**
+ *
+ * Observes changes to the attribute by invoking the [notifyFn]
+ * function. On registration the [notifyFn] function gets invoked in order to
+ * synchronize with the current value.
+ *
+ * When an observed is registered on an attributes any existing
+ * [_observerListeners] will be called with the first parameter set to
+ * [:true:]
+ */
 @Injectable()
 class NgElement {
   static const _TO_BE_REMOVED = const Object();
@@ -16,16 +26,25 @@ class NgElement {
 
   NgElement(this.node, this._rootScope, this._animate, [this._lightDom]);
 
+  /**
+   * Schedules a DOM write adding [className] to the element.
+   */
   void addClass(String className) {
     _scheduleDomWrite();
     _classesToUpdate[className] = true;
   }
 
+  /**
+   * Schedules a DOM write removing [className] from the element.
+   */
   void removeClass(String className) {
     _scheduleDomWrite();
     _classesToUpdate[className] = false;
   }
 
+  /**
+   * Schedules a DOM write updating [attrName] from the element.
+   */
   void setAttribute(String attrName, [value = '']) {
     _scheduleDomWrite();
     _attributesToUpdate[attrName] = value == null ? '' : value;
