@@ -15,7 +15,7 @@ class IoServiceImpl implements IoService {
     }
     root.listSync(recursive: true, followLinks: true).forEach((entity) {
       if (entity.statSync().type == FileSystemEntityType.FILE) {
-        visitor(entity.path);
+        if (!entity.path.contains('packages')) visitor(entity.path);
       }
     });
   }
