@@ -15,7 +15,7 @@ main() {
     });
 
     it('should cache the ViewFactory', async((
-          ViewCache cache, MockHttpBackend backend, DirectiveMap directives) {
+          ViewFactoryCache cache, MockHttpBackend backend, DirectiveMap directives) {
       var firstFactory = cache.fromHtml(HTML, directives);
 
       expect(cache.fromHtml(HTML, directives)).toBe(firstFactory);

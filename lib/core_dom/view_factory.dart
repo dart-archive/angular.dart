@@ -178,12 +178,13 @@ computeNodeLinkingInfos(List<dom.Node> nodeList) {
 
 
 /**
- * ViewCache is used to cache the compilation of templates into [View]s.
- * It can be used synchronously if HTML is known or asynchronously if the
- * template HTML needs to be looked up from the URL.
+ * [ViewFactoryCache] is used to cache the compilation of templates into [ViewFactory]s.
+ *
+ * - `fromHtml()` returns the factory synchronously from the given HTML,
+ * - `fromUrl()` returns a Future that complete after the HTML is retrieved at the given URL.
  */
 @Injectable()
-class ViewCache {
+class ViewFactoryCache {
   // viewFactoryCache is unbounded
   // This cache contains both HTML and URL keys.
   final viewFactoryCache = new LruCache<String, ViewFactory>();
@@ -195,7 +196,8 @@ class ViewCache {
       dom.document.implementation.createHtmlDocument('');
   final ResourceUrlResolver resourceResolver;
 
-  ViewCache(this.http, this.templateCache, this.compiler, this.treeSanitizer, this.resourceResolver, CacheRegister cacheRegister) {
+  ViewFactoryCache(this.http, this.templateCache, this.compiler, this.treeSanitizer,
+                   this.resourceResolver, CacheRegister cacheRegister) {
     cacheRegister.registerCache('viewCache', viewFactoryCache);
   }
 

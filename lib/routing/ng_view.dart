@@ -60,7 +60,7 @@ class NgView implements DetachAware, RouteProvider {
       binder.bind(RouteProvider, toInstanceOf: NG_VIEW_KEY, visibility: Visibility.CHILDREN);
 
   final NgRoutingHelper _locationService;
-  final ViewCache _viewCache;
+  final ViewFactoryCache _viewFactoryCache;
   final Injector _appInjector;
   final DirectiveInjector _dirInjector;
   final Element _element;
@@ -71,7 +71,7 @@ class NgView implements DetachAware, RouteProvider {
   Scope _childScope;
   Route _viewRoute;
 
-  NgView(this._element, this._viewCache, DirectiveInjector dirInjector, this._appInjector,
+  NgView(this._element, this._viewFactoryCache, DirectiveInjector dirInjector, this._appInjector,
          Router router, this._scope)
       : _dirInjector = dirInjector,
         _locationService = dirInjector.getByKey(NG_ROUTING_HELPER_KEY)
@@ -115,10 +115,10 @@ class NgView implements DetachAware, RouteProvider {
     }
 
     var newDirectives = viewInjector.getByKey(DIRECTIVE_MAP_KEY);
-    var viewFuture = viewDef.templateHtml != null ?
-        new Future.value(_viewCache.fromHtml(viewDef.templateHtml, newDirectives)) :
-        _viewCache.fromUrl(viewDef.template, newDirectives, Uri.base);
-    viewFuture.then((ViewFactory viewFactory) {
+    var viewFactoryFuture = viewDef.templateHtml != null ?
+        new Future.value(_viewFactoryCache.fromHtml(viewDef.templateHtml, newDirectives)) :
+        _viewFactoryCache.fromUrl(viewDef.template, newDirectives, Uri.base);
+    viewFactoryFuture.then((ViewFactory viewFactory) {
       _cleanUp();
       _childScope = _scope.createProtoChild();
       _view = viewFactory(_childScope, _dirInjector);

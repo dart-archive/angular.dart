@@ -41,7 +41,7 @@ main() {
       assertSymbolNamesAreOk(ALLOWED_NAMES, libraryInfo);
 
     });
-    
+
     it('should not export unknown symbols from touch', () {
       LibraryInfo libraryInfo;
       try {
@@ -133,7 +133,7 @@ main() {
         "angular.core.dom_internal.TemplateCache",
         "angular.core.dom_internal.UrlRewriter",
         "angular.core.dom_internal.View",
-        "angular.core.dom_internal.ViewCache",
+        "angular.core.dom_internal.ViewFactoryCache",
         "angular.core.dom_internal.ViewFactory",
         "angular.core.dom_internal.ViewPort",
         "angular.core.parser.Parser",

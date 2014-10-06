@@ -83,8 +83,8 @@ void _addAttributeToAllElements(dom.Element root, String attr) {
   }
 }
 
-class ShimmingViewCache implements ViewCache {
-  final ViewCache cache;
+class ShimmingViewFactoryCache implements ViewFactoryCache {
+  final ViewFactoryCache cache;
   final String selector;
   final WebPlatformShim platformShim;
 
@@ -96,7 +96,7 @@ class ShimmingViewCache implements ViewCache {
   ResourceUrlResolver get resourceResolver => cache.resourceResolver;
   dom.HtmlDocument get parseDocument => cache.parseDocument;
 
-  ShimmingViewCache(this.cache, this.selector, this.platformShim);
+  ShimmingViewFactoryCache(this.cache, this.selector, this.platformShim);
 
   ViewFactory fromHtml(String html, DirectiveMap directives, [Uri baseUri]) {
     if (!platformShim.shimRequired) return cache.fromHtml(html, directives, baseUri);
