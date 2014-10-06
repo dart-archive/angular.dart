@@ -5,6 +5,7 @@ part of angular.mock;
  * do not wish to take browser variance into account. This mock provides null
  * implementations of all operations, but they can be overwritten if needed.
  */
+@Injectable()
 class MockWebPlatformShim implements PlatformJsBasedShim, DefaultPlatformShim {
   bool shimRequired = false;
 

@@ -214,6 +214,7 @@ main() => describe('ngView', () {
   });
 });
 
+@Injectable()
 class FlatRouteInitializer implements Function {
   void call(Router router, RouteViewFactory views) {
     views.configure({
@@ -224,6 +225,7 @@ class FlatRouteInitializer implements Function {
   }
 }
 
+@Injectable()
 class NestedRouteInitializer implements Function {
   void call(Router router, RouteViewFactory views) {
     views.configure({

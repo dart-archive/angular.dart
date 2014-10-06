@@ -139,6 +139,7 @@ bool _matchUrl(expected, actual) =>
 /**
  * A mock implementation of [HttpBackend], used in tests.
  */
+@Injectable()
 class MockHttpBackend implements HttpBackend {
   var definitions = [],
       expectations = [],

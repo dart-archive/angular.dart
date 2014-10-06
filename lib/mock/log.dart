@@ -36,6 +36,7 @@ class LogAttrDirective implements AttachAware {
  *
  *     expect(logger).toEqual(['foo', 'bar']);
  */
+@Injectable()
 class Logger extends ListBase {
   final tokens = [];
 

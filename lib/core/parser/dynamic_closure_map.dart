@@ -3,7 +3,9 @@ library angular.core.dynamic_closure_map;
 @MirrorsUsed(targets: const [ DynamicClosureMap ], metaTargets: const [] )
 import 'dart:mirrors';
 import 'package:angular/core/parser/parser.dart';
+import 'package:di/annotations.dart';
 
+@Injectable()
 class DynamicClosureMap implements ClosureMap {
   final Map<String, Symbol> symbols = {};
   Getter lookupGetter(String name) {

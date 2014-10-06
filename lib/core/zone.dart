@@ -56,6 +56,7 @@ class LongStackTrace {
  * runs the Angular digest.  A component may want to inject this singleton if it
  * needs to run code _outside_ the Angular digest.
  */
+@Injectable()
 class VmTurnZone {
   /// an "outer" [Zone], which is the one that created this.
   async.Zone _outerZone;

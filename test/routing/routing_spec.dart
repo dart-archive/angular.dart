@@ -485,6 +485,7 @@ class MyDirective {
   }
 }
 
+@Injectable()
 class MyService {}
 
 @Formatter(name:'hello')
