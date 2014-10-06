@@ -63,7 +63,7 @@ export "package:angular/core_dom/module_internal.dart" show
     UrlRewriter,
     TemplateCache,
     View,
-    ViewCache,
+    ViewFactoryCache,
     ViewFactory,
     ViewPort;
 

@@ -22,14 +22,14 @@ class NgInclude {
 
   final dom.Element element;
   final Scope scope;
-  final ViewCache viewCache;
+  final ViewFactoryCache viewFactoryCache;
   final DirectiveInjector directiveInjector;
   final DirectiveMap directives;
 
   View _view;
   Scope _childScope;
 
-  NgInclude(this.element, this.scope, this.viewCache,
+  NgInclude(this.element, this.scope, this.viewFactoryCache,
             this.directiveInjector, this.directives);
 
   _cleanUp() {
@@ -51,7 +51,7 @@ class NgInclude {
   set url(value) {
     _cleanUp();
     if (value != null && value != '') {
-      viewCache.fromUrl(value, directives, Uri.base).then(_updateContent);
+      viewFactoryCache.fromUrl(value, directives, Uri.base).then(_updateContent);
     }
   }
 }

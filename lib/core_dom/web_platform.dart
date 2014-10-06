@@ -50,8 +50,8 @@ class WebPlatform {
   }
 }
 
-class PlatformViewCache implements ViewCache {
-  final ViewCache cache;
+class PlatformViewFactoryCache implements ViewFactoryCache {
+  final ViewFactoryCache cache;
   final String selector;
   final WebPlatform platform;
   final dom.HtmlDocument parseDocument =
@@ -64,7 +64,7 @@ class PlatformViewCache implements ViewCache {
   Compiler get compiler => cache.compiler;
   dom.NodeTreeSanitizer get treeSanitizer => cache.treeSanitizer;
 
-  PlatformViewCache(this.cache, this.selector, this.platform);
+  PlatformViewFactoryCache(this.cache, this.selector, this.platform);
 
   ViewFactory fromHtml(String html, DirectiveMap directives, [Uri baseUri]) {
     ViewFactory viewFactory;

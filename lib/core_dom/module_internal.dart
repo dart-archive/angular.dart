@@ -104,7 +104,7 @@ class CoreDomModule extends Module {
     bind(HttpConfig);
     bind(ResourceResolverConfig, toValue: new ResourceResolverConfig.resolveRelativeUrls(false));
     bind(Animate);
-    bind(ViewCache);
+    bind(ViewFactoryCache);
     bind(BrowserCookies);
     bind(Cookies);
     bind(LocationWrapper);

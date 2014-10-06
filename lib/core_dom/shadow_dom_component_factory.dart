@@ -12,7 +12,7 @@ abstract class BoundComponentFactory {
   Function call(dom.Element element);
 
   static async.Future<ViewFactory> _viewFactoryFuture(
-        Component component, ViewCache viewCache, DirectiveMap directives,
+        Component component, ViewFactoryCache viewCache, DirectiveMap directives,
         TypeToUriMapper uriMapper, ResourceUrlResolver resourceResolver, Type type) {
     if (component.template != null) {
       // TODO(chirayu): Replace this line with
@@ -43,7 +43,7 @@ abstract class BoundComponentFactory {
 
 @Injectable()
 class ShadowDomComponentFactory implements ComponentFactory {
-  final ViewCache viewCache;
+  final ViewFactoryCache viewCache;
   final PlatformJsBasedShim platformShim;
   final Expando expando;
   final CompilerConfig config;
@@ -87,11 +87,11 @@ class BoundShadowDomComponentFactory implements BoundComponentFactory {
     _styleElementsFuture = _componentFactory.cssLoader(_tag, _component.cssUrls, type: _ref.type)
         .then((styleElements) => _styleElements = styleElements);
 
-    final viewCache = new ShimmingViewCache(_componentFactory.viewCache,
+    final viewFactoryCache = new ShimmingViewFactoryCache(_componentFactory.viewCache,
         _tag, _componentFactory.platformShim);
 
     _shadowViewFactoryFuture = BoundComponentFactory._viewFactoryFuture(_component,
-        viewCache, directives, _componentFactory.uriMapper,
+        viewFactoryCache, directives, _componentFactory.uriMapper,
         _componentFactory.resourceResolver, _ref.type);
 
     if (_shadowViewFactoryFuture != null) {

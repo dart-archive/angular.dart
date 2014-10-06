@@ -5,7 +5,7 @@ import 'package:angular/core_dom/css_shim.dart';
 
 main() {
   describe("ShimmingViewCache", () {
-    ShimmingViewCache cache;
+    ShimmingViewFactoryCache cache;
     MockWebPlatformShim platformShim;
     MockHttpBackend backend;
     Injector inj;
@@ -21,11 +21,11 @@ main() {
         root.innerHtml = "SHIMMED";
       };
 
-      cache = new ShimmingViewCache(inj.get(ViewCache), "selector", platformShim);
+      cache = new ShimmingViewFactoryCache(inj.get(ViewFactoryCache), "selector", platformShim);
     });
 
     describe("fromHtml", () {
-      fromHtml(ViewCache cache, String html) {
+      fromHtml(ViewFactoryCache cache, String html) {
         final viewFactory = cache.fromHtml(html, inj.get(DirectiveMap));
         return viewFactory(_.rootScope, inj.get(DirectiveInjector));
       }
@@ -47,7 +47,8 @@ main() {
         });
 
         it("uses uniq cache key per selector", () {
-          final cache2 = new ShimmingViewCache(inj.get(ViewCache), "selector2", platformShim);
+          final cache2 = new ShimmingViewFactoryCache(inj.get(ViewFactoryCache), "selector2",
+                                                      platformShim);
 
           fromHtml(cache, "HTML");
           fromHtml(cache2, "HTML");
@@ -62,7 +63,7 @@ main() {
         backend.whenGET("URL").respond(200, "HTML");
       });
 
-      fromUrl(ViewCache cache, String url) {
+      fromUrl(ViewFactoryCache cache, String url) {
         final f = cache.fromUrl(url, inj.get(DirectiveMap));
 
         if (backend.requests.isNotEmpty) backend.flush();
@@ -93,7 +94,8 @@ main() {
         }));
 
         it("uses uniq cache key per selector", async(() {
-          final cache2 = new ShimmingViewCache(inj.get(ViewCache), "selector2", platformShim);
+          final cache2 = new ShimmingViewFactoryCache(inj.get(ViewFactoryCache), "selector2",
+                                                      platformShim);
 
           fromUrl(cache, "URL");
           fromUrl(cache2, "URL");
