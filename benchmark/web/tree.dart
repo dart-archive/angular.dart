@@ -9,7 +9,7 @@ import 'dart:js' as js;
 
 @Component(
     selector: 'tree',
-    template: '<span> {{ctrl.data.value}}'
+    template: '<span> {{data.value}}'
     '<span ng-if="data.right != null"><tree data=data.right></span>'
     '<span ng-if="data.left != null"><tree data=data.left></span>'
     '</span>')
@@ -20,14 +20,12 @@ class TreeComponent {
 
 @Component(
     selector: 'transcluding-tree',
-    template: '<span> {{ctrl.data.value}}'
-    '<span ng-if="ctrl.data.right != null"><transcluding-tree data=ctrl.data.right></span>'
-    '<span ng-if="ctrl.data.left != null"><transcluding-tree data=ctrl.data.left></span>'
+    template: '<span> {{data.value}}'
+    '<span ng-if="data.right != null"><transcluding-tree data=data.right></span>'
+    '<span ng-if="data.left != null"><transcluding-tree data=data.left></span>'
     '</span>',
-    publishAs: 'ctrl',
     useShadowDom: false)
 class TranscludingTreeComponent extends TreeComponent {}
-  
 
 @Component(
     selector: 'tree-url',
@@ -40,7 +38,6 @@ class TreeUrlComponent {
 @Component(
     selector: 'transcluding-tree-url',
     templateUrl: 'transcluding-tree-tmpl.html',
-    publishAs: 'ctrl',
     useShadowDom: false)
 class TranscludingTreeUrlComponent extends TreeUrlComponent {}
 
