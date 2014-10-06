@@ -36,7 +36,7 @@ packages:
   di:
     description: di
     source: hosted
-    version: "3.1.1"
+    version: "3.3.0"
   guinness:
     description: guinness
     source: hosted
