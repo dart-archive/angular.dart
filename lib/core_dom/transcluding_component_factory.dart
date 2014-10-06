@@ -4,14 +4,14 @@ part of angular.core.dom_internal;
 class TranscludingComponentFactory implements ComponentFactory {
 
   final Expando expando;
-  final ViewCache viewCache;
+  final ViewFactoryCache viewFactoryCache;
   final CompilerConfig config;
   final DefaultPlatformShim platformShim;
   final TypeToUriMapper uriMapper;
   final ResourceUrlResolver resourceResolver;
   ComponentCssLoader cssLoader;
 
-  TranscludingComponentFactory(this.expando, this.viewCache, this.config, this.platformShim,
+  TranscludingComponentFactory(this.expando, this.viewFactoryCache, this.config, this.platformShim,
       this.uriMapper, this.resourceResolver, Http http, TemplateCache templateCache,
       ComponentCssRewriter componentCssRewriter, dom.NodeTreeSanitizer treeSanitizer,
       CacheRegister cacheRegister) {
@@ -45,11 +45,12 @@ class BoundTranscludingComponentFactory implements BoundComponentFactory {
     _styleElementsFuture = _f.cssLoader(_tag, _component.cssUrls, type: _ref.type)
         .then((styleElements) => _styleElements = styleElements);
 
-    final viewCache = new ShimmingViewCache(_f.viewCache, _tag, _f.platformShim);
+    final viewFactoryCache = new ShimmingViewFactoryCache(_f.viewFactoryCache, _tag,
+        _f.platformShim);
 
     _viewFactoryFuture = BoundComponentFactory._viewFactoryFuture(
         _component,
-        viewCache,
+        viewFactoryCache,
         _directives,
         _f.uriMapper,
         _f.resourceResolver,
@@ -62,14 +63,14 @@ class BoundTranscludingComponentFactory implements BoundComponentFactory {
 
   List<Key> get callArgs => _CALL_ARGS;
   static var _CALL_ARGS = [ DIRECTIVE_INJECTOR_KEY, SCOPE_KEY, VIEW_KEY,
-                            VIEW_CACHE_KEY, HTTP_KEY, TEMPLATE_CACHE_KEY,
+                            VIEW_FACTORY_CACHE_KEY, HTTP_KEY, TEMPLATE_CACHE_KEY,
                             DIRECTIVE_MAP_KEY, NG_BASE_CSS_KEY, EVENT_HANDLER_KEY,
                             SHADOW_BOUNDARY_KEY];
 
   Function call(dom.Node node) {
     var element = node as dom.Element;
     return (DirectiveInjector injector, Scope scope, View view,
-            ViewCache viewCache, Http http, TemplateCache templateCache,
+            ViewFactoryCache viewCache, Http http, TemplateCache templateCache,
             DirectiveMap directives, NgBaseCss baseCss, EventHandler eventHandler,
             ShadowBoundary shadowBoundary) {
 
