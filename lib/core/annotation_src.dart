@@ -20,8 +20,12 @@ Directive cloneWithNewMap(Directive annotation, map) => annotation._cloneWithNew
 String mappingSpec(DirectiveAnnotation annotation) => annotation._mappingSpec;
 
 class Visibility {
+  /// The directive can only be injected to other directives on the same element.
   static const LOCAL = const Visibility._('LOCAL');
+  /// The directive can be injected to other directives on the same or child elements.
   static const CHILDREN = const Visibility._('CHILDREN');
+  /// The directive on this element can only be injected to other directives
+  /// declared on elements which are direct children of the current element.
   static const DIRECT_CHILD = const Visibility._('DIRECT_CHILD');
 
   final String name;
@@ -33,22 +37,6 @@ class Visibility {
  * Abstract supper class of [Component], and [Decorator].
  */
 abstract class Directive {
-
-  /// The directive can only be injected to other directives on the same element.
-  @Deprecated('Use Visibility.LOCAL instead')
-  static const Visibility LOCAL_VISIBILITY = Visibility.LOCAL;
-
-  /// The directive can be injected to other directives on the same or child elements.
-  @Deprecated('Use Visibility.CHILDREN instead')
-  static const Visibility CHILDREN_VISIBILITY = Visibility.CHILDREN;
-
-  /**
-   * The directive on this element can only be injected to other directives
-   * declared on elements which are direct children of the current element.
-   */
-  @Deprecated('Use Visibility.DIRECT_CHILD instead')
-  static const Visibility DIRECT_CHILDREN_VISIBILITY = Visibility.DIRECT_CHILD;
-
   /**
    * CSS selector which will trigger this component/directive.
    * CSS Selectors are limited to a single element and can contain:
@@ -75,7 +63,7 @@ abstract class Directive {
   final String children;
 
   /**
-   * Compile the child nodes of the element.  This is the default.
+   * Compile the child nodes of the element. This is the default.
    */
   static const String COMPILE_CHILDREN = 'compile';
   /**
@@ -84,21 +72,21 @@ abstract class Directive {
    */
   static const String TRANSCLUDE_CHILDREN = 'transclude';
   /**
-   * Do not compile/visit the child nodes.  Angular markup on descendant nodes
+   * Do not compile/visit the child nodes. Angular markup on descendant nodes
    * will not be processed.
    */
   static const String IGNORE_CHILDREN = 'ignore';
 
   /**
-   * A directive/component controller class can be injected into other directives/components. This
-   * attribute controls whether the controller is available to others.
+   * A directive class can be injected into other directives. This attribute controls whether the
+   * directive is available to others.
    *
-   * * [Visibility.LOCAL] - the controller can be injected into other directives / components on the
-   *   same DOM element.
-   * * [Visibility.CHILDREN] - the controller can be injected into other directives / components on
-   *   the same or child DOM elements.
-   * * [Visibility.DIRECT_CHILD] - the controller can be injected into other directives / components
-   *   on the direct children of the current DOM element.
+   * * [Visibility.LOCAL] - the directive can be injected into other directives on the same DOM
+   *   element.
+   * * [Visibility.CHILDREN] - the directive can be injected into other directives on the same or
+   *   child DOM elements (*default*).
+   * * [Visibility.DIRECT_CHILD] - the directive can be injected into other directives on the direct
+   *   children of the current DOM element.
    */
   final Visibility visibility;
 
@@ -114,7 +102,7 @@ abstract class Directive {
    *       module: Foo.moduleFactory)
    *     class Foo {
    *       static moduleFactory(DirectiveBinder binder) =>
-   *          binder.bind(SomeTypeA, visibility: Directive.LOCAL_VISIBILITY);
+   *          binder.bind(SomeTypeA, visibility: Visibility.LOCAL);
    *     }
    *
    * `visibility` is one of:
@@ -227,7 +215,7 @@ abstract class Directive {
     this.updateBoundElementPropertiesOnEvents
   });
 
-  toString() => selector;
+  String toString() => selector;
   Directive _cloneWithNewMap(newMap);
 }
 
