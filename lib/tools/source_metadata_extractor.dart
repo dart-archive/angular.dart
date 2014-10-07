@@ -120,9 +120,7 @@ class DirectiveMetadataCollectingAstVisitor extends RecursiveAstVisitor {
       if (ann.arguments == null) return; // Ignore non-class annotations.
       // TODO(pavelj): this is not a safe check for the type of the
       // annotations, but good enough for now.
-      if (ann.name.name != 'Component' &&
-          ann.name.name != 'Decorator' &&
-          ann.name.name != 'Controller') return;
+      if (ann.name.name != 'Component' && ann.name.name != 'Decorator') return;
 
       var meta = new DirectiveMetadata()..className = clazz.name.name;
       metadata.add(meta);
