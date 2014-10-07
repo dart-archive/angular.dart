@@ -1,14 +1,22 @@
 part of angular.core.dom_internal;
 
 /**
+ * An [NgElement] wraps a DOM element. It can be used by a component to
+ * modify the element's classes and attributes.
  *
- * Observes changes to the attribute by invoking the [notifyFn]
- * function. On registration the [notifyFn] function gets invoked in order to
- * synchronize with the current value.
+ * Example:
  *
- * When an observed is registered on an attributes any existing
- * [_observerListeners] will be called with the first parameter set to
- * [:true:]
+ *    class ElementAwareComponent {
+ *      NgElement ngElement;
+ *      ElementAwareComponent(this.ngElement);
+ *
+ *      void onClick() {
+ *        ngElement.addClass("clicked");
+ *      }
+ *    }
+ *
+ * These modifications are asynchronous and will update the DOM only
+ * during the next flush phase.
  */
 @Injectable()
 class NgElement {
@@ -26,30 +34,25 @@ class NgElement {
 
   NgElement(this.node, this._rootScope, this._animate, [this._lightDom]);
 
-  /**
-   * Schedules a DOM write adding [className] to the element.
-   */
+  /// Schedules a DOM write adding [className] to the element.
   void addClass(String className) {
     _scheduleDomWrite();
     _classesToUpdate[className] = true;
   }
 
-  /**
-   * Schedules a DOM write removing [className] from the element.
-   */
+  /// Schedules a DOM write removing [className] from the element.
   void removeClass(String className) {
     _scheduleDomWrite();
     _classesToUpdate[className] = false;
   }
 
-  /**
-   * Schedules a DOM write updating [attrName] from the element.
-   */
+  /// Schedules a DOM write updating [attrName] to [value].
   void setAttribute(String attrName, [value = '']) {
     _scheduleDomWrite();
     _attributesToUpdate[attrName] = value == null ? '' : value;
   }
 
+  /// Schedules a DOM write removing [attrName] from the element.
   void removeAttribute(String attrName) {
     _scheduleDomWrite();
     _attributesToUpdate[attrName] = _TO_BE_REMOVED;
