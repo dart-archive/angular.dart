@@ -1,6 +1,7 @@
 library angular.core.annotation_src;
 
 import "package:di/di.dart" show Injector, Visibility, Factory;
+import "package:di/annotations.dart" show Injectable;
 
 abstract class DirectiveBinder {
  void bind(key, {dynamic toValue,
@@ -36,7 +37,23 @@ class Visibility {
 /**
  * Abstract supper class of [Component], and [Decorator].
  */
-abstract class Directive {
+abstract class Directive implements Injectable {
+
+  /// The directive can only be injected to other directives on the same element.
+  @Deprecated('Use Visibility.LOCAL instead')
+  static const Visibility LOCAL_VISIBILITY = Visibility.LOCAL;
+
+  /// The directive can be injected to other directives on the same or child elements.
+  @Deprecated('Use Visibility.CHILDREN instead')
+  static const Visibility CHILDREN_VISIBILITY = Visibility.CHILDREN;
+
+  /**
+   * The directive on this element can only be injected to other directives
+   * declared on elements which are direct children of the current element.
+   */
+  @Deprecated('Use Visibility.DIRECT_CHILD instead')
+  static const Visibility DIRECT_CHILDREN_VISIBILITY = Visibility.DIRECT_CHILD;
+
   /**
    * CSS selector which will trigger this component/directive.
    * CSS Selectors are limited to a single element and can contain:
@@ -499,7 +516,7 @@ abstract class DetachAware {
  *     <!-- Usage -->
  *     <span>{{something | myFormatter:arg1:arg2}}</span>
  */
-class Formatter {
+class Formatter implements Injectable {
   final String name;
 
   const Formatter({this.name});
