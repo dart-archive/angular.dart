@@ -58,7 +58,7 @@ main(args) {
       ..bind(DartGetterSetterGen)
       ..bind(CacheRegister)
       ..bind(Parser)
-      ..bind(ParserBackend, inject: [DartGetterSetterGen]);
+      ..bind(ParserBackend, toImplementation: DartGetterSetterGen);
   Injector injector = new ModuleInjector([module]);
 
   runZoned(() {
