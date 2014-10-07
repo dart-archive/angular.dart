@@ -1,15 +1,12 @@
 part of angular.core.dom_internal;
 
 /**
- * A View is a fundamental building block of DOM. It is a chunk of DOM which
- * can not be structurally changed. A View can have [ViewPort] placeholders
- * embedded in its DOM.  A [ViewPort] can contain other [View]s and it is the
- * only way in which DOM structure can be modified.
+ * Fundamental building block of DOM composed of DOM nodes and placeholders.
  *
- * A [View] is a collection of DOM nodes
-
- * A [View] can be created from [ViewFactory].
+ * It is a chunk of DOM which can not be structurally changed. It can have [ViewPort] and [Content]
+ * placeholders embedded in its DOM.
  *
+ * A [View]s is created through a [ViewFactory].
  */
 class View {
   final Scope scope;
@@ -22,22 +19,27 @@ class View {
     insertionPoints.add(viewPort);
   }
 
+  /// Projected contents for components (ie `<content>` tags)
   void addContent(Content content) {
     insertionPoints.add(content);
   }
 
+  /// Schedules a [fn] to be executed in the next DOM write phase.
   void domWrite(fn()) {
     scope.domWrite(fn);
   }
 
+  /// Schedules a [fn] to be executed in the next DOM read phase.
   void domRead(fn()) {
     scope.domRead(fn);
   }
 }
 
 /**
- * A ViewPort maintains an ordered list of [View]'s. It contains a
- * [placeholder] node that is used as the insertion point for view nodes.
+ * Maintains an ordered list of [View]'s.
+ *
+ * It contains a [placeholder] node that is used as the insertion point for view nodes.
+ * Updating the child views of a [ViewPort] is a way to modify the hosting [View].
  */
 class ViewPort {
   final DirectiveInjector directiveInjector;
@@ -54,12 +56,18 @@ class ViewPort {
     _parentView.addViewPort(this);
   }
 
+  /// Instantiates a `View` bound to the given [viewScope] or to the `scope` of this `ViewPort`
+  /// when none is specified.
+  /// The created `View` is scheduled for insertion as the first child or after [insertAfter] when
+  /// specified.
   View insertNew(ViewFactory viewFactory, {View insertAfter, Scope viewScope}) {
     if (viewScope == null) viewScope = scope.createProtoChild();
     View view = viewFactory.call(viewScope, directiveInjector);
     return insert(view, insertAfter: insertAfter);
   }
 
+  /// Schedules the insertion of the view in the next DOM write phase.
+  /// The [view] gets inserted as the first child or after [insertAfter] when specified.
   View insert(View view, { View insertAfter }) {
     scope.rootScope.domWrite(() {
       dom.Node previousNode = _lastNode(insertAfter);
@@ -70,6 +78,8 @@ class ViewPort {
     return view;
   }
 
+  /// Schedules the removal of the [view] in the next DOM write phase.
+  /// The associated scope is destroyed immediately.
   View remove(View view) {
     view.scope.destroy();
     views.remove(view);
@@ -80,6 +90,7 @@ class ViewPort {
     return view;
   }
 
+  /// Schedules the move of the [view] in the next DOM write phase.
   View move(View view, { View moveAfter }) {
     dom.Node previousNode = _lastNode(moveAfter);
     views.remove(view);
@@ -96,6 +107,7 @@ class ViewPort {
     views.insert(index, view);
   }
 
+  /// Concatenates and returns the nodes for all the views.
   List<dom.Node> get nodes {
     final r = [];
     for(final v in views) {
