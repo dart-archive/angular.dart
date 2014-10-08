@@ -3,7 +3,7 @@ part of angular.example.animation_spec;
 class NgRepeatAppState extends AppState {
   var addBtn = element(by.buttonText("Add Thing"));
   var removeBtn = element(by.buttonText("Remove Thing"));
-  var rows = element.all(by.repeater("outer in ctrl.items"));
+  var rows = element.all(by.repeater("outer in items"));
   var thingId = 0;  // monotonically increasing.
   var things = [];
 
