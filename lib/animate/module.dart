@@ -110,10 +110,6 @@ import 'package:perf_api/perf_api.dart';
 import 'package:di/di.dart';
 import 'package:di/annotations.dart';
 
-@MirrorsUsed(targets: const [
-    'angular.animate'
-])
-import 'dart:mirrors' show MirrorsUsed;
 import 'dart:collection';
 
 part 'animations.dart';
@@ -131,11 +127,11 @@ final Logger _logger = new Logger('ng.animate');
  * of view construction, and some of the native directives to allow you to add
  * and define css transition and keyframe animations for the styles of your
  * elements.
- * 
+ *
  *   Example html:
  *
  *     <div ng-if="ctrl.myBoolean" class="my-div">...</div>
- *   
+ *
  *   Example css defining an opacity transition over .5 seconds using the
  *   `.ng-enter` and `.ng-leave` css classes:
  *
@@ -146,7 +142,7 @@ final Logger _logger = new Logger('ng.animate');
  *     .my-div.ng-enter-active {
  *       opacity: 1;
  *     }
- *     
+ *
  *     .my-div.ng-leave {
  *       transition: all 500ms;
  *       opacity: 1;
