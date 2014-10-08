@@ -4,16 +4,16 @@ import 'package:protractor/protractor_api.dart';
 
 
 class AppState {
-  var items = element.all(by.repeater('item in todo.items'));
-  var remaining = element(by.binding('todo.remaining'));
-  var total = element(by.binding('todo.items.length'));
+  var items = element.all(by.repeater('item in items'));
+  var remaining = element(by.binding('remaining'));
+  var total = element(by.binding('items.length'));
 
   var markAllDoneBtn = element(by.buttonText("mark all done"));
   var archiveDoneBtn = element(by.buttonText("archive done"));
   var addBtn = element(by.buttonText("add"));
   var clearBtn = element(by.buttonText("clear"));
 
-  var newItemInput = element(by.model("todo.newItem.text"));
+  var newItemInput = element(by.model("newItem.text"));
   get newItemText => newItemInput.getAttribute('value');
 
   todo(i) => items.get(i).getText();
@@ -44,7 +44,7 @@ class AppState {
     expect(clearBtn.isEnabled()).toEqual(text.length > 0);
     // input field and model value should contain the typed text.
     expect(newItemText).toEqual(text);
-    expect(newItemInput.evaluate('todo.newItem.text')).toEqual(text);
+    expect(newItemInput.evaluate('newItem.text')).toEqual(text);
   }
 }
 
@@ -109,7 +109,7 @@ main() {
       S.newItemInput.sendKeys(text);
       // input field and model value should contain the typed text.
       expect(S.newItemText).toEqual(text);
-      expect(S.newItemInput.evaluate('todo.newItem.text')).toEqual(text);
+      expect(S.newItemInput.evaluate('newItem.text')).toEqual(text);
       S.assertTodos();
     });
 
