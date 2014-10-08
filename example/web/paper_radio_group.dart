@@ -3,10 +3,22 @@ import 'package:angular/application_factory.dart';
 
 import 'dart:html';
 
+@Decorator(
+    selector: 'paper-radio-group',
+    updateBoundElementPropertiesOnEvents: const ['core-select']
+)
+class PaperRadioGroupBindings {}
+
+@Decorator(
+    selector: 'paper-radio-button',
+    updateBoundElementPropertiesOnEvents: const ['change', 'core-change']
+)
+class PaperRadioButtonBindings {}
+
 @Component(
-  selector: 'cmp',
-  template: '<paper-radio-group bind-selected="cmp.insertOption"> <paper-radio-button name="asis" label="Insert as is"></paper-radio-button> <paper-radio-button name="duplicate" label="Insert as duplicate"></paper-radio-button> </paper-radio-group> {{cmp.insertOption}}',
-  publishAs: 'cmp'
+    selector: 'cmp',
+    template: '<paper-radio-group bind-selected="cmp.insertOption"> <paper-radio-button name="asis" label="Insert as is"></paper-radio-button> <paper-radio-button name="duplicate" label="Insert as duplicate"></paper-radio-button> </paper-radio-group> {{cmp.insertOption}}',
+    publishAs: 'cmp'
 )
 class Cmp {
   Object insertOption;
@@ -14,6 +26,9 @@ class Cmp {
 
 main() {
   applicationFactory()
-      .addModule(new Module()..bind(Cmp))
+      .addModule(new Module()
+          ..bind(PaperRadioButtonBindings)
+          ..bind(PaperRadioGroupBindings)
+          ..bind(Cmp))
       .run();
 }
