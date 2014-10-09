@@ -174,10 +174,10 @@ class NgView implements DetachAware, RouteProvider {
  *       MyComponent(RouteProvider routeProvider) {
  *         _loadFoo(routeProvider.parameters['fooId']);
  *         route = routeProvider.route.newHandle();
- *         route.onEnter.listen((RouteEvent e) {
+ *         route.onEnter.listen((RouteEnterEvent e) {
  *           // Do something when the route is activated.
  *         });
- *         route.onPreLeave.listen((RouteEvent e) {
+ *         route.onPreLeave.listen((RoutePreLeaveEvent e) {
  *           // Do something when the route is de-activated.
  *           e.allowLeave(allDataSaved());
  *         });

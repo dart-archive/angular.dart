@@ -48,6 +48,8 @@
  *  We defined 4 routes and for each route we set views (templates) to be
  *  displayed when that route is "entered". For example, when the browser URL
  *  is set to `/recipes`, the `recipes.html` template will be displayed.
+ *  Optionally, you can use `viewHtml` and inline the template right inside the
+ *  Route definition.
  *
  *  You have to tell Angular where to load views by putting `<ng-view>` tag in
  *  you template.
@@ -80,7 +82,7 @@
  *        EditRecipe(RouteProvider routeProvider) {
  *          RouteHandle route = routeProvider.route.newHandle();
  *          _loadRecipe(route);
- *          route.onPreLeave.listen((RouteEvent event) {
+ *          route.onPreLeave.listen((RoutePreLeaveEvent event) {
  *            event.allowLeave(_checkIfOkToLeave());
  *          });
  *        }
