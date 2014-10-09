@@ -28,7 +28,7 @@ export "package:angular/core/annotation_src.dart" show
 
 
 /**
- * Implementing components [onShadowRoot] method will be called when
+ * Implementing components' [onShadowRoot] method will be called when
  * the template for the component has been loaded and inserted into Shadow DOM.
  * It is guaranteed that when [onShadowRoot] is invoked, that shadow DOM
  * has been loaded and is ready.
