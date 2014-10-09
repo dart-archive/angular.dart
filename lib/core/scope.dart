@@ -70,37 +70,6 @@ class ScopeDigestTTL {
 }
 
 /**
- * When a [Directive] or the root context class implements [ScopeAware] the scope
- * setter will be called to set the [Scope] on this component.
- *
- * The order of calls is as follows:
- * - [Component] instance is created.
- * - [Scope] instance is created (taking [Component] instance as evaluation context).
- * - if [Component] is [ScopeAware], set scope method is called with scope instance.
- *
- * [ScopeAware] is guaranteed to be called before [AttachAware] or [DetachAware] methods.
- *
- * Example:
- *     @Component(...)
- *     class MyComponent implements ScopeAware {
- *       Watch watch;
- *
- *       MyComponent(Dependency myDep) {
- *         // It is an error to add a Scope argument to the ctor and will result in a DI
- *         // circular dependency error - the scope has a dependency on the component instance.
- *       }
- *
- *       void set scope(Scope scope) {
- *          // This setter gets called to initialize the scope
- *          watch = scope.watch("expression", (v, p) => ...);
- *       }
- *     }
- */
-abstract class ScopeAware {
-  void set scope(Scope scope);
-}
-
-/**
  * [Scope] represents a collection of [watch]es [observer]s, and a [context] for the watchers,
  * observers and [eval]uations. Scopes structure loosely mimics the DOM structure. Scopes and
  * [View]s are bound to each other. As scopes are created and destroyed by [ViewFactory] they are

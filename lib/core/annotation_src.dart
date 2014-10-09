@@ -470,24 +470,6 @@ class NgCallback extends DirectiveAnnotation {
 }
 
 /**
- * A directives or components may chose to implements [AttachAware].[attach] method.
- * If implemented the method will be called when the next scope digest occurs after
- * component instantiation. It is guaranteed that when [attach] is invoked, that all
- * attribute mappings have already been processed.
- */
-abstract class AttachAware {
-  void attach();
-}
-
-/**
- * A directives or components may chose to implements [DetachAware].[detach] method.
- * If implemented the method will be called when the next associated scope is destroyed.
- */
-abstract class DetachAware {
-  void detach();
-}
-
-/**
  * Use the @[Formatter] class annotation to identify a class as a formatter.
  *
  * A formatter is a pure function that performs a transformation on input data from an expression.
