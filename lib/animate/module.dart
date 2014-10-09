@@ -102,6 +102,7 @@ import 'dart:async';
 import 'dart:html' as dom;
 
 import 'package:angular/core/annotation.dart';
+import 'package:angular/core/aware_interface.dart';
 import 'package:angular/core/module_internal.dart';
 import 'package:angular/core_dom/module_internal.dart';
 import 'package:angular/core_dom/dom_util.dart' as util;

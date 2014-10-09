@@ -22,6 +22,7 @@ import 'dart:html' as dom;
 import 'dart:async' as async;
 import 'package:intl/intl.dart';
 import 'package:angular/core/annotation.dart';
+import 'package:angular/core/aware_interface.dart';
 import 'package:angular/core/module_internal.dart';
 import 'package:angular/core/parser/parser.dart';
 import 'package:angular/core_dom/module_internal.dart';

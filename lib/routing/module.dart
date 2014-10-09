@@ -127,6 +127,7 @@ import 'dart:html';
 
 import 'package:di/di.dart';
 import 'package:di/annotations.dart';
+import 'package:angular/core/aware_interface.dart';
 import 'package:angular/application.dart';
 import 'package:angular/core/annotation_src.dart';
 import 'package:angular/core/module_internal.dart';
