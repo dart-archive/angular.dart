@@ -4,8 +4,9 @@ import "package:di/di.dart" show Injector, Visibility, Factory;
 import "package:di/annotations.dart" show Injectable;
 
 /**
- * A class that supports binding types to factories, values, or implementations
- * (usually for injection purposes.)
+ * An implementation of [DirectiveBinder] is provided by the framework
+ * to [Directive.module]. The provided [DirectiveBinder] can be used
+ * to publish types that will become available for injection.
  */
 abstract class DirectiveBinder {
  void bind(key, {dynamic toValue,
@@ -17,7 +18,9 @@ abstract class DirectiveBinder {
 }
 
 /**
- * A callback that adds new bindings to a passed in [DirectiveBinder].
+ * A [DirectiveBinderFn] function can be assigned to the [Directive.module] property.
+ * The function is called with an implementation of [DirectiveBinder], which
+ * can be used to publish types that will become available for injection.
  */
 typedef void DirectiveBinderFn(DirectiveBinder binder);
 
@@ -48,7 +51,7 @@ class Visibility {
 }
 
 /**
- * Abstract supper class of [Component], and [Decorator].
+ * Abstract super class of [Component], and [Decorator].
  */
 abstract class Directive implements Injectable {
 
@@ -255,8 +258,8 @@ abstract class Directive implements Injectable {
  * Angular components use shadow-DOM for rendering their templates.
  *
  * Angular components are instantiated using dependency injection, and can
- * ask for any injectable object in their constructor, except [Scope]. Components
- * can also ask for other components or directives declared on the DOM element.
+ * ask for any injectable object in their constructor. Components
+ * can also ask for other components or decorators declared on the DOM element.
  *
  * Components can implement [AttachAware], [DetachAware],
  * [ShadowRootAware], [ScopeAware](#angular/angular-core.ScopeAware) and declare these optional methods:
@@ -375,14 +378,14 @@ class Component extends Directive {
 }
 
 /**
- * Annotation placed on a class which should act as a directive.
+ * Annotation placed on a class which should act as a decorator.
  *
- * Angular directives are instantiated using dependency injection, and can
- * ask for any injectable object in their constructor. Directives
- * can also ask for other components or directives declared on the DOM element.
+ * Angular decorators are instantiated using dependency injection, and can
+ * ask for any injectable object in their constructor. Decorators
+ * can also ask for other components or decorators declared on the DOM element.
  *
- * Directives can implement [AttachAware], [DetachAware],
- * [ScopeAware](#angular/angular-core.ScopeAware) and declare these optional methods:
+ * Decorators can implement [AttachAware], [DetachAware] and
+ * declare these optional methods:
  *
  * * `attach()` - Called on first [Scope.apply()].
  * * `detach()` - Called on when owning scope is destroyed.
@@ -419,7 +422,7 @@ class Decorator extends Directive {
 }
 
 /**
- * Abstract supper class of [NgAttr], [NgCallback], [NgOneWay], [NgOneWayOneTime], and [NgTwoWay].
+ * Abstract super class of [NgAttr], [NgCallback], [NgOneWay], [NgOneWayOneTime], and [NgTwoWay].
  */
 abstract class DirectiveAnnotation {
   /// Element attribute name
@@ -431,7 +434,7 @@ abstract class DirectiveAnnotation {
 
 /**
  * When applied as an annotation on a directive field specifies that
- * the field is to be mapped to DOM attribute with the provided [attrName].
+ * the field is to be mapped to a DOM attribute with the provided [attrName].
  * The value of the attribute to be treated as a string, equivalent
  * to `@` specification.
  */
@@ -442,7 +445,7 @@ class NgAttr extends DirectiveAnnotation {
 
 /**
  * When applied as an annotation on a directive field specifies that
- * the field is to be mapped to DOM attribute with the provided [attrName].
+ * the field is to be mapped to a DOM attribute with the provided [attrName].
  * The value of the attribute to be treated as a one-way expression, equivalent
  * to `=>` specification.
  */
@@ -464,7 +467,7 @@ class NgOneWayOneTime extends DirectiveAnnotation {
 
 /**
  * When applied as an annotation on a directive field specifies that
- * the field is to be mapped to DOM attribute with the provided [attrName].
+ * the field is to be mapped to a DOM attribute with the provided [attrName].
  * The value of the attribute to be treated as a two-way expression,
  * equivalent to `<=>` specification.
  */
@@ -475,7 +478,7 @@ class NgTwoWay extends DirectiveAnnotation {
 
 /**
  * When applied as an annotation on a directive field specifies that
- * the field is to be mapped to DOM attribute with the provided [attrName].
+ * the field is to be mapped to a DOM attribute with the provided [attrName].
  * The value of the attribute to be treated as a callback expression,
  * equivalent to `&` specification.
  */
@@ -485,9 +488,9 @@ class NgCallback extends DirectiveAnnotation {
 }
 
 /**
- * A directives or components may chose to implements [AttachAware].[attach] method.
- * If implemented the method will be called when the next scope digest occurs after
- * component instantiation. It is guaranteed that when [attach] is invoked, that all
+ * A decorator or a component may choose to implement the [AttachAware].[attach] method.
+ * If implemented, the method will be called when the next scope digest occurs after
+ * component instantiation. It is guaranteed that when [attach] is invoked, all
  * attribute mappings have already been processed.
  */
 abstract class AttachAware {
@@ -495,8 +498,8 @@ abstract class AttachAware {
 }
 
 /**
- * A directives or components may chose to implements [DetachAware].[detach] method.
- * If implemented the method will be called when the next associated scope is destroyed.
+ * A decorator or a component may choose to implement the [DetachAware].[detach] method.
+ * If implemented, the method will be called when the next associated scope is destroyed.
  */
 abstract class DetachAware {
   void detach();
