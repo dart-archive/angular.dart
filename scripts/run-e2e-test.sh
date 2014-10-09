@@ -42,7 +42,7 @@ export -f _onSignal
 
 _initSignals() {
   for s in "${SIGNALS[@]}" ; do
-    trap "EXIT_CODE=$? ; _onSignal $s" $s
+    trap 'EXIT_CODE=$?'" ; _onSignal $s" $s
   done
 }
 export -f _initSignals
