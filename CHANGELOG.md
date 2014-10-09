@@ -1,3 +1,177 @@
+<a name="v0.15.0"></a>
+# v0.15.0 (2014-09-23)
+
+p
+## Highlights
+
+This release adds a few important features:
+- enhance transcluding components by allowing multiple insertion points and css encapsulation,
+- remove the `@Controller` directive. Components should be used instead but you still can define
+  a `RootContextType` if needed by your application,
+- add support for relative URLs in the component configuration (CSS & HTML templates),
+- enhance web components supports by supporting custom events for element property binding (only the
+  `change` event was supported before).
+
+## Bug Fixes
+
+- **Component:** Remove deprecated applyAuthorStyles & resetStyleInheritance
+  ([059b76e7](https://github.com/angular/angular.dart/commit/059b76e71766329549542d3f84b5d9e5a0b2adc5),
+   [#1345](https://github.com/angular/angular.dart/issues/1345))
+- **DirectiveInjector:** fix exceptions
+  ([87fcd1eb](https://github.com/angular/angular.dart/commit/87fcd1ebbe57c66c6e74cad7ba595cac2617949c),
+   [#1484](https://github.com/angular/angular.dart/issues/1484))
+- **WTF:** add back traceDetectWTF call in application start
+  ([de824080](https://github.com/angular/angular.dart/commit/de824080b00531d1df6aafa26a287a1d3ab05254))
+- **application:** set injector property when bootstraping the app
+  ([bf5d15a7](https://github.com/angular/angular.dart/commit/bf5d15a74c76c316e41c63e8a4e53cc55d2dbf0b),
+   [#1391](https://github.com/angular/angular.dart/issues/1391))
+- **bind-*:** zone.run scope.apply on bind- change events
+  ([77fdc617](https://github.com/angular/angular.dart/commit/77fdc617aa8b4686686256537802240d1803b7bf))
+- **compiler:** Support camelCase property bindings
+  ([4cb23914](https://github.com/angular/angular.dart/commit/4cb23914ab1e77ad75e3f219a989bd569785bc5a),
+   [#1460](https://github.com/angular/angular.dart/issues/1460), [#1462](https://github.com/angular/angular.dart/issues/1462))
+- **components:**
+  - TranscludingComponentFactory passes a wrong element to onShadowRoot
+  ([2c87e84f](https://github.com/angular/angular.dart/commit/2c87e84f880fdc5e7fdc127b59311e84be590636),
+   [#1435](https://github.com/angular/angular.dart/issues/1435), [#1436](https://github.com/angular/angular.dart/issues/1436))
+  - the content tag duplicates elements
+  ([ff46fb7b](https://github.com/angular/angular.dart/commit/ff46fb7b3354d9d7e6ec4cd71e57c5d2464159b7),
+   [#1422](https://github.com/angular/angular.dart/issues/1422))
+- **directive-injector:** wrong variable name in error thrown.
+  ([c533eb55](https://github.com/angular/angular.dart/commit/c533eb558cf65765ee77fe3bd99f9d26039ad2fa),
+   [#1397](https://github.com/angular/angular.dart/issues/1397))
+- **form example:**
+  - watched collections can not be mutated
+  ([d39e62a3](https://github.com/angular/angular.dart/commit/d39e62a33c7553ffaa5d62e1a843058a85edf068))
+  - type() has been replaced by bind()
+  ([e5584e16](https://github.com/angular/angular.dart/commit/e5584e16855700b61281a7f80cc8697c47268211))
+- **metadata_extractor:** Do not try to guess the selector
+  ([28f9ee48](https://github.com/angular/angular.dart/commit/28f9ee48a204c251f45f0d6a6dae6eaeecf5a665))
+- **mock:** Fix uninitialized variable in MockWindow.
+  ([862f46c3](https://github.com/angular/angular.dart/commit/862f46c3e80267c29e3d41447ce9d6d623b5ad44))
+- **perf_api:** upgrade the pkg minimum version to fix an analyzer error
+  ([09d3c830](https://github.com/angular/angular.dart/commit/09d3c830961dfda57ab5bcf434563711724e679d),
+   [#1408](https://github.com/angular/angular.dart/issues/1408))
+- **resource_url_resolver:**
+  - correct type for Node
+  ([a760ec19](https://github.com/angular/angular.dart/commit/a760ec19ef7d6ea5fb829fa44972dfccf8e9fe12))
+  - fix DOM parsing for Safari
+  ([50025832](https://github.com/angular/angular.dart/commit/50025832947a2121e999c68fdc81dccb5ef0cf9e),
+   [#1439](https://github.com/angular/angular.dart/issues/1439))
+- **source_metadata_extractor:** Extract config from controllers
+  ([a981feb2](https://github.com/angular/angular.dart/commit/a981feb2df849fbe5aa30c4d1a60ca329287571b))
+- **travis:** BUILD_LEADER is not available in build.sh
+  ([0720c3c5](https://github.com/angular/angular.dart/commit/0720c3c58442d5733df6c82faa2b2b39cc7dca91),
+   [#1362](https://github.com/angular/angular.dart/issues/1362), [#1393](https://github.com/angular/angular.dart/issues/1393))
+- **web components:** Fix tests in IE10
+  ([43b6f4f0](https://github.com/angular/angular.dart/commit/43b6f4f069f938146a998dabbe8385efb5adbbe2),
+   [#1372](https://github.com/angular/angular.dart/issues/1372))
+
+
+## Features
+
+- **TestBed:** add whitespace handling to compile
+  ([5f5ce353](https://github.com/angular/angular.dart/commit/5f5ce353d04b77da2018c59a0a98c89205d15dca),
+   [#1262](https://github.com/angular/angular.dart/issues/1262), [#1346](https://github.com/angular/angular.dart/issues/1346), [#1445](https://github.com/angular/angular.dart/issues/1445))
+- **components:**
+  - change shadow boundary to ignore duplicate styles
+  ([5b04b17b](https://github.com/angular/angular.dart/commit/5b04b17b526097a33ba13bd8d84f832f605ec4a0))
+  - implement css encapsulation for transcluding components
+  ([18843e1c](https://github.com/angular/angular.dart/commit/18843e1ca9e69f274e7d6e2bf0c37b217e770973))
+  - add support for multiple insertion points for transcluding components
+  ([0d5c99e8](https://github.com/angular/angular.dart/commit/0d5c99e8324bb29d12e651b1cc1e69de6db08310),
+   [#1290](https://github.com/angular/angular.dart/issues/1290))
+- **directive injector:** DiCircularDependencyError -> _CircularDependencyError
+  ([9f46fb95](https://github.com/angular/angular.dart/commit/9f46fb95e7bc6e56f5c7b839a6a26992169ade00),
+   [#1399](https://github.com/angular/angular.dart/issues/1399))
+- **directive-injector:**
+  - detect and throw on circular deps
+  ([0b0080b4](https://github.com/angular/angular.dart/commit/0b0080b445f5d0f58cc05e13b416e9956be076b2),
+   [#1364](https://github.com/angular/angular.dart/issues/1364))
+  - component directive injector injects parent
+  ([3af94348](https://github.com/angular/angular.dart/commit/3af94348c56813fda667ccfcd68275bcea6e9edf),
+   [#1351](https://github.com/angular/angular.dart/issues/1351))
+- **directives:** remove the @Controller directive
+  ([5f8e2765](https://github.com/angular/angular.dart/commit/5f8e27659ffb0140e0c153f8cecd627df273bfd2),
+   [#1401](https://github.com/angular/angular.dart/issues/1401))
+- **eventHandler:** Support snake-case event names instead of camelCase.
+  ([fd54c304](https://github.com/angular/angular.dart/commit/fd54c304c2ac533ea7128e5abebd00593abf8c7e),
+   [#1434](https://github.com/angular/angular.dart/issues/1434), [#1478](https://github.com/angular/angular.dart/issues/1478), [#1477](https://github.com/angular/angular.dart/issues/1477))
+- **examples:** Add a compelling Shadow DOM example
+  ([028b2373](https://github.com/angular/angular.dart/commit/028b23730ef993d93045c04eebd908dea7aa68ed),
+   [#1377](https://github.com/angular/angular.dart/issues/1377))
+- **mocks:** change MockHttpBackend to define the assertion on flush.
+  ([635f9d0c](https://github.com/angular/angular.dart/commit/635f9d0cf2ac9f50e9190047bde080d468d7cfe8),
+   [#900](https://github.com/angular/angular.dart/issues/900))
+- **scope:** move domWrite and domRead from RootScope to Scope
+  ([c18a8f33](https://github.com/angular/angular.dart/commit/c18a8f33f355996f9d63a77c7af3f9559bc898f8),
+   [#1161](https://github.com/angular/angular.dart/issues/1161), [#1341](https://github.com/angular/angular.dart/issues/1341))
+- **scripts:** pick-pr
+  ([3090a194](https://github.com/angular/angular.dart/commit/3090a1944edcc8100b3cc8c496ee02d0c2c3bc8e),
+   [#1394](https://github.com/angular/angular.dart/issues/1394))
+- **tests:** run tests on all browsers
+  ([8c1f79a4](https://github.com/angular/angular.dart/commit/8c1f79a42d2411373cddbb2ff89b20434bf99add))
+- **travis:** Also check for dart2js sizes that are unexpectedly small
+  ([e90fa606](https://github.com/angular/angular.dart/commit/e90fa606358a106ecba23657702d25b05c7c80d2),
+   [#1427](https://github.com/angular/angular.dart/issues/1427))
+- **urls:** support relative CSS / template URLs in components
+  ([50e26453](https://github.com/angular/angular.dart/commit/50e26453efc79d2db3a335112b37d13c5b0becbb))
+- **web components:** Support custom events for element property binding
+  ([94c35225](https://github.com/angular/angular.dart/commit/94c3522512ba7089a524fce0f7fd8bdedffe3f88),
+   [#1449](https://github.com/angular/angular.dart/issues/1449), [#1453](https://github.com/angular/angular.dart/issues/1453))
+
+
+## Performance Improvements
+
+- **component:** add a benchmark that measures component creation with and without css files
+  ([29f39470](https://github.com/angular/angular.dart/commit/29f394703afb58bf342a072fd901c85583060c80),
+   [#1421](https://github.com/angular/angular.dart/issues/1421))
+- **util:** call toLowerCase() only where needed
+  ([2bcd29e7](https://github.com/angular/angular.dart/commit/2bcd29e7b284ed3a32c0698a6820ca161ea8f99f),
+   [#1468](https://github.com/angular/angular.dart/issues/1468))
+- **view_factory:** add a benchmark that measures view_factory in isolation
+  ([abbe4efb](https://github.com/angular/angular.dart/commit/abbe4efbb80546df0a615591f44e8fafabd29f89),
+   [#1384](https://github.com/angular/angular.dart/issues/1384))
+
+
+## Breaking Changes
+
+- **mocks:** due to [635f9d0c](https://github.com/angular/angular.dart/commit/635f9d0cf2ac9f50e9190047bde080d468d7cfe8),
+
+
+  Unexpected requests are detected only when `flush` is called.
+
+  Before:
+
+		backend("GET", /some"); //throws here if `/some` has not been defined
+
+  After:
+
+		backend("GET", /some"); //no problem, just records the request
+		backend.flush(); //throws here
+
+  Closes #900
+- **urls:** due to [50e26453](https://github.com/angular/angular.dart/commit/50e26453efc79d2db3a335112b37d13c5b0becbb),
+
+
+  You must update relative paths to your templates and in ng-include's to
+  be relative to the component's library / ng-include'd file.
+
+  NOTE: This feature is defaulted to an "on" state.  To get back the old
+  behavior, you may disable this feature for your application.  This is
+  only to help you adjust to this change and will go away in a later
+  version.  Here's how you can get the old behavior:
+
+  ```dart
+  module.bind(ResourceResolverConfig, toValue:
+      new ResourceResolverConfig.useRelativeUrls(false));
+  ```
+
+*Testing*:
+- e2e transformer tests can now be done on the sample application found
+  in the test_transformers folder
+
+
 <a name="v0.14.0"></a>
 # v0.14.0 symbiotic-meerkat (2014-08-22)
 
@@ -10,11 +184,11 @@ https://github.com/angular/angular.dart/blob/master/example/web/paper.html) for
 some [material
 design](http://www.google.com/design/spec/material-design/introduction.html)
 examples.
-                                                                                     
+
 Also, we have added instrumentation for [Web Tracing Framework]
 (http://google.github.io/tracing-framework/), so that you can visualize
 codepaths in your live apps (only browser plug-in required).
-                 
+
 At last we did plenty of bug fixing and performance improvements for an even
 smoother developer experience.
 
@@ -112,7 +286,7 @@ smoother developer experience.
 ## Breaking Changes
 
 - **directive-injector:** due to [600113a8](https://github.com/angular/angular.dart/commit/600113a8e6bc1aff08f00513eb1b794ca28e54ee),
- 
+
 
 Regular injectors (aka application injectors) can no longer be used to
 retrieve DirectiveInjectors.  The compiler creates the Directive
@@ -123,23 +297,23 @@ Injector as part of view creation process.
 
 ## Highlights
 
-This release is focused on performance and significantly speeds up rendering.  We optimized our 
-entire rendering pipeline and now component rendering is 2.8 times (those with inlined templates) 
+This release is focused on performance and significantly speeds up rendering.  We optimized our
+entire rendering pipeline and now component rendering is 2.8 times (those with inlined templates)
 to 6.3 times faster (those with template files) than the previous 0.12.0 release.
 
 To accomplish these performance improvements, we
 - fixed a number of performance bugs
-- moved more compilation work out of the ViewFactories, which stamps out DOM nodes, and into the 
+- moved more compilation work out of the ViewFactories, which stamps out DOM nodes, and into the
   Compiler, which sets up the ViewFactories.
-- implemented a custom "directive injector" to optimize Dependency Injection calls from the 
+- implemented a custom "directive injector" to optimize Dependency Injection calls from the
   ViewFactories
 - optimized Dependency Injection, eliminating slow APIs
 
 Also, we have given apps more knobs to tune performance
-- The Http service now supports coalescing http requests. This means that all the HTTP responses 
+- The Http service now supports coalescing http requests. This means that all the HTTP responses
   that arrive within a particular interval can all be processed in a single digest.
 - The ElementProbe can be disabled for apps that do not use animation
-- Along with the existing ScopeStats, Angular now exposes cache statistics through the ngCaches 
+- Along with the existing ScopeStats, Angular now exposes cache statistics through the ngCaches
   global object. This also allows developers to clear the caches and measure memory usage
 - Along with these changes, we have also added support for ProtractorDart.
 
@@ -392,12 +566,12 @@ towards the ScopeDigestTTL.
 ## Highlights
 
 - A 20% performance improvement from caching interpolated expressions.
-- Http service can make cross-site requests (get, post, put, etc.) which use credentials (such as 
+- Http service can make cross-site requests (get, post, put, etc.) which use credentials (such as
   cookies or authorization headers).
-- **Breaking change**: vetoing is no longer allowed on leave (RouteLeaveEvent). This change corrects 
+- **Breaking change**: vetoing is no longer allowed on leave (RouteLeaveEvent). This change corrects
   an issue with routes unable to recover from another route vetoing a leave event.
 - **Breaking change**:  Zone.defaultOnScheduleMicrotask is now named Zone.onScheduleMicrotask
-- **Breaking change**: OneWayOneTime bindings will continue to accept value assignments until their 
+- **Breaking change**: OneWayOneTime bindings will continue to accept value assignments until their
   stabilized value is non-null.
 
 ## Bug Fixes
@@ -488,7 +662,7 @@ towards the ScopeDigestTTL.
 ## Breaking Changes
 
 - **VmTurnZone:** due to [a8699da0](https://github.com/angular/angular.dart/commit/a8699da016c754e08502ae24034a86bd8d6e0d8e),
- 
+
 `Zone.defaultOnScheduleMicrotask` is now named `Zone.onScheduleMicrotask`
 
 
@@ -508,7 +682,7 @@ If you said: `Http.getString('data.txt').then((String data) { ... })` before, no
 
 - Shadow DOM-less components
 
-Shadow DOM is still enabled by default for components. Now, its use can be controlled through the 
+Shadow DOM is still enabled by default for components. Now, its use can be controlled through the
 new `useShadowDom` option in the Component annotation.
 
 For example:
@@ -521,28 +695,28 @@ For example:
 class MyComp {}
 ```
 
-will disable Shadow DOM for that component and construct the template in the "light" DOM. Either 
-omitting the `useShadowDom` option or explicitly setting it to `true` will cause Angular to 
+will disable Shadow DOM for that component and construct the template in the "light" DOM. Either
+omitting the `useShadowDom` option or explicitly setting it to `true` will cause Angular to
 construct the template in the component's shadow DOM.
 
-Adding cssUrls to Components with Shadow DOM disabled is not allowed. Since they aren't using Shadow 
-DOM, there is no style encapsulation and per-component CSS doesn't make sense. The component has 
-access to the styles in the `documentFragment` where it was created. Style encapsulation is a 
+Adding cssUrls to Components with Shadow DOM disabled is not allowed. Since they aren't using Shadow
+DOM, there is no style encapsulation and per-component CSS doesn't make sense. The component has
+access to the styles in the `documentFragment` where it was created. Style encapsulation is a
 feature we are thinking about, so this design will likely change in the future.
 
 - bind-* syntax
 
-We have shipped an early "preview" of the upcoming bind-* syntax. In 0.11.0, you may bind an 
-expression to any mapped attribute, even if that attribute is a `@NgAttr` mapping which typically 
+We have shipped an early "preview" of the upcoming bind-* syntax. In 0.11.0, you may bind an
+expression to any mapped attribute, even if that attribute is a `@NgAttr` mapping which typically
 takes a string.
 
 ### Performance improvements
 
 There are two significant performance improvements:
-- We now cache CSS as `StyleElement`s instead of string, saving a `setInnerHtml` call on each styled 
-  component instantiation. In a benchmark where components used unminified Bootstrap styles (124kB), 
+- We now cache CSS as `StyleElement`s instead of string, saving a `setInnerHtml` call on each styled
+  component instantiation. In a benchmark where components used unminified Bootstrap styles (124kB),
   this sped up component creation by 31%.
-- Changes in the DI package sped up View instantiation by 200%. This change makes AngularDart 
+- Changes in the DI package sped up View instantiation by 200%. This change makes AngularDart
   rendering significantly faster.
 
 ## Bug Fixes
@@ -633,7 +807,7 @@ There are two significant performance improvements:
 - **Http:** due to [39a143d](https://github.com/angular/angular.dart/commit/39a143da630965703cbe53e45e902e97163a75d54),
 
 The deprecated Http.getString() method has been removed in favour of Http.get()
- 
+
 <a name="v0.10.0"></a>
 # v0.10.0 ostemad-teleportation (2014-04-17)
 
