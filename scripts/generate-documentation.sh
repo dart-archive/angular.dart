@@ -60,7 +60,8 @@ doc_version=`head CHANGELOG.md | awk 'NR==2' | sed 's/^# //'`
 dartsdk_version=`cat $DART_SDK/version`
 head_sha=`git rev-parse --short HEAD`
 
-echo $doc_version at $head_sha \(with Dart SDK $dartsdk_version\) > docs/VERSION
+echo Built with $doc_version at $head_sha with Dart SDK $dartsdk_version
+echo Built with $doc_version at $head_sha with Dart SDK $dartsdk_version > docs/VERSION
 
 rm -rf $DOCVIEWER_DIR/client/web/docs/
 mv docs/ $DOCVIEWER_DIR/client/web/docs/
