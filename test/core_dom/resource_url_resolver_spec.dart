@@ -1,10 +1,12 @@
 library angular.test.core_dom.uri_resolver_spec;
 
+import 'dart:html';
 import 'package:angular/core_dom/resource_url_resolver.dart';
 import 'package:angular/core_dom/type_to_uri_mapper.dart';
 import 'package:angular/core_dom/type_to_uri_mapper_dynamic.dart';
 import '../_specs.dart';
 
+final bool isBrowserInternetExplorer = window.navigator.userAgent.indexOf(" MSIE ") > 0;
 
 _run_resolver({useRelativeUrls}) {
   describe("resolveUrls=$useRelativeUrls", () {
@@ -45,9 +47,12 @@ _run_resolver({useRelativeUrls}) {
 
     String urlInImport(cssEscapedUrl) => '<style>@import $cssEscapedUrl</style>';
     String urlInBackgroundImg(cssEscapedUrl) => '<style>body { background-image: $cssEscapedUrl }</style>';
-    String urlInImgSrc(htmlEscapedUrl) => '<template><img src=\"$htmlEscapedUrl\"></template>';
-    String urlInHref(htmlEscapedUrl) => '<template><a href=\"$htmlEscapedUrl\"></template>';
-    String urlInAction(htmlEscapedUrl) => '<template><form action=\"$htmlEscapedUrl\"></template>';
+    String urlInTemplateImgSrc(htmlEscapedUrl) => '<template><img src=\"$htmlEscapedUrl\"></template>';
+    String urlInTemplateHref(htmlEscapedUrl) => '<template><a href=\"$htmlEscapedUrl\"></a></template>';
+    String urlInTemplateAction(htmlEscapedUrl) => '<template><form action=\"$htmlEscapedUrl\"></form></template>';
+    String urlInImgSrc(htmlEscapedUrl) => '<div><img src=\"$htmlEscapedUrl\"></div>';
+    String urlInHref(htmlEscapedUrl) => '<div><a href=\"$htmlEscapedUrl\"></a></div>';
+    String urlInAction(htmlEscapedUrl) => '<div><form action=\"$htmlEscapedUrl\"></form></div>';
 
     escapeUrlForCss(String unEscapedUrl) {
       return unEscapedUrl..replaceAll("\\", "\\\\")
@@ -68,10 +73,38 @@ _run_resolver({useRelativeUrls}) {
     }
 
     testOnHtmlTemplate(htmlEscapedUrl, htmlEscapedExpected, typeOrIncludeUri) {
-     it('within an img src attribute', () {
+     it('should rewrite img[src]', () {
        var html = resourceResolver.resolveHtml(urlInImgSrc(htmlEscapedUrl), typeOrIncludeUri);
        expect(html).toEqual(urlInImgSrc(htmlEscapedExpected));
      });
+
+     it('should rewrite a[href]', () {
+       var html = resourceResolver.resolveHtml(urlInHref(htmlEscapedUrl), typeOrIncludeUri);
+       expect(html).toEqual(urlInHref(htmlEscapedExpected));
+     });
+
+     it('should rewrite form[action]', () {
+       var html = resourceResolver.resolveHtml(urlInAction(htmlEscapedUrl), typeOrIncludeUri);
+       expect(html).toEqual(urlInAction(htmlEscapedExpected));
+     });
+
+     // IE does not support the template tag.
+     if (!isBrowserInternetExplorer) {
+       it('should rewrite img[src] in template tag', () {
+         var html = resourceResolver.resolveHtml(urlInTemplateImgSrc(htmlEscapedUrl), typeOrIncludeUri);
+         expect(html).toEqual(urlInTemplateImgSrc(htmlEscapedExpected));
+       });
+
+       it('should rewrite a[href] in template tag', () {
+         var html = resourceResolver.resolveHtml(urlInTemplateHref(htmlEscapedUrl), typeOrIncludeUri);
+         expect(html).toEqual(urlInTemplateHref(htmlEscapedExpected));
+       });
+
+       it('should rewrite form[action] in template tag', () {
+         var html = resourceResolver.resolveHtml(urlInTemplateAction(htmlEscapedUrl), typeOrIncludeUri);
+         expect(html).toEqual(urlInTemplateAction(htmlEscapedExpected));
+       });
+      }
     }
 
     // testOnAllTemplates will insert the url to be resolved into three different types
