@@ -70,15 +70,17 @@ class ScopeDigestTTL {
 }
 
 /**
- * When a [Directive] or the root context class implements [ScopeAware] the scope
- * setter will be called to set the [Scope] on this component.
+ * When a [Directive](#angular/angular-core-annotation.Directive) or the root context class
+ * implements [ScopeAware] the scope setter will be called to set the [Scope] on this component.
  *
  * The order of calls is as follows:
- * - [Component] instance is created.
- * - [Scope] instance is created (taking [Component] instance as evaluation context).
- * - if [Component] is [ScopeAware], set scope method is called with scope instance.
  *
- * [ScopeAware] is guaranteed to be called before [AttachAware] or [DetachAware] methods.
+ * * [Component](#angular/angular-core-annotation.Component) instance is created.
+ * * [Scope] instance is created (taking Component instance as evaluation context).
+ * * if Component is [ScopeAware], set scope method is called with scope instance.
+ *
+ * [ScopeAware] is guaranteed to be called before [AttachAware](#angular/angular-core-annotation.AttachAware)
+ * or [DetachAware](#angular/angular-core-annotation.DetachAware) methods.
  *
  * Example:
  *     @Component(...)
