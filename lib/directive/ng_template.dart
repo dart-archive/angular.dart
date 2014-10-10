@@ -1,8 +1,11 @@
 part of angular.directive;
 
 /**
- * The [NgTemplate] allows one to preload an Angular template
- * into the [TemplateCache].  It works on `<template>` and `<script>` elements
+ * Preloads an Angular template into the TemplateCache. `Selector:
+ * template[type=text/ng-template]` or `script[type=text/ng-template]`
+ *
+ * It works on `<template>` and
+ * `<script>` elements
  * that have `type="text/ng-template`.  For such elements, The entire contents
  * of the elements are loaded into the [TemplateCache] under the URL specified
  * by the `id` attribute.
@@ -16,7 +19,7 @@ part of angular.directive;
  *       TEMPLATE 2 CONTENTS
  *     </template>
  *
- * Refer [TemplateCache] for a **full example** as well as more information.
+ * Refer to [TemplateCache] for a **full example** as well as more information.
  */
 @Decorator(
   selector: 'template[type=text/ng-template]',

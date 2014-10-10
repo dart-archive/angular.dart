@@ -283,7 +283,9 @@ abstract class NgControl implements AttachAware, DetachAware {
     }
   }
 }
-
+/**
+ * Creates a top-level dummy parent control to hold Form controls that don't have a parent control.
+ */
 class NgNullControl implements NgControl {
   var _name, _dirty, _valid, _submitValid, _pristine, _element, _touched;
   var _controls, _parentControl, _controlName, _animate, infoStates, errorStates;

@@ -47,8 +47,9 @@ class NgBooleanAttribute {
 }
 
 /**
- * In browser some attributes have network side-effect. If the attribute
- * has `{{interpolation}}` in it it may cause browser to fetch bogus URLs.
+ * Provides `ng-`prefixed attributes to avoid a network side-effect on the `href`, `src`,
+ * and `srcset` attributes that can cause the browser to fetch bogus URLs when one of these
+ * attributes uses `{{interpolation}}`. `Selector: [ng-href]` or `[ng-src]` or `[ng-srcset]`
  *
  * Example: In `<img src="{{username}}.png">` the browser will fetch the image
  * `http://server/{{username}}.png` before Angular has a chance to replace the

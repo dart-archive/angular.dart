@@ -80,7 +80,9 @@ class NgForm extends NgControl {
   NgControl operator[](String name) =>
       controls.containsKey(name) ? controls[name][0] : null;
 }
-
+/**
+ * Creates a top-level dummy NgForm to hold Form controls that aren't located inside a form.
+ */
 class NgNullForm extends NgNullControl implements NgForm {
   var _scope;
 

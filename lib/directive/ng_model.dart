@@ -17,15 +17,11 @@ class _NoopModelConverter extends NgModelConverter {
 }
 
 /**
- * Ng-model directive is responsible for reading/writing to the model.
+ * Ng-model directive is responsible for reading/writing to the model. `Selector: [ng-model]`
  *
  * The directive itself is headless. (It does not know how to render or what
  * events to listen for.) It is meant to be used with other directives which
- * provide the rendering and listening capabilities. The directive itself
- * knows how to convert the view-value into model-value and vice versa by
- * allowing others to register converters (To be implemented). It also
- * knows how to (in)validate the model and the form in which it is declared
- * (to be implemented)
+ * provide the rendering and listening capabilities.
  */
 @Decorator(selector: '[ng-model]')
 class NgModel extends NgControl implements AttachAware {
@@ -467,7 +463,7 @@ class InputNumberLike {
 }
 
 /**
- * Subordinate directive to [InputDateLike] that specifies the type for date/time related values.
+ * Subordinate directive to `InputDateLike` that specifies the type for date/time related values.
  * `Selector: input[type=date|time|datetime|datetime-local|month|week][ng-model][ng-bind-type]`
  *
  * This directive controls which IDL attribute is read and thus sets the type. This allows an app
@@ -677,7 +673,8 @@ final _uidCounter = new _UidCounter();
 
 /**
  * Binds an expression to the value of a radio element or option,
- * to be used when that element is selected.
+ * to be used when that element is selected. `Selector: input[type=radio][ng-model][ng-value]` or
+ * `option[ng-value]`
  *
  * When the element is selected, the `ng-model` property of that element is set to the bound value.
  * Note that `expr` can be any type; i.e., it is not restricted to [String].

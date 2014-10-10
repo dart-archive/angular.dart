@@ -1,9 +1,8 @@
 part of angular.directive;
 
 /**
- * The ngHide directive shows or hides the given HTML element based on the
- * expression provided to the ngHide attribute. The element is shown or hidden
- * by changing the removing or adding the ng-hide CSS class onto the element.
+ * Shows or hides the given HTML element based on an expression. The element is shown or hidden
+ * by removing or adding the `NgHide` CSS class onto the element. `Selector: [ng-hide]`
  */
 @Decorator(
     selector: '[ng-hide]',
@@ -26,9 +25,8 @@ class NgHide {
 }
 
 /**
- * The ngShow directive shows or hides the given HTML element based on the
- * expression provided to the ngHide attribute. The element is shown or hidden
- * by changing the removing or adding the ng-hide CSS class onto the element.
+ * Shows or hides the given HTML element based on an expression. The element is shown or hidden
+ * by changing the removing or adding the `NgHide` CSS class onto the element. `Selector: [ng-show]`
  */
 @Decorator(
     selector: '[ng-show]',
