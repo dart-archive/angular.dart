@@ -101,10 +101,39 @@ abstract class ScopeAware {
 }
 
 /**
- * [Scope] represents a collection of [watch]es [observer]s, and a [context] for the watchers,
+ * [Scope] represents a collection of [watch]es, [observer]s, and a [context] for the watchers,
  * observers and [eval]uations. Scopes structure loosely mimics the DOM structure. Scopes and
  * [View]s are bound to each other. As scopes are created and destroyed by [ViewFactory] they are
  * responsible for change detection, change processing and memory management.
+ *
+ * ## Understanding the Scope Digest Life Cycle
+ * The following diagram illustrates the order of events in a Scope digest
+ * loop:
+ * ![Scope Digest Loop Illustration](https://docs.google.com/drawings/d/1ELigkn4P3jeSUqvUErrp38vd5Qk7uYFcSA2ACKQn_rI/pub?w=480&h=360)
+ *
+ * Angular updates the template UI by executing `apply()` at the end of a VM turn. The
+ * `apply` step is then broken down into digest and flush cycles. Digest loops are used for
+ * inter-model communication, the flush cycle is used for UI rendering only.
+ *
+ *  **Digest cycle**
+ *
+ *  At the beginning of the watch, Angular processes the asyncQueue (used by Futures to execute
+ *  microtasks), then keeps looping until there are no more changes detected in the digest loop.
+ *  Changes are delivered to the WatchReaction Functions.
+ *
+ *  **Flush cycle**
+ *
+ *  Flush runs only once per digest loop, and is used to render the template UI. It is mostly used
+ *  by interpolation syntax in `{{}}` templates. In dev mode, we run flush a second time,
+ *  to assert that flushes have no side effects.
+ *
+ *  We also process the DOM read/write queue at this point.
+ *
+ *  **Use of Watches**
+ *
+ *  Watches in digest are permitted to have side effects, watches in flush are not allowed to have
+ *  side effects.
+ *
  */
 class Scope {
   final String id;
