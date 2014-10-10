@@ -237,7 +237,7 @@ _run_resolver({useRelativeUrls}) {
 }
 
 void main() {
-  describe('url_resolver', () {
+  ddescribe('url_resolver', () {
     _run_resolver(useRelativeUrls: true);
     _run_resolver(useRelativeUrls: false);
   });
