@@ -21,7 +21,7 @@ class _NullTreeSanitizer implements NodeTreeSanitizer {
 
 @Injectable()
 class ResourceUrlResolver {
-  static final RegExp cssUrlRegexp = new RegExp(r'''(\burl\((?:[\s]+)?)(['"]?)([^]*)(\2(?:[\s]+)?\))''');
+  static final RegExp cssUrlRegexp = new RegExp(r'''(\burl\((?:[\s]+)?)(['"]?)([\S]*)(\2(?:[\s]+)?\))''');
   static final RegExp cssImportRegexp = new RegExp(r'(@import[\s]+(?!url\())([^;]*)(;)');
   static const List<String> urlAttrs = const ['href', 'src', 'action'];
   static final String urlAttrsSelector = '[${urlAttrs.join('],[')}]';
@@ -29,7 +29,7 @@ class ResourceUrlResolver {
   static final RegExp quotes = new RegExp("[\"\']");
 
   // Ensures that Uri.base is http/https.
-  final _baseUri = Uri.base.origin + ("/");
+  final _baseUri = Uri.base.origin + ('/');
 
   final TypeToUriMapper _uriMapper;
   final ResourceResolverConfig _config;
@@ -37,17 +37,12 @@ class ResourceUrlResolver {
   ResourceUrlResolver(this._uriMapper, this._config);
 
   static final NodeTreeSanitizer _nullTreeSanitizer = new _NullTreeSanitizer();
+  static final docForParsing = document.implementation.createHtmlDocument('');
 
   static Node _parseHtmlString(String html) {
-    HtmlDocument doc = new DomParser().parseFromString(
-        "<!doctype html><html><body>$html</body></html>", "text/html");
-    if (doc != null) {
-      return doc.body;
-    }
-    // Workaround for Safari (can't parse HTML documents via the DomParser)
-    doc = document.implementation.createHtmlDocument("");
-    doc.body.setInnerHtml(html, treeSanitizer: _nullTreeSanitizer);
-    return doc.body;
+    var div = docForParsing.createElement('div');
+    div.setInnerHtml(html, treeSanitizer: _nullTreeSanitizer);
+    return div;
   }
 
   String resolveHtml(String html, [Uri baseUri]) {
