@@ -1,10 +1,11 @@
 part of angular.directive;
 
 /**
- * The ngSwitch directive is used to conditionally swap DOM structure on your
- * template based on a scope expression. Elements within ngSwitch but without
- * ngSwitchWhen or ngSwitchDefault directives will be preserved at the location
- * as specified in the template.
+ * Conditionally swaps DOM structure on your template, based on a scope expression. `Selector:
+ * [ng-switch]`
+ *
+ * Elements within ngSwitch but without ngSwitchWhen or ngSwitchDefault directives will be
+ * preserved at the location as specified in the template.
  *
  * The directive itself works similar to ngInclude, however, instead of
  * downloading template code (or loading it from the template cache), ngSwitch
@@ -32,7 +33,7 @@ part of angular.directive;
  *   elements will be displayed.
  * * `ngSwitchDefault`: the default case when no other case match. If there
  *   are multiple default cases, all of them will be displayed when no other
- *   case match.
+ *   case matches.
  *
  * ## Example:
  *
@@ -104,6 +105,27 @@ class _Case {
 
   _Case(this.anchor, this.viewFactory);
 }
+/**
+ * Specifies a case statement to match against when as part of an `ng-switch` statement. `Selector:
+ * [ng-switch-when]`
+ *
+ * If the same match appears multiple times, all the elements will be displayed.
+ *
+ * ## Example:
+ *
+ *     <div>
+ *       <button ng-click="selection='settings'">Show Settings</button>
+ *       <button ng-click="selection='home'">Show Home Span</button>
+ *       <button ng-click="selection=''">Show default</button>
+ *       <tt>selection={{selection}}</tt>
+ *       <hr/>
+ *       <div ng-switch="selection">
+ *           <div ng-switch-when="settings">Settings Div</div>
+ *           <div ng-switch-when="home">Home Span</div>
+ *           <div ng-switch-default>default</div>
+ *       </div>
+ *     </div>
+ */
 
 @Decorator(
     selector: '[ng-switch-when]',
@@ -118,7 +140,27 @@ class NgSwitchWhen {
 
   void set value(String value) => _ngSwitch.addCase('!$value', _port, _viewFactory);
 }
-
+/**
+ * Specifies a default case to use when no other case statement matches as part of an `ng-switch`
+ * statement. `Selector: [ng-switch-default]`
+ *
+ * If there are multiple default cases, all of them will be displayed when no other case matches.
+ *
+ * ## Example:
+ *
+ *     <div>
+ *       <button ng-click="selection='settings'">Show Settings</button>
+ *       <button ng-click="selection='home'">Show Home Span</button>
+ *       <button ng-click="selection=''">Show default</button>
+ *       <tt>selection={{selection}}</tt>
+ *       <hr/>
+ *       <div ng-switch="selection">
+ *           <div ng-switch-when="settings">Settings Div</div>
+ *           <div ng-switch-when="home">Home Span</div>
+ *           <div ng-switch-default>default</div>
+ *       </div>
+ *     </div>
+ */
 @Decorator(
     children: Directive.TRANSCLUDE_CHILDREN,
     selector: '[ng-switch-default]')

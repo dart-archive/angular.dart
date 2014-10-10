@@ -1,4 +1,28 @@
 part of angular.directive;
+/**
+ * Specifies whether NgModel should be updated as the linked input element changes,
+ * or loses focus (on blur). In addition, you can specify a debounce duration to avoid observing
+ * multiple changes to the same NgModel in a short amount of time. `Selector:
+ * input[ng-model-options]`
+ *
+ * `ng-model-options` are specified as a map, `debounce`. Keys are:
+ *
+ * * `default`: an int duration during which multiple changes on the same element are ignored. (The
+ * last change is the one that is reported.) This applies to the blur, input,
+ * and change events unless otherwise specified.
+ * * `blur`: an override duration to apply for only blur events.
+ * * `change`: an override duration to apply for only change events.
+ * * `input`: an override duration to apply for only input events.
+ *
+ * Typically `blur` is set to 0 if you have specified a nonzero `default`
+ * value.
+ *
+ * ## Example
+ *
+ *     Name: <input type="text" ng-model="name"
+ *      ng-model-options="{ debounce: {'default': 500, 'blur': 0} }" />
+ *
+ */
 
 @Decorator(
     selector: 'input[ng-model-options]',

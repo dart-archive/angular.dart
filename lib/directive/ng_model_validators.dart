@@ -15,7 +15,8 @@ abstract class NgValidator {
 }
 
 /**
- * Validates the model depending if required or ng-required is present on the element.
+ * Validates the model depending if required or ng-required is present on the element. `Selector:
+ * input[ng-model][required|ng-required]`
  */
 @Decorator(
     selector: '[ng-model][required]')
@@ -50,7 +51,8 @@ class NgModelRequiredValidator implements NgValidator {
 }
 
 /**
- * Validates the model to see if its contents match a valid URL pattern.
+ * Validates the model to see if its contents match a valid URL pattern. `Selector:
+ * input[type=url][ng-model]`
  */
 @Decorator(selector: 'input[type=url][ng-model]')
 class NgModelUrlValidator implements NgValidator {
@@ -69,7 +71,8 @@ class NgModelUrlValidator implements NgValidator {
 }
 
 /**
- * Validates the model to see if its contents match a valid color pattern.
+ * Validates the model to see if its contents match a valid color pattern. `Selector:
+ * input[type=color][ng-model]`
  */
 @Decorator(selector: 'input[type=color][ng-model]')
 class NgModelColorValidator implements NgValidator {
@@ -85,7 +88,8 @@ class NgModelColorValidator implements NgValidator {
 }
 
 /**
- * Validates the model to see if its contents match a valid email pattern.
+ * Validates the model to see if its contents match a valid email pattern. `Selector:
+ * input[type=email][ng-model]`
  */
 @Decorator(selector: 'input[type=email][ng-model]')
 class NgModelEmailValidator implements NgValidator {
@@ -103,7 +107,8 @@ class NgModelEmailValidator implements NgValidator {
 }
 
 /**
- * Validates the model to see if its contents match a valid number.
+ * Validates the model to see if its contents match a valid number. `Selector:
+ * input[type=number|type=range][ng-model]`
  */
 @Decorator(selector: 'input[type=number][ng-model]')
 @Decorator(selector: 'input[type=range][ng-model]')
@@ -131,7 +136,8 @@ class NgModelNumberValidator implements NgValidator {
 }
 
 /**
- * Validates the model to see if the numeric value than or equal to the max value.
+ * Validates the model to see if the numeric value than or equal to the max value. `Selector:
+ * input[type=number|type=range][ng-model][max|ng-max]`
  */
 @Decorator(selector: 'input[type=number][ng-model][max]')
 @Decorator(selector: 'input[type=range][ng-model][max]')
@@ -182,7 +188,8 @@ class NgModelMaxNumberValidator implements NgValidator {
 }
 
 /**
- * Validates the model to see if the numeric value is greater than or equal to the min value.
+ * Validates the model to see if the numeric value is greater than or equal to the min value. `Selector:
+ * input[type=number|type=range][ng-model][min|ng-min]`
  */
 @Decorator(selector: 'input[type=number][ng-model][min]')
 @Decorator(selector: 'input[type=range][ng-model][min]')
@@ -234,7 +241,8 @@ class NgModelMinNumberValidator implements NgValidator {
 
 /**
  * Validates the model to see if its contents match the given pattern present on either the
- * HTML pattern or ng-pattern attributes present on the input element.
+ * HTML pattern or ng-pattern attributes present on the input element. `Selector:
+ * [ng-model][pattern|ng-pattern]`
  */
 @Decorator(selector: '[ng-model][pattern]')
 @Decorator(
@@ -266,7 +274,8 @@ class NgModelPatternValidator implements NgValidator {
 /**
  * Validates the model to see if the length of its contents are greater than or
  * equal to the minimum length set in place by the HTML minlength or
- * ng-minlength attributes present on the input element.
+ * ng-minlength attributes present on the input element. `Selector:
+ * [ng-model][minlength|ng-minlength]`
  */
 @Decorator(selector: '[ng-model][minlength]')
 @Decorator(
@@ -298,7 +307,8 @@ class NgModelMinLengthValidator implements NgValidator {
 /**
  * Validates the model to see if the length of its contents are less than or
  * equal to the maximum length set in place by the HTML maxlength or
- * ng-maxlength attributes present on the input element.
+ * ng-maxlength attributes present on the input element. `Selector:
+ * [ng-model][maxlength|ng-maxlength]`
  */
 @Decorator(selector: '[ng-model][maxlength]')
 @Decorator(

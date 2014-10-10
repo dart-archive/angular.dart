@@ -4,7 +4,7 @@ part of angular.directive;
  * Causes the compiler to ignore all Angular directives and markup on descendant
  * nodes of the matching element.  Note, however, that other directives and
  * markup on the element are still processed and that only descending the DOM
- * for compilation is prevented.
+ * for compilation is prevented. `Selector: [ng-non-bindable]`
  *
  * Example:
  *

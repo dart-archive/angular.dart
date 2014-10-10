@@ -33,13 +33,12 @@ abstract class _NgUnlessIfAttrDirectiveBase {
 
 
 /**
- * The `ng-if` directive compliments the `ng-unless` (provided by
- * [NgUnless]) directive.
+ * Removes or inserts a subtree from the DOM based on whether a provided
+ * expression is true or false. `Selector: [ng-if]`
  *
- * directive based on the **truthy/falsy** value of the provided expression.
  * Specifically, if the expression assigned to `ng-if` evaluates to a `false`
- * value, then the subtree is removed from the DOM.  Otherwise, *a clone of the
- * subtree* is reinserted into the DOM.  This clone is created from the compiled
+ * value, then the subtree is removed from the DOM.  Otherwise, a clone of the
+ * subtree is reinserted into the DOM.  This clone is created from the compiled
  * state.  As such, modifications made to the element after compilation (e.g.
  * changing the `class`) are lost when the element is destroyed.
  *
@@ -91,14 +90,12 @@ class NgIf extends _NgUnlessIfAttrDirectiveBase {
 
 
 /**
- * The `ng-unless` directive complements the `ng-if` (provided by
- * [NgIf]) directive.
+ * Recreates or destroys the DOM subtree containing a directive based on whether a provided
+ * expression is true or false. `Selector: [ng-unless]`
  *
- * The `ng-unless` directive recreates/destroys the DOM subtree containing the
- * directive based on the **falsy/truthy** value of the provided expression.
  * Specifically, if the expression assigned to `ng-unless` evaluates to a `true`
- * value, then the subtree is removed from the DOM.  Otherwise, *a clone of the
- * subtree* is reinserted into the DOM.  This clone is created from the compiled
+ * value, then the subtree is removed from the DOM.  Otherwise, a clone of the
+ * subtree is reinserted into the DOM.  This clone is created from the compiled
  * state.  As such, modifications made to the element after compilation (e.g.
  * changing the `class`) are lost when the element is destroyed.
  *

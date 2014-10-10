@@ -1,10 +1,9 @@
 part of angular.directive;
 
 /**
- * The `ngRepeat` directive instantiates a template once per item from a
- * collection. Each template instance gets its own scope, where the given loop
- * variable is set to the current collection item, and `$index` is set to the
- * item index or key.
+ * Instantiates a template once per item from a collection. Each template instance gets its own
+ * scope, where the given loop variable is set to the current collection item,
+ * and `$index` is set to the item index or key. `Selector: [ng-repeat]`
  *
  * Special properties are exposed on the local scope of each template instance,
  * including:

@@ -1,9 +1,9 @@
 part of angular.directive;
 
 /**
- * The `NgStyle` directive allows you to set CSS style on an HTML element conditionally.
+ * Conditionally sets a CSS style on an HTML element. `Selector: [ng-style]`
  *
- * # example
+ * # Example
  *
  *     <span ng-style="{color:'red'}">Sample Text</span>
  */

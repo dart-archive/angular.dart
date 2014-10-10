@@ -1,7 +1,7 @@
 part of angular.directive;
 
 /**
- * Fetches, compiles and includes an external Angular template/HTML.
+ * Fetches, compiles and includes an external Angular template/HTML. `Selector: [ng-include]`
  *
  * A new child [Scope] is created for the included DOM subtree.
  *
