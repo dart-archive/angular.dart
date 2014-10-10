@@ -1,7 +1,7 @@
 part of angular.routing;
 
 /**
- * A directive that works with the [Router] and loads the template associated with the current
+ * A directive that works with the `Router` and loads the template associated with the current
  * route.
  *
  *     <ng-view></ng-view>
@@ -198,7 +198,7 @@ class NgView implements DetachAware, RouteProvider {
  */
 abstract class RouteProvider {
   /**
-   * Returns [Route] for current view.
+   * Returns `Route` for current view.
    */
   Route get route;
 
