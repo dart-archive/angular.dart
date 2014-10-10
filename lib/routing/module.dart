@@ -101,7 +101,7 @@
  *  potentially veto the navigation by passing a `Future<bool>` to
  *  `RoutePreLeaveEvent.allowLeave`.
  *
- *  Notice that we create a [RouteHandle] for our route. `RouteHandle` are
+ *  Notice that we create a `RouteHandle` for our route. `RouteHandle` are
  *  a convenient wrapper around `Route` that makes unsubscribing route events
  *  easier. For example, notice that we didn't need to manually call
  *  `StreamSubscription.cancel` for subscription to `Route.onPreLeave`. Calling
