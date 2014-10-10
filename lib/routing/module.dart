@@ -73,7 +73,7 @@
  *        }
  *      }
  *
- *  [RouteProvider] and [Route] can be used to control navigation, specifically,
+ *  [RouteProvider] and `Route` can be used to control navigation, specifically,
  *  leaving of the route. For example, let's consider "edit recipe" component:
  *
  *      @Component(...)
@@ -96,16 +96,16 @@
  *        }
  *      }
  *
- *  [Route.onPreLeave] event is triggered when the browser is routed from an
+ *  `Route.onPreLeave` event is triggered when the browser is routed from an
  *  active route to a different route. The active route can delay and
- *  potentially veto the navigation by passing a [Future<bool>] to
- *  [RoutePreLeaveEvent.allowLeave].
+ *  potentially veto the navigation by passing a `Future<bool>` to
+ *  `RoutePreLeaveEvent.allowLeave`.
  *
- *  Notice that we create a [RouteHandle] for our route. [RouteHandle] are
- *  a convenient wrapper around [Route] that makes unsubscribing route events
+ *  Notice that we create a [RouteHandle] for our route. `RouteHandle` are
+ *  a convenient wrapper around `Route` that makes unsubscribing route events
  *  easier. For example, notice that we didn't need to manually call
- *  [StreamSubscription.cancel] for subscription to [Route.onPreLeave]. Calling
- *  [RouteHandle.discard] unsubscribes all listeners created for the handle.
+ *  `StreamSubscription.cancel` for subscription to `Route.onPreLeave`. Calling
+ *  `RouteHandle.discard` unsubscribes all listeners created for the handle.
  *
  * ## Hierarchical Routes
  *
@@ -142,6 +142,11 @@ part 'routing.dart';
 part 'ng_view.dart';
 part 'ng_bind_route.dart';
 
+/**
+ * A module that defines all necessary bindings for Angular routing. This
+ * module is included in [AngularModule] and typically you don't need to
+ * install it manually.
+ */
 class RoutingModule extends Module {
   RoutingModule({bool usePushState: true}) {
     bind(NgRoutingUsePushState);
@@ -162,10 +167,10 @@ class RoutingModule extends Module {
 
 /**
  * Allows configuration of [Router.useFragment]. By default [usePushState] is
- * true, so the router will listen to [Window.onPopState] and route URLs like
+ * true, so the router will listen to `Window.onPopState` and route URLs like
  * "http://host:port/foo/bar?baz=qux". Both the path and query parts of the URL
  * are used by the router. If [usePushState] is false, router will listen to
- * [Window.onHashChange] and route URLs like
+ * `Window.onHashChange` and route URLs like
  * "http://host:port/path#/foo/bar?baz=qux". Everything after hash (#) is used
  * by the router.
  */

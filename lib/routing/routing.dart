@@ -71,6 +71,14 @@ class RouteViewFactory {
   }
 }
 
+/**
+ * A factory function for [NgRouteCfg]. Most of the parameters are passes directly
+ * to route_hierachical API for route configuration (`Route.addRoute`).
+ *
+ * * [view] - a URL of the template to load into ng-view when route is entered.
+ * * [viewHtml] - HTML of the template to load into ng-view when route is entered.
+ * * [modules] - a list of di modules to load for the route/ng-view.
+ */
 NgRouteCfg ngRoute({String path, String view, String viewHtml,
     Map<String, NgRouteCfg> mount, modules(), bool defaultRoute: false,
     RoutePreEnterEventHandler preEnter, RouteEnterEventHandler enter,
@@ -79,7 +87,10 @@ NgRouteCfg ngRoute({String path, String view, String viewHtml,
         new NgRouteCfg(path: path, view: view, viewHtml: viewHtml, mount: mount,
             modules: modules, defaultRoute: defaultRoute, preEnter: preEnter, preLeave: preLeave,
             enter: enter, leave: leave, dontLeaveOnParamChanges: dontLeaveOnParamChanges);
-
+/**
+ * Object containing route configuration parameters. Typically this class
+ * is not used directly, but rather constructed via [ngRoute] factory function.
+ */
 class NgRouteCfg {
   final String path;
   final String view;
