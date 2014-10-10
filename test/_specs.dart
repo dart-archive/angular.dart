@@ -155,7 +155,7 @@ _safeJsGet(dottedName) => dottedName.split(".").fold(
     js.context, (a, b) => (a == null ? a : a[b]));
 
 _initSharding() {
-  _// failOnIit = (_safeJsGet("__karma__.config.clientArgs.travis") != null);
+  // failOnIit = (_safeJsGet("__karma__.config.clientArgs.travis") != null);
   _numShards = _safeJsGet("__karma__.config.clientArgs.travis.numKarmaShards");
   _shardId = _safeJsGet("__karma__.config.clientArgs.travis.karmaShardId");
   if (_numShards == null || _shardId == null) {
