@@ -3,6 +3,10 @@ library angular.core.annotation_src;
 import "package:di/di.dart" show Injector, Visibility, Factory;
 import "package:di/annotations.dart" show Injectable;
 
+/**
+ * A class that supports binding types to factories, values, or implementations
+ * (usually for injection purposes.)
+ */
 abstract class DirectiveBinder {
  void bind(key, {dynamic toValue,
                  Function toFactory,
@@ -12,6 +16,9 @@ abstract class DirectiveBinder {
                  Visibility visibility: Visibility.LOCAL});
 }
 
+/**
+ * A callback that adds new bindings to a passed in [DirectiveBinder].
+ */
 typedef void DirectiveBinderFn(DirectiveBinder binder);
 
 RegExp _ATTR_NAME = new RegExp(r'\[([^\]]+)\]$');
@@ -20,6 +27,12 @@ Directive cloneWithNewMap(Directive annotation, map) => annotation._cloneWithNew
 
 String mappingSpec(DirectiveAnnotation annotation) => annotation._mappingSpec;
 
+/**
+ * This annotation sets the injection permissions of a given directive.
+ * Using [DIRECT_CHILDREN], [CHILDREN], or [LOCAL] you can decide whether your directive
+ * can be injected by directives living on DOM children, direcives living on indirect DOM children
+ * (ancestors) or other directives living on the same element.
+ */
 class Visibility {
   /// The directive can only be injected to other directives on the same element.
   static const LOCAL = const Visibility._('LOCAL');
@@ -242,16 +255,17 @@ abstract class Directive implements Injectable {
  * Angular components use shadow-DOM for rendering their templates.
  *
  * Angular components are instantiated using dependency injection, and can
- * ask for any injectable object in their constructor. Components
+ * ask for any injectable object in their constructor, except [Scope]. Components
  * can also ask for other components or directives declared on the DOM element.
  *
  * Components can implement [AttachAware], [DetachAware],
- * [ShadowRootAware] and declare these optional methods:
+ * [ShadowRootAware], [ScopeAware](#angular/angular-core.ScopeAware) and declare these optional methods:
  *
  * * `attach()` - Called on first [Scope.apply()].
  * * `detach()` - Called on when owning scope is destroyed.
  * * `onShadowRoot(ShadowRoot shadowRoot)` - Called when
  * [ShadowRoot](https://api.dartlang.org/apidocs/channels/stable/dartdoc-viewer/dart-dom-html.ShadowRoot) is loaded.
+ * * `set scope(Scope scope)` - Called right after construction with the component scope.
  */
 class Component extends Directive {
   /**
@@ -367,11 +381,12 @@ class Component extends Directive {
  * ask for any injectable object in their constructor. Directives
  * can also ask for other components or directives declared on the DOM element.
  *
- * Directives can implement [AttachAware], [DetachAware] and
- * declare these optional methods:
+ * Directives can implement [AttachAware], [DetachAware],
+ * [ScopeAware](#angular/angular-core.ScopeAware) and declare these optional methods:
  *
  * * `attach()` - Called on first [Scope.apply()].
  * * `detach()` - Called on when owning scope is destroyed.
+ * * `set scope(Scope scope)` - Called right after construction with the owning scope.
  */
 class Decorator extends Directive {
   const Decorator({children: Directive.COMPILE_CHILDREN,
