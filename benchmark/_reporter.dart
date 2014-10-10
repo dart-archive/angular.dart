@@ -87,6 +87,12 @@ class Reporter {
   String reportId = null;
   List<Cookie> cookies;
 
+  bool _saveToServer = false;
+  // Must have NGDASH_USER_EMAIL and NGDASH_USER_SECRET for AngularDart branches on Travis.
+  bool get _requireCredentials => Platform.environment["TRAVIS"] == "true" &&
+                                  Platform.environment["TRAVIS_PULL_REQUEST"] == "false";
+
+
   Reporter() {
     var dimensions = data.dimensions;
     dimensions["project"] = "AngularDart";
@@ -105,15 +111,16 @@ class Reporter {
     // Auth cookies
     var user_email = Platform.environment["NGDASH_USER_EMAIL"];
     var user_secret = Platform.environment["NGDASH_USER_SECRET"];
-    if (user_email == null || user_email.isEmpty ||
-        user_secret == null || user_secret.isEmpty) {
+    if (user_email != null && user_email.isNotEmpty &&
+        user_secret != null && user_secret.isNotEmpty) {
+      cookies = [new Cookie("user_email", user_email),
+                 new Cookie("user_secret", user_secret)];
+      _saveToServer = true;
+      if (commitSha.isEmpty) {
+        throw "Could not detect the commit SHA.  (non-travis detection not implemented yet.)";
+      }
+    } else if (_requireCredentials) {
       throw "Please set NGDASH_USER_EMAIL and NGDASH_USER_SECRET credentials.";
-    }
-    cookies = [new Cookie("user_email", user_email),
-               new Cookie("user_secret", user_secret)];
-
-    if (commitSha.isEmpty) {
-      throw "Could not detect the commit SHA.  (non-travis detection not implemented yet.)";
     }
   }
 
@@ -164,9 +171,11 @@ class Reporter {
 
 
   void saveReport() {
-    _messageQueue.add(this);
-    if (_isQueueProcessing) {
-      _sendNextMessage();
+    if (_saveToServer) {
+      _messageQueue.add(this);
+      if (_isQueueProcessing) {
+        _sendNextMessage();
+      }
     }
   }
 
