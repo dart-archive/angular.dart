@@ -35,42 +35,44 @@ env:
     CHANNEL=dev
     BROWSERS=DartiumWithWebPlatform,SL_Chrome
 
-  # Temporary jobs to test IE and Safari to be removed in the next commit.
-  - JOB=unit-stable-ie10
-    CHANNEL=stable
-    TESTS=dart2js
-    BROWSERS=SL_IE10
-  - JOB=unit-dev-ie10
-    CHANNEL=dev
-    TESTS=dart2js
-    BROWSERS=SL_IE10
+  # Uncomment the following lines to test on IE and Safari.  It's currently commented out
+  # because it adds 4 more VMs per build.  FYI, combining them into existing jobs results
+  # in a significantly high rate flakiness.
+  # - JOB=unit-stable-ie10
+  #   CHANNEL=stable
+  #   TESTS=dart2js
+  #   BROWSERS=SL_IE10
+  # - JOB=unit-dev-ie10
+  #   CHANNEL=dev
+  #   TESTS=dart2js
+  #   BROWSERS=SL_IE10
 
-  - JOB=unit-stable-ie11
-    CHANNEL=stable
-    TESTS=dart2js
-    BROWSERS=SL_IE11
-  - JOB=unit-dev-ie11
-    CHANNEL=dev
-    TESTS=dart2js
-    BROWSERS=SL_IE11
+  # - JOB=unit-stable-ie11
+  #   CHANNEL=stable
+  #   TESTS=dart2js
+  #   BROWSERS=SL_IE11
+  # - JOB=unit-dev-ie11
+  #   CHANNEL=dev
+  #   TESTS=dart2js
+  #   BROWSERS=SL_IE11
 
-  - JOB=unit-stable-safari6
-    CHANNEL=stable
-    TESTS=dart2js
-    BROWSERS=SL_Safari6
-  - JOB=unit-dev-safari6
-    CHANNEL=dev
-    TESTS=dart2js
-    BROWSERS=SL_Safari6
+  # - JOB=unit-stable-safari6
+  #   CHANNEL=stable
+  #   TESTS=dart2js
+  #   BROWSERS=SL_Safari6
+  # - JOB=unit-dev-safari6
+  #   CHANNEL=dev
+  #   TESTS=dart2js
+  #   BROWSERS=SL_Safari6
 
-  - JOB=unit-stable-safari7
-    CHANNEL=stable
-    TESTS=dart2js
-    BROWSERS=SL_Safari7
-  - JOB=unit-dev-safari7
-    CHANNEL=dev
-    TESTS=dart2js
-    BROWSERS=SL_Safari7
+  # - JOB=unit-stable-safari7
+  #   CHANNEL=stable
+  #   TESTS=dart2js
+  #   BROWSERS=SL_Safari7
+  # - JOB=unit-dev-safari7
+  #   CHANNEL=dev
+  #   TESTS=dart2js
+  #   BROWSERS=SL_Safari7
 
   global:
   - secure: AKoqpZ699egF0i4uT/FQ5b4jIc0h+KVbhtVCql0uFxwFIl2HjOYgDayrUCAf6USfpW0LghZxJJhBamWOl/505eNSe9HvEd8JLg/to+1Fo9xi9llsu5ehmNH31/5pue4EvsrVuEap1qqL6/BNwI2cAryayU0p5tV0g8gL5h4IxG8=
