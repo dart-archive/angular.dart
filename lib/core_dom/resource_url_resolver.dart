@@ -21,7 +21,7 @@ class _NullTreeSanitizer implements NodeTreeSanitizer {
 
 @Injectable()
 class ResourceUrlResolver {
-  static final RegExp cssUrlRegexp = new RegExp(r'''(\burl\((?:[\s]+)?)(['"]?)([^]*)(\2(?:[\s]+)?\))''');
+  static final RegExp cssUrlRegexp = new RegExp(r'''(\burl\((?:[\s]+)?)(['"]?)([\s\S]*)(\2(?:[\s]+)?\))''');
   static final RegExp cssImportRegexp = new RegExp(r'(@import[\s]+(?!url\())([^;]*)(;)');
   static const List<String> urlAttrs = const ['href', 'src', 'action'];
   static final String urlAttrsSelector = '[${urlAttrs.join('],[')}]';

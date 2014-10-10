@@ -78,15 +78,15 @@ _run_resolver({useRelativeUrls}) {
        expect(html).toEqual(urlInImgSrc(htmlEscapedExpected));
      });
 
-     // it('should rewrite a[href]', () {
-     //   var html = resourceResolver.resolveHtml(urlInHref(htmlEscapedUrl), typeOrIncludeUri);
-     //   expect(html).toEqual(urlInHref(htmlEscapedExpected));
-     // });
+     it('should rewrite a[href]', () {
+       var html = resourceResolver.resolveHtml(urlInHref(htmlEscapedUrl), typeOrIncludeUri);
+       expect(html).toEqual(urlInHref(htmlEscapedExpected));
+     });
 
-     // it('should rewrite form[action]', () {
-     //   var html = resourceResolver.resolveHtml(urlInAction(htmlEscapedUrl), typeOrIncludeUri);
-     //   expect(html).toEqual(urlInAction(htmlEscapedExpected));
-     // });
+     it('should rewrite form[action]', () {
+       var html = resourceResolver.resolveHtml(urlInAction(htmlEscapedUrl), typeOrIncludeUri);
+       expect(html).toEqual(urlInAction(htmlEscapedExpected));
+     });
 
      // IE does not support the template tag.
      if (!isBrowserInternetExplorer) {
@@ -95,15 +95,15 @@ _run_resolver({useRelativeUrls}) {
          expect(html).toEqual(urlInTemplateImgSrc(htmlEscapedExpected));
        });
 
-       // it('should rewrite a[href] in template tag', () {
-       //   var html = resourceResolver.resolveHtml(urlInTemplateHref(htmlEscapedUrl), typeOrIncludeUri);
-       //   expect(html).toEqual(urlInTemplateHref(htmlEscapedExpected));
-       // });
+       it('should rewrite a[href] in template tag', () {
+         var html = resourceResolver.resolveHtml(urlInTemplateHref(htmlEscapedUrl), typeOrIncludeUri);
+         expect(html).toEqual(urlInTemplateHref(htmlEscapedExpected));
+       });
 
-       // it('should rewrite form[action] in template tag', () {
-       //   var html = resourceResolver.resolveHtml(urlInTemplateAction(htmlEscapedUrl), typeOrIncludeUri);
-       //   expect(html).toEqual(urlInTemplateAction(htmlEscapedExpected));
-       // });
+       it('should rewrite form[action] in template tag', () {
+         var html = resourceResolver.resolveHtml(urlInTemplateAction(htmlEscapedUrl), typeOrIncludeUri);
+         expect(html).toEqual(urlInTemplateAction(htmlEscapedExpected));
+       });
       }
     }
 
