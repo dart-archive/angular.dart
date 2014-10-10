@@ -16,7 +16,7 @@ import 'package:di/annotations.dart';
 import 'package:angular/core_dom/type_to_uri_mapper.dart';
 
 class _NullTreeSanitizer implements NodeTreeSanitizer {
-  void sanitizeTree(dom.Node node) {}
+  void sanitizeTree(Node node) {}
 }
 
 @Injectable()
@@ -37,17 +37,12 @@ class ResourceUrlResolver {
   ResourceUrlResolver(this._uriMapper, this._config);
 
   static final NodeTreeSanitizer _nullTreeSanitizer = new _NullTreeSanitizer();
+  static final docForParsing = document.implementation.createHtmlDocument("");
 
   static Node _parseHtmlString(String html) {
-    HtmlDocument doc = new DomParser().parseFromString(
-        "<!doctype html><html><body>$html</body></html>", "text/html");
-    if (doc != null) {
-      return doc.body;
-    }
-    // Workaround for Safari (can't parse HTML documents via the DomParser)
-    doc = document.implementation.createHtmlDocument("");
-    doc.body.setInnerHtml(html, treeSanitizer: _nullTreeSanitizer);
-    return doc.body;
+    var div = docForParsing.createElement('div');
+    div.setInnerHtml(html, treeSanitizer: _nullTreeSanitizer);
+    return div;
   }
 
   String resolveHtml(String html, [Uri baseUri]) {
