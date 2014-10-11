@@ -1,5 +1,5 @@
 name: angular
-version: 0.14.0
+version: '1.0.0'
 authors:
 - Misko Hevery <misko@hevery.com>
 - Pavel Jbanov <pavelgj@gmail.com>
@@ -8,6 +8,7 @@ authors:
 - Matias Niemela <matias@yearofmoo.com>
 - Paul Rohde <paul@paulrohde.com>
 - Victor Berchet <victor@suumit.com>
+- Rado Kirov <radokirov@google.com>
 description: Angular for dart.
 homepage: https://angulardart.org
 environment:
