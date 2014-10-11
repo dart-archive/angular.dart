@@ -1,3 +1,286 @@
+<a name="v1.0"></a>
+# v1.0 industrious-pangolin (2014-10-10)
+## Highlights
+
+Angular.Dart v1.0 is our first production-ready release.
+
+This release contains a bit of everything: new features, performance improvements
+and bug fixes. Angular expressions now evaluate in the context of the
+surrounding component instead of the current scope. This reduces the boilerplate
+component authors need to write; no more 'ctrl' prefixes in your templates.
+
+In the same vein, the templateUrl and cssUrls in Component annotations take
+paths relative to the library defining the Component.  The contents of the
+template likewise use relative paths.  You no longer to to specify the full
+paths to your templates, CSS and resources. Absolute paths are left unchanged.
+
+The new touch module adds support for swipe left and swipe right.  Change
+detection now understands Observable objects (through dart:observe). A number
+of small changes enable more seamless integration with web-components. Finally,
+instantiating components is nearly 40% faster.
+
+The new PendingAsync module allows you to be notified when all background
+asynchronous operations known to Angular (XHR, timers, microtasks, etc.) are
+complete.  The Testability API exposes this in the JavsScript API for use
+by Protractor E2E tests.
+
+## Bug Fixes
+
+- **Component:** Remove deprecated applyAuthorStyles & resetStyleInheritance
+  ([059b76e7](https://github.com/angular/angular.dart/commit/059b76e71766329549542d3f84b5d9e5a0b2adc5),
+   [#1345](https://github.com/angular/angular.dart/issues/1345))
+- **DirectiveInjector:** fix exceptions
+  ([87fcd1eb](https://github.com/angular/angular.dart/commit/87fcd1ebbe57c66c6e74cad7ba595cac2617949c),
+   [#1484](https://github.com/angular/angular.dart/issues/1484))
+- **WTFramework:** add back traceDetectWTF call in application start
+  ([de824080](https://github.com/angular/angular.dart/commit/de824080b00531d1df6aafa26a287a1d3ab05254))
+- **animate:** Remove a reference to dart:mirrors
+  ([9a60bcb6](https://github.com/angular/angular.dart/commit/9a60bcb614786dae15145d65ec81ee03bbdc4a12))
+- **application:** set injector property when bootstraping the app
+  ([bf5d15a7](https://github.com/angular/angular.dart/commit/bf5d15a74c76c316e41c63e8a4e53cc55d2dbf0b),
+   [#1391](https://github.com/angular/angular.dart/issues/1391))
+- **benchmark:** update benchmark to work with new context.
+  ([22a50a75](https://github.com/angular/angular.dart/commit/22a50a757936250f11558817c4671f71cf440de8))
+- **bind-*:** zone.run scope.apply on bind- change events
+  ([77fdc617](https://github.com/angular/angular.dart/commit/77fdc617aa8b4686686256537802240d1803b7bf))
+- **compiler:** Support camelCase property bindings
+  ([4cb23914](https://github.com/angular/angular.dart/commit/4cb23914ab1e77ad75e3f219a989bd569785bc5a),
+   [#1460](https://github.com/angular/angular.dart/issues/1460), [#1462](https://github.com/angular/angular.dart/issues/1462))
+- **components:**
+  - do not reinsert nodes during redistribution if they have not changed
+  ([013f18d4](https://github.com/angular/angular.dart/commit/013f18d4dcfc6d42422512a8aa7c902b41400fbe))
+  - TranscludingComponentFactory passes a wrong element to onShadowRoot
+  ([2c87e84f](https://github.com/angular/angular.dart/commit/2c87e84f880fdc5e7fdc127b59311e84be590636),
+   [#1435](https://github.com/angular/angular.dart/issues/1435), [#1436](https://github.com/angular/angular.dart/issues/1436))
+  - the content tag duplicates elements
+  ([ff46fb7b](https://github.com/angular/angular.dart/commit/ff46fb7b3354d9d7e6ec4cd71e57c5d2464159b7),
+   [#1422](https://github.com/angular/angular.dart/issues/1422))
+- **directive-injector:** wrong variable name in error thrown.
+  ([c533eb55](https://github.com/angular/angular.dart/commit/c533eb558cf65765ee77fe3bd99f9d26039ad2fa),
+   [#1397](https://github.com/angular/angular.dart/issues/1397))
+- **form example:**
+  - watched collections can not be mutated
+  ([d39e62a3](https://github.com/angular/angular.dart/commit/d39e62a33c7553ffaa5d62e1a843058a85edf068))
+  - type() has been replaced by bind()
+  ([e5584e16](https://github.com/angular/angular.dart/commit/e5584e16855700b61281a7f80cc8697c47268211))
+- **introspection:** fix ngProbe with introspected bindings and findElements returning only elements
+  ([3ea2b10e](https://github.com/angular/angular.dart/commit/3ea2b10e828643edafcf5c63d7b5986e757f9984))
+- **metadata_extractor:** Do not try to guess the selector
+  ([28f9ee48](https://github.com/angular/angular.dart/commit/28f9ee48a204c251f45f0d6a6dae6eaeecf5a665))
+- **mock:** Fix unitialized variable in MockWindow.
+  ([862f46c3](https://github.com/angular/angular.dart/commit/862f46c3e80267c29e3d41447ce9d6d623b5ad44))
+- **perf_api:** updgrade the pkg minimum version to fix an analyzer error
+  ([09d3c830](https://github.com/angular/angular.dart/commit/09d3c830961dfda57ab5bcf434563711724e679d),
+   [#1408](https://github.com/angular/angular.dart/issues/1408))
+- **resource_url_resolver:**
+  - IE/Safari compatible HTML parsing
+  ([ecb7db27](https://github.com/angular/angular.dart/commit/ecb7db27f27b0acf52044b841f42fabe6d809bfb))
+  - correct type for Node
+  ([a760ec19](https://github.com/angular/angular.dart/commit/a760ec19ef7d6ea5fb829fa44972dfccf8e9fe12))
+  - fix DOM parsing for Safari
+  ([50025832](https://github.com/angular/angular.dart/commit/50025832947a2121e999c68fdc81dccb5ef0cf9e),
+   [#1439](https://github.com/angular/angular.dart/issues/1439))
+- **scope:** fix a potential memory leak
+  ([97410f7d](https://github.com/angular/angular.dart/commit/97410f7d4bc12d429c146f19add40df9fe0cca86))
+- **shadow_boundary:** change ShadowBoundary not to reorder styles when prepending them
+  ([81bab3ea](https://github.com/angular/angular.dart/commit/81bab3ea35383fc0f7abd1804e3cc9a7c5a3b0ec))
+- **source_metadata_extractor:** Extract config from controllers
+  ([a981feb2](https://github.com/angular/angular.dart/commit/a981feb2df849fbe5aa30c4d1a60ca329287571b))
+- **test:** remove at trailing "," in JS object literal
+  ([e6387cff](https://github.com/angular/angular.dart/commit/e6387cff067371b79761553a7c8ae32cd155ac74))
+- **travis:** BUILD_LEADER is not available in build.sh
+  ([0720c3c5](https://github.com/angular/angular.dart/commit/0720c3c58442d5733df6c82faa2b2b39cc7dca91),
+   [#1362](https://github.com/angular/angular.dart/issues/1362), [#1393](https://github.com/angular/angular.dart/issues/1393))
+- **web components:** Fix tests in IE10
+  ([43b6f4f0](https://github.com/angular/angular.dart/commit/43b6f4f069f938146a998dabbe8385efb5adbbe2),
+   [#1372](https://github.com/angular/angular.dart/issues/1372))
+- **core:** remove analyze warnings
+  ([298f0fed](https://github.com/angular/angular.dart/commit/298f0fed0bcdd1208dfe708cfd7def923b9347da))
+
+
+## Features
+
+- **Touch:**
+  - New touch module including ng-swipe-left/ng-swipe-right directives
+  ([5d84c6db](https://github.com/angular/angular.dart/commit/5d84c6db655b4f553f419d5fe449b4f9e19008d4))
+- **TestBed:** add whitespace handling to compile
+  ([5f5ce353](https://github.com/angular/angular.dart/commit/5f5ce353d04b77da2018c59a0a98c89205d15dca),
+   [#1262](https://github.com/angular/angular.dart/issues/1262), [#1346](https://github.com/angular/angular.dart/issues/1346), [#1445](https://github.com/angular/angular.dart/issues/1445))
+- **compiler:**
+  - support ScopeAware for decorators
+  ([943d6193](https://github.com/angular/angular.dart/commit/943d61936c2d9296dd31838d4dfb014f5292b9ae))
+- **components:**
+  - change shadow boundary to ignore duplicate styles
+  ([5b04b17b](https://github.com/angular/angular.dart/commit/5b04b17b526097a33ba13bd8d84f832f605ec4a0))
+  - implement css encapsulation for transcluding components
+  ([18843e1c](https://github.com/angular/angular.dart/commit/18843e1ca9e69f274e7d6e2bf0c37b217e770973))
+  - add support for multiple insertion points for transcluding components
+  ([0d5c99e8](https://github.com/angular/angular.dart/commit/0d5c99e8324bb29d12e651b1cc1e69de6db08310),
+   [#1290](https://github.com/angular/angular.dart/issues/1290))
+- **core, testability:** PendingAsync service
+  ([1d29b79c](https://github.com/angular/angular.dart/commit/1d29b79ca2369336bcba91dae48a8cf963cd621e))
+- **dccd:** add Support for ObservableList, ObservableMap & ChangeNotifier
+  ([85eceef5](https://github.com/angular/angular.dart/commit/85eceef5afad1d220d125b97277b3dc32be88f11),
+   [#773](https://github.com/angular/angular.dart/issues/773), [#1156](https://github.com/angular/angular.dart/issues/1156))
+- **directive-injector:**
+  - Assert that the injector has been initialized
+  ([060eb550](https://github.com/angular/angular.dart/commit/060eb550f17f1ddb27ccf22c450329a90effff13))
+  - DiCircularDependencyError -> _CircularDependencyError
+  ([9f46fb95](https://github.com/angular/angular.dart/commit/9f46fb95e7bc6e56f5c7b839a6a26992169ade00),
+   [#1399](https://github.com/angular/angular.dart/issues/1399))
+  - detect and throw on circular deps
+  ([0b0080b4](https://github.com/angular/angular.dart/commit/0b0080b445f5d0f58cc05e13b416e9956be076b2),
+   [#1364](https://github.com/angular/angular.dart/issues/1364))
+  - component directive injector injects parent
+  ([3af94348](https://github.com/angular/angular.dart/commit/3af94348c56813fda667ccfcd68275bcea6e9edf),
+   [#1351](https://github.com/angular/angular.dart/issues/1351))
+- **directives:** remove the @Controller directive
+  ([5f8e2765](https://github.com/angular/angular.dart/commit/5f8e27659ffb0140e0c153f8cecd627df273bfd2),
+   [#1401](https://github.com/angular/angular.dart/issues/1401))
+- **eventHandler:** Support snake-case event names instead of camelCase.
+  ([fd54c304](https://github.com/angular/angular.dart/commit/fd54c304c2ac533ea7128e5abebd00593abf8c7e),
+   [#1434](https://github.com/angular/angular.dart/issues/1434), [#1478](https://github.com/angular/angular.dart/issues/1478), [#1477](https://github.com/angular/angular.dart/issues/1477))
+- **examples:** Add a compelling Shadow DOM example
+  ([028b2373](https://github.com/angular/angular.dart/commit/028b23730ef993d93045c04eebd908dea7aa68ed),
+   [#1377](https://github.com/angular/angular.dart/issues/1377))
+- **mocks:** change MockHttpBackend to define the assertion on flush.
+  ([635f9d0c](https://github.com/angular/angular.dart/commit/635f9d0cf2ac9f50e9190047bde080d468d7cfe8),
+   [#900](https://github.com/angular/angular.dart/issues/900))
+- **scope:**
+  - component is the new context
+  ([a4f08a79](https://github.com/angular/angular.dart/commit/a4f08a798df7525132ec7b0e18c4c6a8091480e8))
+  - add new createProtoChild method
+  ([caac098f](https://github.com/angular/angular.dart/commit/caac098f2d109622b05251c340e981bd8e58e562))
+  - move domWrite and domRead from RootScope to Scope
+  ([c18a8f33](https://github.com/angular/angular.dart/commit/c18a8f33f355996f9d63a77c7af3f9559bc898f8),
+   [#1161](https://github.com/angular/angular.dart/issues/1161), [#1341](https://github.com/angular/angular.dart/issues/1341))
+- **tests:** run tests on all browsers
+  ([8c1f79a4](https://github.com/angular/angular.dart/commit/8c1f79a42d2411373cddbb2ff89b20434bf99add))
+- **travis:** Also check for dart2js sizes that are unexpectedly small
+  ([e90fa606](https://github.com/angular/angular.dart/commit/e90fa606358a106ecba23657702d25b05c7c80d2),
+   [#1427](https://github.com/angular/angular.dart/issues/1427))
+- **urls:** support relative CSS / template URLs in components
+  ([50e26453](https://github.com/angular/angular.dart/commit/50e26453efc79d2db3a335112b37d13c5b0becbb))
+- **web components:** Support custom events for element property binding
+  ([94c35225](https://github.com/angular/angular.dart/commit/94c3522512ba7089a524fce0f7fd8bdedffe3f88),
+   [#1449](https://github.com/angular/angular.dart/issues/1449), [#1453](https://github.com/angular/angular.dart/issues/1453))
+
+
+## Performance Improvements
+
+- **component:** add a benchmark that measures component creation with and without css files
+  ([29f39470](https://github.com/angular/angular.dart/commit/29f394703afb58bf342a072fd901c85583060c80),
+   [#1421](https://github.com/angular/angular.dart/issues/1421))
+- **util:** call toLowerCase() only where needed
+  ([2bcd29e7](https://github.com/angular/angular.dart/commit/2bcd29e7b284ed3a32c0698a6820ca161ea8f99f),
+   [#1468](https://github.com/angular/angular.dart/issues/1468))
+- **view:** increase view instantiation speed 40%
+  ([00960bb9](https://github.com/angular/angular.dart/commit/00960bb95f298640a46a8e58a42f68396e776ead),
+   [#1358](https://github.com/angular/angular.dart/issues/1358))
+- **view_factory:** add a benchmark that measures view_factory in isolation
+  ([abbe4efb](https://github.com/angular/angular.dart/commit/abbe4efbb80546df0a615591f44e8fafabd29f89),
+   [#1384](https://github.com/angular/angular.dart/issues/1384))
+
+
+## Breaking Changes
+
+- **mocks:** due to [635f9d0c](https://github.com/angular/angular.dart/commit/635f9d0cf2ac9f50e9190047bde080d468d7cfe8), 
+Unexpected requests are detected only when `flush` is called.
+
+Before:
+
+		backend("GET", /some"); //throws here if `/some` has not been defined
+
+After:
+
+		backend("GET", /some"); //no problem, just records the request
+		backend.flush(); //throws here
+
+Closes #900
+- **scope:** due to [a4f08a79](https://github.com/angular/angular.dart/commit/a4f08a798df7525132ec7b0e18c4c6a8091480e8),
+ 
+
+Scope context is set to the component instance that trigged the creation
+of the scope (previously it was of a PrototypeMap.)
+
+Repercussions:
+1) You can not inject a scope in a component or in the root context any
+more.
+
+As the Scope context is set to the Component instance, the scope could
+not be injected any more. Components should implements the "ScopeAware"
+interface and declare a "scope" setter in order to get a reference to
+the scope.
+
+before:
+
+     @Component(...)
+     class MyComponent {
+       Watch watch;
+       Scope scope;
+
+       MyComponent(Dependency myDep, Scope scope) {
+          watch = scope.rootScope.watch("expression", (v, p) => ...);
+       }
+     }
+
+after:
+
+     @Component(...)
+     class MyComponent implements ScopeAware {
+       Watch watch;
+
+       MyComponent(Dependency myDep) {
+         // It is an error to add a Scope argument to the
+         // ctor and will result in a DI circular dependency error
+         // The scope is never accessible in the class constructor
+       }
+
+       void set scope(Scope scope) {
+          // This setter gets called to initialize the scope
+          watch = scope.watch("expression", (v, p) => ...);
+       }
+     }
+
+or:
+
+     @Component(...)
+     class MyComponent implements ScopeAware {
+       Scope scope;
+
+       MyComponent(Dependency myDep) {
+         // It is an error to add a Scope argument to the
+         // ctor and will result in a DI circular dependency error
+         // The scope is never accessible in the class constructor
+       }
+     }
+
+2) The parent component to an NgForm must have a "$name" field to store
+   the form instance.
+
+closes #919
+closes #917
+- **urls:** due to [50e26453](https://github.com/angular/angular.dart/commit/50e26453efc79d2db3a335112b37d13c5b0becbb),
+ 
+
+You must update relative paths to your templates and in ng-include's to
+be relative to the component's library / ng-include'd file.
+
+NOTE: This feature is defaulted to an "on" state.  To get back the old
+behavior, you may disable this feature for your application.  This is
+only to help you adjust to this change and will go away in a later
+version.  Here's how you can get the old behavior:
+
+```dart
+module.bind(ResourceResolverConfig, toValue:
+	new ResourceResolverConfig.useRelativeUrls(false));
+```
+
+*Testing*:
+- e2e transformer tests can now be done on the sample application found
+  in the test_transformers folder
+
+
 <a name="v0.14.0"></a>
 # v0.14.0 symbiotic-meerkat (2014-08-22)
 
@@ -54,7 +337,6 @@ smoother developer experience.
 - **transformer:** Don't share resolvers between parallel transformers as this will cause a deadlock
   ([dba6727b](https://github.com/angular/angular.dart/commit/dba6727b90cd6dc0dbf8257061482e88b05939b9),
    [#1276](https://github.com/angular/angular.dart/issues/1276), [#1382](https://github.com/angular/angular.dart/issues/1382))
-
 
 ## Features
 
