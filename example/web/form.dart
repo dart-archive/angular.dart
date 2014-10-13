@@ -4,7 +4,6 @@ import 'package:angular/application_factory.dart';
 @Component(
     selector: '[form-controller]',
     templateUrl: 'form_controller.html',
-    publishAs: 'form_ctrl',
     useShadowDom: false)
 class FormCtrl {
   static const String _COLOR_HEX = "hex";
