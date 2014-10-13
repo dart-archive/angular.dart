@@ -67,10 +67,6 @@ packages:
     description: pool
     source: hosted
     version: "1.0.1"
-  quiver:
-    description: quiver
-    source: hosted
-    version: "0.18.2"
   route_hierarchical:
     description: route_hierarchical
     source: hosted

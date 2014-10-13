@@ -2,6 +2,7 @@ part of animation;
 
 @Component(
     selector: 'css-demo',
+    useShadowDom: false,
     template: '''
       <div class="css-demo">
         <button ng-click="stateA = !stateA"

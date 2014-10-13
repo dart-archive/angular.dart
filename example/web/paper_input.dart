@@ -12,7 +12,6 @@ class PaperInputBindings {}
 
 main() {
   applicationFactory()
-      .addModule(new Module()
-      	..bind(PaperInputBindings))
+      .addModule(new Module()..bind(PaperInputBindings))
       .run();
 }
