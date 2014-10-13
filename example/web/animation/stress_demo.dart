@@ -2,6 +2,7 @@ part of animation;
 
 @Component(
     selector: 'stress-demo',
+    useShadowDom: false,
     template: '''
       <div class="stress-demo">
         <button ng-click="visible = !visible">
