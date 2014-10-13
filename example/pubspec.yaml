@@ -11,5 +11,5 @@ dependencies:
 transformers:
 - angular:
     html_files:
-      - web/bouncing_controller.html
+      - web/bouncing_balls_tpl.html
       - web/form_controller.html

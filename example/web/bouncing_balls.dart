@@ -20,14 +20,17 @@ class BallModel {
   static _color() {
     var color = '#';
     for(var i = 0; i < 6; i++) {
-      color += (16 * random.nextDouble()).floor().toRadixString(16);
+      color += random.nextInt(16).toRadixString(16);
     }
     return color;
   }
 }
 
-@Injectable()
-class BounceController implements ScopeAware {
+@Component(
+    selector: 'bouncing-balls',
+    templateUrl: 'bouncing_balls_tpl.html',
+    cssUrl: 'bouncing_balls.css')
+class BouncingBalls implements ScopeAware {
   Scope scope;
   var lastTime = window.performance.now();
   var run = false;
@@ -37,7 +40,7 @@ class BounceController implements ScopeAware {
   var balls = [];
   var ballClassName = 'ball';
 
-  BounceController() {
+  BouncingBalls() {
     changeCount(100);
   }
 
@@ -122,13 +125,12 @@ class BallPosition {
 class MyModule extends Module {
   MyModule() {
     bind(BallPosition);
-    bind(BounceController);
+    bind(BouncingBalls);
   }
 }
 
 main() {
   applicationFactory()
-      .rootContextType(BounceController)
       .addModule(new MyModule())
       .run();
 }
