@@ -4,8 +4,8 @@ import 'package:angular/application_factory.dart';
 main() {
   var app = applicationFactory();
   app.modules.add(new Module()
-    ..bind(MyComponent)
-    ..bind(BracketButton));
+      ..bind(MyComponent)
+      ..bind(BracketButton));
   app.selector("body");
   app.run();
 }

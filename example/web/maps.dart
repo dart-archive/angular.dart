@@ -47,10 +47,9 @@ class XGoogleMaps implements ShadowRootAware {
 }
 
 main() {
-  var module = new Module()
-    ..bind(XGoogleMaps);
+  var module = new Module()..bind(XGoogleMaps);
 
-  var injector = applicationFactory().addModule(module)
+  var injector = applicationFactory()
+      .addModule(module)
       .run();
-  var scope = injector.get(Scope);
 }

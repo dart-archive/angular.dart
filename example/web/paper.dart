@@ -3,8 +3,7 @@ import 'package:angular/application_factory.dart';
 
 
 main() {
-  var injector = applicationFactory()
-      .run();
+  var injector = applicationFactory().run();
   var scope = injector.get(Scope);
   scope.context['text'] = "Hello future";
   scope.context['max'] = 20;
