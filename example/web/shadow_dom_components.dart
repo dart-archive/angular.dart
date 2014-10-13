@@ -14,16 +14,14 @@ main() {
     selector: "my-component",
     template: """
       <div class="custom-component" ng-class="color">
-        <span>Shadow [</span>
-        <content></content>
-        <span>]</span>
-        <a href="#" ng-click="on=!on"><my-button>
-          Toggle</my-button></a>
+        <span>Shadow [</span><content></content><span>]</span>
+        <a ng-click="on=!on">
+        <my-button>Toggle</my-button></a>
         <span ng-if="on">off</span>
         <span ng-if="!on">on</span>
       </div>
     """,
-    cssUrl: "/css/shadow_dom_components.css")
+    cssUrl: "css/shadow_dom_components.css")
 class MyComponent {
   @NgAttr('color')
   String color;
@@ -35,6 +33,6 @@ class MyComponent {
     selector: "my-button",
     template: """<span class="custom-bracket">[[[<content>
       </content>]]]</span>""",
-    cssUrl: "/css/shadow_dom_bracket.css")
+    cssUrl: "css/shadow_dom_bracket.css")
 class BracketButton {
 }
