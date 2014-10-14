@@ -37,15 +37,12 @@ String shimCssText(String css, String tag) =>
  * * `:host`
  * * `:host(.x)`
  *
- * When the shim is not powerful enough, you can fall back on the polyfill-next-selector
- * directive.
+ * When the shim is not powerful enough, you can fall back on the polyfill-next-selector,
+ * polyfill-unscoped-next-selector, and polyfill-non-strict directives.
  *
- *    polyfill-next-selector {content: 'x > y'}
- *    z {}
- *
- * Becomes:
- *
- *   x[tag] > y[tag]
+ * * `polyfill-next-selector {content: 'x > y'}` z {} becomes `x[tag] > y[tag] {}`
+ * * `polyfill-unscoped-next-selector {content: 'x > y'} z {}` becomes `x > y {}`
+ * * `polyfill-non-strict {} z {}` becomes `tag z {}`
  *
  * See http://www.polymer-project.org/docs/polymer/styling.html#at-polyfill
  *
@@ -54,17 +51,15 @@ String shimCssText(String css, String tag) =>
  */
 class _CssShim {
   static final List SELECTOR_SPLITS = const [' ', '>', '+', '~'];
-  static final RegExp POLYFILL_NEXT_SELECTOR_DIRECTIVE = new RegExp(
-      r"polyfill-next-selector"
+
+  static final RegExp CONTENT = new RegExp(
       r"[^}]*"
       r"content\:[\s]*"
       r"'([^']*)'"
-      r"[^}]*}"
-      r"([^{]*)",
+      r"[^}]*}",
       caseSensitive: false,
       multiLine: true
   );
-  static final int NEXT_SELECTOR_CONTENT = 1;
 
   static final String HOST_TOKEN = '-host-element';
   static final RegExp COLON_SELECTORS = new RegExp(r'(' + HOST_TOKEN + r')(\(.*\)){0,1}(.*)',
@@ -79,6 +74,17 @@ class _CssShim {
   static final RegExp COLON_HOST = new RegExp('($HOST_TOKEN$PAREN_SUFFIX',
       caseSensitive: false, multiLine: true);
 
+  static final String POLYFILL_NON_STRICT = "polyfill-non-strict";
+  static final String POLYFILL_UNSCOPED_NEXT_SELECTOR = "polyfill-unscoped-next-selector";
+  static final String POLYFILL_NEXT_SELECTOR = "polyfill-next-selector";
+
+  static final List<RegExp> COMBINATORS = [
+    new RegExp(r'/shadow/', caseSensitive: false),
+    new RegExp(r'/shadow-deep/', caseSensitive: false),
+    new RegExp(r'::shadow', caseSensitive: false),
+    new RegExp(r'/deep/', caseSensitive: false)
+  ];
+
   final String tag;
   final String attr;
 
@@ -86,13 +92,10 @@ class _CssShim {
       : tag = tag, attr = "[$tag]";
 
   String shimCssText(String css) {
-    final preprocessed = convertColonHost(applyPolyfillNextSelectorDirective(css));
+    final preprocessed = convertColonHost(css);
     final rules = cssToRules(preprocessed);
     return scopeRules(rules);
   }
-
-  String applyPolyfillNextSelectorDirective(String css) =>
-      css.replaceAllMapped(POLYFILL_NEXT_SELECTOR_DIRECTIVE, (m) => m[NEXT_SELECTOR_CONTENT]);
 
   String convertColonHost(String css) {
     css = css.replaceAll(":host", HOST_TOKEN);
@@ -120,35 +123,82 @@ class _CssShim {
   List<_Rule> cssToRules(String css) =>
       new _Parser(css).parse();
 
-  String scopeRules(List<_Rule> rules) =>
-      rules.map(scopeRule).join("\n");
+  String scopeRules(List<_Rule> rules) {
+    final scopedRules = [];
 
-  String scopeRule(_Rule rule) {
+    var prevRule;
+    rules.forEach((rule) {
+      if (prevRule != null && prevRule.selectorText == POLYFILL_NON_STRICT) {
+        scopedRules.add(scopeNonStrictMode(rule));
+
+      } else if (prevRule != null && prevRule.selectorText == POLYFILL_UNSCOPED_NEXT_SELECTOR) {
+        final content = extractContent(prevRule);
+        scopedRules.add(ruleToString(new _Rule(content, body: rule.body)));
+
+      } else if (prevRule != null && prevRule.selectorText == POLYFILL_NEXT_SELECTOR) {
+        final content = extractContent(prevRule);
+        scopedRules.add(scopeStrictMode(new _Rule(content, body: rule.body)));
+
+      } else if (rule.selectorText != POLYFILL_NON_STRICT &&
+          rule.selectorText != POLYFILL_UNSCOPED_NEXT_SELECTOR &&
+          rule.selectorText != POLYFILL_NEXT_SELECTOR) {
+        scopedRules.add(scopeStrictMode(rule));
+      }
+
+      prevRule = rule;
+    });
+
+    return scopedRules.join("\n");
+  }
+
+  String extractContent(_Rule rule) {
+    return CONTENT.firstMatch(rule.body)[1];
+  }
+
+  String ruleToString(_Rule rule) {
+    return "${rule.selectorText} ${rule.body}";
+  }
+
+  String scopeStrictMode(_Rule rule) {
     if (rule.hasNestedRules) {
       final selector = rule.selectorText;
       final rules = scopeRules(rule.rules);
       return '$selector {\n$rules\n}';
     } else {
-      final scopedSelector = scopeSelector(rule.selectorText);
+      final scopedSelector = scopeSelector(rule.selectorText, strict: true);
       final scopedBody = cssText(rule);
       return "$scopedSelector $scopedBody";
     }
   }
 
-  String scopeSelector(String selector) {
-    final parts = selector.split(",");
+  String scopeNonStrictMode(_Rule rule) {
+    final scopedBody = cssText(rule);
+    final scopedSelector = scopeSelector(rule.selectorText, strict: false);
+    return "${scopedSelector} $scopedBody";
+  }
+
+  String scopeSelector(String selector, {bool strict}) {
+    final parts = replaceCombinators(selector).split(",");
     final scopedParts = parts.fold([], (res, p) {
-      res.add(scopeSimpleSelector(p.trim()));
+      res.add(scopeSimpleSelector(p.trim(), strict: strict));
       return res;
     });
     return scopedParts.join(", ");
   }
 
-  String scopeSimpleSelector(String selector) {
+  String replaceCombinators(String selector) {
+    return COMBINATORS.fold(selector, (sel, combinator) {
+      return sel.replaceAll(combinator, ' ');
+    });
+  }
+
+  String scopeSimpleSelector(String selector, {bool strict}) {
     if (selector.contains(HOST_TOKEN)) {
       return replaceColonSelectors(selector);
+    } else if (strict) {
+      return insertTagToEverySelectorPart(selector);
     } else {
-      return insertTag(selector);
+      return "$tag $selector";
     }
   }
 
@@ -162,7 +212,7 @@ class _CssShim {
     });
   }
 
-  String insertTag(String selector) {
+  String insertTagToEverySelectorPart(String selector) {
     selector = handleIsSelector(selector);
 
     SELECTOR_SPLITS.forEach((split) {
@@ -258,7 +308,7 @@ class _Lexer {
     int start = index;
     advance();
     while (isSelector(peek)) advance();
-    String string = input.substring(start, index);
+    String string = input.substring(start, index).trim();
     return new _Token(string, "selector");
   }
 

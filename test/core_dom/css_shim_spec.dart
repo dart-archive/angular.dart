@@ -75,9 +75,29 @@ main() {
       expect(s(':host(.x,.y) {}', "a")).toEqual('a.x, a.y {}');
     });
 
-    it("should insert directives", () {
+    it("should support polyfill-next-selector", () {
       var css = s("polyfill-next-selector {content: 'x > y'} z {}", "a");
       expect(css).toEqual('x[a]>y[a] {}');
+    });
+
+    it("should support polyfill-unscoped-next-selector", () {
+      var css = s("polyfill-unscoped-next-selector {content: 'x > y'} z {}", "a");
+      expect(css).toEqual('x > y {}');
+    });
+
+    it("should support polyfill-non-strict-next-selector", () {
+      var css = s("polyfill-non-strict {} one, two {}", "a");
+      expect(css).toEqual('a one, a two {}');
+    });
+
+    it("should handle ::shadow", () {
+      var css = s("polyfill-non-strict {} x::shadow > y {}", "a");
+      expect(css).toEqual('a x  > y {}');
+    });
+
+    it("should handle /deep/", () {
+      var css = s("polyfill-non-strict {} x /deep/ y {}", "a");
+      expect(css).toEqual('a x   y {}');
     });
   });
 }
