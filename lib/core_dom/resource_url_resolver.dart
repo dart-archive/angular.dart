@@ -28,8 +28,8 @@ class ResourceUrlResolver {
   static final RegExp urlTemplateSearch = new RegExp('{{.*}}');
   static final RegExp quotes = new RegExp("[\"\']");
 
-  // Ensures that Uri.base is http/https.
-  final _baseUri = Uri.base.origin + ('/');
+  // Reconstruct the Uri without the http or https restriction due to Uri.base.origin
+  final _baseUri = _getBaseUri();
 
   final TypeToUriMapper _uriMapper;
   final ResourceResolverConfig _config;
@@ -39,7 +39,15 @@ class ResourceUrlResolver {
   static final NodeTreeSanitizer _nullTreeSanitizer = new _NullTreeSanitizer();
   static final docForParsing = document.implementation.createHtmlDocument('');
 
-  static Node _parseHtmlString(String html) {
+  static String _getBaseUri() {
+    if (Uri.base.authority.isEmpty) {
+      throw "Relative URL resolution requires a valid base URI";
+    } else {
+      return "${Uri.base.scheme}://${Uri.base.authority}/";
+    }
+  }
+
+  static Element _parseHtmlString(String html) {
     var div = docForParsing.createElement('div');
     div.setInnerHtml(html, treeSanitizer: _nullTreeSanitizer);
     return div;
@@ -49,9 +57,9 @@ class ResourceUrlResolver {
     if (baseUri == null) {
       return html;
     }
-    Node node = _parseHtmlString(html);
-    _resolveDom(node, baseUri);
-    return node.innerHtml;
+    Element elem = _parseHtmlString(html);
+    _resolveDom(elem, baseUri);
+    return elem.innerHtml;
   }
 
   /**
