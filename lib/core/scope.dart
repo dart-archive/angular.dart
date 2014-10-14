@@ -773,6 +773,7 @@ class RootScope extends Scope {
     _zone.onError = (e, s, ls) => _exceptionHandler(e, s);
     _zone.onScheduleMicrotask = runAsync;
     cacheRegister.registerCache("ScopeWatchASTs", astCache);
+    if (context is ScopeAware) context.scope = this;
   }
 
   RootScope get rootScope => this;
