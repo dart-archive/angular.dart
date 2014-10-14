@@ -29,7 +29,7 @@ class ResourceUrlResolver {
   static final RegExp quotes = new RegExp("[\"\']");
 
   // Ensures that Uri.base is http/https.
-  final _baseUri = Uri.base.origin + ('/');
+  final _baseUri = "${Uri.base.scheme}://${Uri.base.authority}" + ('/');
 
   final TypeToUriMapper _uriMapper;
   final ResourceResolverConfig _config;
