@@ -24,6 +24,18 @@ void main() {
           ..bind(ScopeStatsEmitter, toImplementation: MockScopeStatsEmitter);
     });
 
+    describe('Root context', () {
+      beforeEachModule((Module module) {
+        module.bind(Object, toImplementation: _RootContext);
+      });
+
+      it('should set the scope when RootContext is ScopeAware',
+          (RootScope rootScope, Object rootContext) {
+        expect(rootContext).toBeAnInstanceOf(_RootContext);
+        expect((rootContext as _RootContext).scope).toBe(rootScope);
+      });
+    });
+
     describe('AST Bridge', () {
       it('should watch field', (Logger logger, Map context, RootScope rootScope) {
         context['field'] = 'Worked!';
@@ -1750,4 +1762,8 @@ class UnstableList {
 
 class Foo {
   increment(x) => x+1;
+}
+
+class _RootContext implements ScopeAware {
+  var scope;
 }
