@@ -39,7 +39,7 @@ class ResourceUrlResolver {
   static final NodeTreeSanitizer _nullTreeSanitizer = new _NullTreeSanitizer();
   static final docForParsing = document.implementation.createHtmlDocument('');
 
-  static Node _parseHtmlString(String html) {
+  static Element _parseHtmlString(String html) {
     var div = docForParsing.createElement('div');
     div.setInnerHtml(html, treeSanitizer: _nullTreeSanitizer);
     return div;
@@ -49,9 +49,9 @@ class ResourceUrlResolver {
     if (baseUri == null) {
       return html;
     }
-    Node node = _parseHtmlString(html);
-    _resolveDom(node, baseUri);
-    return node.innerHtml;
+    Element elem = _parseHtmlString(html);
+    _resolveDom(elem, baseUri);
+    return elem.innerHtml;
   }
 
   /**
