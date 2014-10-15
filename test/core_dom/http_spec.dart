@@ -1486,4 +1486,6 @@ class FakeFile implements File {
   String get type => null;
   Blob slice([int start, int end, String contentType]) => null;
   int get lastModified => new DateTime.now().millisecondsSinceEpoch;
+  @override
+  void close() {}
 }
