@@ -36,7 +36,7 @@ packages:
   di:
     description: di
     source: hosted
-    version: "3.3.1"
+    version: "3.3.2"
   guinness:
     description: guinness
     source: hosted
@@ -48,7 +48,7 @@ packages:
   intl:
     description: intl
     source: hosted
-    version: "0.11.7"
+    version: "0.11.9"
   js:
     description: js
     source: hosted
@@ -108,7 +108,7 @@ packages:
   stack_trace:
     description: stack_trace
     source: hosted
-    version: "1.0.2"
+    version: "1.1.1"
   unittest:
     description: unittest
     source: hosted
