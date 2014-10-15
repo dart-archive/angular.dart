@@ -73,7 +73,7 @@ String getOsType() {
     return "Linux";
   } else if (Platform.isWindows) {
     return "Windows";
-  } else if (Platform.Android) {
+  } else if (Platform.isAndroid) {
     return "Android";
   }
 }
