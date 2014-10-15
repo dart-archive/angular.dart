@@ -28,7 +28,7 @@ class ResourceUrlResolver {
   static final RegExp urlTemplateSearch = new RegExp('{{.*}}');
   static final RegExp quotes = new RegExp("[\"\']");
 
-  // Ensures that Uri.base is http/https.
+  // Reconstruct the Uri without the http or https restriction due to Uri.base.origin 
   final _baseUri = "${Uri.base.scheme}://${Uri.base.authority}" + ('/');
 
   final TypeToUriMapper _uriMapper;
