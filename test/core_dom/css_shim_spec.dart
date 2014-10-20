@@ -2,7 +2,6 @@ library css_shim_spec;
 
 import '../_specs.dart';
 import 'package:angular/core_dom/css_shim.dart';
-import 'dart:html' as dom;
 
 main() {
   describe("cssShim", () {
@@ -78,10 +77,16 @@ main() {
     it("should support polyfill-next-selector", () {
       var css = s("polyfill-next-selector {content: 'x > y'} z {}", "a");
       expect(css).toEqual('x[a]>y[a] {}');
+
+      css = s('polyfill-next-selector {content: "x > y"} z {}', "a");
+      expect(css).toEqual('x[a]>y[a] {}');
     });
 
     it("should support polyfill-unscoped-next-selector", () {
       var css = s("polyfill-unscoped-next-selector {content: 'x > y'} z {}", "a");
+      expect(css).toEqual('x > y {}');
+
+      css = s('polyfill-unscoped-next-selector {content: "x > y"} z {}', "a");
       expect(css).toEqual('x > y {}');
     });
 
