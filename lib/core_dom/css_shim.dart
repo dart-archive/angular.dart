@@ -54,15 +54,15 @@ class _CssShim {
 
   static final RegExp CONTENT = new RegExp(
       r"[^}]*"
-      r"content\:[\s]*"
-      r"'([^']*)'"
+      r"content:\s*"
+      "('|\")([^\\1]*)\\1"
       r"[^}]*}",
       caseSensitive: false,
       multiLine: true
   );
 
   static final String HOST_TOKEN = '-host-element';
-  static final RegExp COLON_SELECTORS = new RegExp(r'(' + HOST_TOKEN + r')(\(.*\)){0,1}(.*)',
+  static final RegExp COLON_SELECTORS = new RegExp(r'(' + HOST_TOKEN + r')(\(.*\))?(.*)',
       caseSensitive: false);
   static final RegExp SIMPLE_SELECTORS = new RegExp(r'([^:]*)(:*)(.*)', caseSensitive: false);
   static final RegExp IS_SELECTORS = new RegExp(r'\[is="([^\]]*)"\]', caseSensitive: false);
@@ -152,7 +152,7 @@ class _CssShim {
   }
 
   String extractContent(_Rule rule) {
-    return CONTENT.firstMatch(rule.body)[1];
+    return CONTENT.firstMatch(rule.body)[2];
   }
 
   String ruleToString(_Rule rule) {
