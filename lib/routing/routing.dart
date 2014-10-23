@@ -62,6 +62,7 @@ class RouteViewFactory {
             }
           },
           leave: cfg.leave,
+          watchQueryParameters: cfg.watchQueryParameters,
           mount: (Route mountRoute) {
             if (cfg.mount != null) {
               _configure(mountRoute, cfg.mount);
@@ -83,10 +84,11 @@ NgRouteCfg ngRoute({String path, String view, String viewHtml,
     Map<String, NgRouteCfg> mount, modules(), bool defaultRoute: false,
     RoutePreEnterEventHandler preEnter, RouteEnterEventHandler enter,
     RoutePreLeaveEventHandler preLeave, RouteLeaveEventHandler leave,
-    dontLeaveOnParamChanges: false}) =>
+    dontLeaveOnParamChanges: false, List<Pattern> watchQueryParameters}) =>
         new NgRouteCfg(path: path, view: view, viewHtml: viewHtml, mount: mount,
             modules: modules, defaultRoute: defaultRoute, preEnter: preEnter, preLeave: preLeave,
-            enter: enter, leave: leave, dontLeaveOnParamChanges: dontLeaveOnParamChanges);
+            enter: enter, leave: leave, dontLeaveOnParamChanges: dontLeaveOnParamChanges,
+            watchQueryParameters: watchQueryParameters);
 /**
  * Object containing route configuration parameters. Typically this class
  * is not used directly, but rather constructed via [ngRoute] factory function.
@@ -103,9 +105,11 @@ class NgRouteCfg {
   final RoutePreEnterEventHandler preEnter;
   final RoutePreLeaveEventHandler preLeave;
   final RouteLeaveEventHandler leave;
+  final List<Pattern> watchQueryParameters;
 
   NgRouteCfg({this.view, this.viewHtml, this.path, this.mount, this.modules, this.defaultRoute,
-       this.enter, this.preEnter, this.preLeave, this.leave, this.dontLeaveOnParamChanges});
+       this.enter, this.preEnter, this.preLeave, this.leave, this.dontLeaveOnParamChanges,
+       this.watchQueryParameters});
 }
 
 /**
