@@ -92,7 +92,7 @@ packages:
   route_hierarchical:
     description: route_hierarchical
     source: hosted
-    version: "0.5.0"
+    version: "0.6.0"
   smoke:
     description: smoke
     source: hosted

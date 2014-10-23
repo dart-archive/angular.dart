@@ -298,6 +298,34 @@ main() {
     }));
 
 
+    it('should use watchQueryParameters patterns for query params', async(() {
+      int preEnterCount = 0;
+      initRouter((Router router, RouteViewFactory views) {
+        views.configure({
+          'foo': ngRoute(
+              path: '/foo',
+              preEnter: (_) => preEnterCount++,
+              watchQueryParameters: ['foo']
+          ),
+        });
+      });
+
+      router.route('/foo');
+      microLeap();
+
+      expect(preEnterCount).toBe(1);
+
+      router.route('/foo?foo=bar');
+      microLeap();
+
+      expect(preEnterCount).toBe(2);
+
+      router.route('/foo?foo=bar&bar=baz');
+      microLeap();
+
+      expect(preEnterCount).toBe(2);
+    }));
+
     it('should clear view on leave an call leave callback', async(() {
       int leaveCount = 0;
       initRouter((Router router, RouteViewFactory views) {
