@@ -134,7 +134,7 @@ class _ExpressionVisitor implements syntax.Visitor {
     _notSupported("function's returing functions");
   }
   void visitAssign(syntax.Assign exp) {
-    _notSupported('assignement');
+    _notSupported('assignment');
   }
   void visitLiteral(syntax.Literal exp) {
     _notSupported('literal');
