@@ -12,7 +12,7 @@ To run this demo, first clone the entire Angular.dart repository.
 Then, run `pub serve` in this directory:
 
 ```
-$ cd demo
+$ cd example
 $ pub serve
 ```
 
