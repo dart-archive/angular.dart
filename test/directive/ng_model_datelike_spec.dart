@@ -54,7 +54,9 @@ void main() {
   //----------------------------------------------------------------------------
   // Tests
 
-  describe('ng-model for date-like input', () {
+  // TODO enable after this issue is fixed
+  // See more here https://codereview.chromium.org/491703002
+  xdescribe('ng-model for date-like input', () {
     beforeEach((TestBed tb) => _ = tb);
     beforeEach(() => inputElement = null);
 
