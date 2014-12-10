@@ -232,12 +232,18 @@ class ViewFactoryCache {
 class _AnchorAttrs extends NodeAttrs {
   DirectiveRef _directiveRef;
 
-  _AnchorAttrs(DirectiveRef this._directiveRef): super(null);
+  _AnchorAttrs(DirectiveRef directiveRef)
+      : super(directiveRef.element),
+      _directiveRef = directiveRef;
 
-  String operator [](name) => name == '.' ? _directiveRef.value : null;
+  String operator [](name) => name == '.' ? _directiveRef.value : super[name];
 
   void observe(String attributeName, _AttributeChanged notifyFn) {
-    notifyFn(attributeName == '.' ? _directiveRef.value : null);
+    if (attributeName == '.') {
+      notifyFn(_directiveRef.value);
+    } else {
+      super.observe(attributeName, notifyFn);
+    }
   }
 }
 
