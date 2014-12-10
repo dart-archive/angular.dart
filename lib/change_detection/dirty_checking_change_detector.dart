@@ -535,15 +535,10 @@ class DirtyCheckingRecord<H> implements WatchRecord<H> {
       return;
     }
 
-    if (_object is Map) {
-      _mode =  _MODE_MAP_FIELD_;
-      _getter = null;
-    } else {
-      _mode = _object is obs.ChangeNotifier ?
-          _MODE_GETTER_OBS_OR_METHOD_CLOSURE_ :
-          _MODE_GETTER_OR_METHOD_CLOSURE_;
-      _getter = _fieldGetterFactory.getter(_object, field);
-    }
+    _mode = _object is obs.ChangeNotifier ?
+        _MODE_GETTER_OBS_OR_METHOD_CLOSURE_ :
+        _MODE_GETTER_OR_METHOD_CLOSURE_;
+    _getter = _fieldGetterFactory.getter(_object, field);
   }
 
   bool check() {
