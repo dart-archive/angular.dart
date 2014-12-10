@@ -56,7 +56,8 @@ void main() {
           ..bind(Parent, toValue: null)
           ..bind(Child)
           ..bind(ChildTemplateComponent)
-          ..bind(InjectorDependentComponent);
+          ..bind(InjectorDependentComponent)
+          ..bind(TranscludeChildrenWithAttributeDirective);
     });
 
     beforeEach((TestBed tb) => _ = tb);
@@ -1149,6 +1150,14 @@ void main() {
         expect(logger).toContain('LazyPane-0');
       }));
     });
+
+    it('should set attributes on a directive transcluding its children', () {
+      _.compile('<div><transclude-children-with-attr attr="value"/></div>');
+      _.rootScope.apply();
+
+      var dir = _.rootScope.context['transclude-children-with-attr'];
+      expect(dir.attr).toEqual('value');
+    });
   }));
 }
 
@@ -1231,6 +1240,20 @@ class SimpleTranscludeInAttachAttrDirective {
       viewPort.insert(view);
       log('SimpleTransclude');
     });
+  }
+}
+
+@Decorator(
+    children: Directive.TRANSCLUDE_CHILDREN,
+    selector:'transclude-children-with-attr',
+    map: const {
+        'attr': '@attr'
+    })
+class TranscludeChildrenWithAttributeDirective {
+  var attr;
+
+  TranscludeChildrenWithAttributeDirective(RootScope scope) {
+    scope.context['transclude-children-with-attr'] = this;
   }
 }
 
