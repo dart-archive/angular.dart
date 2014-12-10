@@ -24,13 +24,6 @@ import 'dart:html';
  * If you are writing code accessed from Angular expressions, you must include
  * your own @MirrorsUsed annotation or ensure that everything is tagged with
  * the Ng annotations.
- *
- * All programs should also include a @MirrorsUsed(override: '*') which
- * tells the compiler that only the explicitly listed libraries will
- * be reflected over.
- *
- * This is a short-term fix until we implement a transformer-based solution
- * which does not rely on mirrors.
  */
 @MirrorsUsed(targets: const [
     'angular',
