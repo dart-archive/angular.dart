@@ -316,7 +316,9 @@ void main() {
           ..bind(OnceInside)
           ..bind(OuterShadowless)
           ..bind(InnerShadowy)
-          ..bind(TemplateUrlComponent);
+          ..bind(TemplateUrlComponent)
+          ..bind(ComponentWithContent)
+          ..bind(ComponentContainingComponentWithContent);
       });
 
       describe("distribution", () {
@@ -348,6 +350,18 @@ void main() {
           microLeap(); _.rootScope.apply();
 
           expect(document.activeElement.id).toEqual("focused-input");
+        }));
+
+        it("should render components that have view ports in the light dom", async(() {
+          if (compilerType != 'transcluding') return;
+
+          var element = _.compile('<dib><component foo="true"></component>'
+            '<component foo="false"></component></div>');
+
+          microLeap(); _.rootScope.apply();
+
+          expect(element.querySelector("p[ng-if]")).toBeDefined();
+          expect(element.querySelector("p[ng-unless]")).toBeDefined();
         }));
 
         it('should support multiple content tags', async(() {
@@ -1738,3 +1752,24 @@ class LoggedBinding {
   LoggedBinding(this.logger);
   set optional(input) => logger(input);
 }
+
+
+@Component(
+    selector: 'component',
+    template: '''<div>
+        <component-with-content>
+          <p ng-if="foo" >When True in content</p>
+          <p ng-unless="foo" >When False in content</p>
+        </component-with-content>
+    </div>''')
+class ComponentContainingComponentWithContent {
+  @NgOneWay('foo')
+  bool foo = true;
+}
+
+@Component(
+    selector: 'component-with-content',
+    template: '''<div>
+        <content></content>
+    </div>''')
+class ComponentWithContent {}

@@ -34,8 +34,6 @@ class _RenderedTranscludingContent implements _ContentStrategy {
   dom.ScriptElement _beginScript;
   dom.ScriptElement _endScript;
 
-  Iterable<dom.Node> _currNodes;
-
   _RenderedTranscludingContent(this._content, this._sourceLightDom);
 
   void attach(){
@@ -51,13 +49,19 @@ class _RenderedTranscludingContent implements _ContentStrategy {
   void insert(Iterable<dom.Node> nodes){
     final p = _endScript.parent;
     if (p != null && ! _equalToCurrNodes(nodes)) {
-      _currNodes = nodes.toList();
       p.insertAllBefore(nodes, _endScript);
     }
   }
 
-  bool _equalToCurrNodes(Iterable<dom.Node> nodes) =>
-      const IterableEquality().equals(_currNodes, nodes);
+  bool _equalToCurrNodes(Iterable<dom.Node> nodes) {
+    var currentNodes = [];
+    for (var n = _beginScript.nextNode;
+      n.nodeType != dom.Node.ELEMENT_NODE || n.attributes["type"] != "ng/content";
+      n = n.nextNode) {
+      currentNodes.add(n);
+    }
+    return const IterableEquality().equals(currentNodes, nodes);
+  }
 
   void _replaceContentElementWithScriptTags() {
     _beginScript = _beginScriptTemplate.clone(true);
@@ -78,7 +82,7 @@ class _RenderedTranscludingContent implements _ContentStrategy {
   void _removeNodesBetweenScriptTags() {
     final p = _beginScript.parent;
     for (var next = _beginScript.nextNode;
-        next.nodeType != dom.Node.ELEMENT_NODE || next.attributes["ng/content"] != null;
+        next.nodeType != dom.Node.ELEMENT_NODE || next.attributes["type"] != "ng/content";
         next = _beginScript.nextNode) {
       p.nodes.remove(next);
     }
