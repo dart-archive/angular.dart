@@ -173,7 +173,8 @@ class NgRepeat {
       changeFunctions[addition.currentIndex] = (index, previousView) {
         var childScope = _scope.createProtoChild();
         var childContext = _updateContext(childScope.context, index, length)
-            ..[_valueIdentifier] = value;
+            ..[_valueIdentifier] = value
+            ..[r'$parent'] = _scope.context;
         var view = views[index] = _boundViewFactory(childScope);
         _viewPort.insert(view, insertAfter: previousView);
       };
