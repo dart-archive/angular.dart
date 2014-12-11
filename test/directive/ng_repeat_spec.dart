@@ -41,6 +41,20 @@ main() {
       expect(element).toHaveText('ab');
     });
 
+    it(r'should support $parent to access the parent context',
+       (Scope scope, Compiler compiler, Injector injector) {
+      var element = es('<div>'
+                         '<span ng-repeat="list in lists">'
+                           r'<span ng-repeat="i in list">{{$parent.$index}}-{{$index}},</span>'
+                         '</span>'
+                       '</div>');
+      ViewFactory viewFactory = compiler(element, directives);
+      View view = viewFactory(scope, null, element);
+      scope.context['lists'] = [[0, 0, 0], [0]];
+      scope.apply();
+      expect(element).toHaveText('0-0,0-1,0-2,1-0,');
+    });
+
 
     it(r'should set create a list of items', (Scope scope, Compiler compiler, Injector injector) {
       scope.context['items'] = [];
