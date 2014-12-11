@@ -594,6 +594,29 @@ void testWithGetterFactory(FieldGetterFactory getterFactory) {
     describe('map watching', () {
       addMapSpec(useObservable: false);
       addMapSpec(useObservable: true);
+
+      it('should only check ObservableMap items after notification', async(() {
+        var map = new ObservableMap.from({'foo': 'bar'});
+        detector.watch(map, 'foo', null);
+
+        // The value is always dirty-checked the first time
+        var iterator = detector.collectChanges();
+        expect(iterator.moveNext()).toEqual(true);
+        expect(iterator.current.currentValue).toEqual('bar');
+        expect(iterator.moveNext()).toEqual(false);
+
+        // The value should not be dirty-checked again before a change notification is received
+        map['foo'] = 'baz';
+        iterator = detector.collectChanges();
+        expect(iterator.moveNext()).toEqual(false);
+
+        // Trigger the ObservableMap notification, changes should be detected
+        microLeap();
+        iterator = detector.collectChanges();
+        expect(iterator.moveNext()).toEqual(true);
+        expect(iterator.current.currentValue).toEqual('baz');
+        expect(iterator.moveNext()).toEqual(false);
+      }));
     });
 
     describe('function watching', () {
@@ -1008,6 +1031,26 @@ void addMapSpec({bool useObservable}) {
 
   describe('use observable: $useObservable', () {
     describe('previous state', () {
+
+      it('should detect map value changes', wrap(() {
+        var map = mapFactory({'foo': 'bar'});
+        detector.watch(map, 'foo', null);
+
+        var iterator = getChangeIterator();
+        expect(iterator.moveNext()).toEqual(true);
+        expect(iterator.current.currentValue).toEqual('bar');
+        expect(iterator.moveNext()).toEqual(false);
+
+        iterator = getChangeIterator();
+        expect(iterator.moveNext()).toEqual(false);
+
+        map['foo'] = 'baz';
+        iterator = getChangeIterator();
+        expect(iterator.moveNext()).toEqual(true);
+        expect(iterator.current.currentValue).toEqual('baz');
+        expect(iterator.moveNext()).toEqual(false);
+      }));
+
       it('should store on insertion', wrap(() {
         var map = mapFactory({});
         var record = detector.watch(map, null, null);
