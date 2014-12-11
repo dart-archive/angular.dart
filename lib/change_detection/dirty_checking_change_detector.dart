@@ -429,10 +429,11 @@ class DirtyCheckingRecord<H> implements WatchRecord<H> {
   static const int _MODE_GETTER_OR_METHOD_CLOSURE_ = 5;
   static const int _MODE_GETTER_OBS_OR_METHOD_CLOSURE_ = 6;
   static const int _MODE_MAP_FIELD_ = 7;
-  static const int _MODE_ITERABLE_ = 8;
-  static const int _MODE_LIST_NOTIFIED_ = 9;
-  static const int _MODE_MAP_ = 10;
-  static const int _MODE_MAP_NOTIFIED_ = 11;
+  static const int _MODE_MAP_FIELD_NOTIFIED_ = 8;
+  static const int _MODE_ITERABLE_ = 9;
+  static const int _MODE_LIST_NOTIFIED_ = 10;
+  static const int _MODE_MAP_ = 11;
+  static const int _MODE_MAP_NOTIFIED_ = 12;
 
   final DirtyCheckingChangeDetectorGroup _group;
   final FieldGetterFactory _fieldGetterFactory;
@@ -476,7 +477,7 @@ class DirtyCheckingRecord<H> implements WatchRecord<H> {
     while (_object is ContextLocals) {
       var ctx = _object as ContextLocals;
       if (ctx.hasProperty(field)) {
-        _mode =  _MODE_MAP_FIELD_;
+        _mode = _MODE_MAP_FIELD_;
         _getter = null;
         return;
       }
@@ -501,9 +502,9 @@ class DirtyCheckingRecord<H> implements WatchRecord<H> {
           // mapping with the one from the new reference.
           currentValue._revertToPreviousState();
         }
-        if (_object is obs.ChangeNotifier) {
+        if (_object is obs.Observable) {
           _mode = _MODE_MAP_NOTIFIED_; // Run the dccd after the map is added
-          var subscription = (_object as obs.ChangeNotifier).changes.listen((_) {
+          var subscription = (_object as obs.Observable).changes.listen((_) {
             _mode = _MODE_MAP_NOTIFIED_; // Run the dccd after the map is updated
           });
           _group._registerObservable(this, subscription);
@@ -536,10 +537,19 @@ class DirtyCheckingRecord<H> implements WatchRecord<H> {
     }
 
     if (_object is Map) {
-      _mode =  _MODE_MAP_FIELD_;
-      _getter = null;
+      if (_object is obs.Observable) {
+        _mode = _MODE_MAP_FIELD_NOTIFIED_;
+        var subscription = (_object as obs.Observable).changes.listen((_) {
+          _mode = _MODE_MAP_FIELD_NOTIFIED_; // Run the dccd after the map is updated
+        });
+        _group._registerObservable(this, subscription);
+        _getter = null;
+      } else {
+        _mode = _MODE_MAP_FIELD_;
+        _getter = null;
+      }
     } else {
-      _mode = _object is obs.ChangeNotifier ?
+      _mode = _object is obs.Observable ?
           _MODE_GETTER_OBS_OR_METHOD_CLOSURE_ :
           _MODE_GETTER_OR_METHOD_CLOSURE_;
       _getter = _fieldGetterFactory.getter(_object, field);
@@ -579,15 +589,16 @@ class DirtyCheckingRecord<H> implements WatchRecord<H> {
         _mode = _MODE_NOOP_;
         if (current is! Function || identical(current, _getter(object))) {
           var subscription = (object as obs.Observable).changes.listen((records) {
-            // todo(vicb) we should only go to the _MODE_GETTER_NOTIFIED_ mode when a record
-            // is applicable to the current `field`. With the current implementation, any field
-            // on an observable object will trigger this listener.
             _mode = _MODE_GETTER_NOTIFIED_;
           });
           _group._registerObservable(this, subscription);
         }
         break;
       case _MODE_MAP_FIELD_:
+        current = object[field];
+        break;
+      case _MODE_MAP_FIELD_NOTIFIED_:
+        _mode = _MODE_NOOP_;  // no-op until next notification
         current = object[field];
         break;
       case _MODE_IDENTITY_:
