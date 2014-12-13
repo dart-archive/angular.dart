@@ -56,8 +56,9 @@ void main() {
           ..bind(Parent, toValue: null)
           ..bind(Child)
           ..bind(ChildTemplateComponent)
-          ..bind(InjectorDependentComponent)
-          ..bind(TranscludeChildrenWithAttributeDirective);
+          ..bind(TranscludeChildrenWithAttributeDirective)
+          ..bind(LoggedBinding)
+          ..bind(InjectorDependentComponent);
     });
 
     beforeEach((TestBed tb) => _ = tb);
@@ -187,6 +188,13 @@ void main() {
       expect(log).toEqual(['OneOfTwo', 'TwoOfTwo']);
     });
 
+    it('should not call bindings that are not present', async((Logger log) {
+      var element = _.compile('<log-bind></log-bind>');
+      _.rootScope.apply();
+      expect(log.length).toEqual(0);
+    }));
+
+
     it('should compile a directive that ignores children', (Logger log) {
       // The ng-repeat comes first, so it is not ignored, but the children *are*
       var element = _.compile('<div ng-repeat="i in [1,2]" ignore-children><div two-directives></div></div>');
@@ -298,6 +306,7 @@ void main() {
           ..bind(ConditionalContentComponent)
           ..bind(ExprAttrComponent)
           ..bind(LogElementComponent)
+          ..bind(LoggedBinding)
           ..bind(SayHelloFormatter)
           ..bind(OuterComponent)
           ..bind(InnerComponent)
@@ -729,7 +738,6 @@ void main() {
         component.expr = 'angular';
         _.rootScope.apply();
         expect(_.rootScope.context['name']).toEqual('angular');
-
         expect(_.rootScope.context['done']).toEqual(false);
         component.onDone();
         expect(_.rootScope.context['done']).toEqual(true);
@@ -1715,4 +1723,18 @@ class InnerInnerComponent {
     templateUrl: 'template.html'
 )
 class TemplateUrlComponent {
+}
+
+@Component(
+    selector: 'log-bind',
+    map: const {
+      'optional-one': '=>optional',
+      'optional-two': '<=>optional',
+      'optional-once': '=>!optional',
+    }
+)
+class LoggedBinding {
+  Logger logger;
+  LoggedBinding(this.logger);
+  set optional(input) => logger(input);
 }
