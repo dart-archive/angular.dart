@@ -48,7 +48,7 @@ packages:
   intl:
     description: intl
     source: hosted
-    version: "0.11.7"
+    version: "0.11.9"
   js:
     description: js
     source: hosted
