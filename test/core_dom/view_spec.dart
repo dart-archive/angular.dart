@@ -131,21 +131,29 @@ main() {
 
 
       describe('remove', () {
-        beforeEach((RootScope scope) {
+        it("should remove newly added view", (RootScope scope) {
+          viewPort.insert(a);
+          viewPort.remove(a);
+          scope.flush();
+
+          expect(viewPort.views).toEqual([]);
+        });
+
+        it('should remove the last view', (RootScope scope) {
           viewPort.insert(a);
           viewPort.insert(b, insertAfter: a);
           scope.flush();
 
-          expect(rootElement.text).toEqual('AaBb');
-        });
-
-        it('should remove the last view', (RootScope scope) {
           viewPort.remove(b);
           scope.flush();
           expect(rootElement).toHaveHtml('<!-- anchor --><span>A</span>a');
         });
 
         it('should remove child views from parent pseudo black', (RootScope scope) {
+          viewPort.insert(a);
+          viewPort.insert(b, insertAfter: a);
+          scope.flush();
+
           viewPort.remove(a);
           scope.flush();
           expect(rootElement).toHaveHtml('<!-- anchor --><span>B</span>b');
