@@ -4,7 +4,7 @@ packages:
   analyzer:
     description: analyzer
     source: hosted
-    version: "0.15.7"
+    version: "0.22.4"
   angular:
     description:
       path: ".."
@@ -14,11 +14,11 @@ packages:
   args:
     description: args
     source: hosted
-    version: "0.10.0+2"
+    version: "0.12.2+1"
   barback:
     description: barback
     source: hosted
-    version: "0.14.2"
+    version: "0.15.2+2"
   browser:
     description: browser
     source: hosted
@@ -26,19 +26,23 @@ packages:
   code_transformers:
     description: code_transformers
     source: hosted
-    version: "0.1.6"
+    version: "0.2.3+2"
   collection:
     description: collection
     source: hosted
     version: "0.9.4"
+  csslib:
+    description: csslib
+    source: hosted
+    version: "0.11.0+2"
   di:
     description: di
     source: hosted
-    version: "3.3.2"
+    version: "3.3.3"
   html5lib:
     description: html5lib
     source: hosted
-    version: "0.10.0"
+    version: "0.12.0"
   intl:
     description: intl
     source: hosted
@@ -54,7 +58,7 @@ packages:
   observe:
     description: observe
     source: hosted
-    version: "0.10.1+2"
+    version: "0.12.2"
   path:
     description: path
     source: hosted
@@ -74,11 +78,11 @@ packages:
   route_hierarchical:
     description: route_hierarchical
     source: hosted
-    version: "0.5.0"
+    version: "0.6.1"
   smoke:
     description: smoke
     source: hosted
-    version: "0.1.0+1"
+    version: "0.2.1+1"
   source_maps:
     description: source_maps
     source: hosted
@@ -99,6 +103,10 @@ packages:
     description: utf
     source: hosted
     version: "0.9.0+1"
+  watcher:
+    description: watcher
+    source: hosted
+    version: "0.9.3"
   web_components:
     description: web_components
     source: hosted
