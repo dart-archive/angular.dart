@@ -82,8 +82,25 @@ class ViewPort {
   /// The associated scope is destroyed immediately.
   View remove(View view) {
     view.scope.destroy();
+
+    // The view removal is sync, and the corresponding DOM operation is async.
     views.remove(view);
     scope.rootScope.domWrite(() {
+
+      /**
+       * We have to call `views.remove` one more time to handle the case when a view gets
+       * inserted and removed in the VM turn.
+       *
+       *     viewPort.insert(a);
+       *     viewPort.remove(a);
+       *
+       * Another option of making the view insertion synchronous does not work because of:
+       * https://github.com/angular/angular.dart/issues/1630
+       *
+       * Remove this once Issue 1630 is fixed.
+       */
+      views.remove(view);
+
       _animate.remove(view.nodes);
       _notifyLightDom();
     });
