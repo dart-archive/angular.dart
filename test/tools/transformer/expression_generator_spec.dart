@@ -177,6 +177,28 @@ main() {
             htmlFiles.clear();
           });
     });
+
+    it('should extract functions as getters when named import is used', () {
+      return generates(phases,
+          inputs: {
+            'a|web/main.dart': '''
+              import 'package:angular/angular.dart' as ng;
+
+              @ng.Component(selector: 'cmp', template: '{{foo}}')
+              class TestComponent {
+                String foo = "foo";
+              }
+
+              main() {} ''',
+            'a|web/index.html': '''
+              <cmp></cmp>
+              <script src='main.dart' type='application/dart'></script>''',
+            'angular|lib/angular.dart': libAngular,
+          },
+          getters: ['foo'],
+          setters: ['foo'],
+          symbols: []);
+    });
   });
 }
 
