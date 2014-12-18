@@ -69,9 +69,9 @@ class ViewPort {
   /// Schedules the insertion of the view in the next DOM write phase.
   /// The [view] gets inserted as the first child or after [insertAfter] when specified.
   View insert(View view, { View insertAfter }) {
+    _viewsInsertAfter(view, insertAfter);
     scope.rootScope.domWrite(() {
       dom.Node previousNode = _lastNode(insertAfter);
-      _viewsInsertAfter(view, insertAfter);
       _animate.insert(view.nodes, placeholder.parentNode, insertBefore: previousNode.nextNode);
       _notifyLightDom();
     });
