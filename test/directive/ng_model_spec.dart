@@ -1380,6 +1380,39 @@ void main() {
         expect(model.modelValue).toEqual('animal');
         expect(model.viewValue).toEqual('animal');
       });
+
+      it('should revalidate itself after the form is reset ', (Scope scope) {
+        _.compile('<form name="myForm" novalidate>' +
+                  '  <input type="text" ng-required="true" ng-model="inputValue" probe="i">' +
+                  '</form>');
+
+        scope.apply();
+
+        var form = _.rootScope.context['myForm']; 
+        var formElement = form.element.node;
+
+        var input = _.rootScope.context['i'].directive(NgModel);
+        var inputElement = input.element.node;
+
+        expect(form.valid).toBe(false);
+        expect(form.invalid).toBe(true);
+
+        inputElement.value = 'a special value';
+        _.triggerEvent(inputElement, 'input');
+        scope.apply();
+
+        expect(form.valid).toBe(true);
+        expect(form.invalid).toBe(false);
+
+        form.reset();
+        //we need to run apply to properly update the input dom element
+        scope.apply(); 
+
+        expect(scope.context['inputValue']).toBe(null);
+        expect(inputElement.value.length).toBe(0);
+        expect(form.valid).toBe(false);
+        expect(form.invalid).toBe(true);
+      });
     });
 
     it('should set the model to be untouched when the model is reset', () {
