@@ -74,8 +74,8 @@ class NgModel extends NgControl implements AttachAware {
     */
   void reset() {
     markAsUntouched();
-    _processViewValue(_originalValue);
     modelValue = _originalValue;
+    _processViewValue(_originalValue);
   }
 
   void onSubmit(bool valid) {
