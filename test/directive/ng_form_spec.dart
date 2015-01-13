@@ -553,6 +553,54 @@ void main() {
         expect(form).not.toHaveClass('ng-required-invalid');
       });
 
+      it('should validate all the models when form.validate() is called',
+        (TestBed _, Scope scope) {
+
+        scope.context['required'] = true;
+        var formElement = _.compile('<form name="myForm">'
+                    '<input type="text" ng-model="one" probe="a" required />'
+                    '<input type="text" ng-model="two" probe="b" required />'
+                    '<input type="text" ng-model="three" probe="c" required />'
+                  '</form>');
+        scope.apply();
+
+        NgForm form = _.rootScope.context['myForm'];
+
+        var one = _.rootScope.context['a'].directive(NgModel);
+        var inputOne = one.element.node;
+
+        var two = _.rootScope.context['b'].directive(NgModel);
+        var inputTwo = two.element.node;
+
+        var three = _.rootScope.context['c'].directive(NgModel);
+        var inputThree = three.element.node;
+
+        expect(form.invalid).toBe(true);
+        expect(one.invalid).toBe(true);
+        expect(two.invalid).toBe(true);
+        expect(three.invalid).toBe(true);
+
+        one.viewValue = 'something';
+        expect(one.invalid).toBe(true);
+
+        form.validate();
+
+        expect(one.invalid).toBe(false);
+        expect(two.invalid).toBe(true);
+        expect(three.invalid).toBe(true);
+        expect(form.invalid).toBe(true);
+
+        two.viewValue = 'something else';
+        three.viewValue = 'something more';
+
+        form.validate();
+
+        expect(one.invalid).toBe(false);
+        expect(two.invalid).toBe(false);
+        expect(three.invalid).toBe(false);
+        expect(form.invalid).toBe(false);
+      });
+
       it('should re-validate itself when validators are toggled on and off',
         (TestBed _, Scope scope) {
 
