@@ -53,6 +53,15 @@ abstract class NgControl implements AttachAware, DetachAware {
   }
 
   /**
+   * Revalidates the model by performing validations on each of the child controls.
+   */
+  void validate() {
+    _controls.forEach((control) {
+      control.validate();
+    });
+  }
+
+  /**
     * Resets the form and inner models to their pristine state.
     */
   void reset() {
@@ -339,7 +348,9 @@ class NgNullControl implements NgControl {
   void addInfoState(NgControl control, String state) {}
   void removeInfoState(NgControl control, String state) {}
 
+  void validate() {}
   void reset() {}
+
   void attach() {}
   void detach() {}
 
