@@ -29,7 +29,7 @@ class ResourceUrlResolver {
   static final RegExp quotes = new RegExp("[\"\']");
 
   // Reconstruct the Uri without the http or https restriction due to Uri.base.origin 
-  final _baseUri = "${Uri.base.scheme}://${Uri.base.authority}" + ('/');
+  final _baseUri = _getBaseUri();
 
   final TypeToUriMapper _uriMapper;
   final ResourceResolverConfig _config;
