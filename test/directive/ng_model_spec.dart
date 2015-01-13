@@ -1326,6 +1326,33 @@ void main() {
 
         expect(model.hasErrorState('big-failure')).toBe(false);
       });
+
+      it("model.clearErrorState() should erase all the errors and set the model to valid", (TestBed _) {
+          Scope s = _.rootScope;
+
+          _.compile('<input type="text" ng-model="myModel" probe="i" />');
+          _.rootScope.apply('myModel = "animal"');
+
+          NgModel inputModel = s.context['i'].directive(NgModel);
+          var input = inputModel.element.node;
+
+          inputModel.addError("required");
+          inputModel.addError("minlength");
+          s.apply();
+
+          expect(inputModel.hasErrorState("required")).toBe(true);
+          expect(inputModel.hasErrorState("minlength")).toBe(true);
+          expect(inputModel.invalid).toBe(true);
+          expect(inputModel.valid).toBe(false);
+
+          inputModel.clearErrorStates();
+          s.apply();
+
+          expect(inputModel.hasErrorState("required")).toBe(false);
+          expect(inputModel.hasErrorState("minlength")).toBe(false);
+          expect(inputModel.invalid).toBe(false);
+          expect(inputModel.valid).toBe(true);
+      });
     });
 
     describe('text-like events', () {
