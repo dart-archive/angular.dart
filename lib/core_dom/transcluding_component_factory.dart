@@ -26,6 +26,8 @@ class TranscludingComponentFactory implements ComponentFactory {
       new BoundTranscludingComponentFactory(this, ref, directives, injector);
 }
 
+RegExp _unsafeAttributeCharacters = new RegExp(r'[^a-zA-Z:.\-_]');
+
 class BoundTranscludingComponentFactory implements BoundComponentFactory {
   final TranscludingComponentFactory _f;
   final DirectiveRef _ref;
@@ -42,6 +44,7 @@ class BoundTranscludingComponentFactory implements BoundComponentFactory {
 
   BoundTranscludingComponentFactory(this._f, this._ref, this._directives, this._injector) {
     _tag = _ref.annotation.selector.toLowerCase();
+    _tag = _tag.replaceAll(_unsafeAttributeCharacters, '-');
     _styleElementsFuture = _f.cssLoader(_tag, _component.cssUrls, type: _ref.type)
         .then((styleElements) => _styleElements = styleElements);
 
