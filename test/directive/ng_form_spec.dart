@@ -718,6 +718,99 @@ void main() {
         expect(s.eval('myForm["name"].name')).toEqual("name");
     });
 
+    it("should clear all the error states from the entire form and all error-related CSS classes", (TestBed _) {
+        Scope s = _.rootScope;
+        s.context['name'] = 'cool';
+
+        var form = _.compile('<form name="myForm">'
+                             ' <input type="text" ng-model="someModel" probe="i" name="name" />'
+                             '</form>');
+
+        NgForm formModel = s.context['myForm'];
+        Probe probe = s.context['i'];
+        NgModel inputModel = probe.directive(NgModel);
+        var input = inputModel.element.node;
+
+        inputModel.addError('required');
+        s.apply();
+
+        expect(form).toHaveClass('required-invalid');
+        expect(formModel.hasErrorState('required')).toBe(true);
+
+        expect(input).toHaveClass('required-invalid');
+        expect(inputModel.hasErrorState('required')).toBe(true);
+
+        formModel.clearErrorStates();
+        s.apply();
+
+        expect(form).not.toHaveClass('required-invalid');
+        expect(form).not.toHaveClass('ng-invalid');
+        expect(formModel.hasErrorState('required')).toBe(false);
+
+        expect(input).not.toHaveClass('required-invalid');
+        expect(input).not.toHaveClass('ng-invalid');
+        expect(inputModel.hasErrorState('required')).toBe(false);
+    });
+
+    it("should clear all errors from the fieldset and properly update the parent form\'s errors", (TestBed _) {
+        Scope s = _.rootScope;
+        s.context['name'] = 'cool';
+
+        var form = _.compile('<form name="myForm">'
+                             ' <input type="text" ng-model="anotherModel" probe="x" />' +
+                             ' <fieldset probe="f">' +
+                             '   <input type="text" ng-model="someModel" probe="i" name="name" />'
+                             ' </fieldset>' +
+                             '</form>');
+
+        NgForm formModel = s.context['myForm'];
+        NgModel inputModel = s.context['i'].directive(NgModel);
+        var input = inputModel.element.node;
+
+        NgModel anotherModel = s.context['x'].directive(NgModel);
+        var anotherInput = anotherModel.element.node;
+
+        NgForm fieldsetModel = s.context['f'].directive(NgForm);
+        var fieldset = fieldsetModel.element.node;
+
+        inputModel.addError("required");
+        anotherModel.addError("required");
+        s.apply();
+
+        expect(form).toHaveClass('required-invalid');
+        expect(formModel.hasErrorState('required')).toBe(true);
+        expect(fieldset).toHaveClass('required-invalid');
+        expect(fieldsetModel.hasErrorState('required')).toBe(true);
+
+        expect(input).toHaveClass('required-invalid');
+        expect(inputModel.hasErrorState('required')).toBe(true);
+        expect(anotherInput).toHaveClass('required-invalid');
+        expect(anotherModel.hasErrorState('required')).toBe(true);
+
+        fieldsetModel.clearErrorStates();
+        s.apply();
+
+        expect(form).toHaveClass('required-invalid');
+        expect(anotherInput).toHaveClass('required-invalid');
+
+        expect(fieldset).not.toHaveClass('required-invalid');
+        expect(input).not.toHaveClass('required-invalid');
+
+        expect(fieldset).not.toHaveClass('ng-invalid');
+        expect(form).toHaveClass('ng-invalid');
+
+        expect(fieldsetModel.hasErrorState('required')).toBe(false);
+        expect(inputModel.hasErrorState('required')).toBe(false);
+        expect(anotherModel.hasErrorState('required')).toBe(true);
+        expect(formModel.hasErrorState('required')).toBe(true);
+
+        anotherModel.removeError("required");
+        s.apply();
+
+        expect(formModel.hasErrorState('required')).toBe(false);
+        expect(form).not.toHaveClass('required-invalid');
+    });
+
     describe('regression tests: form', () {
       beforeEachModule((Module module) {
         module.bind(NgForm);

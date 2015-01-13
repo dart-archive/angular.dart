@@ -187,6 +187,26 @@ abstract class NgControl implements AttachAware, DetachAware {
   }
 
   /**
+   * Removes all of the errors on the control and on any child controls and then sets the control to valid.
+   */
+  void clearErrorStates() {
+    errorStates.forEach((errorName, state) {
+      element..removeClass(errorName + '-invalid')
+             ..removeClass(errorName + '-valid');
+
+      _parentControl.removeErrorState(this, errorName);
+    });
+
+    errorStates.clear();
+
+    removeInfoState(this, NG_INVALID);
+
+    _controls.forEach((control) {
+      control.clearErrorStates();
+    });
+  }
+
+  /**
    * Whether or not the control contains the given error.
    *
    * * [errorName] - The name of the error (e.g. ng-required, ng-pattern, etc...)
@@ -313,6 +333,7 @@ class NgNullControl implements NgControl {
   get parentControl => null;
 
   String _getOppositeInfoState(String state) => null;
+  void clearErrorStates() {}
   void addErrorState(NgControl control, String state) {}
   void removeErrorState(NgControl control, String state) {}
   void addInfoState(NgControl control, String state) {}
