@@ -26,7 +26,7 @@ class TranscludingComponentFactory implements ComponentFactory {
       new BoundTranscludingComponentFactory(this, ref, directives, injector);
 }
 
-RegExp _unsafeAttributeCharacters = new RegExp(r'[^a-zA-Z:.\-_]');
+RegExp _unsafeAttributeCharacters = new RegExp(r'[^a-zA-Z1-9:.\-_]');
 
 class BoundTranscludingComponentFactory implements BoundComponentFactory {
   final TranscludingComponentFactory _f;
