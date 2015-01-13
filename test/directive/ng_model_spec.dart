@@ -1583,6 +1583,39 @@ void main() {
         expect(model.viewValue).toEqual('iee');
         expect(model.modelValue).toEqual('hi there');
       });
+
+      it('should always provide the parser input as a string for string-based inputs', (Scope scope) {
+        _.compile('<input type="text" ng-model="model" probe="i">');
+        scope.apply();
+
+        var probe = scope.context['i'];
+        var input = probe.element;
+        var model = probe.directive(NgModel);
+
+        model.converter = new StringAssertConverter();
+        model.viewValue = new Date();
+        _.rootScope.apply();
+
+        expect(model.converter.isParsedString).toBe(true);
+      });
+
+      it('should always render the initial value as a string for string-based inputs', (Scope scope) {
+        scope.context['model'] = new Date();
+
+        _.compile('<input type="text" ng-model="model" probe="i">');
+        scope.apply();
+
+        var probe = scope.context['i'];
+        var input = probe.element;
+        var model = probe.directive(NgModel);
+
+        model.converter = new StringAssertConverter();
+        _.rootScope.apply();
+
+        model.reset();
+        _.rootScope.apply();
+        expect(model.converter.isParsedString).toBe(true);
+      });
     });
   });
 }
@@ -1591,6 +1624,17 @@ void main() {
     selector: 'no-love',
     template: '<input type="text" ng-model="love">')
 class ComponentWithNoLove {
+}
+
+class StringAssertConverter implements NgModelConverter {
+  final name = 'stringAssert';
+  bool isParsedString = false;
+
+  format(value) => value;
+  parse(value) {
+    isParsedString = !!(value is String);
+    return value;
+  }
 }
 
 class LowercaseValueParser implements NgModelConverter {

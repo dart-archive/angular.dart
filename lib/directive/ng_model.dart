@@ -40,6 +40,8 @@ class NgModel extends NgControl implements AttachAware {
   Watch _watch;
   bool _watchCollection;
 
+  bool stringBasedInput = false;
+
   NgModel(this._scope, NgElement element, DirectiveInjector injector, NodeAttrs attrs,
           Animate animate, ElementProbe probe)
       : super(element, injector, animate)
@@ -196,6 +198,12 @@ class NgModel extends NgControl implements AttachAware {
 
   get viewValue => _viewValue;
   void set viewValue(value) {
+    if (stringBasedInput && value != null) {
+      // string-based input types will always deal with string-based values.
+      // Therefore there is no reason to allow other types to be set
+      // as the view value
+      value = value.toString();
+    }
     _viewValue = value;
     modelValue = value;
   }
@@ -203,6 +211,9 @@ class NgModel extends NgControl implements AttachAware {
   get modelValue => _modelValue;
   void set modelValue(value) {
     try {
+      if (stringBasedInput && value != null) {
+        value = value.toString();
+      }
       value = converter.parse(value);
     } catch(e) {
       value = null;
@@ -364,6 +375,7 @@ class InputTextLike {
   }
 
   InputTextLike(this.inputElement, this.ngModel, this.scope, this.ngModelOptions) {
+    ngModel.stringBasedInput = true;
     ngModel.render = (value) {
       scope.rootScope.domWrite(() {
         if (value == null) value = '';
@@ -824,7 +836,9 @@ class InputRadio {
 @Decorator(selector: '[contenteditable][ng-model]')
 class ContentEditable extends InputTextLike {
   ContentEditable(dom.Element inputElement, NgModel ngModel, Scope scope, NgModelOptions modelOptions)
-      : super(inputElement, ngModel, scope, modelOptions);
+      : super(inputElement, ngModel, scope, modelOptions) {
+    ngModel.stringBasedInput = true;
+  }
 
   // The implementation is identical to InputTextLike but use innerHtml instead of value
   String get typedValue => (inputElement as dynamic).innerHtml;
