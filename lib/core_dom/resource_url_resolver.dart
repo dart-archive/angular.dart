@@ -39,6 +39,14 @@ class ResourceUrlResolver {
   static final NodeTreeSanitizer _nullTreeSanitizer = new _NullTreeSanitizer();
   static final docForParsing = document.implementation.createHtmlDocument('');
 
+  static String _getBaseUri() {
+    if (Uri.base.authority.isEmpty) {
+      throw "Uri.base.authority is Empty";
+    } else {
+      return "${Uri.base.scheme}://${Uri.base.authority}" + ('/');
+    }
+  }
+
   static Element _parseHtmlString(String html) {
     var div = docForParsing.createElement('div');
     div.setInnerHtml(html, treeSanitizer: _nullTreeSanitizer);
