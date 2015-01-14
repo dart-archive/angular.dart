@@ -2,8 +2,8 @@ library css_shim;
 
 import 'package:angular/core/parser/characters.dart';
 
-String shimCssText(String css, String tag) =>
-    new _CssShim(tag).shimCssText(css);
+String shimCssText(String css, String tag, String attribute) =>
+    new _CssShim(tag, attribute).shimCssText(css);
 
 
 /**
@@ -88,8 +88,8 @@ class _CssShim {
   final String tag;
   final String attr;
 
-  _CssShim(String tag)
-      : tag = tag, attr = "[$tag]";
+  _CssShim(this.tag, String attribute)
+      :attr = "[$attribute]";
 
   String shimCssText(String css) {
     final preprocessed = convertColonHost(css);
