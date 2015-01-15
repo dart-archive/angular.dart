@@ -1,3 +1,56 @@
+<a name="v1.1"></a>
+# v1.1.0 isomorphic-panda (2015-01-15)
+
+## Highlights
+
+This is primarily a bug fix release. Angular.dart's dependencies have been
+updated to their newest versions. A number of fixes went into the shadow-dom polyfill
+and forms. Support for Observable objects in change detection has been improved.
+
+## Bug Fixes
+
+- **RootScope:** set the scope on ScopeAware root context
+  ([99a2d372](https://github.com/angular/angular.dart/commit/99a2d372b53adf62a4ceed0b044bfbf0ffb5c230))
+- **benchmark:** Platform.Android -> Platform.isAndroid
+  ([ee5ebd75](https://github.com/angular/angular.dart/commit/ee5ebd75a222018950abf7973b3b6c25216a0059))
+- **bouncing balls:** fix broken demo
+  ([3eac327e](https://github.com/angular/angular.dart/commit/3eac327e1e9b0580a69fea1a67be0cd72f646310))
+- **compiler:** change compiler to support attribute mapping for template decorators
+  ([d658909a](https://github.com/angular/angular.dart/commit/d658909afdcedaf58c5ef480faf533f436364bbf),
+   [#1581](https://github.com/angular/angular.dart/issues/1581))
+- **css_shim:** allow "..." for content
+  ([9a369e3d](https://github.com/angular/angular.dart/commit/9a369e3dd78f2b936877312f91a95d2e78772abb))
+- **ngModel:** ensure post-reset validation works properly
+  ([6bf7eaab](https://github.com/angular/angular.dart/commit/6bf7eaabd27d024252f916aa320445bf8997edaf),
+   [#1605](https://github.com/angular/angular.dart/issues/1605))
+- **source_metadata_extractor:** Fixed problem with processing Component and Decorator annotations when named import is used.
+  ([5205c142](https://github.com/angular/angular.dart/commit/5205c142a2b7414db970bfb9ab0504d76d24a5e3))
+- **url_resolver:** changes _baseUri to support non http schemes.
+  ([d9291093](https://github.com/angular/angular.dart/commit/d929109333fe2370f5156df2204177ce37aa5bc0))
+- **view:** change ViewPort to remove the view that got inserted in the same VM turn
+  ([4933a5e8](https://github.com/angular/angular.dart/commit/4933a5e838edeffde5f026121fefbda1c7954148))
+
+
+## Features
+
+- **css_shim:** implement polyfill-unscoped-next-selector and polyfill-non-strict
+  ([a3ff5cfb](https://github.com/angular/angular.dart/commit/a3ff5cfb49116da533cadd1bcae9f122c53fa8db))
+- **dccd:** Observable support
+  ([3827f424](https://github.com/angular/angular.dart/commit/3827f4240366e161534a6a693cb822f5caa447b2))
+- **ng-repeat:** set the "$parent" variable to the parent context
+  ([9da6d2ef](https://github.com/angular/angular.dart/commit/9da6d2efa36b0560f4fa78f4cb2c5d0a430c1f6d))
+- **ngControl:** provide support for clearing errors states
+  ([6a6e4caf](https://github.com/angular/angular.dart/commit/6a6e4cafefe988ec18d29d3584ae3fd0c4a47ce1))
+- **ngForm:** allow forms to be manually validated
+  ([7a103901](https://github.com/angular/angular.dart/commit/7a1039016bf9bcf5b0b654cee346c4b2792e85c7))
+- **routing:** upgraded route_hierachical to 0.6.0 and added support for watchQueryParameters
+  ([0fbd007e](https://github.com/angular/angular.dart/commit/0fbd007e0910fe421a9dc8b84da2ea92b2c7b768))
+
+
+## Breaking Changes
+
+None
+
 <a name="v1.0"></a>
 # v1.0 industrious-pangolin (2014-10-10)
 ## Highlights
