@@ -84,8 +84,7 @@ class ExpressionGenerator extends Transformer with ResolverTransformer {
         .toList();
 
     // Get all of the contents of templates in @Component(templateUrl:'...')
-    gatherReferencedUris(transform, resolver, options,
-        templatesOnly: true).then((templates) {
+    gatherReferencedUris(transform, resolver, options).then((templates) {
       templates.values.forEach(controller.add);
     }).then((_) {
       // Add any HTML files referencing this Dart file.
