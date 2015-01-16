@@ -92,6 +92,33 @@ main() {
           symbols: []);
     });
 
+    it('should follow template cache uris', () {
+      return generates(phases,
+          inputs: {
+            'a|web/main.dart': '''
+                import 'package:angular/angular.dart';
+                import 'package:angular/cacheAnnotation.dart';
+
+                @NgTemplateCache(
+                    preCacheUrls: ['lib/foo.html', 'packages/b/bar.html'])
+                class FooClass {}
+
+                main() {}
+                ''',
+            'a|lib/foo.html': '''
+                <div>{{template.contents}}</div>''',
+            'b|lib/bar.html': '''
+                <div>{{bar}}</div>''',
+            'a|web/index.html': '''
+                <script src='main.dart' type='application/dart'></script>''',
+            'angular|lib/angular.dart': libAngular,
+            'angular|lib/cacheAnnotation.dart': libCacheAnnotation,
+          },
+          getters: ['template', 'contents', 'bar'],
+          setters: ['template', 'contents', 'bar'],
+          symbols: []);
+    });
+
     it('should generate expressions for variables found in superclass', () {
       return generates(phases,
       inputs: {
@@ -246,5 +273,13 @@ class Component {
 class NgAttr {
   final _mappingSpec = '@';
   const NgAttr(String attrName);
+}
+''';
+
+const String libCacheAnnotation = '''
+library angular.template_cache_annotation;
+
+class NgTemplateCache {
+  const NgTemplateCache({List preCacheUrls, bool cache});
 }
 ''';
