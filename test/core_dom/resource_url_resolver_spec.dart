@@ -195,18 +195,18 @@ _run_resolver({useRelativeUrls}) {
 
     testBothSchemes(
         urlToResolve:             'package:a.b/c/d/foo2.html',
-        expectedForPackageScheme: 'packages/a.b/c/d/foo2.html',
-        expectedForHttpScheme:    'packages/a.b/c/d/foo2.html');
+        expectedForPackageScheme: '/packages/a.b/c/d/foo2.html',
+        expectedForHttpScheme:    '/packages/a.b/c/d/foo2.html');
 
     testBothSchemes(
         urlToResolve:             'image.png',
-        expectedForPackageScheme: 'packages/angular/test/core_dom/image.png',
-        expectedForHttpScheme:    'a/b/image.png');
+        expectedForPackageScheme: '/packages/angular/test/core_dom/image.png',
+        expectedForHttpScheme:    '/a/b/image.png');
 
     testBothSchemes(
         urlToResolve:             './image2.png',
-        expectedForPackageScheme: 'packages/angular/test/core_dom/image2.png',
-        expectedForHttpScheme:    'a/b/image2.png');
+        expectedForPackageScheme: '/packages/angular/test/core_dom/image2.png',
+        expectedForHttpScheme:    '/a/b/image2.png');
 
     testBothSchemes(
         urlToResolve:             '/image3.png',
@@ -225,13 +225,13 @@ _run_resolver({useRelativeUrls}) {
 
     testBothSchemes(
         urlToResolve:             'HTTP://LOCALHOST/a/b/image4.png',
-        expectedForPackageScheme: 'a/b/image4.png',
-        expectedForHttpScheme:    'a/b/image4.png');
+        expectedForPackageScheme: '/a/b/image4.png',
+        expectedForHttpScheme:    '/a/b/image4.png');
 
     testBothSchemes(
         urlToResolve:             'HTTP://LOCALHOST/packages/angular/test/core_dom/foo3.html',
-        expectedForPackageScheme: 'packages/angular/test/core_dom/foo3.html',
-        expectedForHttpScheme:    'packages/angular/test/core_dom/foo3.html');
+        expectedForPackageScheme: '/packages/angular/test/core_dom/foo3.html',
+        expectedForHttpScheme:    '/packages/angular/test/core_dom/foo3.html');
 
   });
 }
