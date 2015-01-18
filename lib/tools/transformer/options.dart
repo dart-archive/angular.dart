@@ -27,14 +27,19 @@ class TransformOptions {
    */
   final di.TransformOptions diOptions;
 
+  /// Option to generate the template cache.
+  final bool generateTemplateCache;
+
   TransformOptions({String sdkDirectory, List<String> htmlFiles,
       Map<String, String> templateUriRewrites,
-      di.TransformOptions diOptions}) :
+      di.TransformOptions diOptions, bool generateTemplateCache}) :
       sdkDirectory = sdkDirectory,
       htmlFiles = htmlFiles != null ? htmlFiles : [],
       templateUriRewrites = templateUriRewrites != null ?
           templateUriRewrites : {},
-      diOptions = diOptions {
+      diOptions = diOptions,
+      generateTemplateCache = generateTemplateCache != null ?
+          generateTemplateCache : false {
     if (sdkDirectory == null)
       throw new ArgumentError('sdkDirectory must be provided.');
   }
