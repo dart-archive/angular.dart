@@ -48,7 +48,7 @@ e(String html) => es(html).first;
 // this file, _specs.dart, is at path /base/test/_specs.dart.  However, if
 // you're using a different test server or reconfigured the base prefix, then
 // you can set this to something different.
-String TEST_SERVER_BASE_PREFIX = "base/";
+String TEST_SERVER_BASE_PREFIX = "/base/";
 
 Expect expect(actual, [matcher]) {
   final expect = new Expect(actual);
