@@ -68,7 +68,7 @@ main() {
                 import 'package:angular/angular.dart';
 
                 @Component(
-                    templateUrl: 'lib/foo.html',
+                    templateUrl: 'foo.html',
                     selector: 'my-component')
                 class FooComponent {}
 
@@ -79,7 +79,7 @@ main() {
 
                 main() {}
                 ''',
-            'a|lib/foo.html': '''
+            'a|web/foo.html': '''
                 <div>{{template.contents}}</div>''',
             'b|lib/bar.html': '''
                 <div>{{bar}}</div>''',
@@ -99,7 +99,7 @@ main() {
                 import 'package:angular/angular.dart';
 
                 @Component(
-                    templateUrl: 'lib/foo.html',
+                    templateUrl: 'foo.html',
                     selector: 'my-component')
                 class FooComponent extends BarComponent {
                   @NgAttr('foo')
@@ -113,7 +113,7 @@ main() {
 
                 main() {}
                 ''',
-          'a|lib/foo.html': '''
+          'a|web/foo.html': '''
                 <div>{{template.foo}}</div>
                 <div>{{template.bar}}</div>''',
           'a|web/index.html': '''
