@@ -6,6 +6,7 @@ import 'package:angular/tools/transformer/expression_generator.dart';
 import 'package:angular/tools/transformer/metadata_generator.dart';
 import 'package:angular/tools/transformer/static_angular_generator.dart';
 import 'package:angular/tools/transformer/html_dart_references_generator.dart';
+import 'package:angular/tools/transformer/template_cache_generator.dart';
 import 'package:angular/tools/transformer/type_relative_uri_generator.dart';
 import 'package:angular/tools/transformer/options.dart';
 import 'package:barback/barback.dart';
@@ -59,7 +60,25 @@ TransformOptions _parseSettings(Map args) {
       htmlFiles: _readStringListValue(args, 'html_files'),
       sdkDirectory: sdkDir,
       templateUriRewrites: _readStringMapValue(args, 'template_uri_rewrites'),
-      diOptions: diOptions);
+      diOptions: diOptions,
+      generateTemplateCache: _readBoolValue(args, 'generate_template_cache'));
+}
+
+_readBoolValue(Map args, String name, {bool required: true}) {
+  var value = args[name];
+  if (value == null) {
+    if (required) {
+      print('Angular transformer parameter "$name" '
+          'has no value in pubspec.yaml.');
+    }
+    return null;
+  }
+  if (value is! bool) {
+    print('Angular transformer parameter "$name" value '
+        'is not a bool in pubspec.yaml.');
+    return null;
+  }
+  return value;
 }
 
 _readStringValue(Map args, String name, {bool required: true}) {
@@ -123,6 +142,7 @@ Transformer _staticGenerator(TransformOptions options) {
       new TypeRelativeUriGenerator(options, resolvers),
       new ExpressionGenerator(options, resolvers),
       new MetadataGenerator(options, resolvers),
+      new TemplateCacheGenerator(options, resolvers),
       new StaticAngularGenerator(options, resolvers)
   ]);
 }
