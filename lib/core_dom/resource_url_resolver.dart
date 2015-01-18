@@ -160,13 +160,11 @@ class ResourceUrlResolver {
     // If it's not absolute, then resolve it first
     Uri resolved = baseUri.resolve(uri);
 
-    // If it's package-relative, tack on 'packages/' - Note that eventually
-    // we may want to change this to be '/packages/' to make it truly absolute
+    // If it's package-relative, tack on '/packages/'
     if (resolved.scheme == 'package') {
-      return 'packages/${resolved.path}';
+      return '/packages/${resolved.path}';
     } else if (resolved.isAbsolute && resolved.toString().startsWith(_baseUri)) {
-      var path = resolved.path;
-      return path.startsWith("/") ? path.substring(1) : path;
+      return resolved.path;
     } else {
       return resolved.toString();
     }

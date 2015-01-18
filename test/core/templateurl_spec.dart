@@ -85,7 +85,7 @@ void shadowDomAndTranscluding(name, fn) {
 _run({resolveUrls, staticMode}) {
   var prefix;
   if (!resolveUrls) prefix = "";
-  else if (staticMode) prefix = "packages/test.angular.core_dom/";
+  else if (staticMode) prefix = "/packages/test.angular.core_dom/";
   else prefix = TEST_SERVER_BASE_PREFIX + "test/core/";
 
   describe('template url resolveUrls=${resolveUrls}, mode=${staticMode ? 'static' : 'dynamic'}', () {
