@@ -68,7 +68,7 @@ main() {
                 import 'package:angular/angular.dart';
 
                 @Component(
-                    templateUrl: 'lib/foo.html',
+                    templateUrl: 'foo.html',
                     selector: 'my-component')
                 class FooComponent {}
 
@@ -79,7 +79,7 @@ main() {
 
                 main() {}
                 ''',
-            'a|lib/foo.html': '''
+            'a|web/foo.html': '''
                 <div>{{template.contents}}</div>''',
             'b|lib/bar.html': '''
                 <div>{{bar}}</div>''',
@@ -119,6 +119,33 @@ main() {
           symbols: []);
     });
 
+    it('should respect relative URLs', () {
+      return generates(phases,
+          inputs: {
+            'a|web/main.dart': '''
+                import 'package:b/bar.dart';
+
+                main() {}
+                ''',
+            'b|lib/bar.dart': '''
+                import 'package:angular/angular.dart';
+
+                @Component(
+                    templateUrl: 'bar.html',
+                    selector: 'my-component')
+                class BarComponent {}
+                ''',
+            'b|lib/bar.html': '''
+                <div>{{bar}}</div>''',
+            'a|web/index.html': '''
+                <script src='main.dart' type='application/dart'></script>''',
+            'angular|lib/angular.dart': libAngular,
+          },
+          getters: ['bar'],
+          setters: ['bar'],
+      symbols: []);
+    });
+
     it('should generate expressions for variables found in superclass', () {
       return generates(phases,
       inputs: {
@@ -126,7 +153,7 @@ main() {
                 import 'package:angular/angular.dart';
 
                 @Component(
-                    templateUrl: 'lib/foo.html',
+                    templateUrl: 'foo.html',
                     selector: 'my-component')
                 class FooComponent extends BarComponent {
                   @NgAttr('foo')
@@ -140,7 +167,7 @@ main() {
 
                 main() {}
                 ''',
-          'a|lib/foo.html': '''
+          'a|web/foo.html': '''
                 <div>{{template.foo}}</div>
                 <div>{{template.bar}}</div>''',
           'a|web/index.html': '''

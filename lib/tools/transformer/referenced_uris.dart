@@ -4,6 +4,7 @@ import 'dart:async';
 
 import 'package:analyzer/src/generated/ast.dart';
 import 'package:analyzer/src/generated/element.dart';
+import 'package:angular/tools/transformer/transformer_resource_url_resolver.dart';
 import 'package:angular/tools/transformer/options.dart';
 import 'package:barback/barback.dart';
 import 'package:code_transformers/resolver.dart';
@@ -15,8 +16,10 @@ import 'package:path/path.dart' as path;
 Future<Map<String, String>> gatherReferencedUris(Transform transform,
     Resolver resolver, TransformOptions options,
     {bool skipNonCached: false, bool templatesOnly: false}) {
+  var urlResolver =
+      new TransformerResourceUrlResolver(resolver, transform.primaryInput.id);
   return new _Processor(transform, resolver, options, skipNonCached,
-      templatesOnly).process();
+      templatesOnly, urlResolver).process();
 }
 
 class _Processor {
@@ -26,6 +29,7 @@ class _Processor {
   final Map<RegExp, String> templateUriRewrites = <RegExp, String>{};
   final bool skipNonCached;
   final bool templatesOnly;
+  final TransformerResourceUrlResolver urlResolver;
 
   ConstructorElement cacheAnnotation;
   ConstructorElement componentAnnotation;
@@ -35,7 +39,7 @@ class _Processor {
   static const String componentAnnotationName = 'angular.core.annotation_src.Component';
 
   _Processor(this.transform, this.resolver, this.options, this.skipNonCached,
-      this.templatesOnly) {
+      this.templatesOnly, this.urlResolver) {
     for (var key in options.templateUriRewrites.keys) {
       templateUriRewrites[new RegExp(key)] = options.templateUriRewrites[key];
     }
@@ -199,6 +203,7 @@ class _Processor {
 
   _CacheEntry uriToEntry(String uri, Element reference) {
     uri = rewriteUri(uri);
+    uri = urlResolver.combineWithElement(reference, uri);
     if (Uri.parse(uri).scheme != '') {
       warn('Cannot cache non-local URIs. $uri', reference);
       return null;
@@ -212,7 +217,10 @@ class _Processor {
       warn('Cannot cache non-package absolute URIs. $uri', reference);
       return null;
     }
-    var assetId = new AssetId(transform.primaryInput.id.package, uri);
+    // Everything else is a resource in the web directory according to pub;
+    // as all packages URIs were handled above. As specified in this
+    // [Barback Doc](http://goo.gl/YDMRc2)
+    var assetId = new AssetId(transform.primaryInput.id.package, 'web/$uri');
     return new _CacheEntry(uri, reference, assetId);
   }
 
