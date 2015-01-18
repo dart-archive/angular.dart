@@ -4,6 +4,7 @@ import 'dart:async';
 import 'package:analyzer/src/generated/ast.dart';
 import 'package:analyzer/src/generated/element.dart';
 import 'package:angular/tools/transformer/options.dart';
+import 'package:angular/tools/transformer/transformer_resource_url_resolver.dart';
 import 'package:barback/barback.dart';
 import 'package:code_transformers/resolver.dart';
 import 'package:path/path.dart' as path;
@@ -36,6 +37,7 @@ class TypeRelativeUriGenerator extends Transformer with ResolverTransformer {
       transform.logger.warning('Unable to resolve $componentAnnotationName.');
     }
 
+    var urlResolver = new TransformerResourceUrlResolver(resolver, id);
     var annotatedTypes = resolver.libraries
         .expand((lib) => lib.units)
         .expand((unit) => unit.types)
@@ -69,28 +71,7 @@ class TypeRelativeUriGenerator extends Transformer with ResolverTransformer {
     for (var type in annotatedTypes) {
       outputBuffer.write('  ${importPrefixes[type.library]}${type.name}: ');
 
-      var uri = resolver.getImportUri(type.library,
-                                      from: transform.primaryInput.id);
-
-      var acceptable = (
-          (uri.isAbsolute && uri.scheme == "package") ||
-          (uri.toString() == uri.path));
-      if (!acceptable) {
-        var errMsg = 'ERROR: $runtimeType: Type "$type" has unsupported URI $uri';
-        transform.logger.error(errMsg);
-        throw errMsg;
-      }
-      if (uri.scheme != "package") {
-        // this is guaranteed to be a relative URL (e.g. type defined in a path
-        // imported file)
-        var path = transform.primaryInput.id.path;
-        if (!path.startsWith("web/")) {
-          var errMsg = 'ERROR: $runtimeType: Type "$type" is imported as a path not under web.';
-          transform.logger.error(errMsg);
-          throw errMsg;
-        }
-        uri = Uri.parse(path.substring("web/".length)).resolve(uri.path);
-      }
+      var uri = urlResolver.findUriOfElement(type);
       outputBuffer.write("Uri.parse(r'''$uri'''),\n");
     }
     _writeFooter(outputBuffer);
