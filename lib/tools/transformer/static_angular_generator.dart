@@ -39,7 +39,8 @@ class StaticAngularGenerator extends Transformer with ResolverTransformer {
       }
     }
 
-    var dynamicToStatic = new _NgDynamicToStaticVisitor(dynamicApp, transaction);
+    var dynamicToStatic = new _NgDynamicToStaticVisitor(
+        dynamicApp, transaction, options.generateTemplateCache);
     unit.accept(dynamicToStatic);
 
     var generatedFilePrefix = '${path.url.basenameWithoutExtension(id.path)}';
@@ -53,6 +54,11 @@ class StaticAngularGenerator extends Transformer with ResolverTransformer {
     _addImport(transaction, unit,
         '${generatedFilePrefix}_static_type_to_uri_mapper.dart',
         'generated_static_type_to_uri_mapper');
+    if (options.generateTemplateCache) {
+      _addImport(transaction, unit,
+          '${generatedFilePrefix}_generated_template_cache.dart',
+          'generated_template_cache');
+    }
 
     var printer = transaction.commit();
     var url = id.path.startsWith('lib/')
@@ -72,7 +78,9 @@ void _addImport(TextEditTransaction transaction, CompilationUnit unit,
 class _NgDynamicToStaticVisitor extends GeneralizingAstVisitor {
   final Element ngDynamicFn;
   final TextEditTransaction transaction;
-  _NgDynamicToStaticVisitor(this.ngDynamicFn, this.transaction);
+  final bool generateTemplateCache;
+  _NgDynamicToStaticVisitor(this.ngDynamicFn, this.transaction,
+      this.generateTemplateCache);
 
   visitMethodInvocation(MethodInvocation m) {
     if (m.methodName.bestElement == ngDynamicFn) {
@@ -90,6 +98,12 @@ class _NgDynamicToStaticVisitor extends GeneralizingAstVisitor {
            'generated_static_type_to_uri_mapper.typeToUriMapper'
           ].join(', ')
         );
+      if (generateTemplateCache) {
+        transaction.edit(
+            m.end,
+            m.end,
+            '..addModule(generated_template_cache.templateCacheModule)');
+      }
     }
     super.visitMethodInvocation(m);
   }
