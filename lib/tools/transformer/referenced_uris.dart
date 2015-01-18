@@ -212,7 +212,10 @@ class _Processor {
       warn('Cannot cache non-package absolute URIs. $uri', reference);
       return null;
     }
-    var assetId = new AssetId(transform.primaryInput.id.package, uri);
+    // Everything else is a resource in the web directory according to pub;
+    // as all packages URIs were handled above. As specified in this
+    // [Barback Doc](http://goo.gl/YDMRc2)
+    var assetId = new AssetId(transform.primaryInput.id.package, 'web/$uri');
     return new _CacheEntry(uri, reference, assetId);
   }
 
