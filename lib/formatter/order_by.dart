@@ -139,7 +139,13 @@ class OrderBy implements Function {
   static _nop(e) => e;
   static bool _isNonZero(int n) => (n != 0);
   static int _returnZero() => 0;
-  static int _defaultComparator(a, b) => Comparable.compare(a, b);
+  static int _defaultComparator(a, b) {
+    if (a == null && b == null) return 0;
+    if (a == null) return -1;
+    if (b == null) return 1;
+
+    return Comparable.compare(a, b);
+  }
   static int _reverseComparator(a, b) => _defaultComparator(b, a);
 
   static int _compareLists(List a, List b, List<Comparator> comparators) {
