@@ -201,4 +201,45 @@ main() {
     });
 
   });
+
+  describe('null safe orderBy formatter', () {
+    var Emily___Bronte = new Name(firstName: 'Emily', lastName: 'Bronte'),
+        Mark____Twain = {'firstName': 'Mark',    'lastName': 'Twain'},
+        Jeffrey_Archer = {'firstName': 'Jeffrey', 'lastName': 'Archer'},
+        Isaac___Asimov = new Name(firstName: 'Isaac', lastName: 'Asimov'),
+        Oscar___Wilde = {'firstName': 'Oscar',   'lastName': 'Wilde'},
+        Oscar___Null = {'firstName': 'Oscar',   'lastName': null};
+    beforeEach((Scope scope, Parser parse, FormatterMap formatters) {
+      scope.context['authors'] = [
+          Emily___Bronte,
+          Mark____Twain,
+          Jeffrey_Archer,
+          Isaac___Asimov,
+          Oscar___Wilde,
+          Oscar___Null
+      ];
+    });
+    it('should allow null values',
+        (Scope scope, Parser parse, FormatterMap formatters) {
+          expect(parse('authors | orderBy:"lastName"').eval(scope.context, formatters)).toEqual([
+              Oscar___Null,
+              Jeffrey_Archer,
+              Isaac___Asimov,
+              Emily___Bronte,
+              Mark____Twain,
+              Oscar___Wilde,
+          ]);
+    });
+    it('should allow null values in reverse order',
+        (Scope scope, Parser parse, FormatterMap formatters) {
+      expect(parse('authors | orderBy:"-lastName"').eval(scope.context, formatters)).toEqual([
+          Oscar___Wilde,
+          Mark____Twain,
+          Emily___Bronte,
+          Isaac___Asimov,
+          Jeffrey_Archer,
+          Oscar___Null,
+      ]);
+    });
+  });
 }
