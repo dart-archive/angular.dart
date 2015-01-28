@@ -622,10 +622,18 @@ class DirtyCheckingRecord<H> implements WatchRecord<H> {
     }
 
     var last = currentValue;
-    if (!_looseIdentical(last, current)) {
-      previousValue = currentValue;
-      currentValue = current;
-      return true;
+    if (!identical(last, current)) {
+      if (last is String && current is String && last == current) {
+        // This is false change in strings we need to recover, and pretend it
+        // is the same. We save the value so that next time identity will pass
+        currentValue = current;
+      } else if (last is num && last.isNaN && current is num && current.isNaN) {
+        // we need this for the compiled JavaScript since in JS NaN !== NaN.
+      } else {
+        previousValue = last;
+        currentValue = current;
+        return true;
+      }
     }
     return false;
   }
@@ -1538,12 +1546,8 @@ class DuplicateMap {
 bool _looseIdentical(dst, src) {
   if (identical(dst, src)) return true;
 
-  if (dst is String && src is String && dst == src) {
-    // this is false change in strings we need to recover, and pretend it is the same. We save the
-    // value so that next time identity can pass
-    dst = src;
-    return true;
-  }
+  // Dart could have string1 == string2 without identical(string1, string2)
+  if (dst is String && src is String && dst == src) return true;
 
   //  we need this for JavaScript since in JS NaN !== NaN.
   if (dst is num && (dst as num).isNaN && src is num && (src as num).isNaN) return true;
