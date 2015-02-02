@@ -100,7 +100,7 @@ main() {
                 import 'package:angular/cacheAnnotation.dart';
 
                 @NgTemplateCache(
-                    preCacheUrls: ['lib/foo.html', 'packages/b/bar.html'])
+                    preCacheUrls: ['packages/a/foo.html', 'packages/b/bar.html'])
                 class FooClass {}
 
                 main() {}
