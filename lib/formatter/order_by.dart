@@ -170,7 +170,8 @@ class OrderBy implements Function {
     if (items == null) return null;
     if (items is! List) items = items.toList();
     List expressions = null;
-    if (expression is String || expression is _Mapper) {
+    if (expression is String ||
+        (expression is Function && smoke.canAcceptNArgs(expression, 1))) {
       expressions = [expression];
     } else if (expression is List) {
       expressions = expression as List;
@@ -200,7 +201,8 @@ class OrderBy implements Function {
           Expression parsed = _parser(strExp);
           mappers[i] = (e) => parsed.eval(e);
         }
-      } else if (expression is _Mapper) {
+      } else if (expression is Function &&
+          smoke.canAcceptNArgs(expression, 1)) {
         mappers[i] = (expression as _Mapper);
         comparators[i] = _defaultComparator;
       }

@@ -228,7 +228,7 @@ class _MultipleSelectionMode extends _SelectMode {
     model.viewValue = selected;
   }
 
-  void onModelChange(List selectedValues) {
+  void onModelChange(selectedValues) {
     Function fn = (o, _) => o.selected = null;
 
     if (selectedValues is List) {

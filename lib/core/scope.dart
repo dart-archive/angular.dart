@@ -1,8 +1,5 @@
 part of angular.core_internal;
 
-typedef EvalFunction0();
-typedef EvalFunction1(context);
-
 /**
  * Injected into the listener function within [Scope.on] to provide event-specific details to the
  * scope listener.
@@ -293,8 +290,9 @@ class Scope {
     }
 
     assert(locals == null);
-    if (expression is EvalFunction1) return expression(context);
-    if (expression is EvalFunction0) return expression();
+    if (expression is! Function) return null;
+    if (smoke.canAcceptNArgs(expression, 1)) return expression(context);
+    if (smoke.canAcceptNArgs(expression, 0)) return expression();
     return null;
   }
 

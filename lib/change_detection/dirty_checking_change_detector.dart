@@ -376,9 +376,10 @@ class DirtyCheckingChangeDetector<H> extends DirtyCheckingChangeDetectorGroup<H>
 }
 
 class _ChangeIterator<H> implements Iterator<Record<H>>{
-  DirtyCheckingRecord _current;
-  DirtyCheckingRecord _next;
-  DirtyCheckingRecord get current => _current;
+  DirtyCheckingRecord<H> _current;
+  DirtyCheckingRecord<H> _next;
+
+  Record<H> get current => _current;
 
   _ChangeIterator(this._next);
 
@@ -462,14 +463,14 @@ class DirtyCheckingRecord<H> implements WatchRecord<H> {
         _getter = null,
         _mode = _MODE_MARKER_;
 
-  dynamic get object => _object;
+  Object get object => _object;
 
   /**
    * Setting an [object] will cause the setter to introspect it and place
    * [DirtyCheckingRecord] into different access modes. If Object it sets up
    * reflection. If [Map] then it sets up map accessor.
    */
-  void set object(Object object) {
+  set object(object) {
     _group._cancelObservable(this);
     // The watched object can change inside this method, so use _object throughout.
     _object = object;

@@ -1,6 +1,7 @@
 library angular.formatter_internal;
 
 import 'dart:convert' show JSON;
+import 'package:smoke/smoke.dart' as smoke;
 import 'package:intl/intl.dart';
 import 'package:di/di.dart';
 import 'package:angular/core/annotation.dart';

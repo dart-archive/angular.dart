@@ -227,7 +227,7 @@ class VmTurnZone {
   LongStackTrace _longStacktrace = null;
 
   LongStackTrace _getLongStacktrace(name) {
-    var shortStacktrace = 'Long-stacktraces supressed in production.';
+    dynamic shortStacktrace = 'Long-stacktraces supressed in production.';
     assert((shortStacktrace = _getStacktrace()) != null);
     return new LongStackTrace(name, shortStacktrace, _longStacktrace);
   }

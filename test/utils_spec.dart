@@ -28,7 +28,7 @@ main() {
     it('should fail with not enough arguments', () {
       expect(() {
         relaxFnApply((required, alsoRequired) => "happy", [1]);
-      }).toThrowWith(message: 'Unknown function type, expecting 0 to 5 args.');
+      }).toThrowWith(message: 'Function requires 2 args, 1 provided.');
     });
   });
 

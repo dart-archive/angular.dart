@@ -58,7 +58,7 @@ packages:
   observe:
     description: observe
     source: hosted
-    version: "0.12.2"
+    version: "0.12.2+1"
   path:
     description: path
     source: hosted
@@ -82,7 +82,7 @@ packages:
   smoke:
     description: smoke
     source: hosted
-    version: "0.2.1+1"
+    version: "0.3.1"
   source_maps:
     description: source_maps
     source: hosted

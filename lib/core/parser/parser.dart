@@ -130,20 +130,20 @@ class _UnwrapExceptionDecorator extends Expression {
 }
 
 @Injectable()
-class RuntimeParserBackend extends ParserBackend {
+class RuntimeParserBackend extends ParserBackend<Expression> {
   final ClosureMap _closures;
   RuntimeParserBackend(ClosureMap _closures): _closures = new ClosureMapLocalsAware(_closures);
 
   bool isAssignable(Expression expression) => expression.isAssignable;
 
-  Expression newFormatter(expression, name, arguments) {
+  Expression newFormatter(Expression expression, name, arguments) {
     List allArguments = new List(arguments.length + 1);
     allArguments[0] = expression;
     allArguments.setAll(1, arguments);
     return new Formatter(expression, name, arguments, allArguments);
   }
 
-  Expression newChain(expressions) => new Chain(expressions);
+  Expression newChain(List expressions) => new Chain(expressions);
   Expression newAssign(target, value) => new Assign(target, value);
   Expression newConditional(condition, yes, no) =>
       new Conditional(condition, yes, no);

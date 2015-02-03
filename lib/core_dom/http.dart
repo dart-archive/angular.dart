@@ -2,7 +2,7 @@ part of angular.core.dom_internal;
 
 @Injectable()
 class UrlRewriter {
-  String call(url) => url;
+  String call(String url) => url;
 }
 
 /**
@@ -34,11 +34,11 @@ class LocationWrapper {
   get location => dom.window.location;
 }
 
-typedef RequestInterceptor(HttpResponseConfig);
-typedef RequestErrorInterceptor(dynamic);
-typedef Response(HttpResponse);
-typedef ResponseError(dynamic);
-typedef _CompleteResponse(HttpResponse);
+typedef RequestInterceptor(HttpResponseConfig _);
+typedef RequestErrorInterceptor(dynamic _);
+typedef Response(HttpResponse _);
+typedef ResponseError(dynamic _);
+typedef _CompleteResponse(HttpResponse _);
 typedef _RunCoaleced(fn());
 
 _runNow(fn()) => fn();
@@ -72,7 +72,7 @@ class HttpInterceptor {
 * parse them into [Map]s.
 */
 class DefaultTransformDataHttpInterceptor implements HttpInterceptor {
-  Function request = (HttpResponseConfig config) {
+  RequestInterceptor request = (HttpResponseConfig config) {
     if (config.data != null && config.data is! String &&
         config.data is! dom.File) {
       config.data = JSON.encode(config.data);
@@ -83,7 +83,8 @@ class DefaultTransformDataHttpInterceptor implements HttpInterceptor {
   static var _JSON_START = new RegExp(r'^\s*(\[|\{[^\{])');
   static var _JSON_END = new RegExp(r'[\}\]]\s*$');
   static var _PROTECTION_PREFIX = new RegExp('^\\)\\]\\}\',?\\n');
-  Function response = (HttpResponse r) {
+
+  Response response = (HttpResponse r) {
     if (r.data is String) {
       var d = r.data.replaceFirst(_PROTECTION_PREFIX, '');
       if (d.contains(_JSON_START) && d.contains(_JSON_END)) {
@@ -94,7 +95,8 @@ class DefaultTransformDataHttpInterceptor implements HttpInterceptor {
     return r;
   };
 
-  Function requestError, responseError;
+  RequestErrorInterceptor requestError;
+  ResponseError responseError;
 }
 
 /**

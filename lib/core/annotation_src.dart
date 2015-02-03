@@ -337,14 +337,14 @@ class Component extends Directive {
     this.templateUrl,
     cssUrl,
     DirectiveBinderFn module,
-    map,
-    selector,
-    visibility,
-    exportExpressions,
-    exportExpressionAttrs,
+    Map<String, String> map,
+    String selector,
+    Visibility visibility,
+    List<String> exportExpressions,
+    List<String> exportExpressionAttrs,
     this.useShadowDom,
     this.useNgBaseCss: true,
-    updateBoundElementPropertiesOnEvents,
+    List<String> updateBoundElementPropertiesOnEvents,
     this.publishAs
   }) : _cssUrls = cssUrl,
         super(selector: selector,
@@ -392,14 +392,14 @@ class Component extends Directive {
  * * `set scope(Scope scope)` - Called right after construction with the owning scope.
  */
 class Decorator extends Directive {
-  const Decorator({children: Directive.COMPILE_CHILDREN,
-                    map,
-                    selector,
+  const Decorator({String children: Directive.COMPILE_CHILDREN,
+                    Map<String, String> map,
+                    String selector,
                     DirectiveBinderFn module,
-                    visibility,
-                    exportExpressions,
-                    exportExpressionAttrs,
-                    updateBoundElementPropertiesOnEvents})
+                    Visibility visibility,
+                    List<String> exportExpressions,
+                    List<String> exportExpressionAttrs,
+                    List<String> updateBoundElementPropertiesOnEvents})
       : super(selector: selector,
               children: children,
               visibility: visibility,

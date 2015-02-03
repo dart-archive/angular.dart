@@ -233,8 +233,8 @@ class _AnchorAttrs extends NodeAttrs {
   DirectiveRef _directiveRef;
 
   _AnchorAttrs(DirectiveRef directiveRef)
-      : super(directiveRef.element),
-      _directiveRef = directiveRef;
+      : _directiveRef = directiveRef,
+        super(directiveRef.element);
 
   String operator [](name) => name == '.' ? _directiveRef.value : super[name];
 

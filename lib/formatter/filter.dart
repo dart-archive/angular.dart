@@ -125,7 +125,8 @@ class Filter implements Function {
     } else if (comparatorExpression == true) {
       _stringComparator = _identical;
       _comparator = _defaultComparator;
-    } else if (comparatorExpression is _Equals) {
+    } else if (comparatorExpression is Function &&
+        smoke.canAcceptNArgs(comparatorExpression, 2)) {
       _comparator = (a, b) => _ensureBool(comparatorExpression(a, b));
     } else {
       _comparator = null;
@@ -179,7 +180,7 @@ class Filter implements Function {
   }
 
   _Predicate _toPredicate(var expression) {
-    if (expression is _Predicate) {
+    if (expression is Function && smoke.canAcceptNArgs(expression, 1)) {
       return (item) => _ensureBool(expression(item));
     } else if (_comparator == null) {
       return (item) => false; // Bad comparator → no items for you!

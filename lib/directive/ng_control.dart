@@ -315,8 +315,17 @@ abstract class NgControl implements AttachAware, DetachAware {
  * Creates a top-level dummy parent control to hold Form controls that don't have a parent control.
  */
 class NgNullControl implements NgControl {
-  var _name, _dirty, _valid, _submitValid, _pristine, _element, _touched;
-  var _controls, _parentControl, _controlName, _animate, infoStates, errorStates;
+  String _name;
+  var _dirty, _valid;
+  bool _submitValid;
+  var _pristine;
+  NgElement _element;
+  var _touched;
+  var _controls;
+  NgControl _parentControl;
+  var _controlName;
+  Animate _animate;
+  var infoStates, errorStates;
   var errors, _controlByName;
   NgElement element;
 
@@ -339,7 +348,7 @@ class NgNullControl implements NgControl {
   bool get touched => false;
   bool get untouched => true;
 
-  get parentControl => null;
+  NgControl get parentControl => null;
 
   String _getOppositeInfoState(String state) => null;
   void clearErrorStates() {}
