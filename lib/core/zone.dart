@@ -14,6 +14,9 @@ typedef void ZoneOnTurnStart();
 
 typedef void ZoneScheduleMicrotask(fn());
 
+typedef async.Timer ZoneCreateTimer(async.ZoneDelegate delegate,
+    async.Zone zone, Duration duration, fn());
+
 /**
  * Handles a [VmTurnZone] onError event.
  */
@@ -85,6 +88,7 @@ class VmTurnZone {
     onTurnDone = _defaultOnTurnDone;
     onTurnStart = _defaultOnTurnStart;
     onScheduleMicrotask = _defaultOnScheduleMicrotask;
+    onCreateTimer = _defaultOnCreateTimer;
     countPendingAsync = _defaultCountPendingAsync;
   }
 
@@ -134,7 +138,7 @@ class VmTurnZone {
   async.Timer _onCreateTimer(async.Zone self, async.ZoneDelegate delegate, async.Zone zone, Duration duration, fn()) {
     var s = traceEnter(VmTurnZone_createTimer);
     try {
-      return new _WrappedTimer(this, delegate, zone, duration, fn);
+      return onCreateTimer(delegate, zone, duration, fn);
     } finally {
       traceLeave(s);
     }
@@ -223,6 +227,15 @@ class VmTurnZone {
    */
   ZoneScheduleMicrotask onScheduleMicrotask;
   void _defaultOnScheduleMicrotask(fn) => _asyncQueue.add(fn);
+
+  /**
+   * Called any time a timer is created. If you override [onCreateTimer],
+   * you are expected to return a [Timer] which call the function at some point.
+   */
+  ZoneCreateTimer onCreateTimer;
+  async.Timer _defaultOnCreateTimer(async.ZoneDelegate delegate,
+      async.Zone zone, Duration duration, fn())
+      => new _WrappedTimer(this, delegate, zone, duration, fn);
 
   LongStackTrace _longStacktrace = null;
 
