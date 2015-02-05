@@ -303,6 +303,7 @@ void main() {
           ..bind(SimpleAttachComponent)
           ..bind(SimpleComponent)
           ..bind(MultipleContentTagsComponent)
+          ..bind(SelectableContentComponent)
           ..bind(ConditionalContentComponent)
           ..bind(ExprAttrComponent)
           ..bind(LogElementComponent)
@@ -476,6 +477,32 @@ void main() {
           _.rootScope.apply();
 
           expect(element).toHaveText('OUTER(INNER(ABC))');
+        }));
+
+        it("should remove elements that no longer match the selector", async((){
+          var element = _.compile(r'<div>'
+            '<selectable-content-tag>'
+              '<div ng-class="{\'selected\':isSelected}">A</div>'
+              '<div class="selected">B</div>'
+              '<div>C</div>'
+            '</selectable-content-tag>'
+          '</div>');
+          document.body.append(element);
+
+          microLeap();
+          _.rootScope.apply();
+
+          _.rootScope.context["isSelected"] = true;
+          microLeap();
+          _.rootScope.apply();
+
+          expect(element).toHaveText('(AB)');
+
+          _.rootScope.context["isSelected"] = false;
+          microLeap();
+          _.rootScope.apply();
+
+          expect(element).toHaveText('(B)');
         }));
 
         it("should support nesting with content being direct child of a nested component", async((){
@@ -1317,6 +1344,13 @@ class PublishModuleAttrDirective implements PublishModuleDirectiveSuperType {
     template: r'{{name}}(<content></content>)')
 class SimpleComponent {
   var name = 'INNER';
+}
+
+@Component(
+    selector: 'selectable-content-tag',
+    template: r'(<content select=".selected"></content>)')
+class SelectableContentComponent {
+  SelectableContentComponent();
 }
 
 @Component(
