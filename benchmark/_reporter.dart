@@ -89,8 +89,7 @@ class Reporter {
 
   bool _saveToServer = false;
   // Must have NGDASH_USER_EMAIL and NGDASH_USER_SECRET for AngularDart branches on Travis.
-  bool get _requireCredentials => Platform.environment["TRAVIS"] == "true" &&
-                                  Platform.environment["TRAVIS_PULL_REQUEST"] == "false";
+  bool get _requireCredentials => Platform.environment["TRAVIS_SECURE_ENV_VARS"] == "true";
 
 
   Reporter() {
