@@ -7,6 +7,7 @@ abstract class SourceLightDom {
 abstract class DestinationLightDom {
   void redistribute();
   void addViewPort(ViewPort viewPort);
+  void addContentTag(Content content);
   bool hasRoot(dom.Element element);
 }
 
@@ -15,6 +16,7 @@ class LightDom implements SourceLightDom, DestinationLightDom {
 
   final List<dom.Node> _lightDomRootNodes = [];
   final Map<dom.Node, ViewPort> _ports = {};
+  final Map<dom.Node, Content> _contentTags = {};
 
   final Scope _scope;
 
@@ -43,6 +45,10 @@ class LightDom implements SourceLightDom, DestinationLightDom {
   void addViewPort(ViewPort viewPort) {
     _ports[viewPort.placeholder] = viewPort;
     redistribute();
+  }
+
+  void addContentTag(Content content) {
+    _contentTags[content.element] = content;
   }
 
   //TODO: vsavkin Add dirty flag after implementing view-scoped dom writes.
@@ -82,7 +88,9 @@ class LightDom implements SourceLightDom, DestinationLightDom {
       if (_ports.containsKey(root)) {
         list.addAll(_ports[root].nodes);
       } else if (root is dom.ContentElement) {
-        list.addAll(root.nodes);
+        if (!_contentTags.containsKey(root))
+          throw new Exception('Unmatched content tag encountered during redistibution.');
+        list.addAll(_contentTags[root].nodes);
       } else {
         list.add(root);
       }
