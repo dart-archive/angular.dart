@@ -312,6 +312,8 @@ void main() {
           ..bind(OuterComponent)
           ..bind(InnerComponent)
           ..bind(InnerInnerComponent)
+          ..bind(SimpleOuterComponent)
+          ..bind(SimpleInnerComponent)
           ..bind(OuterWithDivComponent)
           ..bind(OneTimeDecorator)
           ..bind(OnceInside)
@@ -613,6 +615,13 @@ void main() {
         microLeap();
         _.rootScope.apply();
         expect(element).toHaveText('OUTTER:INNER(OUTTER)');
+      }));
+
+      it('should create simple nested components', async((VmTurnZone zone) {
+        var element = _.compile(r'<div><simple-outer>TEXT</simple-outer></div>');
+        microLeap();
+        _.rootScope.apply();
+        expect(element).toHaveText('OUTER(INNER(TEXT))');
       }));
 
       it('should create a component that can access parent scope', async((VmTurnZone zone) {
@@ -1742,6 +1751,22 @@ class OuterComponent implements ScopeAware {
 class InnerComponent implements ScopeAware {
   Scope scope;
   InnerComponent();
+}
+
+@Component(
+    selector: 'simple-inner',
+    template: 'INNER(<content></content>)'
+)
+class SimpleInnerComponent implements ScopeAware {
+  Scope scope;
+}
+
+@Component(
+    selector: 'simple-outer',
+    template: 'OUTER(<simple-inner><content></content></simple-inner>)'
+)
+class SimpleOuterComponent implements ScopeAware {
+  Scope scope;
 }
 
 @Component(
