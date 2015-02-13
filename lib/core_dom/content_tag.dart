@@ -4,6 +4,7 @@ abstract class _ContentStrategy {
   void attach();
   void detach();
   void insert(Iterable<dom.Node> nodes);
+  Iterable<dom.Node> get nodes;
 }
 
 /**
@@ -14,6 +15,7 @@ class _ShadowDomContent implements _ContentStrategy {
   void attach(){}
   void detach(){}
   void insert(Iterable<dom.Node> nodes){}
+  Iterable<dom.Node> get nodes => null;
 }
 
 /**
@@ -35,6 +37,7 @@ class _RenderedTranscludingContent implements _ContentStrategy {
   dom.ScriptElement _endScript;
 
   Iterable<dom.Node> _currNodes;
+  Iterable<dom.Node> get nodes => _currNodes;
 
   _RenderedTranscludingContent(this._content, this._sourceLightDom);
 
@@ -50,7 +53,7 @@ class _RenderedTranscludingContent implements _ContentStrategy {
 
   void insert(Iterable<dom.Node> nodes){
     final p = _endScript.parent;
-    if (p != null && ! _equalToCurrNodes(nodes)) {
+    if (p != null && !_equalToCurrNodes(nodes)) {
       _removeNodesBetweenScriptTags();
       _currNodes = nodes.toList();
       p.insertAllBefore(nodes, _endScript);
@@ -95,11 +98,14 @@ class _IntermediateTranscludingContent implements _ContentStrategy {
   final SourceLightDom _sourceLightDom;
   final DestinationLightDom _destinationLightDom;
   final Content _content;
+  Iterable<dom.Node> _currNodes;
+  Iterable<dom.Node> get nodes => _currNodes;
 
   _IntermediateTranscludingContent(this._content, this._sourceLightDom, this._destinationLightDom);
 
   void attach(){
     _sourceLightDom.redistribute();
+    _destinationLightDom.addContentTag(_content);
   }
 
   void detach(){
@@ -107,7 +113,7 @@ class _IntermediateTranscludingContent implements _ContentStrategy {
   }
 
   void insert(Iterable<dom.Node> nodes){
-    _content.element.nodes = nodes;
+    _currNodes = nodes.toList();
     _destinationLightDom.redistribute();
   }
 }
@@ -127,6 +133,7 @@ class Content implements AttachAware, DetachAware {
     view.addContent(this);
   }
 
+  Iterable<dom.Node> get nodes => strategy._currNodes;
   void attach() => strategy.attach();
   void detach() => strategy.detach();
   void insert(Iterable<dom.Node> nodes) => strategy.insert(nodes);
