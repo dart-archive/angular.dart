@@ -8,13 +8,13 @@ part of angular.directive;
  * user input with NgModel.
  */
 abstract class NgControl implements AttachAware, DetachAware {
-  static const NG_INVALID        = "ng-invalid";
-  static const NG_PRISTINE       = "ng-pristine";
-  static const NG_DIRTY          = "ng-dirty";
-  static const NG_TOUCHED        = "ng-touched";
-  static const NG_UNTOUCHED      = "ng-untouched";
-  static const NG_SUBMIT_VALID   = "ng-submit-valid";
-  static const NG_SUBMIT_INVALID = "ng-submit-invalid";
+  static const String NG_INVALID        = "ng-invalid";
+  static const String NG_PRISTINE       = "ng-pristine";
+  static const String NG_DIRTY          = "ng-dirty";
+  static const String NG_TOUCHED        = "ng-touched";
+  static const String NG_UNTOUCHED      = "ng-untouched";
+  static const String NG_SUBMIT_VALID   = "ng-submit-valid";
+  static const String NG_SUBMIT_INVALID = "ng-submit-invalid";
 
   String _name;
   bool _submitValid;
@@ -30,13 +30,13 @@ abstract class NgControl implements AttachAware, DetachAware {
     * The list of errors present on the control represented by an error name and
     * an inner control instance.
     */
-  final errorStates = new Map<String, Set<NgControl>>();
+  final Map<String, Set<NgControl>> errorStates = new Map<String, Set<NgControl>>();
 
   /**
     * The list of info messages present on the control represented by an state name and
     * an inner control instance.
     */
-  final infoStates = new Map<String, Set<NgControl>>();
+  final Map<String, Set<NgControl>> infoStates = new Map<String, Set<NgControl>>();
 
   NgControl(NgElement this._element, DirectiveInjector injector,
       Animate this._animate)
