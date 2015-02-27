@@ -482,11 +482,11 @@ class InputNumberLike {
 @Decorator(selector: 'input[type=month][ng-model][ng-bind-type]', visibility: Visibility.LOCAL)
 @Decorator(selector: 'input[type=week][ng-model][ng-bind-type]', visibility: Visibility.LOCAL)
 class NgBindTypeForDateLike {
-  static const DATE = 'date';
-  static const NUMBER = 'number';
-  static const STRING = 'string';
-  static const DEFAULT = DATE;
-  static const VALID_VALUES = const <String>[DATE, NUMBER, STRING];
+  static const String DATE = 'date';
+  static const String NUMBER = 'number';
+  static const String STRING = 'string';
+  static const String DEFAULT = DATE;
+  static const List<String> VALID_VALUES = const <String>[DATE, NUMBER, STRING];
 
   final dom.InputElement inputElement;
   String _idlAttrKind = DEFAULT;
