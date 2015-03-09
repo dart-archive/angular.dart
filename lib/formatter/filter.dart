@@ -189,6 +189,9 @@ class Filter implements Function {
   }
 
   List call(List items, var expression, [var comparator]) {
+    if (items == null) {
+      return const [];
+    }
     if (expression == null) {
       return items.toList(growable: false); // Missing expression → passthrough.
     } else if (expression is! Map && expression is! Function &&
