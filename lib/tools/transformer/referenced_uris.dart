@@ -37,6 +37,7 @@ class _Processor {
   static const String cacheAnnotationName =
     'angular.template_cache_annotation.NgTemplateCache';
   static const String componentAnnotationName = 'angular.core.annotation_src.Component';
+  static final RegExp pkgRegex = new RegExp(r'.*\/packages\/([^\/]*)(\/.*)');
 
   _Processor(this.transform, this.resolver, this.options, this.skipNonCached,
       this.templatesOnly, this.urlResolver) {
@@ -209,13 +210,13 @@ class _Processor {
       return null;
     }
     if (path.url.isAbsolute(uri)) {
-      var parts = path.posix.split(uri);
-      if (parts[1] == 'packages') {
-        var pkgPath = path.url.join('lib', path.url.joinAll(parts.skip(3)));
-        return new _CacheEntry(uri, reference, new AssetId(parts[2], pkgPath));
+      var match = pkgRegex.firstMatch(uri);
+      if (match == null) {
+        warn('Cannot cache non-package absolute URIs. $uri', reference);
+        return null;
       }
-      warn('Cannot cache non-package absolute URIs. $uri', reference);
-      return null;
+      var assetId = new AssetId(match.group(1), 'lib/${match.group(2)}');
+      return new _CacheEntry(uri, reference, assetId);
     }
     // Everything else is a resource in the web directory according to pub;
     // as all packages URIs were handled above. As specified in this
