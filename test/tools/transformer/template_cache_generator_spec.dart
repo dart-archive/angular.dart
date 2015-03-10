@@ -185,6 +185,44 @@ main() {
             'angular|lib/template_cache.dart': libCacheAnnotation,
       });
     });
+
+    it('should cache complicated URLs', () {
+      return generates(setupPhases(),
+          inputs: {
+              'a|web/main.dart': '''
+                    import 'package:angular/angular.dart';
+                    import 'dir/foo.dart';
+
+                    // Packages can be anywhere in the uri.
+                    @Component(templateUrl: "/x/y/z/packages/a.b.c/test1.html",
+                        cssUrl: "/packages/b/test1.css")
+                    class A {}
+
+                    main() {}
+              ''',
+              'a|web/dir/foo.dart': '''
+                    import 'package:angular/angular.dart';
+
+                    // Packages may show up multiple times. Only the last value
+                    // will be an identifier. Deeper paths after packages work.
+                    @Component(
+                        templateUrl: "/a/packages/z/packages/a/dir/test2.html",
+                        cssUrl: "/packages/y/dir/dir2/dir3/test2.css")
+                    class B {}
+              ''',
+              'a.b.c|lib/test1.html': htmlContent1,
+              'a|lib/dir/test2.html': htmlContent2,
+              'angular|lib/angular.dart': libAngular,
+              'b|lib/test1.css': cssContent1,
+              'y|lib/dir/dir2/dir3/test2.css': cssContent2,
+          },
+          cacheContent: {
+              '/x/y/z/packages/a.b.c/test1.html': htmlContent1,
+              '/packages/b/test1.css': cssContent1,
+              '/a/packages/z/packages/a/dir/test2.html': htmlContent2,
+              '/packages/y/dir/dir2/dir3/test2.css': cssContent2,
+      });
+    });
   });
 }
 
