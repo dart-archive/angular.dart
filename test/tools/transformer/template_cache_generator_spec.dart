@@ -14,6 +14,8 @@ main() {
   describe('TemplateCacheGenerator', () {
     var htmlContent1 = "<div></div>";
     var htmlContent2 = "<span></span>";
+    var cssContent1 = '#id {color: red}';
+    var cssContent2 = '#id2 {color: blue}';
 
     it('should cache templateURL', () {
       return generates(setupPhases(),
@@ -33,19 +35,17 @@ main() {
                 @Component(templateUrl: "test2.html")
                 class B {}
             ''',
-            'a|test1.html': htmlContent1,
-            'a|test2.html': htmlContent2,
+            'a|web/test1.html': htmlContent1,
+            'a|web/dir/test2.html': htmlContent2,
             'angular|lib/angular.dart': libAngular,
           },
           cacheContent: {
             'test1.html': htmlContent1,
-            'test2.html': htmlContent2,
+            'dir/test2.html': htmlContent2,
           });
     });
 
     it('should cache cssURLs', () {
-      var cssContent1 = '#id {color: red}';
-      var cssContent2 = '#id2 {color: blue}';
       return generates(setupPhases(),
       inputs: {
           'a|web/main.dart': '''
@@ -63,13 +63,13 @@ main() {
                 @Component(cssUrl: ["test2.css"])
                 class B {}
             ''',
-          'a|test1.css': cssContent1,
-          'a|test2.css': cssContent2,
+          'a|web/test1.css': cssContent1,
+          'a|web/dir/test2.css': cssContent2,
           'angular|lib/angular.dart': libAngular,
       },
       cacheContent: {
           'test1.css': cssContent1,
-          'test2.css': cssContent2,
+          'dir/test2.css': cssContent2,
       });
     });
 
@@ -93,8 +93,8 @@ main() {
 
                  main() {}
                  ''',
-            'a|multiline1.html': multiLineContent1,
-            'a|multiline2.css': multiLineContent2,
+            'a|web/multiline1.html': multiLineContent1,
+            'a|web/multiline2.css': multiLineContent2,
             'angular|lib/angular.dart': libAngular,
           },
           cacheContent: {
@@ -123,14 +123,14 @@ main() {
                 @NgTemplateCache(preCacheUrls: ["test2.html"])
                 class B {}
             ''',
-            'a|test1.html': htmlContent1,
-            'a|test2.html': htmlContent2,
+            'a|web/test1.html': htmlContent1,
+            'a|web/dir/test2.html': htmlContent2,
             'angular|lib/angular.dart': libAngular,
             'angular|lib/angular_cache.dart': libCacheAnnotation,
           },
           cacheContent: {
             'test1.html': htmlContent1,
-            'test2.html': htmlContent2,
+            'dir/test2.html': htmlContent2,
           });
     });
 
@@ -181,8 +181,8 @@ main() {
                 @NgTemplateCache(preCacheUrls: ["test2.html"])
                 class B {}
             ''',
-          'angular|lib/angular.dart': libAngular,
-          'angular|lib/template_cache.dart': libCacheAnnotation,
+            'angular|lib/angular.dart': libAngular,
+            'angular|lib/template_cache.dart': libCacheAnnotation,
       });
     });
   });
