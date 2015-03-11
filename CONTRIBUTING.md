@@ -20,68 +20,65 @@ Help us keep Angular open and inclusive. Please read and follow our [Code of Con
 
 ## <a name="question"></a> Got a Question or Problem?
 
-If you have questions about how to use AngularDart, please direct them to the [Google Group][groups]
+If you have questions about how to *use* AngularDart, please direct them to the [Google Group][angular-group]
 discussion list or [StackOverflow][stackoverflow].
 
 ## <a name="issue"></a> Found an Issue?
 If you find a bug in the source code or a mistake in the documentation, you can help us by
-submitting an issue to our [GitHub Repository][github]. Even better, you can submit a Pull Request
-with a fix.
-
-**Please see the Submission Guidelines below**.
+[submitting an issue](#submit-issue) to our [GitHub Repository][github]. Even better, you can
+[submit a Pull Request](#submit-pr) with a fix.
 
 ## <a name="feature"></a> Want a Feature?
-You can request a new feature by submitting an issue to our [GitHub Repository][github].  If you
-would like to implement a new feature then consider what kind of change it is:
+You can *request* a new feature by [submitting an issue](#submit-issue) to our [GitHub
+Repository][github]. If you would like to *implement* a new feature then consider what kind of
+change it is:
 
-<!--
-* **Major Changes** that you wish to contribute to the project should be discussed first on our
-[dev mailing list][angular-dev] or [IRC][irc] so that we can better coordinate our efforts, prevent
-duplication of work, and help you to craft the change so that it is successfully accepted into the
-project.
--->
-* **Small Changes** can be crafted and submitted to [GitHub Repository][github] as a Pull Request.
-
+* For a **Major Feature**, first open an issue and outline your proposal so that it can be
+discussed. This will also allow us to better coordinate our efforts, prevent duplication of work,
+and help you to craft the change so that it is successfully accepted into the project.
+* **Small Features** can be crafted and directly [submitted as a Pull Request](#submit-pr).
 
 ## <a name="docs"></a> Want a Doc Fix?
-If you want to help improve the docs, it's a good idea to let others know what you're working on to
-minimize duplication of effort. Before starting, check out the issue queue.
+If you want to help improve the docs, then consider what kind of improvement it is:
 
-Comment on an issue to let others know what you're working on, or create a new issue if your work
-doesn't fit within the scope of any of the existing doc fix projects.
-
-For large fixes, please build and test the documentation before submitting the PR to be sure you haven't
-accidentally introduced any layout or formatting issues. You should also make sure that your commit message
-is labeled "docs:" and follows the **Git Commit Guidelines** outlined below.
+* For **Major Changes**, it's a good idea to let others know what you're working on to
+minimize duplication of effort. Before starting, check out the issue queue for
+issues labeled [#docs](https://github.com/angular/angular/labels/%23docs).
+Comment on an issue to let others know what you're working on, or [create a new issue](#submit-issue)
+if your work doesn't fit within the scope of any of the existing doc issues.
+Please build and test the documentation before [submitting the Pull Request](#submit-pr), to be sure
+you haven't accidentally introduced any layout or formatting issues.  Also ensure that your commit
+message is labeled "docs" and follows the [Commit Message Guidelines](#commit) given below.
+* For **Small Changes**, there is no need to file an issue first. Simply [submit a Pull Request](#submit-pr).
 
 ## <a name="submit"></a> Submission Guidelines
 
-### Submitting an Issue
-Before you submit your issue search the archive, maybe your question was already answered.
+### <a name="submit-issue"></a> Submitting an Issue
+Before you submit an issue, search the archive, maybe your question was already answered.
 
 If your issue appears to be a bug, and hasn't been reported, open a new issue.
 Help us to maximize the effort we can spend fixing issues and adding new
 features, by not reporting duplicate issues.  Providing the following information will increase the
 chances of your issue being dealt with quickly:
 
-* **Overview of the issue** - if an error is being thrown a non-minified stack trace helps
+* **Overview of the Issue** - if an error is being thrown a non-minified stack trace helps
 * **Motivation for or Use Case** - explain why this is a bug for you
 * **Angular Version(s)** - is it a regression?
-* **Browsers and Operating System** - is this a problem with all browsers or only IE8?
-* **Reproduce the error** - provide a live example (using [Runnable][runnable]) or a unambiguous set of steps.
-* **Related issues** - has a similar issue been reported before?
+* **Browsers and Operating System** - is this a problem with all browsers?
+* **Reproduce the Error** - provide a live example (using [Runnable][runnable]) or a unambiguous set of steps.
+* **Related Issues** - has a similar issue been reported before?
 * **Suggest a Fix** - if you can't fix the bug yourself, perhaps you can point to what might be
   causing the problem (line of code or commit)
 
 **If you get help, help others. Good karma rulez!**
 
-### Submitting a Pull Request
-Before you submit your pull request consider the following guidelines:
+### <a name="submit-pr"></a> Submitting a Pull Request (PR)
+Before you submit your Pull Request (PR) consider the following guidelines:
 
-* Search [GitHub](https://github.com/angular/angular.dart/pulls) for an open or closed Pull Request
+* Search [GitHub](https://github.com/angular/angular.dart/pulls) for an open or closed PR
   that relates to your submission. You don't want to duplicate effort.
-* Please sign our [Contributor License Agreement (CLA)](#signing-the-cla) before sending pull
-  requests. We cannot accept code without this.
+* Please sign our [Contributor License Agreement (CLA)](#cla) before sending PRs.
+  We cannot accept code without this.
 * Make your changes in a new git branch:
 
      ```shell
@@ -89,13 +86,12 @@ Before you submit your pull request consider the following guidelines:
      ```
 
 * Create your patch, **including appropriate test cases**.
-* Follow our [Coding Rules](#coding-rules).
+* Follow our [Coding Rules](#rules).
 * Run the full Angular test suite, as described in the [developer documentation][dev-doc],
   and ensure that all tests pass.
 * Commit your changes using a descriptive commit message that follows our
-  [commit message conventions](#commit-message-format) and passes our commit message presubmit hook
-  `validate-commit-msg.js`. Adherence to the [commit message conventions](#commit-message-format)
-  is required because release notes are automatically generated from these messages.
+  [commit message conventions](#commit). Adherence to these conventions
+  is necessary because release notes are automatically generated from these messages.
 
      ```shell
      git commit -a
@@ -109,7 +105,7 @@ Before you submit your pull request consider the following guidelines:
     ```
 
 * In GitHub, send a pull request to `angular:master`.
-* If we suggest changes then: 
+* If we suggest changes then:
   * Make the required updates.
   * Re-run the AngularDart test suite to ensure tests are still passing.
   * Rebase your branch and force push to your GitHub repository (this will update your Pull Request):
@@ -155,10 +151,9 @@ To ensure consistency throughout the source code, keep these rules in mind as yo
 
   * All features or bug fixes **must be tested** by one or more [specs][unit-testing].
   * All public API methods **must be documented** with [doc comments][doc-comments].
-  * With the exceptions listed below, we follow the rules contained in
-  [Google's Dart Style Guide][dart-style-guide].
+  * Adhere to the [Google's Dart Style Guide][dart-style-guide].
 
-## <a name="commit"></a> Git Commit Guidelines
+## <a name="commit"></a> Commit Message Guidelines
 
 We have very precise rules over how our git commit messages can be formatted.  This leads to **more
 readable messages** that are easy to follow when looking through the **project history**.  But also,
@@ -204,18 +199,18 @@ The subject contains succinct description of the change:
 * don't capitalize first letter
 * no dot (.) at the end
 
-###Body
+### Body
 Just as in the **subject**, use the imperative, present tense: "change" not "changed" nor "changes".
 The body should include the motivation for the change and contrast this with previous behavior.
 
-###Footer
+### Footer
 The footer should contain any information about **Breaking Changes** and is also the place to
 reference GitHub issues that this commit **Closes**.
 
 
 A detailed explanation can be found in this [document][commit-message-format].
 
-## <a name="cla"></a> Signing the CLA 
+## <a name="cla"></a> Signing the CLA
 
 Please sign our Contributor License Agreement (CLA) before sending pull requests. For any code
 changes to be accepted, the CLA must be signed. It's a quick process, we promise!
@@ -225,6 +220,7 @@ changes to be accepted, the CLA must be signed. It's a quick process, we promise
   [print, sign and one of scan+email, fax or mail the form][corporate-cla].
 
 
+[angular-group]: https://groups.google.com/forum/#!forum/angular-dart
 [coc]: https://github.com/angular/code-of-conduct/blob/master/CODE_OF_CONDUCT.md
 [commit-message-format]: https://docs.google.com/document/d/1QrDFcIiPjSLDn3EL15IJygNPiHORgU1_OOAqWjiDU5Y/edit#
 [communityMilestone]: https://github.com/angular/angular.dart/issues?milestone=13&state=open
@@ -233,7 +229,6 @@ changes to be accepted, the CLA must be signed. It's a quick process, we promise
 [dev-doc]: https://github.com/angular/angular.dart/blob/master/DEVELOPER.md
 [doc-comments]: https://www.dartlang.org/articles/doc-comment-guidelines/
 [github]: https://github.com/angular/angular.dart
-[groups]: https://groups.google.com/forum/#!forum/angular-dart
 [individual-cla]: http://code.google.com/legal/individual-cla-v1.0.html
 [runnable]: http://runnable.com/
 [stackoverflow]: http://stackoverflow.com/questions/tagged/angular.dart
