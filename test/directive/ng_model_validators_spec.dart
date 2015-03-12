@@ -111,6 +111,31 @@ void main() {
       });
     });
 
+    describe('[type="color"]', () {
+      it('should validate the input field given a valid or invalid color', (RootScope scope) {
+        _.compile('<input type="color" ng-model="val" probe="i" />');
+        Probe probe = _.rootScope.context['i'];
+        var model = probe.directive(NgModel);
+
+        expect(model.valid).toEqual(true);
+        expect(model.invalid).toEqual(false);
+
+        _.rootScope.apply(() {
+          _.rootScope.context['val'] = 'red';
+        });
+
+        expect(model.valid).toEqual(false);
+        expect(model.invalid).toEqual(true);
+
+        _.rootScope.apply(() {
+          _.rootScope.context['val'] = '#ff0000';
+        });
+
+        expect(model.valid).toEqual(true);
+        expect(model.invalid).toEqual(false);
+      });
+    });
+
     describe('[type="email"]', () {
       it('should validate the input field given a valid or invalid email address', (RootScope scope) {
         _.compile('<input type="email" ng-model="val" probe="i" />');
@@ -627,6 +652,6 @@ void main() {
 
         expect(model.valid).toBe(true);
       });
-    }); 
+    });
   });
 }

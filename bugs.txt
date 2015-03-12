@@ -1,3 +1,0 @@
-dart-injector: should throw error rather then injecting null
-dart: Stack trace is not propegated on mirror invocations.
-karma: Dart syntax error causes the runner to hang.

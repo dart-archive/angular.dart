@@ -20,8 +20,8 @@ import 'package:perf_api/perf_api.dart';
 
 part 'dev_tools_timeline.dart';
 
-class NgPerfModule extends Module {
-  NgPerfModule() {
-    type(Profiler, implementedBy: Profiler);
+class PerfModule extends Module {
+  PerfModule() {
+    bind(Profiler, toFactory: () => new Profiler());
   }
 }

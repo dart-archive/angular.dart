@@ -1,40 +1,40 @@
 library angular.mock.test_injection;
 
-import 'package:angular/angular_dynamic.dart';
+import 'package:angular/application_factory.dart';
 import 'package:angular/mock/module.dart';
 import 'package:di/di.dart';
-import 'package:di/dynamic_injector.dart';
+import 'dart:mirrors';
 
 _SpecInjector _currentSpecInjector = null;
 
 class _SpecInjector {
-  DynamicInjector moduleInjector;
-  DynamicInjector injector;
-  dynamic injectiorCreateLocation;
+  Injector moduleInjector;
+  Injector injector;
+  dynamic injectorCreateLocation;
   final modules = <Module>[];
   final initFns = <Function>[];
 
   _SpecInjector() {
     var moduleModule = new Module()
-      ..factory(Module, (Injector injector) => addModule(new Module()));
-    moduleInjector = new DynamicInjector(modules: [moduleModule]);
+      ..bind(Module, toFactory: () => addModule(new Module()));
+    moduleInjector = new ModuleInjector([moduleModule]);
   }
 
   addModule(module) {
     if (injector != null) {
-      throw ["Injector already crated, can not add more modules."];
+      throw ["Injector already created, can not add more modules."];
     }
     modules.add(module);
     return module;
   }
 
   module(fnOrModule, [declarationStack]) {
-    if (injectiorCreateLocation != null) {
-      throw "Injector already created at:\n$injectiorCreateLocation";
+    if (injectorCreateLocation != null) {
+      throw "Injector already created at:\n$injectorCreateLocation";
     }
     try {
       if (fnOrModule is Function) {
-        var initFn = moduleInjector.invoke(fnOrModule);
+        var initFn = _invoke(moduleInjector, fnOrModule);
         if (initFn is Function) initFns.add(initFn);
       } else if (fnOrModule is Module) {
         addModule(fnOrModule);
@@ -49,13 +49,13 @@ class _SpecInjector {
   inject(Function fn, [declarationStack]) {
     try {
       if (injector == null) {
-        injectiorCreateLocation = declarationStack;
-        injector = new DynamicInjector(modules: modules); // Implicit injection is disabled.
+        injectorCreateLocation = declarationStack;
+        injector = new ModuleInjector(modules); // Implicit injection is disabled.
         initFns.forEach((fn) {
-          injector.invoke(fn);
+          _invoke(injector, fn);
         });
       }
-      injector.invoke(fn);
+      _invoke(injector, fn);
     } catch (e, s) {
       throw "$e\n$s\nDECLARED AT:$declarationStack";
     }
@@ -63,7 +63,21 @@ class _SpecInjector {
 
   reset() {
     injector = null;
-    injectiorCreateLocation = null;
+    injectorCreateLocation = null;
+  }
+
+  _invoke(Injector injector, Function fn) {
+    ClosureMirror cm = reflect(fn);
+    MethodMirror mm = cm.function;
+    List args = mm.parameters.map((ParameterMirror parameter) {
+      var metadata = parameter.metadata;
+      Key key = new Key(
+          (parameter.type as ClassMirror).reflectedType,
+          metadata.isEmpty ? null : metadata.first.type.reflectedType);
+      return injector.getByKey(key);
+    }).toList();
+
+    return cm.apply(args).reflectee;
   }
 }
 
@@ -73,15 +87,18 @@ class _SpecInjector {
  *
  * NOTE: Calling inject creates an injector, which prevents any more calls to [module].
  *
+ * NOTE: [inject] will never return the result of [fn]. If you need to return a [Future]
+ * for unittest to consume, take a look at [async], [clockTick], and [microLeap] instead.
+ *
  * Typical usage:
  *
  *     test('wrap whole test', inject((TestBed tb) {
  *       tb.compile(...);
- *     });
+ *     }));
  *
  *     test('wrap part of a test', () {
  *       module((Module module) {
- *         module.type(Foo);
+ *         module.bind(Foo);
  *       });
  *       inject((TestBed tb) {
  *         tb.compile(...);
@@ -107,12 +124,12 @@ inject(Function fn) {
  * hence no more calls to [module] can be made.
  *
  *     setUp(module((Module model) {
- *       module.type(Foo);
+ *       module.bind(Foo);
  *     });
  *
  *     test('foo', () {
  *       module((Module module) {
- *         module.type(Foo);
+ *         module.bind(Foo);
  *       });
  *     });
  */
@@ -133,7 +150,7 @@ void setUpInjector() {
   _currentSpecInjector = new _SpecInjector();
   _currentSpecInjector.module((Module m) {
     m
-      ..install(ngDynamicApp().ngModule)
+      ..install(applicationFactory().ngModule)
       ..install(new AngularMockModule());
   });
 }

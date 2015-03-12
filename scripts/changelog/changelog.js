@@ -9,7 +9,7 @@ var util = require('util');
 var q = require('qq');
 
 var GIT_LOG_CMD = 'git log --grep="%s" -E --format=%s %s..HEAD';
-var GIT_TAG_CMD = 'git describe --tags --abbrev=0';
+var GIT_TAG_CMD = 'git describe --tags --abbrev=0 --match="v*"';
 
 var HEADER_TPL = '<a name="%s"></a>\n# %s (%s)\n\n';
 var LINK_ISSUE = '[#%s](https://github.com/angular/angular.dart/issues/%s)';
@@ -168,6 +168,8 @@ var writeChangelog = function(stream, commits, version) {
   });
 
   stream.write(util.format(HEADER_TPL, version, version, currentDate()));
+  stream.write('## Highlights\n\n');
+  stream.write('TODO: add release highlights\n');
   printSection(stream, 'Bug Fixes', sections.fix);
   printSection(stream, 'Features', sections.feat);
   printSection(stream, 'Performance Improvements', sections.perf);

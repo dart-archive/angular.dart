@@ -6,14 +6,14 @@ library angular.template_cache_annotation;
  *
  * Primary use cases are:
  *   - Adding URLs to the cache which cannot be automatically gathered from
- *   NgComponent annotations.
- *   - Adding annotation to an NgComponent to remove it from the template cache.
+ *   Component annotations.
+ *   - Adding annotation to an Component to remove it from the template cache.
  */
 class NgTemplateCache {
   // List of strings to add to the template cache.
   final List<String> preCacheUrls;
   // Whether to cache these resources in the template cache. Primary use is to
-  // override the default caching behavior for NgComponent annotation.
+  // override the default caching behavior for Component annotation.
   final bool cache;
 
   const NgTemplateCache(

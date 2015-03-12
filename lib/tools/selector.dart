@@ -3,18 +3,15 @@ library selector;
 import 'package:html5lib/dom.dart';
 
 class ContainsSelector {
-  String selector;
-  RegExp regexp;
+  final String selector;
+  final RegExp regexp;
 
-  ContainsSelector(this.selector, regexp) {
-    this.regexp = new RegExp(regexp);
-  }
+  ContainsSelector(this.selector, String regexp): regexp = new RegExp(regexp);
 }
 
 RegExp _SELECTOR_REGEXP = new RegExp(r'^(?:([\w\-]+)|(?:\.([\w\-]+))|(?:\[([\w\-\*]+)(?:=([^\]]*))?\]))');
-RegExp _COMMENT_COMPONENT_REGEXP = new RegExp(r'^\[([\w\-]+)(?:\=(.*))?\]$');
-RegExp _CONTAINS_REGEXP = new RegExp(r'^:contains\(\/(.+)\/\)$'); //
-RegExp _ATTR_CONTAINS_REGEXP = new RegExp(r'^\[\*=\/(.+)\/\]$'); //
+RegExp _CONTAINS_REGEXP = new RegExp(r'^:contains\(\/(.+)\/\)$');
+RegExp _ATTR_CONTAINS_REGEXP = new RegExp(r'^\[\*=\/(.+)\/\]$');
 
 class _SelectorPart {
   final String element;
@@ -22,17 +19,17 @@ class _SelectorPart {
   final String attrName;
   final String attrValue;
 
-  const _SelectorPart.fromElement(String this.element)
+  const _SelectorPart.fromElement(this.element)
       : className = null, attrName = null, attrValue = null;
 
-  const _SelectorPart.fromClass(String this.className)
+  const _SelectorPart.fromClass(this.className)
       : element = null, attrName = null, attrValue = null;
 
 
-  const _SelectorPart.fromAttribute(String this.attrName, String this.attrValue)
+  const _SelectorPart.fromAttribute(this.attrName, this.attrValue)
       : element = null, className = null;
 
-  toString() =>
+  String toString() =>
     element == null
       ? (className == null
          ? (attrValue == '' ? '[$attrName]' : '[$attrName=$attrValue]')

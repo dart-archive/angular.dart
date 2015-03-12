@@ -4,12 +4,12 @@ part of angular.animate;
  * Window.animationFrame update loop that tracks and drives
  * [LoopedAnimations]'s.
  */
-@NgInjectableService()
+@Injectable()
 class AnimationLoop {
   final AnimationFrame _frames;
   final Profiler _profiler;
   final List<LoopedAnimation> _animations = [];
-  final NgZone _zone;
+  final VmTurnZone _zone;
 
   bool _animationFrameQueued = false;
 
@@ -101,7 +101,7 @@ class AnimationLoop {
  * Wrapper around window.requestAnimationFrame so it can be intercepted and
  * tested.
  */
-@NgInjectableService()
+@Injectable()
 class AnimationFrame {
   final dom.Window _wnd;
   Future<num> get animationFrame => _wnd.animationFrame;

@@ -22,21 +22,23 @@ part of angular.routing;
  * ng-bind-route overrides [RouteProvider] instance published by ng-view,
  * however it does not effect view resolution by nested ng-view(s).
  */
-@NgDirective(
-    visibility: NgDirective.CHILDREN_VISIBILITY,
-    publishTypes: const [RouteProvider],
+@Decorator(
     selector: '[ng-bind-route]',
+    module: NgBindRoute.module,
     map: const {'ng-bind-route': '@routeName'})
-class NgBindRouteDirective implements RouteProvider {
-  Router _router;
+class NgBindRoute implements RouteProvider {
   String routeName;
-  Injector _injector;
+  final Router _router;
+  final DirectiveInjector _injector;
+
+  static void module(DirectiveBinder binder) =>
+      binder.bind(RouteProvider, toInstanceOf: NG_BIND_ROUTE_KEY, visibility: Visibility.CHILDREN);
 
   // We inject NgRoutingHelper to force initialization of routing.
-  NgBindRouteDirective(this._router, this._injector, NgRoutingHelper _);
+  NgBindRoute(this._router, this._injector, NgRoutingHelper _);
 
   /// Returns the parent [RouteProvider].
-  RouteProvider get _parent => _injector.parent.get(RouteProvider);
+  RouteProvider get _parent => _injector.getFromParentByKey(ROUTE_PROVIDER_KEY);
 
   Route get route => routeName.startsWith('.') ?
       _parent.route.getRoute(routeName.substring(1)) :

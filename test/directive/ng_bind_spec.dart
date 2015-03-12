@@ -10,7 +10,7 @@ main() {
 
     it('should set.text', (Scope scope, Injector injector, Compiler compiler, DirectiveMap directives) {
       var element = e('<div ng-bind="a"></div>');
-      compiler([element], directives)(injector, [element]);
+      compiler([element], directives)(scope, null, [element]);
       scope.context['a'] = "abc123";
       scope.apply();
       expect(element.text).toEqual('abc123');

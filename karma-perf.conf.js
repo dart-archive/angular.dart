@@ -8,26 +8,32 @@ module.exports = function(config) {
     // all tests must be 'included', but all other libraries must be 'served' and
     // optionally 'watched' only.
     files: [
-      'perf/dom/*.dart',
-      'perf/*_perf.dart',
-      'test/config/filter_tests.dart',
+      'packages/web_components/platform.js',
+      'packages/web_components/dart_support.js',
+      'benchmark/dom/*.dart',
+      'benchmark/*_perf.dart',
+      'test/config/init_guinness.dart',
       {pattern: '**/*.dart', watched: true, included: false, served: true},
-      'packages/browser/dart.js',
-      'packages/browser/interop.js'
+      'packages/browser/dart.js'
     ],
 
     autoWatch: false,
 
-    // If browser does not capture in given timeout [ms], kill it
-    captureTimeout: 5000,
+    // If browser does not capture in given timeout [ms], kill it. Note long time is for dart2js.
+    captureTimeout: 120000,
 
     plugins: [
       'karma-dart',
       'karma-chrome-launcher',
+      'karma-sauce-launcher',
       'karma-script-launcher',
       'karma-junit-reporter',
       '../../../karma-parser-getter-setter'
     ],
+
+    karmaDartImports: {
+      guinness: 'package:guinness/guinness_html.dart'
+    },
 
     preprocessors: {
       'test/core/parser/generated_getter_setter.dart': ['parser-getter-setter']

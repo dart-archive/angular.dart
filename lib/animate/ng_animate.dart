@@ -5,15 +5,15 @@ part of angular.animate;
  * dom elements. Valid options are [always] [never] and [auto]. If this
  * directive is not applied the default value is [auto] for animation.
  */
-@NgDirective(selector: '[ng-animate]',
+@Decorator(selector: '[ng-animate]',
     map: const {'ng-animate': '@option'})
-class NgAnimateDirective  extends NgAnimateDirectiveBase {
+class NgAnimate  extends AbstractNgAnimate {
   set option(value) {
     _option = value;
     _optimizer.alwaysAnimate(_element, _option);
   }
 
-  NgAnimateDirective(dom.Element element, AnimationOptimizer optimizer)
+  NgAnimate(dom.Element element, AnimationOptimizer optimizer)
       : super(element, optimizer);
 }
 
@@ -25,15 +25,15 @@ class NgAnimateDirective  extends NgAnimateDirectiveBase {
  * Values provided in [ng-animate] will override this directive since they are
  * more specific.
  */
-@NgDirective(selector: '[ng-animate-children]',
+@Decorator(selector: '[ng-animate-children]',
     map: const {'ng-animate-children': '@option'})
-class NgAnimateChildrenDirective extends NgAnimateDirectiveBase {
+class NgAnimateChildren extends AbstractNgAnimate {
   set option(value) {
     _option = value;
     _optimizer.alwaysAnimateChildren(_element, _option);
   }
 
-  NgAnimateChildrenDirective(dom.Element element, AnimationOptimizer optimizer)
+  NgAnimateChildren(dom.Element element, AnimationOptimizer optimizer)
     : super(element, optimizer);
 }
 
@@ -41,7 +41,7 @@ class NgAnimateChildrenDirective extends NgAnimateDirectiveBase {
  * Base class for directives that control animations with an
  * [AnimationOptimizer].
  */
-abstract class NgAnimateDirectiveBase implements NgDetachAware {
+abstract class AbstractNgAnimate implements DetachAware {
   final AnimationOptimizer _optimizer;
   final dom.Element _element;
 
@@ -49,7 +49,7 @@ abstract class NgAnimateDirectiveBase implements NgDetachAware {
   String get option => _option;
   set option(value);
 
-  NgAnimateDirectiveBase(this._element, this._optimizer);
+  AbstractNgAnimate(this._element, this._optimizer);
 
   detach() {
     _optimizer.detachAlwaysAnimateOptions(_element);

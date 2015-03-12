@@ -3,14 +3,14 @@ library angular.core.parser.syntax;
 import 'package:angular/core/parser/parser.dart' show LocalsWrapper;
 import 'package:angular/core/parser/unparser.dart' show Unparser;
 import 'package:angular/core/parser/utils.dart' show EvalError;
-import 'package:angular/core/module_internal.dart';
+import 'package:angular/core/formatter.dart' show FormatterMap;
 
 abstract class Visitor {
   visit(Expression expression) => expression.accept(this);
 
   visitExpression(Expression expression) => null;
   visitChain(Chain expression) => visitExpression(expression);
-  visitFilter(Filter expression) => visitExpression(expression);
+  visitFormatter(Formatter expression) => visitExpression(expression);
 
   visitAssign(Assign expression) => visitExpression(expression);
   visitConditional(Conditional expression) => visitExpression(expression);
@@ -39,7 +39,7 @@ abstract class Expression {
   bool get isAssignable => false;
   bool get isChain => false;
 
-  eval(scope, [FilterMap filters = defaultFilterMap]) =>
+  eval(scope, [FormatterMap formatters = defaultFormatterMap]) =>
       throw new EvalError("Cannot evaluate $this");
   assign(scope, value) =>
       throw new EvalError("Cannot assign to $this");
@@ -73,12 +73,12 @@ class Chain extends Expression {
   accept(Visitor visitor) => visitor.visitChain(this);
 }
 
-class Filter extends Expression {
+class Formatter extends Expression {
   final Expression expression;
   final String name;
   final List<Expression> arguments;
-  Filter(this.expression, this.name, this.arguments);
-  accept(Visitor visitor) => visitor.visitFilter(this);
+  Formatter(this.expression, this.name, this.arguments);
+  accept(Visitor visitor) => visitor.visitFormatter(this);
 }
 
 class Assign extends Expression {
@@ -197,13 +197,12 @@ class LiteralObject extends Literal {
   accept(Visitor visitor) => visitor.visitLiteralObject(this);
 }
 
-const defaultFilterMap = const _DefaultFilterMap();
+const defaultFormatterMap = const _DefaultFormatterMap();
 
-class _DefaultFilterMap implements FilterMap {
-  const _DefaultFilterMap();
+class _DefaultFormatterMap implements FormatterMap {
+  const _DefaultFormatterMap();
 
-  call(name) => throw 'No NgFilter: $name found!';
+  call(name) => throw 'No Formatter: $name found!';
   Type operator[](annotation) => null;
   forEach(fn) { }
-  annotationsFor(type) => null;
 }

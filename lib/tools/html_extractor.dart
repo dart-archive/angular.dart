@@ -13,7 +13,7 @@ RegExp _MUSTACHE_REGEXP = new RegExp(r'{{([^}]*)}}');
 RegExp _NG_REPEAT_SYNTAX = new RegExp(r'^\s*(.+)\s+in\s+(.*?)\s*(\s+track\s+by\s+(.+)\s*)?$');
 
 class HtmlExpressionExtractor {
-  List<DirectiveInfo> directiveInfos;
+  Iterable<DirectiveInfo> directiveInfos;
 
   HtmlExpressionExtractor(this.directiveInfos) {
     for (DirectiveInfo directiveInfo in directiveInfos) {
@@ -49,13 +49,12 @@ class HtmlExpressionExtractor {
         });
       }
       if (matchesNode(node, r'[ng-repeat]')) {
-        var expr = _NG_REPEAT_SYNTAX.
-            firstMatch(node.attributes['ng-repeat']).group(2);
+        var expr = _NG_REPEAT_SYNTAX.firstMatch(node.attributes['ng-repeat']).group(2);
         expressions.add(expr);
       }
 
       for (DirectiveInfo directiveInfo in directiveInfos) {
-        if (matchesNode(node, directiveInfo.selector)) {
+        if (directiveInfo.selector != null && matchesNode(node, directiveInfo.selector)) {
           directiveInfo.expressionAttrs.forEach((attr) {
             if (node.attributes[attr] != null && attr != 'ng-repeat') {
               expressions.add(node.attributes[attr]);
@@ -69,7 +68,7 @@ class HtmlExpressionExtractor {
   visitNodes(List<Node> nodes, NodeVisitor visitor) {
     for (Node node in nodes) {
       visitor(node);
-      if (node.nodes.length > 0) {
+      if (node.nodes.isNotEmpty) {
         visitNodes(node.nodes, visitor);
       }
     }

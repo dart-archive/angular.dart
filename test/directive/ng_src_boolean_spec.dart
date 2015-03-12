@@ -106,14 +106,14 @@ main() {
     });
 
 
-    xit('should interpolate the expression and bind to src with a trusted value', ($sce) {
+    xit('should interpolate the expression and bind to src with a trusted value', (sce) {
       _.compile('<div ng-src="{{id}}"></div>');
 
       _.rootScope.apply();
       expect(_.rootElement.attributes['src']).toEqual(null);
 
       _.rootScope.apply(() {
-        _.rootScope.context['id'] = $sce.trustAsResourceUrl('http://somewhere');
+        _.rootScope.context['id'] = sce.trustAsResourceUrl('http://somewhere');
       });
       expect(_.rootElement.attributes['src']).toEqual('http://somewhere');
     });
@@ -124,7 +124,7 @@ main() {
         _.compile('<div ng-src="some/{{id}}"></div>');
       }).toThrow("Error while interpolating: some/{{id}}\nStrict " +
           "Contextual Escaping disallows interpolations that concatenate multiple expressions " +
-          "when a trusted value is required.  See http://docs.angularjs.org/api/ng.\$sce");
+          "when a trusted value is required.  See http://docs.angularjs.org/api/ng.sce");
     });
 
 
@@ -139,15 +139,15 @@ main() {
     });
 
 
-    xit('should NOT interpolate a wrongly typed expression', ($sce) {
+    xit('should NOT interpolate a wrongly typed expression', (sce) {
       expect(() {
         _.compile('<div ng-src="{{id}}"></div>');
         _.rootScope.apply(() {
-          _.rootScope.context['id'] = $sce.trustAsUrl('http://somewhere');
+          _.rootScope.context['id'] = sce.trustAsUrl('http://somewhere');
         });
         _.rootElement.attributes['src'];
-      }).toThrow("Can't interpolate: {{id}}\nError: [\$sce:insecurl] Viewed " +
-          "loading resource from url not allowed by \$sceDelegate policy.  URL: http://somewhere");
+      }).toThrow("Can't interpolate: {{id}}\nError: [sce:insecurl] Viewed " +
+          "loading resource from url not allowed by sceDelegate policy.  URL: http://somewhere");
     });
 
   });

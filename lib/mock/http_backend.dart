@@ -9,36 +9,36 @@ import 'package:angular/utils.dart' as utils;
 
 
 class _MockXhr {
-  var $$method, $$url, $$async, $$reqHeaders, $$respHeaders;
+  var method, url, async, reqHeaders, respHeaders;
 
   void open(method, url, async) {
-    $$method = method;
-    $$url = url;
-    $$async = async;
-    $$reqHeaders = {};
-    $$respHeaders = {};
+    this.method = method;
+    this.url = url;
+    this.async = async;
+    reqHeaders = {};
+    respHeaders = {};
   }
 
-  var $$data;
+  var data;
 
   void send(data) {
-    $$data = data;
+    data = data;
   }
 
   void setRequestHeader(key, value) {
-    $$reqHeaders[key] = value;
+    reqHeaders[key] = value;
   }
 
   String getResponseHeader(name) {
     // the lookup must be case insensitive, that's why we try two quick
     // lookups and full scan at last
-    if ($$respHeaders.containsKey(name)) return $$respHeaders[name];
+    if (respHeaders.containsKey(name)) return respHeaders[name];
 
     name = name.toLowerCase();
-    if ($$respHeaders.containsKey(name)) return $$respHeaders[name];
+    if (respHeaders.containsKey(name)) return respHeaders[name];
 
     String header = null;
-    $$respHeaders.forEach((headerName, headerVal) {
+    respHeaders.forEach((headerName, headerVal) {
       if (header != null) return;
       if (headerName.toLowerCase()) header = headerVal;
     });
@@ -46,11 +46,11 @@ class _MockXhr {
   }
 
   getAllResponseHeaders() {
-    if ($$respHeaders == null) return '';
+    if (respHeaders == null) return '';
 
     var lines = [];
 
-    $$respHeaders.forEach((key, value) {
+    respHeaders.forEach((key, value) {
       lines.add("$key: $value");
     });
     return lines.join('\n');
@@ -64,42 +64,47 @@ class _MockXhr {
  * An internal class used by [MockHttpBackend].
  */
 class MockHttpExpectation {
-  final method;
-  final url;
+  final String method;
+  final /*String or RegExp*/ url;
   final data;
   final headers;
+  final bool withCredentials;
 
   var response;
 
-  MockHttpExpectation(this.method, this.url, [this.data, this.headers]);
+  MockHttpExpectation(this.method, this.url, [this.data, this.headers, withCredentials]) :
+      this.withCredentials = withCredentials == true;
 
-  bool match(method, url, [data, headers]) {
-    if (method != method) return false;
-    if (!matchUrl(url)) return false;
-    if (data != null && !matchData(data)) return false;
-    if (headers != null && !matchHeaders(headers)) return false;
-    return true;
-  }
+  bool match(req) =>
+      matchMethodAndUrl(req) && matchData(req) && matchHeaders(req) && matchWithCredentials(req);
 
-  bool matchUrl(u) {
+  bool matchMethodAndUrl(req) =>
+      method == req.method && matchUrl(req);
+
+  bool matchUrl(req) {
     if (url == null) return true;
-    if (url is RegExp) return url.hasMatch(u);
-    return url == u;
+    return _matchUrl(url, req.url);
   }
 
-  bool matchHeaders(h) {
+  bool matchHeaders(req) {
     if (headers == null) return true;
-    if (headers is Function) return headers(h);
-    return "$headers" == "$h";
+    if (headers is Function) return headers(req.headers);
+    return "$headers" == "${req.headers}";
   }
 
-  bool matchData(d) {
+  bool matchData(req) {
     if (data == null) return true;
-    if (d == null) return false;
-    if (data is File) return data == d;
-    assert(d is String);
-    if (data is RegExp) return data.hasMatch(d);
-    return JSON.encode(data) == JSON.encode(d);
+    if (req.data == null) return false;
+    if (data is File) return data == req.data;
+    assert(req.data is String);
+    if (data is RegExp) return data.hasMatch(req.data);
+    return JSON.encode(data) == JSON.encode(req.data);
+  }
+
+  bool matchWithCredentials(req) {
+    if (withCredentials == null) return true;
+    if (req.withCredentials == null) return true;
+    return withCredentials == req.withCredentials;
   }
 
   String toString() => "$method $url";
@@ -112,19 +117,38 @@ class _Chain {
   respond([x,y,z]) => _respondFn(x,y,z);
 }
 
+
+/**
+ * An internal class used by [MockHttpBackend].
+ */
+class RecordedRequest {
+  final String method;
+  final url, callback, data, headers, timeout;
+  final bool withCredentials;
+
+  RecordedRequest({this.method, this.url, this.callback, this.data,
+      this.headers, this.timeout, this.withCredentials});
+
+  bool matchMethodAndUrl(method, url) =>
+      this.method == method && _matchUrl(url, this.url);
+}
+
+bool _matchUrl(expected, actual) =>
+    (expected is RegExp) ? expected.hasMatch(actual) : expected == actual;
+
 /**
  * A mock implementation of [HttpBackend], used in tests.
  */
 class MockHttpBackend implements HttpBackend {
   var definitions = [],
       expectations = [],
-      responses = [];
+      requests = [];
 
   /**
    * This function is called from [Http] and designed to mimic the Dart APIs.
    */
   dart_async.Future request(String url,
-                 {String method, bool withCredentials, String responseType,
+                 {String method, bool withCredentials: false, String responseType,
                  String mimeType, Map<String, String> requestHeaders, sendData,
                  void onProgress(ProgressEvent e)}) {
     dart_async.Completer c = new dart_async.Completer();
@@ -136,8 +160,8 @@ class MockHttpBackend implements HttpBackend {
             new MockHttpRequest(status, data, headers)));
       }
     };
-    call(method == null ? 'GET' : method, url, sendData, callback,
-         requestHeaders);
+    call(method == null ? 'GET' : method, url, callback,
+         data: sendData, headers: requestHeaders, withCredentials: withCredentials);
     return c.future;
   }
 
@@ -159,76 +183,16 @@ class MockHttpBackend implements HttpBackend {
   }
 
 
- /**
-  * A callback oriented API.  This function takes a callback with
-  * will be called with (status, data, headers)
-  */
-  void call(method, [url, data, callback, headers, timeout]) {
-    var xhr = new _MockXhr(),
-        expectation = expectations.isEmpty ? null : expectations[0],
-        wasExpected = false;
-
-    var prettyPrint = (data) {
-      return (data is String || data is Function || data is RegExp)
-          ? data
-          : JSON.encode(data);
-    };
-
-    var wrapResponse = (wrapped) {
-      var handleResponse = () {
-        var response = wrapped.response(method, url, data, headers);
-        xhr.$$respHeaders = response[2];
-        utils.relaxFnApply(callback, [response[0], response[1],
-             xhr.getAllResponseHeaders()]);
-      };
-
-      var handleTimeout = () {
-        for (var i = 0; i < responses.length; i++) {
-          if (identical(responses[i], handleResponse)) {
-            responses.removeAt(i);
-            callback(-1, null, '');
-            break;
-          }
-        }
-      };
-
-      if (timeout != null) timeout.then(handleTimeout);
-      return handleResponse;
-    };
-
-    if (expectation != null && expectation.match(method, url)) {
-      if (!expectation.matchData(data))
-        throw ['Expected $expectation with different data\n' +
-            'EXPECTED: ${prettyPrint(expectation.data)}\nGOT:      $data'];
-
-      if (!expectation.matchHeaders(headers))
-        throw ['Expected $expectation with different headers\n'
-            'EXPECTED: ${prettyPrint(expectation.headers)}\n'
-            'GOT:      ${prettyPrint(headers)}'];
-
-      expectations.removeAt(0);
-
-      if (expectation.response != null) {
-        responses.add(wrapResponse(expectation));
-        return;
-      }
-      wasExpected = true;
-    }
-
-    for (var definition in definitions) {
-      if (definition.match(method, url, data, headers != null ? headers : {})) {
-        if (definition.response != null) {
-          // if $browser specified, we do auto flush all requests
-          responses.add(wrapResponse(definition));
-        } else throw ['No response defined !'];
-        return;
-      }
-    }
-    throw wasExpected ?
-        ['No response defined !'] :
-        ['Unexpected request: $method $url\n' + (expectation != null ?
-            'Expected $expectation' :
-            'No more requests expected')];
+  void call(method, url, callback, {data, headers, timeout, withCredentials: false}) {
+    requests.add(new RecordedRequest(
+      method: method,
+      url: url,
+      callback: callback,
+      data: data,
+      headers: headers,
+      timeout: timeout,
+      withCredentials: withCredentials
+    ));
   }
 
   /**
@@ -248,8 +212,8 @@ class MockHttpBackend implements HttpBackend {
    *    an array containing response status (number), response data (string) and response headers
    *    (Object).
    */
-  _Chain when(method, [url, data, headers]) {
-    var definition = new MockHttpExpectation(method, url, data, headers),
+  _Chain when(method, [url, data, headers, withCredentials = false]) {
+    var definition = new MockHttpExpectation(method, url, data, headers, withCredentials),
         chain = new _Chain(respond: (status, data, headers) {
           definition.response = _createResponse(status, data, headers);
         });
@@ -260,8 +224,8 @@ class MockHttpBackend implements HttpBackend {
 
   /**
    * @ngdoc method
-   * @name ngMock.$httpBackend#whenGET
-   * @methodOf ngMock.$httpBackend
+   * @name ngMock.httpBackend#whenGET
+   * @methodOf ngMock.httpBackend
    * @description
    * Creates a new backend definition for GET requests. For more info see `when()`.
    *
@@ -274,8 +238,8 @@ class MockHttpBackend implements HttpBackend {
 
   /**
    * @ngdoc method
-   * @name ngMock.$httpBackend#whenDELETE
-   * @methodOf ngMock.$httpBackend
+   * @name ngMock.httpBackend#whenDELETE
+   * @methodOf ngMock.httpBackend
    * @description
    * Creates a new backend definition for DELETE requests. For more info see `when()`.
    *
@@ -288,8 +252,8 @@ class MockHttpBackend implements HttpBackend {
 
   /**
    * @ngdoc method
-   * @name ngMock.$httpBackend#whenJSONP
-   * @methodOf ngMock.$httpBackend
+   * @name ngMock.httpBackend#whenJSONP
+   * @methodOf ngMock.httpBackend
    * @description
    * Creates a new backend definition for JSONP requests. For more info see `when()`.
    *
@@ -301,8 +265,8 @@ class MockHttpBackend implements HttpBackend {
 
   /**
    * @ngdoc method
-   * @name ngMock.$httpBackend#whenPUT
-   * @methodOf ngMock.$httpBackend
+   * @name ngMock.httpBackend#whenPUT
+   * @methodOf ngMock.httpBackend
    * @description
    * Creates a new backend definition for PUT requests.  For more info see `when()`.
    *
@@ -316,8 +280,8 @@ class MockHttpBackend implements HttpBackend {
 
   /**
    * @ngdoc method
-   * @name ngMock.$httpBackend#whenPOST
-   * @methodOf ngMock.$httpBackend
+   * @name ngMock.httpBackend#whenPOST
+   * @methodOf ngMock.httpBackend
    * @description
    * Creates a new backend definition for POST requests. For more info see `when()`.
    *
@@ -333,8 +297,8 @@ class MockHttpBackend implements HttpBackend {
 
   /**
    * @ngdoc method
-   * @name ngMock.$httpBackend#whenHEAD
-   * @methodOf ngMock.$httpBackend
+   * @name ngMock.httpBackend#whenHEAD
+   * @methodOf ngMock.httpBackend
    * @description
    * Creates a new backend definition for HEAD requests. For more info see `when()`.
    *
@@ -346,8 +310,8 @@ class MockHttpBackend implements HttpBackend {
 
   /**
    * @ngdoc method
-   * @name ngMock.$httpBackend#expect
-   * @methodOf ngMock.$httpBackend
+   * @name ngMock.httpBackend#expect
+   * @methodOf ngMock.httpBackend
    * @description
    * Creates a new request expectation.
    *
@@ -364,8 +328,8 @@ class MockHttpBackend implements HttpBackend {
    *    an array containing response status (number), response data (string) and response headers
    *    (Object).
    */
-  _Chain expect(method, [url, data, headers]) {
-    var expectation = new MockHttpExpectation(method, url, data, headers);
+  _Chain expect(method, [url, data, headers, withCredentials = false]) {
+    var expectation = new MockHttpExpectation(method, url, data, headers, withCredentials);
     expectations.add(expectation);
     return new _Chain(respond: (status, data, headers) {
       expectation.response = _createResponse(status, data, headers);
@@ -375,8 +339,8 @@ class MockHttpBackend implements HttpBackend {
 
   /**
    * @ngdoc method
-   * @name ngMock.$httpBackend#expectGET
-   * @methodOf ngMock.$httpBackend
+   * @name ngMock.httpBackend#expectGET
+   * @methodOf ngMock.httpBackend
    * @description
    * Creates a new request expectation for GET requests. For more info see `expect()`.
    *
@@ -385,12 +349,13 @@ class MockHttpBackend implements HttpBackend {
    * @returns {requestHandler} Returns an object with `respond` method that control how a matched
    * request is handled. See #expect for more info.
    */
-  _Chain expectGET(url, [headers]) => expect('GET', url, null, headers);
+  _Chain expectGET(url, [headers, withCredentials = false]) => expect('GET', url, null, headers,
+      withCredentials);
 
   /**
    * @ngdoc method
-   * @name ngMock.$httpBackend#expectDELETE
-   * @methodOf ngMock.$httpBackend
+   * @name ngMock.httpBackend#expectDELETE
+   * @methodOf ngMock.httpBackend
    * @description
    * Creates a new request expectation for DELETE requests. For more info see `expect()`.
    *
@@ -399,12 +364,13 @@ class MockHttpBackend implements HttpBackend {
    * @returns {requestHandler} Returns an object with `respond` method that control how a matched
    *   request is handled.
    */
-  _Chain expectDELETE(url, [headers]) => expect('DELETE', url, null, headers);
+  _Chain expectDELETE(url, [headers, withCredentials = false]) => expect('DELETE', url, null,
+      headers, withCredentials);
 
   /**
    * @ngdoc method
-   * @name ngMock.$httpBackend#expectJSONP
-   * @methodOf ngMock.$httpBackend
+   * @name ngMock.httpBackend#expectJSONP
+   * @methodOf ngMock.httpBackend
    * @description
    * Creates a new request expectation for JSONP requests. For more info see `expect()`.
    *
@@ -412,12 +378,13 @@ class MockHttpBackend implements HttpBackend {
    * @returns {requestHandler} Returns an object with `respond` method that control how a matched
    *   request is handled.
    */
-  _Chain expectJSONP(url, [headers]) => expect('JSONP', url, null, headers);
+  _Chain expectJSONP(url, [headers, withCredentials = false]) => expect('JSONP', url, null, headers,
+      withCredentials);
 
   /**
    * @ngdoc method
-   * @name ngMock.$httpBackend#expectPUT
-   * @methodOf ngMock.$httpBackend
+   * @name ngMock.httpBackend#expectPUT
+   * @methodOf ngMock.httpBackend
    * @description
    * Creates a new request expectation for PUT requests. For more info see `expect()`.
    *
@@ -427,12 +394,13 @@ class MockHttpBackend implements HttpBackend {
    * @returns {requestHandler} Returns an object with `respond` method that control how a matched
    *   request is handled.
    */
-  _Chain expectPUT(url, [data, headers]) => expect('PUT', url, data, headers);
+  _Chain expectPUT(url, [data, headers, withCredentials = false]) => expect('PUT', url, data,
+      headers, withCredentials);
 
   /**
    * @ngdoc method
-   * @name ngMock.$httpBackend#expectPOST
-   * @methodOf ngMock.$httpBackend
+   * @name ngMock.httpBackend#expectPOST
+   * @methodOf ngMock.httpBackend
    * @description
    * Creates a new request expectation for POST requests. For more info see `expect()`.
    *
@@ -442,12 +410,13 @@ class MockHttpBackend implements HttpBackend {
    * @returns {requestHandler} Returns an object with `respond` method that control how a matched
    *   request is handled.
    */
-  _Chain expectPOST(url, [data, headers]) => expect('POST', url, data, headers);
+  _Chain expectPOST(url, [data, headers, withCredentials = false]) => expect('POST', url, data,
+      headers, withCredentials);
 
   /**
    * @ngdoc method
-   * @name ngMock.$httpBackend#expectPATCH
-   * @methodOf ngMock.$httpBackend
+   * @name ngMock.httpBackend#expectPATCH
+   * @methodOf ngMock.httpBackend
    * @description
    * Creates a new request expectation for PATCH requests. For more info see `expect()`.
    *
@@ -457,25 +426,13 @@ class MockHttpBackend implements HttpBackend {
    * @returns {requestHandler} Returns an object with `respond` method that control how a matched
    *   request is handled.
    */
-  _Chain expectPATCH(url, [data, headers]) => expect('PATCH', url, data, headers);
+  _Chain expectPATCH(url, [data, headers, withCredentials = false]) => expect('PATCH', url, data,
+      headers, withCredentials);
 
   /**
    * @ngdoc method
-   * @name ngMock.$httpBackend#expectHEAD
-   * @methodOf ngMock.$httpBackend
-   * @description
-   * Creates a new request expectation for HEAD requests. For more info see `expect()`.
-   *
-   * @param {string|RegExp} url HTTP url.
-   * @param {Object=} headers HTTP headers.
-   * @returns {requestHandler} Returns an object with `respond` method that control how a matched
-   *   request is handled.
-   */
-
-  /**
-   * @ngdoc method
-   * @name ngMock.$httpBackend#flush
-   * @methodOf ngMock.$httpBackend
+   * @name ngMock.httpBackend#flush
+   * @methodOf ngMock.httpBackend
    * @description
    * Flushes all pending requests using the trained responses.
    *
@@ -484,26 +441,152 @@ class MockHttpBackend implements HttpBackend {
    *   is called an exception is thrown (as this typically a sign of programming error).
    */
   void flush([count]) {
-    if (responses.isEmpty) throw ['No pending request to flush !'];
+    if (requests.isEmpty) throw ['No pending request to flush !'];
 
     if (count != null) {
       while (count-- > 0) {
-        if (responses.isEmpty) throw ['No more pending request to flush !'];
-        responses.removeAt(0)();
+        if (requests.isEmpty) throw ['No more pending request to flush !'];
+        _processRequest(requests.removeAt(0));
       }
     } else {
-      while (!responses.isEmpty) {
-        responses.removeAt(0)();
+      while (!requests.isEmpty) {
+        _processRequest(requests.removeAt(0));
       }
     }
     verifyNoOutstandingExpectation();
   }
 
+  /**
+   * Creates a new expectation and flushes all pending requests until the one matching the expectation.
+   *
+   * @param {string} method HTTP method.
+   * @param {string|RegExp} url HTTP url.
+   * @param {(string|RegExp)=} data HTTP request body.
+   * @param {(Object|function(Object))=} headers HTTP headers or function that
+   * receives http header object and returns true if the headers match the
+   * current definition.
+   * @returns {requestHandler} Returns an object with `respond` method that
+   * control how a matched request is handled.
+   *
+   *  - respond – `{function([status,] data[, headers])|function(function(method, url, data, headers)}`
+   *    – The respond method takes a set of static data to be returned or a function that can return
+   *    an array containing response status (number), response data (string) and response headers
+   *    (Object).
+   */
+  _Chain flushExpected(String method, url, [data, headers, withCredentials = false]) {
+    var expectation = new MockHttpExpectation(method, url, data, headers, withCredentials);
+    expectations.add(expectation);
+
+    flushUntilMethodAndUrlMatch () {
+      while (requests.isNotEmpty) {
+        final r = requests.removeAt(0);
+        _processRequest(r);
+        if (r.matchMethodAndUrl(method, url)) return;
+      }
+      throw ['No more pending requests matching $method $url'];
+    }
+
+    return new _Chain(respond: (status, data, headers) {
+      expectation.response = _createResponse(status, data, headers);
+      flushUntilMethodAndUrlMatch();
+    });
+  }
 
   /**
    * @ngdoc method
-   * @name ngMock.$httpBackend#verifyNoOutstandingExpectation
-   * @methodOf ngMock.$httpBackend
+   * @name ngMock.httpBackend#flushGET
+   * @methodOf ngMock.httpBackend
+   * @description
+   * Creates a new request expectation for GET requests. For more info see `flushExpected()`.
+   *
+   * @param {string|RegExp} url HTTP url.
+   * @param {Object=} headers HTTP headers.
+   * @returns {requestHandler} Returns an object with `respond` method that control how a matched
+   *   request is handled.
+   */
+  _Chain flushGET(url, [headers, withCredentials = false]) =>
+      flushExpected("GET", url, null, headers, withCredentials);
+
+  /**
+   * @ngdoc method
+   * @name ngMock.httpBackend#flushPOST
+   * @methodOf ngMock.httpBackend
+   * @description
+   * Creates a new request expectation for POST requests. For more info see `flushExpected()`.
+   *
+   * @param {string|RegExp} url HTTP url.
+   * @param {Object=} headers HTTP headers.
+   * @returns {requestHandler} Returns an object with `respond` method that control how a matched
+   *   request is handled.
+   */
+  _Chain flushPOST(url, [data, headers, withCredentials = false]) =>
+      flushExpected("POST", url, data, headers, withCredentials);
+
+  /**
+   * @ngdoc method
+   * @name ngMock.httpBackend#flushPUT
+   * @methodOf ngMock.httpBackend
+   * @description
+   * Creates a new request expectation for PUT requests. For more info see `flushExpected()`.
+   *
+   * @param {string|RegExp} url HTTP url.
+   * @param {Object=} headers HTTP headers.
+   * @returns {requestHandler} Returns an object with `respond` method that control how a matched
+   *   request is handled.
+   */
+  _Chain flushPUT(url, [data, headers, withCredentials = false]) =>
+      flushExpected("PUT", url, data, headers, withCredentials);
+
+  /**
+   * @ngdoc method
+   * @name ngMock.httpBackend#flushPATCH
+   * @methodOf ngMock.httpBackend
+   * @description
+   * Creates a new request expectation for PATCH requests. For more info see `flushExpected()`.
+   *
+   * @param {string|RegExp} url HTTP url.
+   * @param {Object=} headers HTTP headers.
+   * @returns {requestHandler} Returns an object with `respond` method that control how a matched
+   *   request is handled.
+   */
+  _Chain flushPATCH(url, [data, headers, withCredentials = false]) =>
+      flushExpected("PATCH", url, data, headers, withCredentials);
+
+  /**
+   * @ngdoc method
+   * @name ngMock.httpBackend#flushDELETE
+   * @methodOf ngMock.httpBackend
+   * @description
+   * Creates a new request expectation for DELETE requests. For more info see `flushExpected()`.
+   *
+   * @param {string|RegExp} url HTTP url.
+   * @param {Object=} headers HTTP headers.
+   * @returns {requestHandler} Returns an object with `respond` method that control how a matched
+   *   request is handled.
+   */
+  _Chain flushDELETE(url, [headers, withCredentials = false]) =>
+      flushExpected("DELETE", url, null, headers, withCredentials);
+
+  /**
+   * @ngdoc method
+   * @name ngMock.httpBackend#flushJSONP
+   * @methodOf ngMock.httpBackend
+   * @description
+   * Creates a new request expectation for JSONP requests. For more info see `flushExpected()`.
+   *
+   * @param {string|RegExp} url HTTP url.
+   * @param {Object=} headers HTTP headers.
+   * @returns {requestHandler} Returns an object with `respond` method that control how a matched
+   *   request is handled.
+   */
+  _Chain flushJSONP(url, [headers, withCredentials = false]) =>
+      flushExpected("JSONP", url, null, headers, withCredentials);
+
+
+  /**
+   * @ngdoc method
+   * @name ngMock.httpBackend#verifyNoOutstandingExpectation
+   * @methodOf ngMock.httpBackend
    * @description
    * Verifies that all of the requests defined via the `expect` api were made. If any of the
    * requests were not made, verifyNoOutstandingExpectation throws an exception.
@@ -512,7 +595,7 @@ class MockHttpBackend implements HttpBackend {
    * "afterEach" clause.
    *
    * <pre>
-   *   afterEach($httpBackend.verifyNoOutstandingExpectation);
+   *   afterEach(httpBackend.verifyNoOutstandingExpectation);
    * </pre>
    */
   void verifyNoOutstandingExpectation() {
@@ -524,8 +607,8 @@ class MockHttpBackend implements HttpBackend {
 
   /**
    * @ngdoc method
-   * @name ngMock.$httpBackend#verifyNoOutstandingRequest
-   * @methodOf ngMock.$httpBackend
+   * @name ngMock.httpBackend#verifyNoOutstandingRequest
+   * @methodOf ngMock.httpBackend
    * @description
    * Verifies that there are no outstanding requests that need to be flushed.
    *
@@ -533,26 +616,115 @@ class MockHttpBackend implements HttpBackend {
    * "afterEach" clause.
    *
    * <pre>
-   *   afterEach($httpBackend.verifyNoOutstandingRequest);
+   *   afterEach(httpBackend.verifyNoOutstandingRequest);
    * </pre>
    */
   void verifyNoOutstandingRequest() {
-    if (!responses.isEmpty) throw ['Unflushed requests: ${responses.length}'];
+    if (!requests.isEmpty) throw ['Unflushed requests: ${requests.length}'];
   }
 
 
   /**
    * @ngdoc method
-   * @name ngMock.$httpBackend#resetExpectations
-   * @methodOf ngMock.$httpBackend
+   * @name ngMock.httpBackend#resetExpectations
+   * @methodOf ngMock.httpBackend
    * @description
    * Resets all request expectations, but preserves all backend definitions. Typically, you would
    * call resetExpectations during a multiple-phase test when you want to reuse the same instance of
-   * $httpBackend mock.
+   * httpBackend mock.
    */
   void resetExpectations() {
     expectations.length = 0;
-    responses.length = 0;
+    requests.length = 0;
+  }
+
+
+  void _processRequest(RecordedRequest req) {
+    prettyPrint(data) {
+      return (data is String || data is Function || data is RegExp)
+          ? data
+          : JSON.encode(data);
+    }
+
+    handleResponse(expectation) {
+      final xhr = new _MockXhr();
+      final response = expectation.response(req.method, req.url, req.data, req.headers);
+
+      final status = response[0];
+      final data = response[1];
+      xhr.respHeaders = response[2];
+
+      utils.relaxFnApply(req.callback, [status, data, xhr.getAllResponseHeaders()]);
+    }
+
+    handleResponseAndTimeout(expectation) {
+      if (req.timeout != null) {
+        req.timeout.then(() => req.callback(-1, null, ''));
+      } else {
+        handleResponse(expectation);
+      }
+    }
+
+    checkExpectation(expectation) {
+      if (!expectation.matchData(req)) {
+        throw ['Expected $expectation with different data\n'
+            'EXPECTED: ${prettyPrint(expectation.data)}\nGOT:      ${req.data}'];
+      }
+
+      if (!expectation.matchHeaders(req)) {
+        throw ['Expected $expectation with different headers\n'
+            'EXPECTED: ${prettyPrint(expectation.headers)}\n'
+            'GOT:      ${prettyPrint(req.headers)}'];
+      }
+
+      if (!expectation.matchWithCredentials(req)) {
+        throw ['Expected $expectation with different withCredentials\n'
+            'EXPECTED: ${prettyPrint(expectation.withCredentials)}\n'
+            'GOT:      ${prettyPrint(req.withCredentials)}'];
+      }
+    }
+
+    hasResponse(d) => d != null && d.response != null;
+
+    executeFirstExpectation(e, d) {
+      checkExpectation(e);
+      expectations.remove(e);
+
+      if (hasResponse(e)) {
+        handleResponseAndTimeout(e);
+      } else if (hasResponse(d)) {
+        handleResponseAndTimeout(d);
+      } else {
+        throw ['No response defined !'];
+      }
+    }
+
+    executeMatchingDefinition(e, d) {
+      if (hasResponse(d)) {
+        handleResponseAndTimeout(d);
+      } else if (d != null) {
+        throw ['No response defined !'];;
+      } else if (e != null) {
+        throw ['Unexpected request: ${req.method} ${req.url}\nExpected $e'];
+      } else  {
+        throw ['Unexpected request: ${req.method} ${req.url}\nNo more requests expected'];
+      }
+    }
+
+    firstExpectation() =>
+        expectations.isEmpty ? null : expectations.first;
+
+    matchingDefinition() =>
+        definitions.firstWhere((d) => d.match(req), orElse: () => null);
+
+    final e = firstExpectation();
+    final d = matchingDefinition();
+
+    if (e != null && e.matchMethodAndUrl(req)) {
+      executeFirstExpectation(e, d);
+    } else {
+      executeMatchingDefinition(e, d);
+    }
   }
 }
 

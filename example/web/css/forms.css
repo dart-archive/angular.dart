@@ -1,0 +1,233 @@
+.half {
+  width:49%!important;
+}
+
+.half + .half {
+  margin-left:1%;
+}
+
+form { margin:0; }
+
+[ng-cloak]:after {
+  content:"";
+  position:fixed;
+  top:0;
+  right:0;
+  left:0;
+  bottom:0;
+  background:rgba(255,255,255,0.95);
+  z-index:1000;
+}
+
+.form section,
+.form nav {
+  padding:30px;
+  border-top:1px solid #ddd;
+  position:relative;
+}
+
+.form .sub-section {
+  background:#f9f9f9;
+  box-shadow:inset 0 0 5px #ddd;
+}
+
+.form .sub-action {
+  position:absolute;
+  top:20px;
+  right:20px;
+}
+
+.grid-left {
+  position:fixed;
+  top:0;
+  left:0;
+  width:50%;
+  bottom:0;
+  overflow:auto;
+  border-right:1px solid #ddd;
+}
+
+.grid-right {
+  position:absolute;
+  top:0;
+  right:0;
+  bottom:0;
+  background:#eee;
+  z-index:100;
+  width:50.1%;
+}
+
+.page-header {
+  background:#555;
+  padding-left:20px;
+  color:white;
+  overflow:auto;
+}
+
+.form.submitted .error {
+  display:block;
+}
+
+.form .error {
+  display:none;
+  background:maroon;
+  padding:3px 0 3px 8px;
+  border-radius:3px;
+  color:white;
+  position:relative;
+  margin-bottom:30px;
+}
+
+.form.ng-submit-invalid .ng-invalid {
+  border-color:maroon!important;
+  background:#fff5f5;
+  color:maroon!important;
+}
+
+.form.ng-submit-invalid select.ng-invalid {
+  background:transparent;
+}
+
+.form.ng-submit-invalid .picker.ng-invalid {
+  border:1px solid maroon!important;
+}
+
+.form .error:after {
+  content:"";
+  position:absolute;
+  top:-6px;
+  left:20px;
+  border-style:solid;
+  border-color:transparent transparent maroon;
+  border-width:3px;
+}
+
+.preview-actions {
+  position:absolute;
+  background:rgba(0,0,0,0.5);
+  top:0;
+  left:0;
+  right:0;
+}
+
+.color-backdrop {
+  position:absolute;
+  top:0;
+  left:0;
+  right:0;
+  bottom:0;
+  flex-wrap:wrap;
+  display:flex;
+}
+
+.color-logo {
+  position:absolute;
+  top:50px;
+  left:0;
+  right:0;
+  bottom:0;
+  background:url(../img/angular-logo.png) no-repeat center center;
+  background-size:70% auto;
+  -webkit-filter: drop-shadow(0 0 10px black);
+}
+
+.color-backdrop > .color-cell {
+  transition:0.5s linear all;
+  min-width:25%;
+  min-height:25%;
+  border:1px solid black;
+  flex:1;
+}
+
+.color-backdrop.s-1 > .color-cell {
+  min-width:100%; min-height:100%;
+}
+
+.color-backdrop.s-4 > .color-cell {
+  min-width:50%; min-height:50%;
+}
+
+.color-backdrop.s-9 > .color-cell {
+  min-width:33%; min-height:33%;
+}
+
+.color-backdrop.s-16 > .color-cell {
+  min-width:25%; min-height:25%;
+}
+
+.color-backdrop.s-25 > .color-cell {
+  min-width:20%; min-height:20%;
+}
+
+.color-backdrop.s-36 > .color-cell {
+  min-width:16.66%; min-height:16.66%;
+}
+
+.color-backdrop.s-49 > .color-cell {
+  min-width:14.28%; min-height:14.28%;
+}
+
+.color-backdrop.s-64 > .color-cell {
+  min-width:12.5%; min-height:12.5%;
+}
+
+.color-backdrop.s-81 > .color-cell {
+  min-width:11.11%; min-height:11.11%;
+}
+
+.color-backdrop.s-100 > .color-cell {
+  min-width:9.9%; min-height:9.9%;
+}
+
+.profile-badge {
+  font-size:20px;
+  position:absolute;
+  top:10%;
+  left:10%;
+  right:10%;
+  bottom:10%;
+  padding:30px;
+  background:rgba(255,255,255,0.98);
+  border-radius:5px;
+}
+
+.profile-badge p {
+  font-size:20px;
+}
+
+.profile-badge .entry {
+  color:#3085d6;
+}
+
+.inline-row,
+.inputs-row {
+  display:flex;
+}
+
+.inputs-row > * {
+  margin-left:10px!important;
+}
+.input-colors, .inputs-row, .inputs-row .field {
+  width:100%;
+}
+
+.square-picker,
+.resolution-picker {
+  width:90%;
+}
+
+.errors-list li {
+  color:maroon;
+}
+
+.clear-list {
+  list-style:none;
+}
+.clear-list .bullet {
+  display:list-item;
+  list-style:disc outside;
+}
+
+.error {
+  color:red;
+}

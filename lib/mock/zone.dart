@@ -18,8 +18,15 @@ final _asyncErrors = [];
 bool _noMoreAsync = false;
 
 /**
- * Runs any queued up async calls and any async calls queued with
- * running microLeap. Example:
+ * Processes the asynchronous queue established by [async].
+ *
+ * [microLeap] will process all items in the asynchronous queue,
+ * including new items queued during its execution. It will re-raise
+ * any exceptions that occur.
+ *
+ * NOTE: [microLeap] can only be used in [async] tests.
+ *
+ * Example:
  *
  *     it('should run async code', async(() {
  *       var thenRan = false;
@@ -60,6 +67,25 @@ microLeap() {
  * Returns whether the async queue is empty.
  */
 isAsyncQueueEmpty() => _asyncQueue.isEmpty;
+
+/**
+ * Returns whether there are outstanding timers.
+ */
+isTimerQueueEmpty() => _timerQueue.isEmpty;
+
+/**
+ * Returns whether there are outstanding non-periodic timers.
+ */
+isNonPeriodicTimerQueueEmpty() => _timerQueue
+    .where((_TimerSpec spec) => !spec.periodic)
+    .isEmpty;
+
+/**
+ * Returns whether there are outstanding periodic timers.
+ */
+isPeriodicTimerQueueEmpty() => _timerQueue
+    .where((_TimerSpec spec) => spec.periodic)
+    .isEmpty;
 
 /**
  * Simulates a clock tick by running any scheduled timers. Can only be used
@@ -126,6 +152,7 @@ void clockTick({int days: 0,
         if (spec.duration <= Duration.ZERO) {
           microLeap();
           spec.fn();
+          spec.isActive = false;
         } else {
           remainingTimers.add(spec);
         }
@@ -146,7 +173,16 @@ noMoreAsync() {
 }
 
 /**
- * Captures all scheduleMicrotask calls inside of a function.
+ * Captures all scheduleMicrotask calls and newly created Timers
+ * inside of a function.
+ *
+ * [async] will raise an exception if there are still active Timers
+ * when the function completes.
+ *
+ * Use [clockTick] to process timers, and [microLeap] to process
+ * scheduleMicrotask calls.
+ *
+ * NOTE: [async] will not return the result of [fn].
  *
  * Typically used within a test:
  *
@@ -238,5 +274,17 @@ class _TimerSpec implements dart_async.Timer {
 
   void cancel() {
     isActive = false;
+  }
+}
+
+
+class MockZone {
+  MockZone._internal();
+
+  MockZone get current => Zone.current['AngularMockZone'];
+
+  static Zone fork(Zone zone) {
+    MockZone mockZone = new MockZone._internal();
+    return zone.fork(zoneValues: { 'AngularMockZone': mockZone });
   }
 }

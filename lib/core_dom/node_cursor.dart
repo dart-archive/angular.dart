@@ -2,7 +2,7 @@ part of angular.core.dom_internal;
 
 class NodeCursor {
   final stack = [];
-  List<dom.Node> elements;
+  List<dom.Node> elements;  // may be a fixed length list.
   int index = 0;
 
   NodeCursor(this.elements);
@@ -13,11 +13,11 @@ class NodeCursor {
 
   bool descend() {
     var childNodes = elements[index].nodes;
-    var hasChildren = childNodes != null && childNodes.isNotEmpty;
+    var hasChildren = childNodes.isNotEmpty;
 
     if (hasChildren) {
       stack..add(index)..add(elements);
-      elements = new List.from(childNodes);
+      elements = childNodes;
       index = 0;
     }
 
@@ -29,21 +29,15 @@ class NodeCursor {
     index = stack.removeLast();
   }
 
-  void insertAnchorBefore(String name) {
-    var parent = current.parentNode;
-    var anchor = new dom.Comment('ANCHOR: $name');
-    elements.insert(index++, anchor);
-    if (parent != null) parent.insertBefore(anchor, current);
-  }
-
   NodeCursor replaceWithAnchor(String name) {
-    insertAnchorBefore(name);
-    var childCursor = remove();
-    index--;
-    return childCursor;
+    var element = current;
+    var parent = element.parentNode;
+    var anchor = new dom.Comment('ANCHOR: $name');
+    if (parent != null) parent.insertBefore(anchor, element);
+    element.remove();
+    elements[index] = anchor;
+    return new NodeCursor([element]);
   }
 
-  NodeCursor remove() => new NodeCursor([elements.removeAt(index)..remove()]);
-
-  toString() => "[NodeCursor: $elements $index]";
+  String toString() => "[NodeCursor: $elements $index]";
 }

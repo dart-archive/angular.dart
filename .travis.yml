@@ -1,45 +1,106 @@
 language: node_js
 node_js:
-- 0.1
+- '0.11'
 env:
   matrix:
   - JOB=unit-stable
+    CHANNEL=stable
     TESTS=vm
+    BROWSERS=DartiumWithWebPlatform
+  - JOB=unit-g3stable
+    CHANNEL=stable
+    TESTS=vm
+    BROWSERS=DartiumWithWebPlatform
+    USE_G3=YES
   - JOB=unit-dev
+    CHANNEL=dev
     TESTS=vm
+    BROWSERS=DartiumWithWebPlatform
   - JOB=unit-stable
+    CHANNEL=stable
     TESTS=dart2js
+    BROWSERS=SL_Chrome,SL_Firefox
   - JOB=unit-dev
+    CHANNEL=dev
     TESTS=dart2js
-  global:
-  - CHROME_BIN=/usr/bin/google-chrome
-  - secure: "ZSUCLuDjvKEFmgjAd3GpUNCNkdjE66dEIiBfW+EfN0dv2+QHx/MHL4hRyKk2qbGjCr/suR9JWgmNE+Yu1A4fwzcYN52ehgyoLUCTL9YDk+XkFdFWpnjJ8364TDcDuJA0oxwcqJ9E3XUPv6sq1mbcX6DlkPKco7ZT8TLtGmd0nGA="
+    BROWSERS=SL_Chrome,SL_Firefox
+  - JOB=e2e-g3stable
+    CHANNEL=stable
+    BROWSERS=DartiumWithWebPlatform,SL_Chrome
+    USE_G3=YES
+  - JOB=e2e-stable
+    CHANNEL=stable
+    BROWSERS=DartiumWithWebPlatform,SL_Chrome
+  - JOB=e2e-dev
+    CHANNEL=dev
+    BROWSERS=DartiumWithWebPlatform,SL_Chrome
 
-# Don't test these branches.
+  # Uncomment the following lines to test on IE and Safari.  It's currently commented out
+  # because it adds 4 more VMs per build.  FYI, combining them into existing jobs results
+  # in a significantly high rate flakiness.
+  # - JOB=unit-stable-ie10
+  #   CHANNEL=stable
+  #   TESTS=dart2js
+  #   BROWSERS=SL_IE10
+  # - JOB=unit-dev-ie10
+  #   CHANNEL=dev
+  #   TESTS=dart2js
+  #   BROWSERS=SL_IE10
+
+  # - JOB=unit-stable-ie11
+  #   CHANNEL=stable
+  #   TESTS=dart2js
+  #   BROWSERS=SL_IE11
+  # - JOB=unit-dev-ie11
+  #   CHANNEL=dev
+  #   TESTS=dart2js
+  #   BROWSERS=SL_IE11
+
+  # - JOB=unit-stable-safari6
+  #   CHANNEL=stable
+  #   TESTS=dart2js
+  #   BROWSERS=SL_Safari6
+  # - JOB=unit-dev-safari6
+  #   CHANNEL=dev
+  #   TESTS=dart2js
+  #   BROWSERS=SL_Safari6
+
+  # - JOB=unit-stable-safari7
+  #   CHANNEL=stable
+  #   TESTS=dart2js
+  #   BROWSERS=SL_Safari7
+  # - JOB=unit-dev-safari7
+  #   CHANNEL=dev
+  #   TESTS=dart2js
+  #   BROWSERS=SL_Safari7
+
+  global:
+  - secure: AKoqpZ699egF0i4uT/FQ5b4jIc0h+KVbhtVCql0uFxwFIl2HjOYgDayrUCAf6USfpW0LghZxJJhBamWOl/505eNSe9HvEd8JLg/to+1Fo9xi9llsu5ehmNH31/5pue4EvsrVuEap1qqL6/BNwI2cAryayU0p5tV0g8gL5h4IxG8=
+  - LOGS_DIR=/tmp/angular-build/logs
+  # Sauce
+  - BROWSER_PROVIDER_READY_FILE=/tmp/sauce-connect-ready
+  - SAUCE_USERNAME=angular-ci
+  - SAUCE_ACCESS_KEY=9b988f434ff8-fbca-8aa4-4ae3-35442987
+  # Reporting benchmarks to ng-dash.appspot.com
+  - NGDASH_BASE_URL=https://ng-dash.appspot.com
+  - NGDASH_USER_EMAIL=travis-ci.org
+  - secure: "n3KJsLLXEh1wlLRTF2wWvnDBAL+sOg+Mf/gc/Ub9/zCpXLDd1LP76hWBH/d7TCaC0oH5dnyD3ugV6PtJ7VEPRBZp72IbuNZzj8Ui8SisXVd0aos4u7s7X5NVwcxobhxd8Csoi5QPT31w8iT6qaC9VSXnYM3EEGqeppRqRBu6Hkg="
+
 branches:
   except:
-    - g3v1x
-
+  - g3v1x-master
 before_install:
 - export DISPLAY=:99.0
 - ./scripts/travis/install.sh
+- if [[ -e SKIP_TRAVIS_TESTS ]]; then { cat SKIP_TRAVIS_TESTS ; exit 0; } fi
 before_script:
+- mkdir -p $LOGS_DIR
 - ./scripts/travis/setup.sh
+- ./scripts/sauce/sauce_connect_setup.sh
+- ./scripts/sauce/sauce_connect_block.sh
 script:
 - ./scripts/travis/build.sh
 after_success:
-- curl -o travis_after_all.py https://raw.github.com/jbdeboer/travis_after_all/master/travis_after_all.py
-- python travis_after_all.py
-- export $(cat .to_export_back)
-- |
-      if [ "$BUILD_LEADER" = "YES" ]; then
-        if [ "$BUILD_AGGREGATE_STATUS" = "others_succeeded" ]; then
-          echo "All Succeded! Submitting..."
-          ./scripts/travis/presubmit.sh
-          ./scripts/travis/publish-docs.sh
-        else
-          echo "Some Failed, not submitting"
-        fi
-      else
-        echo "Other builds have not finished, not submitting"
-      fi
+- ./scripts/travis/after-success.sh
+after_script:
+- ./scripts/travis/print-logs.sh

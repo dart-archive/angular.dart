@@ -1,18 +1,29 @@
 part of angular.core_internal;
 
+class Interpolation {
+  final String expression;
+  final List<String> bindingExpressions;
+
+  Interpolation(this.expression, this.bindingExpressions);
+}
+
+final EMPTY_INTERPOLATION = new Interpolation("", <String>[]);
+
 /**
  * Compiles a string with markup into an expression. This service is used by the
  * HTML [Compiler] service for data binding.
  *
- *     var $interpolate = ...; // injected
- *     var exp = $interpolate('Hello {{name}}!');
- *     expect(exp).toEqual('"Hello "+(name)+"!"');
+ *     var interpolate = ...; // injected
+ *     var exp = interpolate('Hello {{name}}!');
+ *     expect(exp).toEqual('"Hello "+(name|stringify)+"!"');
  */
-@NgInjectableService()
+@Injectable()
 class Interpolate implements Function {
-  final Parser _parse;
+  var _cache = new HashMap();
 
-  Interpolate(this._parse);
+  Interpolate(CacheRegister cacheRegister) {
+    cacheRegister.registerCache("Interpolate", _cache);
+  }
 
   /**
    * Compiles markup text into expression.
@@ -24,10 +35,18 @@ class Interpolate implements Function {
    * - [startSymbol]: The symbol to start interpolation. '{{' by default.
    * - [endSymbol]: The symbol to end interpolation. '}}' by default.
    */
+  Interpolation call(String template, [bool mustHaveExpression = false,
+                            String startSymbol = '{{', String endSymbol = '}}']) {
+    if (mustHaveExpression == false && startSymbol == '{{' && endSymbol == '}}') {
+      // cachable
+      return _cache.putIfAbsent(template, () => _call(template, mustHaveExpression, startSymbol, endSymbol));
+    }
+    return _call(template, mustHaveExpression, startSymbol, endSymbol);
+  }
 
-  String call(String template, [bool mustHaveExpression = false,
-  String startSymbol = '{{', String endSymbol = '}}']) {
-    if (template == null || template.isEmpty) return "";
+  Interpolation _call(String template, [bool mustHaveExpression = false,
+                      String startSymbol, String endSymbol]) {
+    if (template == null || template.isEmpty) return EMPTY_INTERPOLATION;
 
     final startLen = startSymbol.length;
     final endLen = endSymbol.length;
@@ -41,6 +60,7 @@ class Interpolate implements Function {
 
     String exp;
     final expParts = <String>[];
+    final bindings = <String>[];
 
     while (index < length) {
       startIdx = template.indexOf(startSymbol, index);
@@ -48,21 +68,28 @@ class Interpolate implements Function {
       if (startIdx != -1 && endIdx != -1) {
         if (index < startIdx) {
           // Empty strings could be stripped thanks to the stringify
-          // filter
-          expParts.add('"${template.substring(index, startIdx)}"');
+          // formatter
+          expParts.add(_wrapInQuotes(template.substring(index, startIdx)));
         }
-        expParts.add('(' + template.substring(startIdx + startLen, endIdx) +
-        '|stringify)');
+        var binding = template.substring(startIdx + startLen, endIdx);
+        bindings.add(binding);
+        expParts.add('(' + binding + '|stringify)');
 
         index = endIdx + endLen;
         hasInterpolation = true;
       } else {
         // we did not find any interpolation, so add the remainder
-        expParts.add('"${template.substring(index)}"');
+        expParts.add(_wrapInQuotes(template.substring(index)));
         break;
       }
     }
 
-    return !mustHaveExpression || hasInterpolation ? expParts.join('+') : null;
+    return !mustHaveExpression || hasInterpolation ?
+        new Interpolation(expParts.join('+'), bindings) : null;
+  }
+
+  String _wrapInQuotes(String s){
+    final escaped = s.replaceAll(r'\', r'\\').replaceAll(r'"', r'\"');
+    return '"$escaped"';
   }
 }

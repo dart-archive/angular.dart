@@ -1,0 +1,9 @@
+name: angular_dart_example
+version: 0.0.1
+dependencies:
+  angular:
+    path: ../
+  protractor: '0.0.5'
+
+transformers:
+- angular

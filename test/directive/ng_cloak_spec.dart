@@ -20,30 +20,30 @@ main() {
     it('should remove ngCloak class from a compiled element with attribute', () {
       var element = e('<div ng-cloak class="foo ng-cloak bar"></div>');
 
-      expect(element.classes.contains('foo')).toBe(true);
-      expect(element.classes.contains('ng-cloak')).toBe(true);
-      expect(element.classes.contains('bar')).toBe(true);
+      expect(element).toHaveClass('foo');
+      expect(element).toHaveClass('ng-cloak');
+      expect(element).toHaveClass('bar');
 
       _.compile(element);
 
-      expect(element.classes.contains('foo')).toBe(true);
-      expect(element.classes.contains('ng-cloak')).toBe(false);
-      expect(element.classes.contains('bar')).toBe(true);
+      expect(element).toHaveClass('foo');
+      expect(element).not.toHaveClass('ng-cloak');
+      expect(element).toHaveClass('bar');
     });
 
 
     it('should remove ngCloak class from a compiled element', () {
       var element = e('<div class="foo ng-cloak bar"></div>');
 
-      expect(element.classes.contains('foo')).toBe(true);
-      expect(element.classes.contains('ng-cloak')).toBe(true);
-      expect(element.classes.contains('bar')).toBe(true);
+      expect(element).toHaveClass('foo');
+      expect(element).toHaveClass('ng-cloak');
+      expect(element).toHaveClass('bar');
 
       _.compile(element);
 
-      expect(element.classes.contains('foo')).toBe(true);
-      expect(element.classes.contains('ng-cloak')).toBe(false);
-      expect(element.classes.contains('bar')).toBe(true);
+      expect(element).toHaveClass('foo');
+      expect(element).not.toHaveClass('ng-cloak');
+      expect(element).toHaveClass('bar');
     });
   });
 }

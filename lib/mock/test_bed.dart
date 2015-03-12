@@ -19,6 +19,9 @@ class TestBed {
 
   TestBed(this.injector, this.rootScope, this.compiler, this._parser, this.expando);
 
+  TestBed.fromInjector(Injector i) :
+    this(i, i.get(RootScope), i.get(Compiler), i.get(Parser), i.get(Expando));
+
 
   /**
    * Use to compile HTML and activate its directives.
@@ -35,10 +38,7 @@ class TestBed {
    * An option [scope] parameter can be supplied to link it with non root scope.
    */
   Element compile(html, {Scope scope, DirectiveMap directives}) {
-    var injector = this.injector;
-    if (scope != null) {
-      injector = injector.createChild([new Module()..value(Scope, scope)]);
-    }
+    if (scope == null) scope = rootScope;
     if (html is String) {
       rootElements = toNodeList(html);
     } else if (html is Node) {
@@ -50,9 +50,9 @@ class TestBed {
     }
     rootElement = rootElements.length > 0 && rootElements[0] is Element ? rootElements[0] : null;
     if (directives == null) {
-      directives = injector.get(DirectiveMap);
+      directives = injector.getByKey(DIRECTIVE_MAP_KEY);
     }
-    rootView = compiler(rootElements, directives)(injector, rootElements);
+    rootView = compiler(rootElements, directives)(scope, null, rootElements);
     return rootElement;
   }
 
@@ -61,7 +61,8 @@ class TestBed {
    */
   List<Element> toNodeList(html) {
     var div = new DivElement();
-    div.setInnerHtml(html, treeSanitizer: new NullTreeSanitizer());
+    var sanitizedHtml = _handleWhitespace(html);
+    div.setInnerHtml(sanitizedHtml, treeSanitizer: new NullTreeSanitizer());
     var nodes = [];
     for (var node in div.nodes) {
       nodes.add(node);
@@ -70,12 +71,12 @@ class TestBed {
   }
 
   /**
-   * Triggern a specific DOM element on a given node to test directives
+   * Trigger a specific DOM element on a given node to test directives
    * which listen to events.
    */
   triggerEvent(element, name, [type='MouseEvent']) {
     element.dispatchEvent(new Event.eventType(type, name));
-    // Since we are manually triggering event we need to simpulate apply();
+    // Since we are manually triggering event we need to simulate apply();
     rootScope.apply();
   }
 
@@ -89,7 +90,7 @@ class TestBed {
     rootScope.apply();
   }
 
-  getProbe(Node node) {
+  ElementProbe getProbe(Node node) {
     while (node != null) {
       ElementProbe probe = expando[node];
       if (probe != null) return probe;
@@ -98,5 +99,13 @@ class TestBed {
     throw 'Probe not found.';
   }
 
-  getScope(Node node) => getProbe(node).scope;
+  Scope getScope(Node node) => getProbe(node).scope;
+
+  String _handleWhitespace(html) {
+    return html.split('\n')
+               .map((line) {
+                 var trimmed = line.trim();
+                 return trimmed + (trimmed.isEmpty || trimmed.endsWith('>') ? '' : ' ');})
+               .join();
+  }
 }

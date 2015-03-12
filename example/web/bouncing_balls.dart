@@ -1,10 +1,9 @@
-import 'package:perf_api/perf_api.dart';
-import 'package:angular/angular.dart';
-import 'package:angular/angular_dynamic.dart';
-import 'package:angular/change_detection/change_detection.dart';
 import 'dart:html';
 import 'dart:math';
 import 'dart:core';
+
+import 'package:angular/angular.dart';
+import 'package:angular/application_factory.dart';
 
 var random = new Random();
 var width = 400;
@@ -21,29 +20,28 @@ class BallModel {
   static _color() {
     var color = '#';
     for(var i = 0; i < 6; i++) {
-      color += (16 * random.nextDouble()).floor().toRadixString(16);
+      color += random.nextInt(16).toRadixString(16);
     }
     return color;
   }
-
 }
 
-@NgController(
-  selector: '[bounce-controller]',
-  publishAs: 'bounce')
-class BounceController {
+@Component(
+    selector: 'bouncing-balls',
+    templateUrl: 'bouncing_balls_tpl.html',
+    cssUrl: 'bouncing_balls.css')
+class BouncingBalls implements ScopeAware {
+  Scope scope;
   var lastTime = window.performance.now();
   var run = false;
   var fps = 0;
   var digestTime = 0;
   var currentDigestTime = 0;
   var balls = [];
-  final Scope scope;
   var ballClassName = 'ball';
 
-  BounceController(this.scope) {
+  BouncingBalls() {
     changeCount(100);
-    if (run) tick();
   }
 
   void toggleCSS() {
@@ -84,7 +82,7 @@ class BounceController {
     var delay = now - lastTime;
 
     fps = (1000/delay).round();
-    for(var i=0, ii=balls.length; i<ii; i++) {
+    for(var i = 0; i < balls.length; i++) {
       var b = balls[i];
       b.x += delay * b.velX;
       b.y += delay * b.velY;
@@ -101,15 +99,15 @@ class BounceController {
 
 List<String> _CACHE = new List.generate(500, (i) => '${i}px');
 
-@NgDirective(
+@Decorator(
   selector: '[ball-position]',
   map: const {
     "ball-position": '=>position'},
   exportExpressions: const ['x', 'y'])
-class BallPositionDirective {
+class BallPosition {
   final Element element;
   final Scope scope;
-  BallPositionDirective(this.element, this.scope);
+  BallPosition(this.element, this.scope);
 
   px(x) => _CACHE[max(0, x.round())];
 
@@ -126,12 +124,13 @@ class BallPositionDirective {
 
 class MyModule extends Module {
   MyModule() {
-    type(BounceController);
-    type(BallPositionDirective);
-    factory(ScopeStatsConfig, (i) => new ScopeStatsConfig(emit: false));
+    bind(BallPosition);
+    bind(BouncingBalls);
   }
 }
 
 main() {
-  ngDynamicApp().addModule(new MyModule()).run();
+  applicationFactory()
+      .addModule(new MyModule())
+      .run();
 }

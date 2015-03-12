@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport"
+          content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+
+    <!-- 1. Load platform.js for polyfill support. -->
+    <script src="bower_components/platform/platform.js"></script>
+
+    <!-- 2. Use an HTML Import to bring in the element. -->
+    <link rel="import"
+          href="bower_components/paper-progress/paper-progress.html">
+    <link rel="import"
+          href="bower_components/paper-checkbox/paper-checkbox.html">
+    <link rel="import"
+          href="bower_components/paper-slider/paper-slider.html">
+    <script type="application/dart" src="paper.dart"></script>
+    <script src="packages/browser/dart.js"></script>
+    <style>
+        div { padding: 0.25em; }
+        paper-slider { width: 40em; }
+    </style>
+  </head>
+  <body>
+    <h1>Polymer components inside a AngularDart app</h1>
+    <h2>Property binding: paper-progress</h2>
+    <p>This is a simple component that doesn't generate events; the only things that is required is property binding</p>
+    <p>The max ({{max}}) and value ({{curValue}}) properties are bound through bind-* semantics</p>
+
+    <p>Text from Angular: <b>{{text}}</b></p>
+    
+    <div>
+      <paper-progress bind-max=max bind-value=curValue></paper-progress>
+    </div>
+     
+    <p>
+      <label>
+        Change the value through an ng-model bound input box:
+        <input type="text" ng-model="curValue">
+      </label>
+     </p>
+
+    <h2>Events: paper-checkbox</h2>
+    <p>The checkbox will generate an event every time the value is changed</p>
+    <p>AngularDart can listen to these events through the on-* syntax</p>
+
+    <div>
+        <paper-checkbox on-change="curValue = curValue == 5 ? 2 : curValue == 2 ? 10 : 5"></paper-checkbox>
+    </div>
+    <p>Every time the value changes, the curValue ({{curValue}}) scope variable will update</p>
+
+    <h2>Two-way binding: paper-slider</h2>
+    <p>The slide is bound to the curValue scope variable ({{curValue}})</p>
+
+    <div>
+        <paper-slider min="0" bind-max="max" bind-value="curValue" pin="true"></paper-slider>
+    </div>
+  </body>
+</html>

@@ -6,7 +6,7 @@
  *
  * Installation:
  * >> cd <angular-repo>
- * >> ln -s scripts/git/validate-commit-msg.js .git/hooks/commit-msg
+ * >> ln -s ../../scripts/git/validate-commit-msg.js .git/hooks/commit-msg
  */
 var fs = require('fs');
 var util = require('util');
@@ -23,7 +23,8 @@ var TYPES = {
   refactor: true,
   test: true,
   chore: true,
-  revert: true
+  revert: true,
+  perf: true
 };
 
 

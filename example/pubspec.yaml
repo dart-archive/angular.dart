@@ -5,6 +5,10 @@ dependencies:
     path: ../
   browser: any
   unittest: any
+  web_components: any
 
 transformers:
-- angular
+- angular:
+    html_files:
+      - web/bouncing_balls_tpl.html
+      - web/form_controller.html

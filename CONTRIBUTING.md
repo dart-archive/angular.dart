@@ -20,12 +20,12 @@ Help us keep Angular open and inclusive. Please read and follow our [Code of Con
 
 ## <a name="question"></a> Got a Question or Problem?
 
-If you have questions about how to use AngularDart, please direct these to the [Google Group][groups]
+If you have questions about how to use AngularDart, please direct them to the [Google Group][groups]
 discussion list or [StackOverflow][stackoverflow].
 
 ## <a name="issue"></a> Found an Issue?
 If you find a bug in the source code or a mistake in the documentation, you can help us by
-submitting and issue to our [GitHub Repository][github]. Even better you can submit a Pull Request
+submitting an issue to our [GitHub Repository][github]. Even better, you can submit a Pull Request
 with a fix.
 
 **Please see the Submission Guidelines below**.
@@ -82,7 +82,7 @@ Before you submit your pull request consider the following guidelines:
   that relates to your submission. You don't want to duplicate effort.
 * Please sign our [Contributor License Agreement (CLA)](#signing-the-cla) before sending pull
   requests. We cannot accept code without this.
-* Make your changes in a new git branch
+* Make your changes in a new git branch:
 
      ```shell
      git checkout -b my-fix-branch master
@@ -109,7 +109,7 @@ Before you submit your pull request consider the following guidelines:
     ```
 
 * In GitHub, send a pull request to `angular:master`.
-* If we suggest changes then 
+* If we suggest changes then: 
   * Make the required updates.
   * Re-run the AngularDart test suite to ensure tests are still passing.
   * Rebase your branch and force push to your GitHub repository (this will update your Pull Request):
@@ -177,7 +177,7 @@ format that includes a **type**, a **scope** and a **subject**:
 ```
 
 Any line of the commit message cannot be longer 100 characters! This allows the message to be easier
-to read on github as well as in various git tools.
+to read on GitHub as well as in various git tools.
 
 ### Type
 Must be one of the following:
@@ -205,7 +205,7 @@ The subject contains succinct description of the change:
 * no dot (.) at the end
 
 ###Body
-Just as in the **subject**, use the imperative, present tense: "change" not "changed" nor "changes"
+Just as in the **subject**, use the imperative, present tense: "change" not "changed" nor "changes".
 The body should include the motivation for the change and contrast this with previous behavior.
 
 ###Footer

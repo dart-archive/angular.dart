@@ -1,0 +1,43 @@
+:host {
+    display: block;
+    margin-top: 5px;
+}
+
+/* This must be shimmed with a polymer shim rule */
+polyfill-next-selector { content: ':host span:not([:host])'; }
+::content span {
+    background-color: black;
+}
+
+my-button::shadow .custom-class {
+    background-color: rgba(0,0,0, .5);
+}
+
+span {
+    font-weight: bold;
+}
+
+.custom-component {
+    color: white;
+    padding: 5px;
+}
+
+.custom-component a {
+    color: white;
+}
+
+.red {
+    background-color: #FF1F1F;
+}
+
+.green {
+    background-color: #1BC123;
+}
+
+.blue {
+    background-color: #4D90FE;
+}
+
+.grey {
+    background-color: #E0E0E0;
+}

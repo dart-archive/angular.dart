@@ -1,7 +1,8 @@
 library angular.core.parser.utils;
 
 import 'package:angular/core/parser/syntax.dart' show Expression;
-import 'package:angular/core/module_internal.dart';
+import 'package:angular/core/formatter.dart' show FormatterMap;
+import 'package:angular/core/module_internal.dart' show ContextLocals;
 export 'package:angular/utils.dart' show relaxFnApply, relaxFnArgs, toBool;
 
 /// Marker for an uninitialized value.
@@ -19,7 +20,7 @@ class EvalError {
 }
 
 /// Evaluate the [list] in context of the [scope].
-List evalList(scope, List<Expression> list, [FilterMap filters]) {
+List evalList(scope, List<Expression> list, [FormatterMap formatters]) {
   final length = list.length;
   int cacheLength = _evalListCache.length;
   for (; cacheLength <= length; cacheLength++) {
@@ -27,7 +28,7 @@ List evalList(scope, List<Expression> list, [FilterMap filters]) {
   }
   List result = _evalListCache[length];
   for (int i = 0; i < length; i++) {
-    result[i] = list[i].eval(scope, filters);
+    result[i] = list[i].eval(scope, formatters);
   }
   return result;
 }
@@ -80,6 +81,11 @@ getKeyed(object, key) {
   } else if (object == null) {
     throw new EvalError('Accessing null object');
   } else {
+    while (object is ContextLocals) {
+      var ctx = object as ContextLocals;
+      if (ctx.hasProperty(key)) break;
+      object = ctx.parentContext;
+    }
     return object[key];
   }
 }
@@ -93,6 +99,11 @@ setKeyed(object, key, value) {
   } else if (object is Map) {
     object["$key"] = value; // toString dangerous?
   } else {
+    while (object is ContextLocals) {
+      var ctx = object as ContextLocals;
+      if (ctx.hasProperty(key)) break;
+      object = ctx.parentContext;
+    }
     object[key] = value;
   }
   return value;

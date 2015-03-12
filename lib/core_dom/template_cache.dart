@@ -2,11 +2,11 @@ part of angular.core.dom_internal;
 
 /**
  * Infinite cache service for templates loaded from URLs.
- * 
+ *
  * All templates that are loaded from a URL are cached indefinitely in the
  * TemplateCache the first time they are needed.  This includes templates loaded
  * via `ng-include` or via the `templateUrl` field on components decorated with
- * [NgComponent].
+ * [Component].
  *
  * All attempts that require loading a template from a URL are first checked
  * against this cache.  Only when there is a cache miss is a network request
@@ -15,30 +15,34 @@ part of angular.core.dom_internal;
  * You are welcome to pre-load / seed the TemplateCache with templates for URLs
  * in advance to avoid the network hit on first load.
  *
- * There are two ways to seed the TemplateCache – (1) imperatively via and
- * `TemplateCache` service or (2) declaratively in HTML via the `<template>`
- * element (handled by [NgTemplateElementDirective]).
+ * There are two ways to seed the TemplateCache:
+ * 1. imperatively via and the `TemplateCache` service
+ * 2. declaratively in HTML via both `<template type=text/ng-template>` and
+ *    `<script type=text/ng-template>` tags (handled by [NgTemplate])
  *
  * Here is an example that illustrates both techniques
  * ([view in plunker](http://plnkr.co/edit/JCsxhH?p=info)):
  *
  * Example:
- * 
+ *
  *     // main.dart
  *     import 'package:angular/angular.dart';
- * 
- *     @NgDirective(selector: '[main-controller]')
+ *     import 'package:angular/application_factory.dart';
+ *
+ *     @Directive(selector: '[load-template-cache]')
  *     class LoadTemplateCacheDirective {
  *       LoadTemplateCacheDirective(TemplateCache templateCache, Scope scope) {
  *         // Method 1 (imperative): Via the injected TemplateCache service.
- *         templateCache.put(
- *             'template_1.html', new HttpResponse(200, 't1: My name is {{name}}.'));
- *         scope.name = "chirayu";
+ *         templateCache.put('template_1.html',
+ *                           new HttpResponse(200, 't1: My name is {{name}}.'));
+ *         scope.context["name"] = "chirayu";
  *       }
  *     }
  *
  *     main() {
- *       ngBootstrap([new AngularModule()..type(LoadTemplateCacheDirective)], 'html');
+ *       applicationFactory()
+ *           .addModule(new Module()..bind(LoadTemplateCacheDirective))
+ *           .run();
  *     }
  *
  * and
@@ -61,12 +65,7 @@ part of angular.core.dom_internal;
  *     </html>
  *
  * Neither `ng-include` above will result in a network hit.  This means that it
- * isn't necessary for your webserver to even serve those templates.
- *
- * `template_1.html` is preloaded into the [TemplateCache] imperatively by
- * `LoadTemplateCacheDirective` while `template_2.html` is preloaded via the
- * `<template id="template_2.html" type="text/ng-template">` element
- * declaratively in the `<head>` of HTML.
+ * isn't necessary for your web server to even serve those templates.
  */
 class TemplateCache extends LruCache<String, HttpResponse> {
   TemplateCache({int capacity}): super(capacity: capacity);

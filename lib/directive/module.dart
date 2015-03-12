@@ -1,25 +1,39 @@
 /**
-*
-* Directives available in the main [angular.dart](#angular/angular) library.
-*
-* This package is imported for you as part of [angular.dart](#angular/angular),
-* and lists all of the basic directives that are part of Angular.
-*
-*
-*/
+ * All of the core directives available in Angular. This library is included as part of [angular
+ * .dart](#angular/angular).
+ *
+ * A directive attaches a specified behavior to a DOM element. You can extend Angular by writing
+ * your own directives and providing them as part of a custom library.
+ *
+ * Directives consist of a class specifying the behavior, and a directive annotation (such as a
+ * [Decorator](#angular-core-annotation.Decorator) or a
+ * [Component](#angular-core-annotation.Component)) that describes when the behavior should be
+ * applied.
+ *
+ * For example:
+ *
+ *     <span ng-show="isVisible">this text is conditionally visible</span>
+ *
+ */
 library angular.directive;
 
 import 'package:di/di.dart';
 import 'dart:html' as dom;
+import 'dart:async' as async;
 import 'package:intl/intl.dart';
+import 'package:angular/core/annotation.dart';
 import 'package:angular/core/module_internal.dart';
 import 'package:angular/core/parser/parser.dart';
 import 'package:angular/core_dom/module_internal.dart';
+import 'package:angular/core_dom/directive_injector.dart';
 import 'package:angular/utils.dart';
 import 'package:angular/change_detection/watch_group.dart';
 import 'package:angular/change_detection/change_detection.dart';
+import 'package:angular/directive/static_keys.dart';
+import 'dart:collection';
 
-part 'ng_a.dart';
+part 'a_href.dart';
+part 'ng_base_css.dart';
 part 'ng_bind.dart';
 part 'ng_bind_html.dart';
 part 'ng_bind_template.dart';
@@ -38,62 +52,75 @@ part 'ng_src_boolean.dart';
 part 'ng_style.dart';
 part 'ng_switch.dart';
 part 'ng_non_bindable.dart';
-part 'input_select.dart';
+part 'ng_model_select.dart';
 part 'ng_form.dart';
 part 'ng_model_validators.dart';
+part 'ng_model_options.dart';
 
-class NgDirectiveModule extends Module {
-  NgDirectiveModule() {
-    value(NgADirective, null);
-    value(NgBindDirective, null);
-    value(NgBindTemplateDirective, null);
-    value(NgBindHtmlDirective, null);
-    value(dom.NodeValidator, new dom.NodeValidatorBuilder.common());
-    value(NgClassDirective, null);
-    value(NgClassOddDirective, null);
-    value(NgClassEvenDirective, null);
-    value(NgCloakDirective, null);
-    value(NgHideDirective, null);
-    value(NgIfDirective, null);
-    value(NgUnlessDirective, null);
-    value(NgIncludeDirective, null);
-    value(NgPluralizeDirective, null);
-    value(NgRepeatDirective, null);
-    value(NgShowDirective, null);
-    value(InputTextLikeDirective, null);
-    value(InputNumberLikeDirective, null);
-    value(InputRadioDirective, null);
-    value(InputCheckboxDirective, null);
-    value(InputSelectDirective, null);
-    value(OptionValueDirective, null);
-    value(ContentEditableDirective, null);
-    value(NgModel, null);
-    value(NgValue, new NgValue(null));
-    value(NgTrueValue, new NgTrueValue(null));
-    value(NgFalseValue, new NgFalseValue(null));
-    value(NgSwitchDirective, null);
-    value(NgSwitchWhenDirective, null);
-    value(NgSwitchDefaultDirective, null);
+/**
+ * This module registers all the Angular directives.
+ *
+ * When instantiating an Angular application through applicationFactory,
+ * DirectiveModule is automatically included.
+ */
+class DirectiveModule extends Module {
+  DirectiveModule() {
 
-    value(NgBooleanAttributeDirective, null);
-    value(NgSourceDirective, null);
-    value(NgAttributeDirective, null);
+    bind(AHref, toValue: null);
+    bind(NgBaseCss);  // The root injector should have an empty NgBaseCss
+    bind(NgBind, toValue: null);
+    bind(NgBindTemplate, toValue: null);
+    bind(NgBindHtml, toValue: null);
+    bind(dom.NodeValidator, toFactory: () => new dom.NodeValidatorBuilder.common());
+    bind(NgClass, toValue: null);
+    bind(NgClassOdd, toValue: null);
+    bind(NgClassEven, toValue: null);
+    bind(NgCloak, toValue: null);
+    bind(NgHide, toValue: null);
+    bind(NgIf, toValue: null);
+    bind(NgUnless, toValue: null);
+    bind(NgInclude, toValue: null);
+    bind(NgPluralize, toValue: null);
+    bind(NgRepeat, toValue: null);
+    bind(NgShow, toValue: null);
+    bind(InputTextLike, toValue: null);
+    bind(InputDateLike, toValue: null);
+    bind(InputNumberLike, toValue: null);
+    bind(InputRadio, toValue: null);
+    bind(InputCheckbox, toValue: null);
+    bind(InputSelect, toValue: null);
+    bind(OptionValue, toValue: null);
+    bind(ContentEditable, toValue: null);
+    bind(NgBindTypeForDateLike, toValue: null);
+    bind(NgModel, toValue: null);
+    bind(NgModelOptions, toValue: new NgModelOptions());
+    bind(NgValue, toValue: null);
+    bind(NgTrueValue, toValue: new NgTrueValue());
+    bind(NgFalseValue, toValue: new NgFalseValue());
+    bind(NgSwitch, toValue: null);
+    bind(NgSwitchWhen, toValue: null);
+    bind(NgSwitchDefault, toValue: null);
 
-    value(NgEventDirective, null);
-    value(NgStyleDirective, null);
-    value(NgNonBindableDirective, null);
-    value(NgTemplateDirective, null);
-    value(NgControl, new NgNullControl());
-    value(NgForm, new NgNullForm());
+    bind(NgBooleanAttribute, toValue: null);
+    bind(NgSource, toValue: null);
+    bind(NgAttribute, toValue: null);
 
-    value(NgModelRequiredValidator, null);
-    value(NgModelUrlValidator, null);
-    value(NgModelEmailValidator, null);
-    value(NgModelNumberValidator, null);
-    value(NgModelMaxNumberValidator, null);
-    value(NgModelMinNumberValidator, null);
-    value(NgModelPatternValidator, null);
-    value(NgModelMinLengthValidator, null);
-    value(NgModelMaxLengthValidator, null);
+    bind(NgEvent, toValue: null);
+    bind(NgStyle, toValue: null);
+    bind(NgNonBindable, toValue: null);
+    bind(NgTemplate, toValue: null);
+    bind(NgControl, toValue: new NgNullControl());
+    bind(NgForm, toValue: new NgNullForm());
+
+    bind(NgModelRequiredValidator, toValue: null);
+    bind(NgModelUrlValidator, toValue: null);
+    bind(NgModelEmailValidator, toValue: null);
+    bind(NgModelNumberValidator, toValue: null);
+    bind(NgModelMaxNumberValidator, toValue: null);
+    bind(NgModelMinNumberValidator, toValue: null);
+    bind(NgModelPatternValidator, toValue: null);
+    bind(NgModelMinLengthValidator, toValue: null);
+    bind(NgModelMaxLengthValidator, toValue: null);
+    bind(NgModelColorValidator, toValue: null);
   }
 }

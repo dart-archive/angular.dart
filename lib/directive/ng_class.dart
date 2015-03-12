@@ -1,95 +1,98 @@
 part of angular.directive;
 
 /**
- * The `ngClass` allows you to set CSS classes on HTML an element, dynamically,
- * by databinding an expression that represents all classes to be added.
+ * The `ngClass` directive allows you to dynamically style an HTML element,
+ * by binding to an expression that represents the classes to be bound. `Selector: [ng-class]`
  *
- * The directive won't add duplicate classes if a particular class was
- * already set.
+ * Classes are specified by a bound model that can be a string, array, or map:
  *
- * When the expression changes, the previously added classes are removed and
- * only then the new classes are added.
+ *  * String syntax: If the expression is a space-delimited list of CSS classes,
+ *    CSS classes within the string are additively applied to the element.
+ *  * Array syntax: If the expression is an array, CSS classes are additively applied to the
+ *    element.
+ *  * Map syntax: If the expression is a map of 'key':value pairs, then the truthiness of the
+ *    value is used to determine which CSS classes are applied. (Here, the keys correspond to the
+ *    CSS classes to be applied.)
  *
- * The result of the expression evaluation can be a string representing space
- * delimited class names, an array, or a map of class names to boolean values.
- * In the case of a map, the names of the properties whose values are truthy
- * will be added as css classes to the element.
+ * The directive won't add duplicate classes if a particular class was already set. When the
+ * expression changes, CSS classes are updated to reflect the change.
  *
- * ##Examples
+ * # Examples
  *
- * index.html:
+ * Let's assume that we have a simple stylesheet that defines three CSS classes for the following
+ * examples.
  *
- *     <!--
- *       The map syntax:
- *
- *           ng-class="{key1: value1, key2: value2, ...}"
- *
- *       results in only adding CSS classes represented by the map keys when
- *       the corresponding value expressions are truthy.
- *
- *       To use a css class that contains a hyphen (such as line-through in this
- *       example), you should quote the name to make it a valid map key.  You
- *       may, of course, quote all the map keys for consistency.
- *     -->
- *     <p ng-class="{'line-through': strike, bold: bold, red: red}">Map Syntax Example</p>
- *     <input type="checkbox" ng-model="bold"> bold
- *     <input type="checkbox" ng-model="strike"> strike
- *     <input type="checkbox" ng-model="red"> red
- *     <hr>
- *
- *     <p ng-class="style">Using String Syntax</p>
- *     <input type="text" ng-model="style" placeholder="Type: bold strike red">
- *     <hr>
- *
- *     <p ng-class="[style1, style2, style3]">Using Array Syntax</p>
- *     <input ng-model="style1" placeholder="Type: bold"><br>
- *     <input ng-model="style2" placeholder="Type: strike"><br>
- *     <input ng-model="style3" placeholder="Type: red"><br>
- *
- * style.css:
- *
- *     .strike {
+ *     .text-remove {
  *       text-decoration: line-through;
  *     }
- *     .line-through {
- *       text-decoration: line-through;
- *     }
- *     .bold {
+ *     .strong {
  *         font-weight: bold;
  *     }
- *     .red {
+ *     .alert {
  *         color: red;
  *     }
  *
+ * ## String Syntax
+ *
+ *     <input type="text" ng-model="style"
+ *         placeholder="Type an expression here, e.g.: strong
+ *     text-remove alert">
+ *     <p ng-class="style">Using String Syntax</p>
+ *
+ * When the user types a string into the text box, it's evaluated as a list of CSS classes to be
+ * applied to the <p> element on which `ng-class` is applied. For example,
+ * "strong text-remove" applies both `bold` and `line-through` to the text "Using String Syntax".
+ *
+ * ## Array Syntax
+ *
+ *     <input ng-model="style1"
+ *        placeholder="Type an expression, e.g. strong:"><br>
+ *     <input ng-model="style2"
+ *        placeholder="Type an expression, e.g. text-remove:"><br>
+ *     <input ng-model="style3"
+ *        placeholder="Type an expression, e.g. alert:"><br>
+ *     <p ng-class="[style1, style2, style3]">Using Array Syntax</p>
+ *
+ * Here the array is defined by the input in three text boxes. Typing a CSS class name
+ * into each box additively applies those CSS classes to the text "Using Array Syntax".
+ *
+ * ## Map Syntax
+ *
+ *     <input type="checkbox" ng-model="bold"> apply "strong" class
+ *     <input type="checkbox" ng-model="deleted"> apply "text-remove" class
+ *     <input type="checkbox" ng-model="caution"> apply "alert" class
+ *     <p ng-class="{
+ *         'text-remove': deleted,
+ *         'strong': bold,
+ *         'alert': caution}">
+ *        Map Syntax Example</p>
+ *
+ * Here the map associates CSS classes to the input checkboxes. If a checkbox evaluates to true,
+ * that style is applied additively to the text "Map Syntax Example". Note that the class
+ * names are escaped in single quotes, since the map keys represent strings.
+ *
  */
-@NgDirective(
+@Decorator(
     selector: '[ng-class]',
     map: const {'ng-class': '@valueExpression'},
     exportExpressionAttrs: const ['ng-class'])
-class NgClassDirective extends _NgClassBase {
-  NgClassDirective(dom.Element element, Scope scope, NodeAttrs attrs,
-                   NgAnimate animate)
-      : super(element, scope, null, attrs, animate);
+class NgClass extends _NgClassBase {
+  NgClass(NgElement ngElement, Scope scope, NodeAttrs nodeAttrs)
+      : super(ngElement, scope, nodeAttrs);
 }
 
 /**
- * The `ngClassOdd` and `ngClassEven` directives work exactly as
- * {@link ng.directive:ngClass ngClass}, except it works in
- * conjunction with `ngRepeat` and takes affect only on odd (even) rows.
+ * Dynamically style only odd rows in an `ng-repeat` list. `Selector: [ng-class-odd]`
  *
- * This directive can be applied only within a scope of an `ngRepeat`.
+ * This directive works exactly as [ngClass] with regard to String, Array,
+ * and Map syntax for associating CSS classes with an element, but only affects odd rows in a
+ * list.
  *
- * ##Examples
+ * Also see [ngClassEven], which applies CSS classes to even rows.
  *
- * index.html:
- *
- *     <li ng-repeat="name in ['John', 'Mary', 'Cate', 'Suz']">
- *       <span ng-class-odd="'odd'" ng-class-even="'even'">
- *         {{name}}
- *       </span>
- *     </li>
- *
- * style.css:
+ * ##Example
+ * Let's assume that we have a simple stylesheet that defines two CSS classes for the following
+ * example.
  *
  *     .odd {
  *       color: red;
@@ -97,35 +100,36 @@ class NgClassDirective extends _NgClassBase {
  *     .even {
  *       color: blue;
  *     }
+ *
+ * The following template applies these classes to the odd and even rows respectively:
+ *
+ *     <li ng-repeat="name in ['John', 'Mary', 'Cate', 'Suz']">
+ *       <span ng-class-odd="'odd'" ng-class-even="'even'">
+ *         {{name}}
+ *       </span>
+ *     </li>
  */
-@NgDirective(
+@Decorator(
     selector: '[ng-class-odd]',
     map: const {'ng-class-odd': '@valueExpression'},
     exportExpressionAttrs: const ['ng-class-odd'])
-class NgClassOddDirective extends _NgClassBase {
-  NgClassOddDirective(dom.Element element, Scope scope, NodeAttrs attrs,
-                      NgAnimate animate)
-      : super(element, scope, 0, attrs, animate);
+class NgClassOdd extends _NgClassBase {
+  NgClassOdd(NgElement ngElement, Scope scope, NodeAttrs nodeAttrs)
+      : super(ngElement, scope, nodeAttrs, 0);
 }
 
 /**
- * The `ngClassOdd` and `ngClassEven` directives work exactly as
- * {@link ng.directive:ngClass ngClass}, except it works in
- * conjunction with `ngRepeat` and takes affect only on odd (even) rows.
+ * Dynamically style only even rows in an `ng-repeat` list. `Selector: [ng-class-even]`
  *
- * This directive can be applied only within a scope of an `ngRepeat`.
+ * This directive works exactly as [ngClass] with regard to String, Array,
+ * and Map syntax for associating CSS classes with an element, but only affects even rows in a
+ * list.
  *
- * ##Examples
+ * Also see [ngClassEven], which applies CSS classes to even rows.
  *
- * index.html:
- *
- *     <li ng-repeat="name in ['John', 'Mary', 'Cate', 'Suz']">
- *       <span ng-class-odd="'odd'" ng-class-even="'even'">
- *         {{name}}
- *       </span>
- *     </li>
- *
- * style.css:
+ * ##Example
+ * Let's assume that we have a simple stylesheet that defines two CSS classes for the following
+ * example.
  *
  *     .odd {
  *       color: red;
@@ -133,101 +137,164 @@ class NgClassOddDirective extends _NgClassBase {
  *     .even {
  *       color: blue;
  *     }
+ *
+ * The following template applies these classes to the odd and even rows respectively:
+ *
+ *     <li ng-repeat="name in ['John', 'Mary', 'Cate', 'Suz']">
+ *       <span ng-class-odd="'odd'" ng-class-even="'even'">
+ *         {{name}}
+ *       </span>
+ *     </li>
  */
-@NgDirective(
+@Decorator(
     selector: '[ng-class-even]',
     map: const {'ng-class-even': '@valueExpression'},
     exportExpressionAttrs: const ['ng-class-even'])
-class NgClassEvenDirective extends _NgClassBase {
-  NgClassEvenDirective(dom.Element element, Scope scope, NodeAttrs attrs,
-                       NgAnimate animate)
-      : super(element, scope, 1, attrs, animate);
+class NgClassEven extends _NgClassBase {
+  NgClassEven(NgElement ngElement, Scope scope, NodeAttrs nodeAttrs)
+      : super(ngElement, scope, nodeAttrs, 1);
 }
 
 abstract class _NgClassBase {
-  final dom.Element element;
-  final Scope scope;
-  final int mode;
-  final NodeAttrs nodeAttrs;
-  final NgAnimate _animate;
-  var previousSet = [];
-  var currentSet = [];
-  Watch _watch;
+  final NgElement _ngElement;
+  final Scope _scope;
+  final int _mode;
+  Watch _watchExpression;
+  Watch _watchPosition;
+  var _previousSet = new Set<String>();
+  var _currentSet = new Set<String>();
+  bool _first = true;
 
-  _NgClassBase(this.element, this.scope, this.mode, this.nodeAttrs,
-               this._animate)
+  _NgClassBase(this._ngElement, this._scope, NodeAttrs nodeAttrs,
+               [this._mode = null])
   {
-    var prevClass;
+    var prevCls;
 
-    nodeAttrs.observe('class', (String newValue) {
-      if (prevClass != newValue) {
-        prevClass = newValue;
-        _handleChange(scope.context[r'$index']);
+    nodeAttrs.observe('class', (String cls) {
+      if (prevCls != cls) {
+        prevCls = cls;
+        var index = _hasLocal(_scope, r'$index') ? _getLocal(_scope, r'$index') : null;
+        _applyChanges(index);
       }
     });
   }
 
   set valueExpression(expression) {
-    if (_watch != null) _watch.remove();
-    _watch = scope.watch(expression, (current, _) {
-      currentSet = _flatten(current);
-      _handleChange(scope.context[r'$index']);
-    },
-    canChangeModel: false,
-    collection: true);
+    if (_watchExpression != null) _watchExpression.remove();
+    _watchExpression = _scope.watch(expression, (v, _) {
+        _computeChanges(v);
+        var index = _hasLocal(_scope, r'$index') ? _getLocal(_scope, r'$index') : null;
+        _applyChanges(index);
+      },
+      canChangeModel: false,
+      collection: true);
 
-    if (mode != null) {
-      scope.watch(r'$index', (index, oldIndex) {
-        var mod = index % 2;
-        if (oldIndex == null || mod != oldIndex % 2) {
-          if (mod == mode) {
-            currentSet.forEach((css) => _animate.addClass(element, css));
+    if (_mode != null) {
+      if (_watchPosition != null) _watchPosition.remove();
+      _watchPosition = _scope.watch(r'$index', (idx, previousIdx) {
+        var mod = idx % 2;
+        if (previousIdx == null || mod != previousIdx % 2) {
+          if (mod == _mode) {
+            _currentSet.forEach((cls) => _ngElement.addClass(cls));
           } else {
-            previousSet.forEach((css) => _animate.removeClass(element, css));
+            _previousSet.forEach((cls) => _ngElement.removeClass(cls));
           }
         }
       }, canChangeModel: false);
     }
   }
 
-  _handleChange(index) {
-    if (mode == null || (index != null && index % 2 == mode)) {
-      previousSet.forEach((css) {
-        if (!currentSet.contains(css)) {
-          _animate.removeClass(element, css);
-        } else {
-          element.classes.remove(css);
-        }
-      });
-
-      currentSet.forEach((css) {
-        if (!previousSet.contains(css)) {
-          _animate.addClass(element, css);
-        } else {
-          element.classes.add(css);
-        }
-      });
+  void _computeChanges(value) {
+    if (value is CollectionChangeRecord) {
+      _computeCollectionChanges(value, _first);
+    } else if (value is MapChangeRecord) {
+      _computeMapChanges(value, _first);
+    } else {
+      if (value is String) {
+        _currentSet..clear()..addAll(value.split(' '));
+      } else if (value == null) {
+        _currentSet.clear();
+      } else {
+        throw 'ng-class expects expression value to be List, Map or String, '
+              'got $value';
+      }
     }
 
-    previousSet = currentSet;
+    _first = false;
   }
 
-  static List<String> _flatten(classes) {
-    if (classes == null) return [];
-    if (classes is CollectionChangeRecord) {
-      classes = (classes as CollectionChangeRecord).iterable.toList();
+  // todo(vicb) refactor once GH-774 gets fixed
+  void _computeCollectionChanges(CollectionChangeRecord changes, bool first) {
+    if (first) {
+      changes.iterable.forEach((cls) {
+        _currentSet.add(cls);
+      });
+    } else {
+      changes.forEachAddition((CollectionChangeItem a) {
+        _currentSet.add(a.item);
+      });
+      changes.forEachRemoval((CollectionChangeItem r) {
+        _currentSet.remove(r.item);
+      });
     }
-    if (classes is List) {
-      return classes
-          .where((String e) => e != null && e.isNotEmpty)
-          .toList(growable: false);
-    }
-    if (classes is MapChangeRecord) classes = (classes as MapChangeRecord).map;
-    if (classes is Map) {
-      return classes.keys.where((key) => toBool(classes[key])).toList();
-    }
-    if (classes is String) return classes.split(' ');
-    throw 'ng-class expects expression value to be List, Map or String, '
-          'got $classes';
   }
+
+  // todo(vicb) refactor once GH-774 gets fixed
+  _computeMapChanges(MapChangeRecord changes, first) {
+    if (first) {
+      changes.map.forEach((cls, active) {
+        if (toBool(active)) _currentSet.add(cls);
+      });
+    } else {
+      changes.forEachChange((MapKeyValue kv) {
+        var cls = kv.key;
+        var active = toBool(kv.currentValue);
+        var wasActive = toBool(kv.previousValue);
+        if (active != wasActive) {
+          if (active) {
+            _currentSet.add(cls);
+          } else {
+            _currentSet.remove(cls);
+          }
+        }
+      });
+      changes.forEachAddition((MapKeyValue kv) {
+        if (toBool(kv.currentValue)) _currentSet.add(kv.key);
+      });
+      changes.forEachRemoval((MapKeyValue kv) {
+        if (toBool(kv.previousValue)) _currentSet.remove(kv.key);
+      });
+    }
+  }
+
+  _applyChanges(index) {
+    if (_mode == null || (index != null && index % 2 == _mode)) {
+      _previousSet
+          .where((cls) => cls != null)
+          .forEach((cls) => _ngElement.removeClass(cls));
+      _currentSet
+          .where((cls) => cls != null)
+          .forEach((cls) => _ngElement.addClass(cls));
+    }
+
+    _previousSet = _currentSet.toSet();
+  }
+}
+
+bool _hasLocal(context, name) {
+  var ctx = context;
+  while (ctx is ContextLocals) {
+    if (ctx.hasProperty(name)) return true;
+    ctx = ctx.parentScope;
+  }
+  return false;
+}
+
+dynamic _getLocal(context, name) {
+  var ctx = context;
+  while (ctx is ContextLocals) {
+    if (ctx.hasProperty(name)) return ctx[name];
+    ctx = ctx.parentScope;
+  }
+  return null;
 }

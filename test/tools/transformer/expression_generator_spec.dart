@@ -9,7 +9,8 @@ import 'package:barback/barback.dart';
 import 'package:code_transformers/resolver.dart';
 import 'package:code_transformers/tests.dart' as tests;
 
-import '../../jasmine_syntax.dart';
+import 'package:unittest/unittest.dart' hide expect;
+import 'package:guinness/guinness.dart';
 
 main() {
   describe('ExpressionGenerator', () {
@@ -66,26 +67,121 @@ main() {
             'a|web/main.dart': '''
                 import 'package:angular/angular.dart';
 
-                @NgComponent(
-                    templateUrl: 'lib/foo.html',
+                @Component(
+                    templateUrl: 'foo.html',
                     selector: 'my-component')
                 class FooComponent {}
+
+                @Component(
+                    templateUrl: 'packages/b/bar.html',
+                    selector: 'my-component')
+                class BarComponent {}
+
+                main() {}
+                ''',
+            'a|web/foo.html': '''
+                <div>{{template.contents}}</div>''',
+            'b|lib/bar.html': '''
+                <div>{{bar}}</div>''',
+            'a|web/index.html': '''
+                <script src='main.dart' type='application/dart'></script>''',
+            'angular|lib/angular.dart': libAngular,
+          },
+          getters: ['template', 'contents', 'bar'],
+          setters: ['template', 'contents', 'bar'],
+          symbols: []);
+    });
+
+    it('should follow template cache uris', () {
+      return generates(phases,
+          inputs: {
+            'a|web/main.dart': '''
+                import 'package:angular/angular.dart';
+                import 'package:angular/cacheAnnotation.dart';
+
+                @NgTemplateCache(
+                    preCacheUrls: ['packages/a/foo.html', 'packages/b/bar.html'])
+                class FooClass {}
 
                 main() {}
                 ''',
             'a|lib/foo.html': '''
                 <div>{{template.contents}}</div>''',
+            'b|lib/bar.html': '''
+                <div>{{bar}}</div>''',
+            'a|web/index.html': '''
+                <script src='main.dart' type='application/dart'></script>''',
+            'angular|lib/angular.dart': libAngular,
+            'angular|lib/cacheAnnotation.dart': libCacheAnnotation,
+          },
+          getters: ['template', 'contents', 'bar'],
+          setters: ['template', 'contents', 'bar'],
+          symbols: []);
+    });
+
+    it('should respect relative URLs', () {
+      return generates(phases,
+          inputs: {
+            'a|web/main.dart': '''
+                import 'package:b/bar.dart';
+
+                main() {}
+                ''',
+            'b|lib/bar.dart': '''
+                import 'package:angular/angular.dart';
+
+                @Component(
+                    templateUrl: 'bar.html',
+                    selector: 'my-component')
+                class BarComponent {}
+                ''',
+            'b|lib/bar.html': '''
+                <div>{{bar}}</div>''',
             'a|web/index.html': '''
                 <script src='main.dart' type='application/dart'></script>''',
             'angular|lib/angular.dart': libAngular,
           },
-          getters: ['template', 'contents'],
-          setters: ['template', 'contents'],
-          symbols: []);
+          getters: ['bar'],
+          setters: ['bar'],
+      symbols: []);
+    });
+
+    it('should generate expressions for variables found in superclass', () {
+      return generates(phases,
+      inputs: {
+          'a|web/main.dart': '''
+                import 'package:angular/angular.dart';
+
+                @Component(
+                    templateUrl: 'foo.html',
+                    selector: 'my-component')
+                class FooComponent extends BarComponent {
+                  @NgAttr('foo')
+                  var foo;
+                }
+
+                class BarComponent {
+                  @NgAttr('bar')
+                  var bar;
+                }
+
+                main() {}
+                ''',
+          'a|web/foo.html': '''
+                <div>{{template.foo}}</div>
+                <div>{{template.bar}}</div>''',
+          'a|web/index.html': '''
+                <script src='main.dart' type='application/dart'></script>''',
+          'angular|lib/angular.dart': libAngular,
+      },
+      getters: ['foo', 'bar', 'template'],
+      setters: ['foo', 'bar', 'template'],
+      symbols: []);
     });
 
     it('should apply additional HTML files', () {
       htmlFiles.add('web/dummy.html');
+      htmlFiles.add('/packages/b/bar.html');
       return generates(phases,
           inputs: {
             'a|web/main.dart': '''
@@ -95,24 +191,76 @@ main() {
                 ''',
             'a|web/dummy.html': '''
                 <div>{{contents}}</div>''',
+            'b|lib/bar.html': '''
+                <div>{{bar}}</div>''',
             'a|web/index.html': '''
                 <script src='main.dart' type='application/dart'></script>''',
             'angular|lib/angular.dart': libAngular,
           },
-          getters: ['contents'],
-          setters: ['contents'],
+          getters: ['contents', 'bar'],
+          setters: ['contents', 'bar'],
           symbols: []).whenComplete(() {
             htmlFiles.clear();
           });
+    });
+
+    it('should warn on not-found HTML files', () {
+      htmlFiles.add('web/not-found.html');
+      return generates(phases,
+          inputs: {
+            'a|web/main.dart': '''
+                import 'package:angular/angular.dart';
+
+                main() {}
+
+                @Component(
+                    templateUrl: 'packages/b/not-found.html',
+                    selector: 'my-component')
+                class BarComponent {}
+                ''',
+            'a|web/index.html': '''
+                <script src='main.dart' type='application/dart'></script>''',
+            'angular|lib/angular.dart': libAngular,
+          },
+          messages: [
+            'warning: Unable to find /packages/b/not-found.html at '
+                'b|lib/not-found.html (web/main.dart 4 16)',
+            'warning: Unable to find a|web/main.dart from html_files in '
+                'pubspec.yaml.',
+          ]).whenComplete(() {
+            htmlFiles.clear();
+          });
+    });
+
+    it('should extract functions as getters when named import is used', () {
+      return generates(phases,
+          inputs: {
+            'a|web/main.dart': '''
+              import 'package:angular/angular.dart' as ng;
+
+              @ng.Component(selector: 'cmp', template: '{{foo}}')
+              class TestComponent {
+                String foo = "foo";
+              }
+
+              main() {} ''',
+            'a|web/index.html': '''
+              <cmp></cmp>
+              <script src='main.dart' type='application/dart'></script>''',
+            'angular|lib/angular.dart': libAngular,
+          },
+          getters: ['foo'],
+          setters: ['foo'],
+          symbols: []);
     });
   });
 }
 
 Future generates(List<List<Transformer>> phases,
     { Map<String, String> inputs,
-      List<String> getters,
-      List<String> setters,
-      List<String> symbols,
+      List<String> getters: const [],
+      List<String> setters: const [],
+      List<String> symbols: const [],
       Iterable<String> messages: const []}) {
 
   var buffer = new StringBuffer();
@@ -123,7 +271,7 @@ Future generates(List<List<Transformer>> phases,
   buffer.write('final Map<String, FieldSetter> setters = {\n');
   buffer.write(setters.map((s) => '  r"$s": (o, v) => o.$s = v').join(',\n'));
   buffer.write('\n};\n');
-  buffer.write('final Map<String, FieldSetter> symbols = {\n');
+  buffer.write('final Map<String, Symbol> symbols = {\n');
   buffer.write(symbols.map((s) => '  r"$s": #$s').join(',\n'));
   buffer.write('\n};\n');
 
@@ -143,9 +291,22 @@ import 'package:angular/change_detection/change_detection.dart';
 ''';
 
 const String libAngular = '''
-library angular.core;
+library angular.core.annotation_src;
 
-class NgComponent {
-  const NgComponent({String templateUrl, String selector});
+class Component {
+  const Component({String templateUrl, String selector});
+}
+
+class NgAttr {
+  final _mappingSpec = '@';
+  const NgAttr(String attrName);
+}
+''';
+
+const String libCacheAnnotation = '''
+library angular.template_cache_annotation;
+
+class NgTemplateCache {
+  const NgTemplateCache({List preCacheUrls, bool cache});
 }
 ''';

@@ -4,149 +4,154 @@ typedef EvalFunction0();
 typedef EvalFunction1(context);
 
 /**
- * Injected into the listener function within [Scope.on] to provide
- * event-specific details to the scope listener.
+ * Injected into the listener function within [Scope.on] to provide event-specific details to the
+ * scope listener.
  */
 class ScopeEvent {
   static final String DESTROY = 'ng-destroy';
 
   /**
-   * Data attached to the event. This would be the optional parameter
-   * from [Scope.emit] and [Scope.broadcast].
+   * Data attached to the event. This would be the optional parameter from [Scope.emit] and
+   * [Scope.broadcast].
    */
   final data;
 
-  /**
-   * The name of the intercepted scope event.
-   */
   final String name;
 
-  /**
-   * The origin scope that triggered the event (via broadcast or emit).
-   */
+  /// The origin scope that triggered the event (via [Scope.broadcast] or [Scope.emit]).
   final Scope targetScope;
 
   /**
-   * The destination scope that intercepted the event. As
-   * the event traverses the scope hierarchy the the event instance
-   * stays the same, but the [currentScope] reflects the scope
-   * of the current listener which is firing.
+   * The destination scope that intercepted the event. As the event traverses the scope hierarchy
+   * the event instance stays the same, but the [currentScope] reflects the scope of the listener
+   * which is firing.
    */
   Scope get currentScope => _currentScope;
   Scope _currentScope;
 
-  /**
-   * true or false depending on if [stopPropagation] was executed.
-   */
+  /// true or false depending on if [stopPropagation] was executed.
   bool get propagationStopped => _propagationStopped;
   bool _propagationStopped = false;
 
-  /**
-   * true or false depending on if [preventDefault] was executed.
-   */
+  /// true or false depending on if [preventDefault] was executed.
   bool get defaultPrevented => _defaultPrevented;
   bool _defaultPrevented = false;
 
   /**
-   * [name] - The name of the scope event.
-   * [targetScope] - The destination scope that is listening on the event.
+   * [name]: The name of the scope event.
+   * [targetScope]: The scope that triggers the event.
+   * [data]: Arbitrary data attached to the event.
    */
   ScopeEvent(this.name, this.targetScope, this.data);
 
-  /**
-   * Prevents the intercepted event from propagating further to successive
-   * scopes.
-   */
+  /// Prevents the intercepted event from propagating further
   void stopPropagation () {
     _propagationStopped = true;
   }
 
-  /**
-   * Sets the defaultPrevented flag to true.
-   */
+  /// Sets the defaultPrevented flag to true.
   void preventDefault() {
     _defaultPrevented = true;
   }
 }
 
 /**
- * Allows the configuration of [Scope.digest] iteration maximum time-to-live
- * value. Digest keeps checking the state of the watcher getters until it
- * can execute one full iteration with no watchers triggering. TTL is used
- * to prevent an infinite loop where watch A triggers watch B which in turn
- * triggers watch A. If the system does not stabilize in TTL iterations then
- * the digest is stopped and an exception is thrown.
+ * Allows the configuration of [Scope.digest] iteration maximum time-to-live value. Digest keeps
+ * checking the state of the watcher getters until it can execute one full iteration with no
+ * watchers triggering. The TTL is used to prevent an infinite loop where watch A triggers watch B
+ * which in turn triggers watch A. If the system does not stabilize in TTL iterations then the
+ * digest is stopped and an exception is thrown.
  */
-@NgInjectableService()
+@Injectable()
 class ScopeDigestTTL {
   final int ttl;
-  ScopeDigestTTL(): ttl = 5;
+  ScopeDigestTTL(): ttl = 10;
   ScopeDigestTTL.value(this.ttl);
 }
 
-//TODO(misko): I don't think this should be in scope.
-class ScopeLocals implements Map {
-  static wrapper(scope, Map<String, Object> locals) =>
-      new ScopeLocals(scope, locals);
-
-  Map _scope;
-  Map<String, Object> _locals;
-
-  ScopeLocals(this._scope, this._locals);
-
-  void operator []=(String name, value) {
-    _scope[name] = value;
-  }
-  dynamic operator [](String name) =>
-      (_locals.containsKey(name) ? _locals : _scope)[name];
-
-  bool get isEmpty => _scope.isEmpty && _locals.isEmpty;
-  bool get isNotEmpty => _scope.isNotEmpty || _locals.isNotEmpty;
-  List<String> get keys => _scope.keys;
-  List get values => _scope.values;
-  int get length => _scope.length;
-
-  void forEach(fn) {
-    _scope.forEach(fn);
-  }
-  dynamic remove(key) => _scope.remove(key);
-  void clear() {
-    _scope.clear;
-  }
-  bool containsKey(key) => _scope.containsKey(key);
-  bool containsValue(key) => _scope.containsValue(key);
-  void addAll(map) {
-    _scope.addAll(map);
-  }
-  dynamic putIfAbsent(key, fn) => _scope.putIfAbsent(key, fn);
+/**
+ * When a [Directive](#angular/angular-core-annotation.Directive) or the root context class
+ * implements [ScopeAware] the scope setter will be called to set the [Scope] on this component.
+ *
+ * The order of calls is as follows:
+ *
+ * * [Component](#angular/angular-core-annotation.Component) instance is created.
+ * * [Scope] instance is created (taking Component instance as evaluation context).
+ * * if Component is [ScopeAware], set scope method is called with scope instance.
+ *
+ * [ScopeAware] is guaranteed to be called before [AttachAware](#angular/angular-core-annotation.AttachAware)
+ * or [DetachAware](#angular/angular-core-annotation.DetachAware) methods.
+ *
+ * Example:
+ *     @Component(...)
+ *     class MyComponent implements ScopeAware {
+ *       Watch watch;
+ *
+ *       MyComponent(Dependency myDep) {
+ *         // It is an error to add a Scope argument to the ctor and will result in a DI
+ *         // circular dependency error - the scope has a dependency on the component instance.
+ *       }
+ *
+ *       void set scope(Scope scope) {
+ *          // This setter gets called to initialize the scope
+ *          watch = scope.watch("expression", (v, p) => ...);
+ *       }
+ *     }
+ */
+abstract class ScopeAware {
+  void set scope(Scope scope);
 }
 
 /**
- * [Scope] is represents a collection of [watch]es [observe]ers, and [context]
- * for the watchers, observers and [eval]uations. Scopes structure loosely
- * mimics the DOM structure. Scopes and [View]s are bound to each other.
- * As scopes are created and destroyed by [ViewFactory] they are responsible
- * for change detection, change processing and memory management.
+ * [Scope] represents a collection of [watch]es, [observer]s, and a [context] for the watchers,
+ * observers and [eval]uations. Scopes structure loosely mimics the DOM structure. Scopes and
+ * [View]s are bound to each other. As scopes are created and destroyed by [ViewFactory] they are
+ * responsible for change detection, change processing and memory management.
+ *
+ * ## Understanding the Scope Digest Life Cycle
+ * The following diagram illustrates the order of events in a Scope digest
+ * loop:
+ * ![Scope Digest Loop Illustration](https://docs.google.com/drawings/d/1ELigkn4P3jeSUqvUErrp38vd5Qk7uYFcSA2ACKQn_rI/pub?w=480&h=360)
+ *
+ * Angular updates the template UI by executing `apply()` at the end of a VM turn. The
+ * `apply` step is then broken down into digest and flush cycles. Digest loops are used for
+ * inter-model communication, the flush cycle is used for UI rendering only.
+ *
+ *  **Digest cycle**
+ *
+ *  At the beginning of the watch, Angular processes the asyncQueue (used by Futures to execute
+ *  microtasks), then keeps looping until there are no more changes detected in the digest loop.
+ *  Changes are delivered to the WatchReaction Functions.
+ *
+ *  **Flush cycle**
+ *
+ *  Flush runs only once per digest loop, and is used to render the template UI. It is mostly used
+ *  by interpolation syntax in `{{}}` templates. In dev mode, we run flush a second time,
+ *  to assert that flushes have no side effects.
+ *
+ *  We also process the DOM read/write queue at this point.
+ *
+ *  **Use of Watches**
+ *
+ *  Watches in digest are permitted to have side effects, watches in flush are not allowed to have
+ *  side effects.
+ *
  */
 class Scope {
   final String id;
   int _childScopeNextId = 0;
 
-  /**
-   * The default execution context for [watch]es [observe]ers, and [eval]uation.
-   */
-  final context;
+  /// The default execution context for [watch]es [observe]ers, and [eval]uation.
+  final dynamic context;
 
-  /**
-   * The [RootScope] of the application.
-   */
+  /// The [RootScope] of the application.
   final RootScope rootScope;
 
   Scope _parentScope;
 
-  /**
-   * The parent [Scope].
-   */
+  _FunctionChain _domReadHead, _domReadTail;
+  _FunctionChain _domWriteHead, _domWriteTail;
+
   Scope get parentScope => _parentScope;
 
   final ScopeStats _stats;
@@ -164,16 +169,14 @@ class Scope {
     return true;
   }
 
-  /**
-   * Returns true if the scope is still attached to the [RootScope].
-   */
+  /// true when the scope is still attached to the [RootScope].
   bool get isAttached => !isDestroyed;
 
   // TODO(misko): WatchGroup should be private.
   // Instead we should expose performance stats about the watches
   // such as # of watches, checks/1ms, field checks, function checks, etc
-  final WatchGroup _readWriteGroup;
-  final WatchGroup _readOnlyGroup;
+  WatchGroup _readWriteGroup;
+  WatchGroup _readOnlyGroup;
 
   Scope _childHead, _childTail, _next, _prev;
   _Streams _streams;
@@ -186,21 +189,42 @@ class Scope {
         this._stats);
 
   /**
-   * Use [watch] to set up a watch in the [apply] cycle.
+   * Use [watch] to set up change detection on an expression.
    *
-   * When [canChangeModel] is [:false:], the watch will be executed in the
-   * [flush] cycle. It should be used when the [reactionFn] does not change the
-   * model and allows speeding up the [digest] phase.
-   *
-   * On the opposite, [canChangeModel] should be set to [:true:] if the
-   * [reactionFn] could change the model so that the watch is evaluated in the
-   * [digest] cycle.
+   * * [expression]: The expression to watch for changes.
+   *   Expressions may use a special notation in addition to what is supported by the parser.
+   *   In particular:
+   *   - If an expression begins with '::', it is unwatched as soon as it evaluates to a non-null
+   *   value.
+   *   - If an expression begins with ':', it only calls the [reactionFn] if the expression
+   *   evaluates to a non-null value.
+   * * [reactionFn]: The reaction function to execute when a change is detected in the watched
+   *   expression.
+   * * [formatters]: If the watched expression contains formatters,
+   *   this map specifies the set of formatters that are used by the expression.
+   * * [canChangeModel]: Specifies whether the [reactionFn] changes the model. Reaction
+   *   functions that change the model are processed as part of the [digest] cycle. Otherwise,
+   *   they are processed as part of the [flush] cycle.
+   * * [collection]: If [:true:], then the expression points to a collection (a list or a map),
+   *   and the collection should be shallow watched. If [:false:] then the expression is watched
+   *   by reference. When watching a collection, the reaction function receives a
+   *   [CollectionChangeItem] that lists all the changes.
    */
   Watch watch(String expression, ReactionFn reactionFn,  {context,
-      FilterMap filters, bool canChangeModel: true, bool collection: false}) {
+      FormatterMap formatters, bool canChangeModel: true, bool collection: false}) {
     assert(isAttached);
     assert(expression is String);
     assert(canChangeModel is bool);
+
+    // TODO(deboer): Temporary shim until all uses are fixed.
+    if (context != null) {
+      // Create a child scope instead.
+      return createChild(context)
+          .watch(expression, reactionFn,
+                 formatters: formatters,
+                 canChangeModel: canChangeModel,
+                 collection: collection);
+    }
 
     Watch watch;
     ReactionFn fn = reactionFn;
@@ -217,25 +241,55 @@ class Scope {
         };
       } else if (expression.startsWith(':')) {
         expression = expression.substring(1);
-        fn = (value, last) => value == null ? null : reactionFn(value, last);
+        fn = (value, last) {
+          if (value != null) reactionFn(value, last);
+        };
       }
     }
 
-    AST ast = rootScope._astParser(expression, context: context,
-        filters: filters, collection: collection);
+    String astKey =
+        "${collection ? "C" : "."}${formatters == null ? "." : formatters.hashCode}$expression";
+    AST ast = rootScope.astCache[astKey];
+    if (ast == null) {
+      ast = rootScope.astCache[astKey] =
+          rootScope._astParser(expression,
+              formatters: formatters, collection: collection);
+    }
 
-    WatchGroup group = canChangeModel ? _readWriteGroup : _readOnlyGroup;
-    return watch = group.watch(ast, fn);
+    return watch = watchAST(ast, fn, canChangeModel: canChangeModel);
   }
 
+  /**
+   * Use [watch] to set up change detection on an pre-parsed AST.
+   *
+   * * [ast]: The pre-parsed AST.
+   * * [reactionFn]: The function executed when a change is detected.
+   * * [canChangeModel]: Whether or not the [reactionFn] can change the model.
+   */
+  Watch watchAST(AST ast, ReactionFn reactionFn, {bool canChangeModel: true}) {
+    WatchGroup group = canChangeModel ? _readWriteGroup : _readOnlyGroup;
+    return group.watch(ast, reactionFn);
+  }
+
+  /**
+   * Evaluates the [expression] against the current scope and returns the result. Note that, the
+   * expression data is relative to the data within the scope. Therefore an expression such as
+   * `a + b` will deference variables `a` and `b` and return a result so long as `a` and `b`
+   * exist on the scope.
+   *
+   * * [expression]: The expression that will be evaluated. This can be either a Function or a
+   *   String.
+   * * [locals]: A Map that will override any matching context members for the purposes of the
+   *   evaluation.
+   */
   dynamic eval(expression, [Map locals]) {
     assert(isAttached);
     assert(expression == null ||
            expression is String ||
            expression is Function);
     if (expression is String && expression.isNotEmpty) {
-      var obj = locals == null ? context : new ScopeLocals(context, locals);
-      return rootScope._parser(expression).eval(obj);
+      var ctx = locals == null ? context : new ContextLocals(context, locals);
+      return rootScope._parser(expression).eval(ctx);
     }
 
     assert(locals == null);
@@ -244,9 +298,12 @@ class Scope {
     return null;
   }
 
-  dynamic applyInZone([expression, Map locals]) =>
-      rootScope._zone.run(() => apply(expression, locals));
-
+  /**
+   * Triggers a digest cycle. It accepts an optional [expression] to evaluate before the digest
+   * operation. The result of that expression will be returned afterwards.
+   *
+   * [apply] should only be called from the within unit tests to simulate the life cycle of a scope.
+   */
   dynamic apply([expression, Map locals]) {
     _assertInternalStateConsistency();
     rootScope._transitionState(null, RootScope.STATE_APPLY);
@@ -261,36 +318,75 @@ class Scope {
     }
   }
 
+  /**
+   * Triggers a [ScopeEvent] referenced by the [name] parameters upwards towards the root of the
+   * scope tree. If intercepted, by a parent scope containing a matching scope event listener
+   * (which is registered via the [on] method), then the event listener callback function will be
+   * executed.
+   *
+   * The triggered [ScopeEvent] references the [data] so that they can be retrieve in the listener.
+   */
   ScopeEvent emit(String name, [data]) {
     assert(isAttached);
     return _Streams.emit(this, name, data);
   }
 
+  /**
+   * Triggers a [ScopeEvent] referenced by the [name] parameters downards towards the leaf nodes of
+   * the scope tree. If intercepted, by a child scope containing a matching scope event listener
+   * (which is registered via the [on] method), then the event listener callback function will be
+   * executed.
+   *
+   * The triggered [ScopeEvent] references the [data] so that they can be retrieve in the listener.
+   */
   ScopeEvent broadcast(String name, [data]) {
     assert(isAttached);
     return _Streams.broadcast(this, name, data);
   }
 
+  /**
+   * Registers a scope-based event listener to intercept events triggered by [broadcast] (from any
+   * parent scopes) or [emit] (from child scopes) that match the given event [name].
+   */
   ScopeStream on(String name) {
     assert(isAttached);
     return _Streams.on(this, rootScope._exceptionHandler, name);
   }
 
+  /// Creates a child [Scope] with the given [childContext]
   Scope createChild(Object childContext) {
+    var s = traceEnter(Scope_createChild);
     assert(isAttached);
     var child = new Scope(childContext, rootScope, this,
                           _readWriteGroup.newGroup(childContext),
                           _readOnlyGroup.newGroup(childContext),
-                         '$id:${_childScopeNextId++}',
-                         _stats);
+                          '$id:${_childScopeNextId++}',
+                          _stats);
 
     var prev = _childTail;
     child._prev = prev;
     if (prev == null) _childHead = child; else prev._next = child;
     _childTail = child;
+    traceLeave(s);
     return child;
   }
 
+  /// Creates a child [Scope] that is prototypal with respect to current scope.
+  Scope createProtoChild() {
+    return createChild(new ContextLocals(context));
+  }
+
+  /**
+   * Removes the current scope (and all of its children) from the parent scope. Removal implies
+   * that calls to [digest] will no longer propagate to the current scope nor its children.
+   *
+   * The `destroy()` operation is usually used within directives that perform transclusion on
+   * multiple child elements (like ngRepeat) which create multiple child scopes.
+   *
+   * Just before a scope is destroyed, a [ScopeEvent.DESTROY] event is broadcasted from this scope.
+   * This allows for child scopes (such as shared directives) to perform any necessary cleanup
+   * before the scope is removed from the application.
+   */
   void destroy() {
     assert(isAttached);
     broadcast(ScopeEvent.DESTROY);
@@ -323,8 +419,8 @@ class Scope {
 
   Map<bool,int> _verifyStreams(parentScope, prefix, log) {
     assert(_parentScope == parentScope);
-    var counts = {};
-    var typeCounts = _streams == null ? {} : _streams._typeCounts;
+    var counts = new HashMap();
+    var typeCounts = _streams == null ? new HashMap() : _streams._typeCounts;
     var connection = _streams != null && _streams._scope == this ? '=' : '-';
     log..add(prefix)..add(hashCode)..add(connection)..add(typeCounts)..add('\n');
     if (_streams == null) {
@@ -349,6 +445,73 @@ class Scope {
     }
     return counts;
   }
+
+  /**
+   * Internal. Use [View.domWrite] instead.
+   */
+  void domWrite(fn()) {
+    var chain = new _FunctionChain(fn);
+    if (_domWriteHead == null) {
+      _domWriteHead = _domWriteTail = chain;
+    } else {
+      _domWriteTail = _domWriteTail._next = chain;
+    }
+    rootScope._domWriteCounter ++;
+  }
+
+  /**
+   * Internal. Use [View.domRead] instead.
+   */
+  void domRead(fn()) {
+    var chain = new _FunctionChain(fn);
+    if (_domReadHead == null) {
+      _domReadHead = _domReadTail = chain;
+    } else {
+      _domReadTail = _domReadTail._next = chain;
+    }
+    rootScope._domReadCounter ++;
+  }
+
+  void _runDomWrites() {
+    Scope child = _childHead;
+    while (child != null) {
+      child._runDomWrites();
+      child = child._next;
+    }
+
+    while (_domWriteHead != null) {
+      try {
+        _domWriteHead.fn();
+      } catch (e, s) {
+        _exceptionHandler(e, s);
+      }
+      rootScope._domWriteCounter --;
+      _domWriteHead = _domWriteHead._next;
+    }
+    _domWriteTail = null;
+  }
+
+  void _runDomReads() {
+    Scope child = _childHead;
+    while (child != null) {
+      child._runDomReads();
+      child = child._next;
+    }
+
+    while (_domReadHead != null) {
+      try {
+        _domReadHead.fn();
+      } catch (e, s) {
+        _exceptionHandler(e, s);
+      }
+      rootScope._domReadCounter --;
+      _domReadHead = _domReadHead._next;
+    }
+    _domReadTail = null;
+  }
+
+
+  ExceptionHandler get _exceptionHandler => rootScope._exceptionHandler;
 }
 
 _mapEqual(Map a, Map b) => a.length == b.length &&
@@ -361,7 +524,7 @@ _mapEqual(Map a, Map b) => a.length == b.length &&
  * stopped at runtime. The result emission can is configured by supplying a
  * [ScopeStatsEmitter].
  */
-@NgInjectableService()
+@Injectable()
 class ScopeStats {
   final fieldStopwatch = new AvgStopwatch();
   final evalStopwatch = new AvgStopwatch();
@@ -440,11 +603,8 @@ class ScopeStats {
   }
 }
 
-/**
- * ScopeStatsEmitter is in charge of formatting the [ScopeStats] and outputting
- * a message.
- */
-@NgInjectableService()
+/// ScopeStatsEmitter is in charge of formatting the [ScopeStats] and outputting a message.
+@Injectable()
 class ScopeStatsEmitter {
   static String _PAD_ = '                       ';
   static String _HEADER_ = pad('APPLY', 7) + ':'+
@@ -457,9 +617,9 @@ class ScopeStatsEmitter {
 
   static pad(String str, int size) => _PAD_.substring(0, max(size - str.length, 0)) + str;
 
-  _ms(num value) => '${pad(_nfDec.format(value), 9)} ms';
-  _us(num value) => _ms(value / 1000);
-  _tally(num value) => '${pad(_nfInt.format(value), 6)}';
+  String _ms(num value) => '${pad(_nfDec.format(value), 9)} ms';
+  String _us(num value) => _ms(value / 1000);
+  String _tally(num value) => '${pad(_nfInt.format(value), 6)}';
 
   /**
    * Emit a message based on the phase and state of stopwatches.
@@ -492,14 +652,24 @@ class ScopeStatsEmitter {
  * ScopeStatsConfig is used to modify behavior of [ScopeStats]. You can use this
  * object to modify behavior at runtime too.
  */
-@NgInjectableService()
+@Injectable()
 class ScopeStatsConfig {
-  var emit;
+  var emit = false;
 
-  ScopeStatsConfig({this.emit: false});
+  ScopeStatsConfig();
+  ScopeStatsConfig.enabled(): emit = true;
 }
-
-@NgInjectableService()
+/**
+ * Every Angular application has exactly one RootScope. RootScope extends Scope, adding
+ * services related to change detection, async unit-of-work processing, and DOM read/write queues.
+ * The RootScope can not be destroyed.
+ *
+ * ## Lifecycle
+ *
+ * All work in Angular must be done within a context of a VmTurnZone. VmTurnZone detects the end
+ * of the VM turn, and calls the Apply method to process the changes at the end of VM turn.
+ */
+@Injectable()
 class RootScope extends Scope {
   static final STATE_APPLY = 'apply';
   static final STATE_DIGEST = 'digest';
@@ -507,25 +677,78 @@ class RootScope extends Scope {
   static final STATE_FLUSH_ASSERT = 'assert';
 
   final ExceptionHandler _exceptionHandler;
-  final _AstParser _astParser;
+  final ASTParser _astParser;
   final Parser _parser;
   final ScopeDigestTTL _ttl;
-  final NgZone _zone;
+  final VmTurnZone _zone;
+
+  // For Scope.watch().
+  final Map<String, AST> astCache = new HashMap<String, AST>();
 
   _FunctionChain _runAsyncHead, _runAsyncTail;
-  _FunctionChain _domWriteHead, _domWriteTail;
-  _FunctionChain _domReadHead, _domReadTail;
 
   final ScopeStats _scopeStats;
+  int _domWriteCounter = 0;
+  int _domReadCounter = 0;
 
   String _state;
+  var _state_wtf_scope;
 
-  RootScope(Object context, Parser parser, FieldGetterFactory fieldGetterFactory,
-            FilterMap filterMap, this._exceptionHandler, this._ttl, this._zone,
-            ScopeStats _scopeStats)
+  /**
+   * While processing data bindings, Angular passes through multiple states. When testing or
+   * debugging, it can be useful to access the current `state`, which is one of the following:
+   *
+   * * `null`
+   * * `STATE_APPLY`
+   * * `STATE_DIGEST`
+   * * `STATE_FLUSH`
+   * * `STATE_FLUSH_ASSERT`
+   *
+   * ## `null`
+   *
+   *  Angular is not currently processing changes
+   *
+   * ## `STATE_APPLY`
+   *
+   * The apply state begins by executing the optional expression within the context of
+   * angular change detection mechanism. Any exceptions are delegated to [ExceptionHandler]. At the
+   * end of apply state RootScope enters the digest followed by flush phase (optionally if asserts
+   * enabled run assert phase.)
+   *
+   * ## `STATE_DIGEST`
+   *
+   * The apply state begins by processing the async queue,
+   * followed by change detection
+   * on non-DOM listeners. Any changes detected are process using the reaction function. The digest
+   * phase is repeated as long as at least one change has been detected. By default, after 5
+   * iterations the model is considered unstable and angular exists with an exception. (See
+   * ScopeDigestTTL)
+   *
+   * ## `STATE_FLUSH`
+   *
+   * The flush phase consists of these steps:
+   *
+   * 1. processing the DOM write queue
+   * 2. change detection on DOM only updates (these are reaction functions which must
+   *    not change the model state and hence don't need stabilization as in digest phase).
+   * 3. processing the DOM read queue
+   * 4. repeat steps 1 and 3 (not 2) until queues are empty
+   *
+   * ## `STATE_FLUSH_ASSERT`
+   *
+   * Optionally if Dart assert is on, verify that flush reaction functions did not make any changes
+   * to model and throw error if changes detected.
+   */
+  String get state => _state;
+
+  PendingAsync _pendingAsync;
+
+  RootScope(Object context, Parser parser, ASTParser astParser, FieldGetterFactory fieldGetterFactory,
+            FormatterMap formatters, this._exceptionHandler, this._ttl, this._zone,
+            ScopeStats _scopeStats, CacheRegister cacheRegister, this._pendingAsync)
       : _scopeStats = _scopeStats,
         _parser = parser,
-        _astParser = new _AstParser(parser),
+        _astParser = astParser,
         super(context, null, null,
             new RootWatchGroup(fieldGetterFactory,
                 new DirtyCheckingChangeDetector(fieldGetterFactory), context),
@@ -534,13 +757,45 @@ class RootScope extends Scope {
             '',
             _scopeStats)
   {
-    _zone.onTurnDone = apply;
+    _zone.countPendingAsync = _pendingAsync.increaseCount;
+    _zone.onTurnDone = () {
+      // NOTE: Ideally, we would just set _zone.onTurnStart = _pendingAsync.increaseCount.
+      // However, when the RootScope is constructed, we would have already executed the
+      // nop onTurnStart causing a count mismatch.  While we could adjust for it, our
+      // test set doesn't really enter/leave the VmTurnZone.  So for simplicity, we do the
+      // increaseCount here.
+      _pendingAsync.increaseCount();
+      apply();
+      _pendingAsync.decreaseCount();
+      _runAsyncFns();  // if any were scheduled by _pendingAsync.whenStable callbacks.
+    };
+
     _zone.onError = (e, s, ls) => _exceptionHandler(e, s);
+    _zone.onScheduleMicrotask = runAsync;
+    cacheRegister.registerCache("ScopeWatchASTs", astCache);
+    if (context is ScopeAware) context.scope = this;
   }
 
   RootScope get rootScope => this;
   bool get isAttached => true;
 
+  /**
+  * Propagates changes between different parts of the application model. Normally called by
+  * [VMTurnZone] right before DOM rendering to initiate data binding. May also be called directly
+  * for unit testing.
+  *
+  * Before each iteration of change detection, [digest] first processes the async queue. Any
+  * work scheduled on the queue is executed before change detection. Since work scheduled on
+  * the queue may generate more async calls, [digest] must process the queue multiple times before
+  * it completes. The async queue must be empty before the model is considered stable.
+  *
+  * Next, [digest] collects the changes that have occurred in the model. For each change,
+  * [digest] calls the associated [ReactionFn]. Since a [ReactionFn] may further change the model,
+  * [digest] processes changes multiple times until no more changes are detected.
+  *
+  * If the model does not stabilize within 10 iterations, an exception is thrown. See
+  * [ScopeDigestTTL].
+  */
   void digest() {
     _transitionState(null, STATE_DIGEST);
     try {
@@ -554,15 +809,8 @@ class RootScope extends Scope {
       ChangeLog changeLog;
       _scopeStats.digestStart();
       do {
-        while (_runAsyncHead != null) {
-          try {
-            _runAsyncHead.fn();
-          } catch (e, s) {
-            _exceptionHandler(e, s);
-          }
-          _runAsyncHead = _runAsyncHead._next;
-        }
-        _runAsyncTail = null;
+
+        int asyncCount = _runAsyncFns();
 
         digestTTL--;
         count = rootWatchGroup.detectChanges(
@@ -578,7 +826,7 @@ class RootScope extends Scope {
             digestLog = [];
             changeLog = (e, c, p) => digestLog.add('$e: $c <= $p');
           } else {
-            log.add(digestLog.join(', '));
+            log.add("${asyncCount > 0 ? 'async:$asyncCount' : ''}${digestLog.join(', ')}");
             digestLog.clear();
           }
         }
@@ -587,7 +835,7 @@ class RootScope extends Scope {
                 'Last $LOG_COUNT iterations:\n${log.join('\n')}';
         }
         _scopeStats.digestLoop(count);
-      } while (count > 0);
+      } while (count > 0 || _runAsyncHead != null);
     } finally {
       _scopeStats.digestEnd();
       _transitionState(STATE_DIGEST, null);
@@ -601,17 +849,13 @@ class RootScope extends Scope {
     bool runObservers = true;
     try {
       do {
-        if (_domWriteHead != null) _stats.domWriteStart();
-        while (_domWriteHead != null) {
-          try {
-            _domWriteHead.fn();
-          } catch (e, s) {
-            _exceptionHandler(e, s);
-          }
-          _domWriteHead = _domWriteHead._next;
-          if (_domWriteHead == null) _stats.domWriteEnd();
+        if (_domWriteCounter > 0) {
+          _stats.domWriteStart();
+          var s = traceEnter(Scope_domWrite);
+          _runDomWrites();
+          traceLeave(s);
+          _stats.domWriteEnd();
         }
-        _domWriteTail = null;
         if (runObservers) {
           runObservers = false;
           readOnlyGroup.detectChanges(exceptionHandler:_exceptionHandler,
@@ -619,18 +863,15 @@ class RootScope extends Scope {
               evalStopwatch: _scopeStats.evalStopwatch,
               processStopwatch: _scopeStats.processStopwatch);
         }
-        if (_domReadHead != null) _stats.domReadStart();
-        while (_domReadHead != null) {
-          try {
-            _domReadHead.fn();
-          } catch (e, s) {
-            _exceptionHandler(e, s);
-          }
-          _domReadHead = _domReadHead._next;
-          if (_domReadHead == null) _stats.domReadEnd();
+        if (_domReadCounter > 0) {
+          _stats.domReadStart();
+          var s = traceEnter(Scope_domRead);
+          _runDomReads();
+          traceLeave(s);
+          _stats.domReadEnd();
         }
-        _domReadTail = null;
-      } while (_domWriteHead != null || _domReadHead != null);
+        _runAsyncFns();
+      } while (_domWriteCounter > 0 || _domReadCounter > 0 || _runAsyncHead != null);
       _stats.flushEnd();
       assert((() {
         _stats.flushAssertStart();
@@ -662,6 +903,10 @@ class RootScope extends Scope {
 
   // QUEUES
   void runAsync(fn()) {
+    if (_state == STATE_FLUSH_ASSERT) {
+      throw "Scheduling microtasks not allowed in $state state.";
+    }
+    _pendingAsync.increaseCount();
     var chain = new _FunctionChain(fn);
     if (_runAsyncHead == null) {
       _runAsyncHead = _runAsyncTail = chain;
@@ -670,22 +915,22 @@ class RootScope extends Scope {
     }
   }
 
-  void domWrite(fn()) {
-    var chain = new _FunctionChain(fn);
-    if (_domWriteHead == null) {
-      _domWriteHead = _domWriteTail = chain;
-    } else {
-      _domWriteTail = _domWriteTail._next = chain;
+  _runAsyncFns() {
+    var s = traceEnter(Scope_execAsync);
+    var count = 0;
+    while (_runAsyncHead != null) {
+      try {
+        count++;
+        _runAsyncHead.fn();
+      } catch (e, s) {
+        _exceptionHandler(e, s);
+      }
+      _pendingAsync.decreaseCount();
+      _runAsyncHead = _runAsyncHead._next;
     }
-  }
-
-  void domRead(fn()) {
-    var chain = new _FunctionChain(fn);
-    if (_domReadHead == null) {
-      _domReadHead = _domReadTail = chain;
-    } else {
-      _domReadTail = _domReadTail._next = chain;
-    }
+    _runAsyncTail = null;
+    traceLeave(s);
+    return count;
   }
 
   void destroy() {}
@@ -694,44 +939,47 @@ class RootScope extends Scope {
     assert(isAttached);
     if (_state != from) throw "$_state already in progress can not enter $to.";
     _state = to;
+    if (_state_wtf_scope != null) traceLeave(_state_wtf_scope);
+    var wtfScope = null;
+    if (to == STATE_APPLY) wtfScope = Scope_apply;
+    else if (to == STATE_DIGEST) wtfScope = Scope_digest;
+    else if (to == STATE_FLUSH) wtfScope = Scope_flush;
+    else if (to == STATE_FLUSH_ASSERT) wtfScope = Scope_assert;
+    _state_wtf_scope = wtfScope == null ? null : traceEnter(wtfScope);
   }
 }
 
 /**
- * Keeps track of Streams for each Scope. When emitting events
- * we would need to walk the whole tree. Its faster if we can prune
- * the Scopes we have to visit.
+ * Keeps track of Streams for each Scope. When emitting events we would need to walk the whole tree.
+ * Its faster if we can prune the Scopes we have to visit.
  *
  * Scope with no [_ScopeStreams] has no events registered on itself or children
  *
- * We keep track of [Stream]s, and also child scope [Stream]s. To save
- * memory we use the same stream object on all of our parents if they don't
- * have one. But that means that we have to keep track if the stream belongs
- * to the node.
+ * We keep track of [Stream]s, and also child scope [Stream]s. To save memory we use the same stream
+ * object on all of our parents if they don't have one. But that means that we have to keep track
+ * if the stream belongs to the node.
  *
- * Scope with [_ScopeStreams] but who's [_scope] does not match the scope
- * is only inherited
+ * Scope with [_ScopeStreams] but who's [_scope] does not match the scope is only inherited
  *
- * Only [Scope] with [_ScopeStreams] who's [_scope] matches the [Scope]
- * instance is the actual scope.
+ * Only [Scope] with [_ScopeStreams] who's [_scope] matches the [Scope] instance is the actual
+ * scope.
  *
- * Once the [Stream] is created it can not be removed even if all listeners
- * are canceled. That is because we don't know if someone still has reference
- * to it.
+ * Once the [Stream] is created it can not be removed even if all listeners are canceled. That is
+ * because we don't know if someone still has reference to it.
  */
 class _Streams {
   final ExceptionHandler _exceptionHandler;
   /// Scope we belong to.
   final Scope _scope;
   /// [Stream]s for [_scope] only
-  final _streams = new Map<String, ScopeStream>();
+  final _streams = new HashMap<String, ScopeStream>();
   /// Child [Scope] event counts.
   final Map<String, int> _typeCounts;
 
   _Streams(this._scope, this._exceptionHandler, _Streams inheritStreams)
       : _typeCounts = inheritStreams == null
-          ? <String, int>{}
-          : new Map.from(inheritStreams._typeCounts);
+          ? new HashMap<String, int>()
+          : new HashMap.from(inheritStreams._typeCounts);
 
   static ScopeEvent emit(Scope scope, String name, data) {
     var event = new ScopeEvent(name, scope, data);
@@ -780,9 +1028,9 @@ class _Streams {
     return event;
   }
 
-  static ScopeStream on(Scope scope,
-                        ExceptionHandler _exceptionHandler,
-                        String name) {
+  static async.Stream<ScopeEvent> on(Scope scope,
+                                     ExceptionHandler _exceptionHandler,
+                                     String name) {
     _forceNewScopeStream(scope, _exceptionHandler);
     return scope._streams._get(scope, name);
   }
@@ -939,254 +1187,11 @@ _NOT_IMPLEMENTED() {
   throw new StateError('Not Implemented');
 }
 
-
 class _FunctionChain {
   final Function fn;
   _FunctionChain _next;
 
   _FunctionChain(fn()): fn = fn {
     assert(fn != null);
-  }
-}
-
-class _AstParser {
-  final Parser _parser;
-  int _id = 0;
-  ExpressionVisitor _visitor = new ExpressionVisitor();
-
-  _AstParser(this._parser);
-
-  AST call(String input, {FilterMap filters,
-                          bool collection: false,
-                          Object context: null }) {
-    _visitor.filters = filters;
-    AST contextRef = _visitor.contextRef;
-    try {
-      if (context != null) {
-        _visitor.contextRef = new ConstantAST(context, '#${_id++}');
-      }
-      var exp = _parser(input);
-      return collection ? _visitor.visitCollection(exp) : _visitor.visit(exp);
-    } finally {
-      _visitor.contextRef = contextRef;
-      _visitor.filters = null;
-    }
-  }
-}
-
-class ExpressionVisitor implements Visitor {
-  static final ContextReferenceAST scopeContextRef = new ContextReferenceAST();
-  AST contextRef = scopeContextRef;
-
-  AST ast;
-  FilterMap filters;
-
-  AST visit(Expression exp) {
-    exp.accept(this);
-    assert(ast != null);
-    try {
-      return ast;
-    } finally {
-      ast = null;
-    }
-  }
-
-  AST visitCollection(Expression exp) => new CollectionAST(visit(exp));
-  AST _mapToAst(Expression expression) => visit(expression);
-
-  List<AST> _toAst(List<Expression> expressions) =>
-      expressions.map(_mapToAst).toList();
-
-  Map<Symbol, AST> _toAstMap(Map<String, Expression> expressions) {
-    if (expressions.isEmpty) return const {};
-    Map<Symbol, AST> result = new Map<Symbol, AST>();
-    expressions.forEach((String name, Expression expression) {
-      result[new Symbol(name)] = _mapToAst(expression);
-    });
-    return result;
-  }
-
-  void visitCallScope(CallScope exp) {
-    List<AST> positionals = _toAst(exp.arguments.positionals);
-    Map<Symbol, AST> named = _toAstMap(exp.arguments.named);
-    ast = new MethodAST(contextRef, exp.name, positionals, named);
-  }
-  void visitCallMember(CallMember exp) {
-    List<AST> positionals = _toAst(exp.arguments.positionals);
-    Map<Symbol, AST> named = _toAstMap(exp.arguments.named);
-    ast = new MethodAST(visit(exp.object), exp.name, positionals, named);
-  }
-  visitAccessScope(AccessScope exp) {
-    ast = new FieldReadAST(contextRef, exp.name);
-  }
-  visitAccessMember(AccessMember exp) {
-    ast = new FieldReadAST(visit(exp.object), exp.name);
-  }
-  visitBinary(Binary exp) {
-    ast = new PureFunctionAST(exp.operation,
-                              _operationToFunction(exp.operation),
-                              [visit(exp.left), visit(exp.right)]);
-  }
-  void visitPrefix(Prefix exp) {
-    ast = new PureFunctionAST(exp.operation,
-                              _operationToFunction(exp.operation),
-                              [visit(exp.expression)]);
-  }
-  void visitConditional(Conditional exp) {
-    ast = new PureFunctionAST('?:', _operation_ternary,
-                              [visit(exp.condition), visit(exp.yes),
-                              visit(exp.no)]);
-  }
-  void visitAccessKeyed(AccessKeyed exp) {
-    ast = new PureFunctionAST('[]', _operation_bracket,
-                             [visit(exp.object), visit(exp.key)]);
-  }
-  void visitLiteralPrimitive(LiteralPrimitive exp) {
-    ast = new ConstantAST(exp.value);
-  }
-  void visitLiteralString(LiteralString exp) {
-    ast = new ConstantAST(exp.value);
-  }
-  void visitLiteralArray(LiteralArray exp) {
-    List<AST> items = _toAst(exp.elements);
-    ast = new PureFunctionAST('[${items.join(', ')}]', new ArrayFn(), items);
-  }
-
-  void visitLiteralObject(LiteralObject exp) {
-    List<String> keys = exp.keys;
-    List<AST> values = _toAst(exp.values);
-    assert(keys.length == values.length);
-    var kv = <String>[];
-    for (var i = 0; i < keys.length; i++) {
-      kv.add('${keys[i]}: ${values[i]}');
-    }
-    ast = new PureFunctionAST('{${kv.join(', ')}}', new MapFn(keys), values);
-  }
-
-  void visitFilter(Filter exp) {
-    if (filters == null) {
-      throw new Exception("No filters have been registered");
-    }
-    Function filterFunction = filters(exp.name);
-    List<AST> args = [visitCollection(exp.expression)];
-    args.addAll(_toAst(exp.arguments).map((ast) => new CollectionAST(ast)));
-    ast = new PureFunctionAST('|${exp.name}',
-        new _FilterWrapper(filterFunction, args.length), args);
-  }
-
-  // TODO(misko): this is a corner case. Choosing not to implement for now.
-  void visitCallFunction(CallFunction exp) {
-    _notSupported("function's returing functions");
-  }
-  void visitAssign(Assign exp) {
-    _notSupported('assignement');
-  }
-  void visitLiteral(Literal exp) {
-    _notSupported('literal');
-  }
-  void visitExpression(Expression exp) {
-    _notSupported('?');
-  }
-  void visitChain(Chain exp) {
-    _notSupported(';');
-  }
-
-  void  _notSupported(String name) {
-    throw new StateError("Can not watch expression containing '$name'.");
-  }
-}
-
-Function _operationToFunction(String operation) {
-  switch(operation) {
-    case '!'  : return _operation_negate;
-    case '+'  : return _operation_add;
-    case '-'  : return _operation_subtract;
-    case '*'  : return _operation_multiply;
-    case '/'  : return _operation_divide;
-    case '~/' : return _operation_divide_int;
-    case '%'  : return _operation_remainder;
-    case '==' : return _operation_equals;
-    case '!=' : return _operation_not_equals;
-    case '<'  : return _operation_less_then;
-    case '>'  : return _operation_greater_then;
-    case '<=' : return _operation_less_or_equals_then;
-    case '>=' : return _operation_greater_or_equals_then;
-    case '^'  : return _operation_power;
-    case '&'  : return _operation_bitwise_and;
-    case '&&' : return _operation_logical_and;
-    case '||' : return _operation_logical_or;
-    default: throw new StateError(operation);
-  }
-}
-
-_operation_negate(value)                       => !toBool(value);
-_operation_add(left, right)                    => autoConvertAdd(left, right);
-_operation_subtract(left, right)               => (left != null && right != null) ? left - right : (left != null ? left : (right != null ? 0 - right : 0));
-_operation_multiply(left, right)               => (left == null || right == null) ? null : left * right;
-_operation_divide(left, right)                 => (left == null || right == null) ? null : left / right;
-_operation_divide_int(left, right)             => (left == null || right == null) ? null : left ~/ right;
-_operation_remainder(left, right)              => (left == null || right == null) ? null : left % right;
-_operation_equals(left, right)                 => left == right;
-_operation_not_equals(left, right)             => left != right;
-_operation_less_then(left, right)              => (left == null || right == null) ? null : left < right;
-_operation_greater_then(left, right)           => (left == null || right == null) ? null : left > right;
-_operation_less_or_equals_then(left, right)    => (left == null || right == null) ? null : left <= right;
-_operation_greater_or_equals_then(left, right) => (left == null || right == null) ? null : left >= right;
-_operation_power(left, right)                  => (left == null || right == null) ? null : left ^ right;
-_operation_bitwise_and(left, right)            => (left == null || right == null) ? null : left & right;
-// TODO(misko): these should short circuit the evaluation.
-_operation_logical_and(left, right)            => toBool(left) && toBool(right);
-_operation_logical_or(left, right)             => toBool(left) || toBool(right);
-
-_operation_ternary(condition, yes, no) => toBool(condition) ? yes : no;
-_operation_bracket(obj, key) => obj == null ? null : obj[key];
-
-class ArrayFn extends FunctionApply {
-  // TODO(misko): figure out why do we need to make a copy?
-  apply(List args) => new List.from(args);
-}
-
-class MapFn extends FunctionApply {
-  final List<String> keys;
-
-  MapFn(this.keys);
-
-  Map apply(List values) {
-    // TODO(misko): figure out why do we need to make a copy instead of reusing instance?
-    assert(values.length == keys.length);
-    return new Map.fromIterables(keys, values);
-  }
-}
-
-class _FilterWrapper extends FunctionApply {
-  final Function filterFn;
-  final List args;
-  final List<Watch> argsWatches;
-  _FilterWrapper(this.filterFn, length):
-      args = new List(length),
-      argsWatches = new List(length);
-
-  apply(List values) {
-    for (var i=0; i < values.length; i++) {
-      var value = values[i];
-      var lastValue = args[i];
-      if (!identical(value, lastValue)) {
-       if (value is CollectionChangeRecord) {
-         args[i] = (value as CollectionChangeRecord).iterable;
-       } else if (value is MapChangeRecord) {
-         args[i] = (value as MapChangeRecord).map;
-       } else {
-         args[i] = value;
-       }
-      }
-    }
-    var value = Function.apply(filterFn, args);
-    if (value is Iterable) {
-      // Since filters are pure we can guarantee that this well never change.
-      // By wrapping in UnmodifiableListView we can hint to the dirty checker
-      // and short circuit the iterator.
-      value = new UnmodifiableListView(value);
-    }
-    return value;
   }
 }

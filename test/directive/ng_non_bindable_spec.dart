@@ -19,7 +19,7 @@ main() {
                       '  <span id="s3">{{a}}</span>' +
                       '  <span id="s4" ng-bind="b"></span>' +
                       '</div>');
-      compiler([element], directives)(injector, [element]);
+      compiler([element], directives)(scope, null, [element]);
       scope.context['a'] = "one";
       scope.context['b'] = "two";
       scope.apply();

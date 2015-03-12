@@ -94,8 +94,7 @@ void main() {
     });
 
 
-    it('should always display the elements that do not match a switch',
-    inject(() {
+    it('should always display the elements that do not match a switch', () {
       var element = _.compile(
           '<ul ng-switch="select">' +
           '<li>always </li>' +
@@ -109,7 +108,7 @@ void main() {
       _.rootScope.context['select'] = 1;
       _.rootScope.apply();
       expect(element.text).toEqual('always one ');
-    }));
+    });
 
 
     it('should display the elements that do not have ngSwitchWhen nor ' +
@@ -137,8 +136,7 @@ void main() {
 
     it('should display the elements that do not have ngSwitchWhen nor ' +
     'ngSwitchDefault at the position specified in the template when the ' +
-    'first and last elements in the ngSwitch have a ngSwitch* directive',
-    inject(() {
+    'first and last elements in the ngSwitch have a ngSwitch* directive', () {
       var element = _.compile(
           '<ul ng-switch="select">' +
           '<li ng-switch-when="1">2</li>' +
@@ -153,7 +151,7 @@ void main() {
       _.rootScope.context['select'] = 1;
       _.rootScope.apply();
       expect(element.text).toEqual('236');
-    }));
+    });
 
 
     it('should call change on switch', () {
@@ -176,7 +174,7 @@ void main() {
       _.rootScope.apply();
 
       var getChildScope = () => _.rootScope.context['probe'] == null ?
-      null : _.rootScope.context['probe'].scope;
+          null : _.rootScope.context['probe'].scope;
 
       expect(getChildScope()).toBeNull();
 
@@ -186,7 +184,7 @@ void main() {
       var child1 = getChildScope();
       expect(child1).toBeNotNull();
       expect(element.text).toEqual('works');
-      var destroyListener = jasmine.createSpy('watch listener');
+      var destroyListener = guinness.createSpy('watch listener');
       var watcher = child1.on(ScopeEvent.DESTROY).listen(destroyListener);
 
       _.rootScope.context['url'] = 'x';

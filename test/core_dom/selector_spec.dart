@@ -2,40 +2,50 @@ library angular.dom.selector_spec;
 
 import '../_specs.dart';
 
-@NgDirective(selector:'b')                    class _BElement{}
-@NgDirective(selector:'.b')                   class _BClass{}
-@NgDirective(selector:'[directive]')          class _DirectiveAttr{}
-@NgDirective(selector:'[wildcard-*]')         class _WildcardDirectiveAttr{}
-@NgDirective(selector:'[directive=d][foo=f]') class _DirectiveFooAttr{}
-@NgDirective(selector:'b[directive]')         class _BElementDirectiveAttr{}
-@NgDirective(selector:'[directive=value]')    class _DirectiveValueAttr{}
-@NgDirective(selector:'b[directive=value]')   class _BElementDirectiveValue{}
-@NgDirective(selector:':contains(/abc/)')     class _ContainsAbc{}
-@NgDirective(selector:'[*=/xyz/]')            class _AttributeContainsXyz{}
+const _aBElement               = const Decorator(selector:'b'); 
+const _aBClass                 = const Decorator(selector:'.b');
+const _aDirectiveAttr          = const Decorator(selector:'[directive]');
+const _aWildcardDirectiveAttr  = const Decorator(selector:'[wildcard-*]');
+const _aDirectiveFooAttr       = const Decorator(selector:'[directive=d][foo=f]');
+const _aBElementDirectiveAttr  = const Decorator(selector:'b[directive]');
+const _aDirectiveValueAttr     = const Decorator(selector:'[directive=value]');
+const _aBElementDirectiveValue = const Decorator(selector:'b[directive=value]');
+const _aContainsAbc            = const Decorator(selector:':contains(/abc/)');
+const _aAttributeContainsXyz   = const Decorator(selector:'[*=/xyz/]');
+const _aAttribute              = const Decorator(selector:'[attribute]');
+const _aCComponent             = const Component(selector:'component');
+const _aStructural             = const Decorator(selector:'[structural]',
+                                                 children: Directive.TRANSCLUDE_CHILDREN);
+const _aIgnoreChildren         = const Decorator(selector:'[ignore-children]',
+                                                 children: Directive.IGNORE_CHILDREN);
+const _aTwoDirectives0         = const Decorator(selector: '[my-model][required]');
+const _aTwoDirectives1         = const Decorator(selector: '[my-model][my-required]');
+const _aOneOfTwoDirectives     = const Decorator(selector: '[two-directives]');
+const _aTwoOfTwoDirectives     = const Decorator(selector: '[two-directives]');
 
-@NgComponent(selector:'component')            class _Component{}
-@NgDirective(selector:'[attribute]')          class _Attribute{}
-@NgDirective(selector:'[structural]',
-             children: NgAnnotation.TRANSCLUDE_CHILDREN)
-                                              class _Structural{}
 
-@NgDirective(selector:'[ignore-children]',
-             children: NgAnnotation.IGNORE_CHILDREN)
-                                              class _IgnoreChildren{}
+@_aBElement               class _BElement{}
+@_aBClass                 class _BClass{}
+@_aDirectiveAttr          class _DirectiveAttr{}
+@_aWildcardDirectiveAttr  class _WildcardDirectiveAttr{}
+@_aDirectiveFooAttr       class _DirectiveFooAttr{}
+@_aBElementDirectiveAttr  class _BElementDirectiveAttr{}
+@_aDirectiveValueAttr     class _DirectiveValueAttr{}
+@_aBElementDirectiveValue class _BElementDirectiveValue{}
+@_aContainsAbc            class _ContainsAbc{}
+@_aAttributeContainsXyz   class _AttributeContainsXyz{}
+@_aCComponent             class _CComponent{}
+@_aAttribute              class _Attribute{}
+@_aStructural             class _Structural{}
+@_aIgnoreChildren         class _IgnoreChildren{}
+@_aOneOfTwoDirectives     class _OneOfTwoDirectives {}
+@_aTwoOfTwoDirectives     class _TwoOfTwoDirectives {}
 
-@NgDirective(selector: '[my-model][required]')
-@NgDirective(selector: '[my-model][my-required]')
-                                              class _TwoDirectives {}
-
-@NgDirective(selector: '[two-directives]') class _OneOfTwoDirectives {}
-@NgDirective(selector: '[two-directives]') class _TwoOfTwoDirectives {}
-
+@_aTwoDirectives0
+@_aTwoDirectives1         class _TwoDirectives {}
 
 main() {
   describe('Selector', () {
-    //TODO(karma): throwing error here gets ignored
-    // throw new Error();
-
     var log;
     var selector;
     var element;
@@ -44,158 +54,197 @@ main() {
     beforeEach(() => log = []);
     beforeEachModule((Module module) {
       module
-          ..type(_BElement)
-          ..type(_BClass)
-          ..type(_DirectiveAttr)
-          ..type(_WildcardDirectiveAttr)
-          ..type(_DirectiveFooAttr)
-          ..type(_BElementDirectiveAttr)
-          ..type(_DirectiveValueAttr)
-          ..type(_BElementDirectiveValue)
-          ..type(_ContainsAbc)
-          ..type(_AttributeContainsXyz)
-          ..type(_Component)
-          ..type(_Attribute)
-          ..type(_Structural)
-          ..type(_IgnoreChildren)
-          ..type(_TwoDirectives)
-          ..type(_OneOfTwoDirectives)
-          ..type(_TwoOfTwoDirectives);
-    });
-    beforeEach((DirectiveMap directives) {
-      selector = (node) => directives.selector.match(node);
+          ..bind(_BElement)
+          ..bind(_BClass)
+          ..bind(_DirectiveAttr)
+          ..bind(_WildcardDirectiveAttr)
+          ..bind(_DirectiveFooAttr)
+          ..bind(_BElementDirectiveAttr)
+          ..bind(_DirectiveValueAttr)
+          ..bind(_BElementDirectiveValue)
+          ..bind(_ContainsAbc)
+          ..bind(_AttributeContainsXyz)
+          ..bind(_CComponent)
+          ..bind(_Attribute)
+          ..bind(_Structural)
+          ..bind(_IgnoreChildren)
+          ..bind(_TwoDirectives)
+          ..bind(_OneOfTwoDirectives)
+          ..bind(_TwoOfTwoDirectives);
     });
 
-    it('should match directive on element', () {
-      expect(
-        selector(element = e('<b></b>')),
+    describe('matchElement', () {
+      beforeEach((DirectiveMap directives) {
+        selector = (node) => directives.selector.matchElement(node);
+      });
+
+      it('should match directive on element', () {
+        expect(
+            selector(element = e('<b></b>')),
+            toEqualsDirectiveInfos([
+                { "selector": 'b', "value": null, "element": element, "annotation": _aBElement}
+            ]));
+      });
+
+      it('should match directive on class', () {
+        expect(selector(element = e('<div class="a b c"></div>')),
         toEqualsDirectiveInfos([
-          { "selector": 'b', "value": null, "element": element}
+            { "selector": '.b', "value": null, "element": element, "annotation": _aBClass}
         ]));
-    });
+      });
 
-    it('should match directive on class', () {
-      expect(selector(element = e('<div class="a b c"></div>')),
+      it('should match directive on [attribute]', () {
+        expect(selector(element = e('<div directive=abc></div>')),
         toEqualsDirectiveInfos([
-          { "selector": '.b', "value": null, "element": element}
-      ]));
-    });
+            { "selector": '[directive]', "value": 'abc', "element": element,
+                "name": 'directive', "annotation": _aDirectiveAttr }]));
 
-
-    it('should match directive on [attribute]', () {
-      expect(selector(element = e('<div directive=abc></div>')),
+        expect(selector(element = e('<div directive></div>')),
         toEqualsDirectiveInfos([
-          { "selector": '[directive]', "value": 'abc', "element": element,
-            "name": 'directive' }]));
+            { "selector": '[directive]', "value": '', "element": element,
+                "name": 'directive', "annotation": _aDirectiveAttr }]));
+      });
 
-      expect(selector(element = e('<div directive></div>')),
+      it('should match directive on element[attribute]', () {
+        expect(selector(element = e('<b directive=abc></b>')),
         toEqualsDirectiveInfos([
-          { "selector": '[directive]', "value": '', "element": element,
-            "name": 'directive' }]));
-    });
-
-
-    it('should match directive on element[attribute]', () {
-      expect(selector(element = e('<b directive=abc></b>')),
-        toEqualsDirectiveInfos([
-          { "selector": 'b', "value": null, "element": element},
-          { "selector": '[directive]', "value": 'abc', "element": element},
-          { "selector": 'b[directive]', "value": 'abc', "element": element}
+            { "selector": 'b', "value": null, "element": element, "annotation": _aBElement},
+            { "selector": '[directive]', "value": 'abc', "element": element, "annotation": _aDirectiveAttr},
+            { "selector": 'b[directive]', "value": 'abc', "element": element, "annotation": _aBElementDirectiveAttr}
         ]));
-    });
+      });
 
-
-    it('should match directive on [attribute=value]', () {
-      expect(selector(element = e('<div directive=value></div>')),
+      it('should match directive on [attribute=value]', () {
+        expect(selector(element = e('<div directive=value></div>')),
         toEqualsDirectiveInfos([
-          { "selector": '[directive]', "value": 'value', "element": element},
-          { "selector": '[directive=value]', "value": 'value', "element": element}
+            { "selector": '[directive]', "value": 'value', "element": element, "annotation": _aDirectiveAttr},
+            { "selector": '[directive=value]', "value": 'value', "element": element, "annotation": _aDirectiveValueAttr}
         ]));
-    });
+      });
 
-
-    it('should match directive on element[attribute=value]', () {
-      expect(selector(element = e('<b directive=value></div>')),
+      it('should match directive on element[attribute=value]', () {
+        expect(selector(element = e('<b directive=value></div>')),
         toEqualsDirectiveInfos([
-          { "selector": 'b', "value": null, "element": element, "name": null},
-          { "selector": '[directive]', "value": 'value', "element": element},
-          { "selector": '[directive=value]', "value": 'value', "element": element},
-          { "selector": 'b[directive]', "value": 'value', "element": element},
-          { "selector": 'b[directive=value]', "value": 'value', "element": element}
+            { "selector": 'b', "value": null, "element": element, "name": null, "annotation": _aBElement},
+            { "selector": '[directive]', "value": 'value', "element": element, "annotation": _aDirectiveAttr},
+            { "selector": '[directive=value]', "value": 'value', "element": element, "annotation": _aDirectiveValueAttr},
+            { "selector": 'b[directive]', "value": 'value', "element": element, "annotation": _aBElementDirectiveAttr},
+            { "selector": 'b[directive=value]', "value": 'value', "element": element, "annotation": _aBElementDirectiveValue}
         ]));
-    });
+      });
 
-    it('should match attributes', () {
-      expect(selector(element = e('<div attr="before-xyz-after"></div>')),
+      it('should match attributes', () {
+        expect(selector(element = e('<div attr="before-xyz-after"></div>')),
         toEqualsDirectiveInfos([
-          { "selector": '[*=/xyz/]', "value": 'attr=before-xyz-after',
-            "element": element, "name": 'attr'}
+            { "selector": '[*=/xyz/]',
+                "value": 'attr',
+                "ast": '"before-xyz-after"',
+                "element": element,
+                "name": 'attr',
+                "annotation": _aAttributeContainsXyz}
         ]));
-    });
+      });
 
-    it('should match attribute names', () {
-      expect(selector(element = e('<div wildcard-match=ignored></div>')),
+      it('should match attribute names', () {
+        expect(selector(element = e('<div wildcard-match=ignored></div>')),
         toEqualsDirectiveInfos([
-          { "selector": '[wildcard-*]', "value": 'ignored',
-            "element": element, "name": 'wildcard-match'}
+            { "selector": '[wildcard-*]', "value": 'ignored',
+                "element": element, "name": 'wildcard-match', "annotation": _aWildcardDirectiveAttr}
         ]));
-    });
+      });
 
-    it('should match text', () {
-      expect(selector(element = e('before-abc-after')),
+      it('should sort by priority', async(() {
+        TemplateElementBinder eb = selector(element = e(
+            '<component attribute ignore-children structural></component>'));
+        expect(eb,
+          toEqualsDirectiveInfos(
+            null,
+            template: {"selector": "[structural]", "value": "", "element": element, "annotation": _aStructural}));
+
+        expect(eb.templateBinder,
+        toEqualsDirectiveInfos(
+            [
+                { "selector": "[attribute]", "value": "", "element": element, "annotation": _aAttribute },
+                { "selector": "[ignore-children]", "value": "", "element": element, "annotation": _aIgnoreChildren }
+
+            ],
+            component: { "selector": "component", "value": null, "element": element, "annotation": _aCComponent }));
+      }));
+
+      it('should match on multiple directives', () {
+        expect(selector(element = e('<div directive="d" foo="f"></div>')),
         toEqualsDirectiveInfos([
-          { "selector": ':contains(/abc/)', "value": 'before-abc-after',
-            "element": element, "name": '#text'}
+            { "selector": '[directive]', "value": 'd', "element": element, "annotation": _aDirectiveAttr},
+            { "selector": '[directive=d][foo=f]', "value": 'f', "element": element, "annotation": _aDirectiveFooAttr}
         ]));
-    });
+      });
 
-    it('should sort by priority', () {
-      expect(selector(element = e(
-          '<component attribute ignore-children structural></component>')),
-      toEqualsDirectiveInfos(
-        [
-          { "selector": "[attribute]", "value": "", "element": element },
-          { "selector": "[ignore-children]", "value": "", "element": element }
+      it('should match ng-model + required on the same element', () {
+        expect(
+            selector(element = e('<input type="text" ng-model="val" probe="i" required="true" />')),
+            toEqualsDirectiveInfos([
+                { "selector": '[ng-model]',                 "value": 'val',   "element": element},
+                { "selector": '[probe]',                    "value": 'i',     "element": element},
+                { "selector": '[ng-model][required]',       "value": 'true',  "element": element},
+                { "selector": 'input[type=text][ng-model]', "value": 'val',   "element": element}
+            ]));
+      });
 
-        ],
-        component: { "selector": "component", "value": null, "element": element },
-        template: {"selector": "[structural]", "value": "", "element": element}));
-    });
+      it('should match two directives', () {
+        expect(
+            selector(element = e('<input type="text" my-model="val" required my-required />')),
+            toEqualsDirectiveInfos([
+                { "selector": '[my-model][required]',    "value": '', "element": element},
+                { "selector": '[my-model][my-required]', "value": '', "element": element}
+            ]));
+      });
 
-    it('should match on multiple directives', () {
-      expect(selector(element = e('<div directive="d" foo="f"></div>')),
-      toEqualsDirectiveInfos([
-          { "selector": '[directive]', "value": 'd', "element": element},
-          { "selector": '[directive=d][foo=f]', "value": 'f', "element": element}
-      ]));
-    });
-
-    it('should match ng-model + required on the same element', () {
-      expect(
-        selector(element = e('<input type="text" ng-model="val" probe="i" required="true" />')),
+      it('should match an two directives with the same selector', () {
+        expect(selector(element = e('<div two-directives></div>')),
         toEqualsDirectiveInfos([
-          { "selector": '[ng-model]',                 "value": 'val',   "element": element},
-          { "selector": '[probe]',                    "value": 'i',     "element": element},
-          { "selector": '[ng-model][required]',       "value": 'true',  "element": element},
-          { "selector": 'input[type=text][ng-model]', "value": 'val',   "element": element}
+            { "selector": '[two-directives]', "value": '', "element": element, "annotation": _aOneOfTwoDirectives},
+            { "selector": '[two-directives]', "value": '', "element": element, "annotation": _aTwoOfTwoDirectives}
         ]));
+      });
+
+      it('should collect on-* attributes', () {
+        ElementBinder binder = selector(e('<input on-click="foo" on-blah="fad"></input>'));
+        expect(binder.onEvents).toEqual({'on-click': 'foo', 'on-blah': 'fad'});
+      });
+
+      it('should collect bind-* attributes', () {
+        ElementBinder binder = selector(e('<input bind-x="y" bind-z="yy"></input>'));
+        expect(binder.bindAttrs.keys.length).toEqual(2);
+        expect(binder.bindAttrs['x'].expression).toEqual('y');
+        expect(binder.bindAttrs['z'].expression).toEqual('yy');
+      });
     });
 
-    it('should match two directives', () {
-      expect(
-          selector(element = e('<input type="text" my-model="val" required my-required />')),
-          toEqualsDirectiveInfos([
-              { "selector": '[my-model][required]',    "value": '', "element": element},
-              { "selector": '[my-model][my-required]', "value": '', "element": element}
-          ]));
-    });
+    describe('matchText', () {
+      beforeEach((DirectiveMap directives) {
+        selector = (node) => directives.selector.matchText(node);
+      });
 
-    it('should match an two directives with the same selector', () {
-      expect(selector(element = e('<div two-directives></div>')),
+      it('should match text', () {
+        expect(selector(element = e('before-abc-after')),
         toEqualsDirectiveInfos([
-          { "selector": '[two-directives]', "value": '', "element": element},
-          { "selector": '[two-directives]', "value": '', "element": element}
-      ]));
+            { "selector": ':contains(/abc/)',
+                "value": 'before-abc-after',
+                "ast": '"before-abc-after"',
+                "element": element, "name": '#text'}
+        ]));
+      });
+    });
+
+    describe('matchComment', () {
+      beforeEach((DirectiveMap directives) {
+        selector = (node) => directives.selector.matchComment(node);
+      });
+
+      it('should match comments', () {
+        expect(selector(element = e('<!-- nothing here -->')),
+        toEqualsDirectiveInfos([]));
+      });
     });
   });
 }
@@ -206,32 +255,43 @@ class DirectiveInfosMatcher extends Matcher {
   Map expectedTemplate;
   Map expectedComponent;
 
-  DirectiveInfosMatcher(this.expected, {this.expectedTemplate, this.expectedComponent});
+  safeToString(a) => "${a['element']} ${a['selector']} ${a['value']}";
+  safeToStringRef(a) => "${a.element} ${a.annotation.selector} ${a.value}";
+
+  DirectiveInfosMatcher(this.expected, {this.expectedTemplate, this.expectedComponent}) {
+    if (expected != null) {
+      expected.sort((a, b) => Comparable.compare(safeToString(a), safeToString(b)));
+    }
+  }
 
   Description describe(Description description) =>
       description..add(expected.toString());
 
-  bool _refMatches(directiveRef, expectedMap) =>
+  bool _refMatches(DirectiveRef directiveRef, Map expectedMap) =>
     directiveRef.element == expectedMap['element'] &&
     directiveRef.annotation.selector == expectedMap['selector'] &&
-    directiveRef.value == expectedMap['value'];
+    directiveRef.value == expectedMap['value'] &&
+    (expectedMap['annotation'] == null || directiveRef.annotation == expectedMap['annotation']) &&
+    (directiveRef.valueAST == null || directiveRef.valueAST.expression == expectedMap['ast']);
 
 
   bool matches(ElementBinder binder, matchState) {
-    var pass = expected.length == binder.decorators.length;
-    if (pass) {
+    var pass = true;
+    if (expected != null) {
+      var decorators = new List.from(binder.decorators)
+          ..sort((a, b) => Comparable.compare(safeToStringRef(a), safeToStringRef(b)));
+      pass = expected.length == decorators.length;
       for (var i = 0, ii = expected.length; i < ii; i++) {
-        DirectiveRef directiveRef = binder.decorators[i];
+        DirectiveRef directiveRef = decorators[i];
         var expectedMap = expected[i];
-
         pass = pass && _refMatches(directiveRef, expectedMap);
       }
     }
     if (pass && expectedTemplate != null) {
-      pass = pass && _refMatches(binder.template, expectedTemplate);
+      pass = pass && _refMatches((binder as TemplateElementBinder).template, expectedTemplate);
     }
     if (pass && expectedComponent != null) {
-      pass = pass && _refMatches(binder.component, expectedComponent);
+      pass = pass && _refMatches(binder.componentData.ref, expectedComponent);
     }
     return pass;
   }

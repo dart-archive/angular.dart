@@ -2,9 +2,9 @@ library ng_if_spec;
 
 import '../_specs.dart';
 
-@NgDirective(
+@Decorator(
     selector: '[child-controller]',
-    children: NgAnnotation.TRANSCLUDE_CHILDREN)
+    children: Directive.TRANSCLUDE_CHILDREN)
 class ChildController {
   ChildController(BoundViewFactory boundViewFactory,
                   ViewPort viewPort,
@@ -18,8 +18,8 @@ main() {
   var compile, html, element, rootScope, logger, directives;
 
   void configInjector(Module module) {
-    module..type(ChildController)
-          ..type(LogAttrDirective);
+    module..bind(ChildController)
+          ..bind(LogAttrDirective);
   }
 
   void configState(Scope scope, Compiler compiler, Injector injector,
@@ -28,7 +28,7 @@ main() {
     logger = _logger;
     compile = (html, [applyFn]) {
       element = e(html);
-      compiler([element], _directives)(injector, [element]);
+      compiler([element], _directives)(scope, null, [element]);
       scope.apply(applyFn);
     };
     directives = _directives;
@@ -70,36 +70,57 @@ main() {
     }
   );
 
-  they('should create a child scope',
+  they('should create and destroy a child scope',
     [
       // ng-if
       '<div>' +
       '  <div ng-if="isVisible">'.trim() +
-      '    <span child-controller id="inside">inside {{setBy}};</span>'.trim() +
+      '    <span child-controller id="inside" probe="probe">inside {{ctx}};</span>'.trim() +
       '  </div>'.trim() +
-      '  <span id="outside">outside {{setBy}}</span>'.trim() +
+      '  <span id="outside">outside {{ctx}}</span>'.trim() +
       '</div>',
       // ng-unless
       '<div>' +
       '  <div ng-unless="!isVisible">'.trim() +
-      '    <span child-controller id="inside">inside {{setBy}};</span>'.trim() +
+      '    <span child-controller id="inside" probe="probe">inside {{ctx}};</span>'.trim() +
       '  </div>'.trim() +
-      '  <span id="outside">outside {{setBy}}</span>'.trim() +
+      '  <span id="outside">outside {{ctx}}</span>'.trim() +
       '</div>'],
     (html) {
-      rootScope.context['setBy'] = 'topLevel';
+      rootScope.context['ctx'] = 'parent';
+
+      var getChildScope = () => rootScope.context['probe'] == null ?
+          null : rootScope.context['probe'].scope;
+
       compile(html);
-      expect(element).toHaveText('outside topLevel');
+      expect(element).toHaveText('outside parent');
+      expect(getChildScope()).toBeNull();
 
       rootScope.apply(() {
         rootScope.context['isVisible'] = true;
       });
-      expect(element).toHaveText('inside childController;outside topLevel');
-      // The value on the parent scope.context['should'] be unchanged.
-      expect(rootScope.context['setBy']).toEqual('topLevel');
-      expect(element.querySelector('#outside')).toHaveHtml('outside topLevel');
-      // A child scope.context['must'] have been created and hold a different value.
-      expect(element.querySelector('#inside')).toHaveHtml('inside childController;');
+      // The nested scope uses the parent context
+      expect(element).toHaveText('inside parent;outside parent');
+      expect(element.querySelector('#outside')).toHaveHtml('outside parent');
+      expect(element.querySelector('#inside')).toHaveHtml('inside parent;');
+
+      var childScope1 = getChildScope();
+      expect(childScope1).toBeNotNull();
+      var destroyListener = guinness.createSpy('destroy child scope');
+      var watcher = childScope1.on(ScopeEvent.DESTROY).listen(destroyListener);
+
+      rootScope.apply(() {
+        rootScope.context['isVisible'] = false;
+      });
+      expect(getChildScope()).toBeNull();
+      expect(destroyListener).toHaveBeenCalledOnce();
+
+      rootScope.apply(() {
+        rootScope.context['isVisible'] = true;
+      });
+      var childScope2 = getChildScope();
+      expect(childScope2).toBeNotNull();
+      expect(childScope2).not.toBe(childScope1);
     }
   );
 
@@ -141,7 +162,7 @@ main() {
       compile(html);
       expect(element).toHaveText('content');
       element.querySelector('span').classes.remove('my-class');
-      expect(element.querySelector('span').classes.contains('my-class')).not.toBe(true);
+      expect(element.querySelector('span')).not.toHaveClass('my-class');
       rootScope.apply(() {
         rootScope.context['isVisible'] = false;
       });
@@ -150,7 +171,7 @@ main() {
         rootScope.context['isVisible'] = true;
       });
       // The newly inserted node should be a copy of the compiled state.
-      expect(element.querySelector('span').classes.contains('my-class')).toBe(true);
+      expect(element.querySelector('span')).toHaveClass('my-class');
     }
   );
 

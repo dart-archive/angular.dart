@@ -11,17 +11,29 @@ void main() {
     beforeEachModule((Module module) {
       Map context = {};
       module
-          ..type(ChangeDetector, implementedBy: DirtyCheckingChangeDetector)
-          ..value(Object, context)
-          ..value(Map, context)
-          ..type(RootScope)
-          ..type(_MultiplyFilter)
-          ..type(_ListHeadFilter)
-          ..type(_ListTailFilter)
-          ..type(_SortFilter)
-          ..type(_IdentityFilter)
-          ..type(_MapKeys)
-          ..type(ScopeStatsEmitter, implementedBy: MockScopeStatsEmitter);
+          ..bind(ChangeDetector, toImplementation: DirtyCheckingChangeDetector)
+          ..bind(Object, toValue: context)
+          ..bind(Map, toValue: context)
+          ..bind(RootScope)
+          ..bind(_MultiplyFormatter)
+          ..bind(_ListHeadFormatter)
+          ..bind(_ListTailFormatter)
+          ..bind(_SortFormatter)
+          ..bind(_IdentityFormatter)
+          ..bind(_MapKeys)
+          ..bind(ScopeStatsEmitter, toImplementation: MockScopeStatsEmitter);
+    });
+
+    describe('Root context', () {
+      beforeEachModule((Module module) {
+        module.bind(Object, toImplementation: _RootContext);
+      });
+
+      it('should set the scope when RootContext is ScopeAware',
+          (RootScope rootScope, Object rootContext) {
+        expect(rootContext).toBeAnInstanceOf(_RootContext);
+        expect((rootContext as _RootContext).scope).toBe(rootScope);
+      });
     });
 
     describe('AST Bridge', () {
@@ -150,6 +162,11 @@ void main() {
         logger.clear();
         rootScope.digest();
         expect(logger).toEqual([]);
+        logger.clear();
+
+        context['a']['b'] = 234;
+        rootScope.digest();
+        expect(logger).toEqual([234]);
       });
 
 
@@ -164,12 +181,12 @@ void main() {
         expect(logger).toEqual([true]);
       });
 
-      it('should support filters', (Logger logger, Map context,
-          RootScope rootScope, FilterMap filters) {
+      it('should support formatters', (Logger logger, Map context,
+          RootScope rootScope, FormatterMap formatters) {
         context['a'] = 123;
         context['b'] = 2;
         rootScope.watch('a | multiply:b', (value, previous) => logger(value),
-            filters: filters);
+            formatters: formatters);
         rootScope.digest();
         expect(logger).toEqual([246]);
         logger.clear();
@@ -178,11 +195,11 @@ void main() {
         logger.clear();
       });
 
-      it('should support arrays in filters', (Logger logger, Map context,
-          RootScope rootScope, FilterMap filters) {
+      it('should support arrays in formatters', (Logger logger, Map context,
+          RootScope rootScope, FormatterMap formatters) {
         context['a'] = [1];
         rootScope.watch('a | sort | listHead:"A" | listTail:"B"',
-            (value, previous) => logger(value), filters: filters);
+            (value, previous) => logger(value), formatters: formatters);
         rootScope.digest();
         expect(logger).toEqual(['sort', 'listHead', 'listTail', ['A', 1, 'B']]);
         logger.clear();
@@ -197,18 +214,18 @@ void main() {
         logger.clear();
 
         // We change the order, but sort should change it to same one and it should not
-        // call subsequent filters.
+        // call subsequent formatters.
         context['a'] = [2, 1];
         rootScope.digest();
         expect(logger).toEqual(['sort']);
         logger.clear();
       });
 
-      it('should support maps in filters', (Logger logger, Map context,
-          RootScope rootScope, FilterMap filters) {
+      it('should support maps in formatters', (Logger logger, Map context,
+          RootScope rootScope, FormatterMap formatters) {
         context['a'] = {'foo': 'bar'};
         rootScope.watch('a | identity | keys',
-            (value, previous) => logger(value), filters: filters);
+            (value, previous) => logger(value), formatters: formatters);
         rootScope.digest();
         expect(logger).toEqual(['identity', 'keys', ['foo']]);
         logger.clear();
@@ -233,9 +250,9 @@ void main() {
         });
 
         it('children should point to root', (RootScope rootScope) {
-          var child = rootScope.createChild(new PrototypeMap(rootScope.context));
+          var child = rootScope.createProtoChild();
           expect(child.rootScope).toEqual(rootScope);
-          expect(child.createChild(new PrototypeMap(rootScope.context)).rootScope).toEqual(rootScope);
+          expect(child.createProtoChild().rootScope).toEqual(rootScope);
         });
       });
 
@@ -248,11 +265,11 @@ void main() {
 
 
         it('should point to parent', (RootScope rootScope) {
-          var child = rootScope.createChild(new PrototypeMap(rootScope.context));
+          var child = rootScope.createProtoChild();
           expect(child.id).toEqual(':0');
           expect(rootScope.parentScope).toEqual(null);
           expect(child.parentScope).toEqual(rootScope);
-          expect(child.createChild(new PrototypeMap(rootScope.context)).parentScope).toEqual(child);
+          expect(child.createProtoChild().parentScope).toEqual(child);
         });
       });
     });
@@ -269,7 +286,7 @@ void main() {
 
         it(r'should add listener for both emit and broadcast events', (RootScope rootScope) {
           var log = '',
-          child = rootScope.createChild(new PrototypeMap(rootScope.context));
+          child = rootScope.createProtoChild();
 
           eventFn(event) {
             expect(event).not.toEqual(null);
@@ -289,7 +306,7 @@ void main() {
 
         it(r'should return a function that deregisters the listener', (RootScope rootScope) {
           var log = '';
-          var child = rootScope.createChild(new PrototypeMap(rootScope.context));
+          var child = rootScope.createProtoChild();
           var subscription;
 
           eventFn(e) {
@@ -406,7 +423,7 @@ void main() {
           var random = new Random();
           for (var i = 0; i < 1000; i++) {
             if (i % 10 == 0) {
-              scopes = [root.createChild(null)];
+              scopes = [root.createChild({})];
               listeners = [];
               steps = [];
             }
@@ -415,9 +432,9 @@ void main() {
                 if (scopes.length > 10) break;
                 var index = random.nextInt(scopes.length);
                 Scope scope = scopes[index];
-                var child = scope.createChild(null);
+                var child = scope.createChild({});
                 scopes.add(child);
-                steps.add('scopes[$index].createChild(null)');
+                steps.add('scopes[$index].createChild({})');
                 break;
               case 1:
                 var index = random.nextInt(scopes.length);
@@ -483,14 +500,31 @@ void main() {
 
         describe('exceptions', () {
           beforeEachModule((Module module) {
-            module.type(ExceptionHandler, implementedBy: LoggingExceptionHandler);
+            module.bind(ExceptionHandler, toImplementation: LoggingExceptionHandler);
           });
+
+
           it(r'should dispatch exceptions to the exceptionHandler', (ExceptionHandler e) {
             LoggingExceptionHandler exceptionHandler = e;
             child.on('myEvent').listen((e) { throw 'bubbleException'; });
             grandChild.emit(r'myEvent');
             expect(log.join('>')).toEqual('2>1>0');
             expect(exceptionHandler.errors[0].error).toEqual('bubbleException');
+          });
+
+
+          it('should throw "model unstable" error when observer is present', (RootScope rootScope, VmTurnZone zone, ExceptionHandler e) {
+            // Generates a different, equal, list on each evaluation.
+            rootScope.context['list'] = new UnstableList();
+
+            rootScope.watch('list.list', (n, v) => null, canChangeModel: true);
+            try {
+              zone.run(() => null);
+            } catch(_) {}
+
+            var errors = (e as LoggingExceptionHandler).errors;
+            expect(errors.length).toEqual(1);
+            expect(errors.first.error, startsWith('Model did not stabilize'));
           });
         });
 
@@ -632,7 +666,7 @@ void main() {
 
 
           it('should skip scopes which dont have given event',
-          inject((RootScope rootScope, Logger log) {
+          (RootScope rootScope, Logger log) {
             var child1 = rootScope.createChild('A');
             rootScope.createChild('A1');
             rootScope.createChild('A2');
@@ -641,7 +675,7 @@ void main() {
             child2.on('event').listen((e) => log(e.data));
             rootScope.broadcast('event', 'OK');
             expect(log).toEqual(['OK']);
-          }));
+          });
         });
 
 
@@ -800,7 +834,7 @@ void main() {
       describe(r'exceptions', () {
         var log;
         beforeEachModule((Module module) {
-          return module.type(ExceptionHandler, implementedBy: LoggingExceptionHandler);
+          return module.bind(ExceptionHandler, toImplementation: LoggingExceptionHandler);
         });
 
         beforeEach((RootScope rootScope) {
@@ -825,14 +859,14 @@ void main() {
         });
 
 
-        it(r'should execute and return value and update', inject(
-                (RootScope rootScope, ExceptionHandler e) {
-              LoggingExceptionHandler exceptionHandler = e;
-              rootScope.context['name'] = 'abc';
-              expect(rootScope.apply((context) => context['name'])).toEqual('abc');
-              expect(log).toEqual('digest;digest;');
-              exceptionHandler.assertEmpty();
-            }));
+        it(r'should execute and return value and update',
+            (RootScope rootScope, ExceptionHandler e) {
+          LoggingExceptionHandler exceptionHandler = e;
+          rootScope.context['name'] = 'abc';
+          expect(rootScope.apply((context) => context['name'])).toEqual('abc');
+          expect(log).toEqual('digest;digest;');
+          exceptionHandler.assertEmpty();
+        });
 
 
         it(r'should execute and return value and update', (RootScope rootScope) {
@@ -850,10 +884,10 @@ void main() {
         });
       });
 
-      it(r'should proprely reset phase on exception', (RootScope rootScope) {
+      it(r'should properly reset phase on exception', (RootScope rootScope) {
         var error = 'MyError';
-        expect(() => rootScope.apply(() { throw error; })).toThrow(error);
-        expect(() => rootScope.apply(() { throw error; })).toThrow(error);
+        expect(() => rootScope.apply(() { throw error; })).toThrowWith(message: error);
+        expect(() => rootScope.apply(() { throw error; })).toThrowWith(message: error);
       });
     });
 
@@ -879,7 +913,7 @@ void main() {
       describe(r'exceptions', () {
         var log;
         beforeEachModule((Module module) {
-          return module.type(ExceptionHandler, implementedBy: LoggingExceptionHandler);
+          return module.bind(ExceptionHandler, toImplementation: LoggingExceptionHandler);
         });
         beforeEach((RootScope rootScope) {
           rootScope.context['log'] = () { log += 'digest;'; return null; };
@@ -902,14 +936,14 @@ void main() {
           exceptionHandler.assertEmpty();
         });
 
-        it(r'should execute and return value and update', inject(
-                (RootScope rootScope, ExceptionHandler e) {
-              LoggingExceptionHandler exceptionHandler = e;
-              rootScope.context['name'] = 'abc';
-              expect(rootScope.apply((context) => context['name'])).toEqual('abc');
-              expect(log).toEqual('digest;digest;');
-              exceptionHandler.assertEmpty();
-            }));
+        it(r'should execute and return value and update',
+            (RootScope rootScope, ExceptionHandler e) {
+          LoggingExceptionHandler exceptionHandler = e;
+          rootScope.context['name'] = 'abc';
+          expect(rootScope.apply((context) => context['name'])).toEqual('abc');
+          expect(log).toEqual('digest;digest;');
+          exceptionHandler.assertEmpty();
+        });
 
         it(r'should execute and return value and update', (RootScope rootScope) {
           rootScope.context['name'] = 'abc';
@@ -941,44 +975,13 @@ void main() {
 
           retValue = 2;
           expect(rootScope.flush).
-          toThrow('Observer reaction functions should not change model. \n'
+          toThrowWith(message: 'Observer reaction functions should not change model. \n'
           'These watch changes were detected: logger("watch"): 2 <= 1\n'
           'These observe changes were detected: ');
         });
       });
 
     });
-
-
-    describe('ScopeLocals', () {
-      it('should read from locals', (RootScope scope) {
-        scope.context['a'] = 'XXX';
-        scope.context['c'] = 'C';
-        var scopeLocal = new ScopeLocals(scope.context, {'a': 'A', 'b': 'B'});
-        expect(scopeLocal['a']).toEqual('A');
-        expect(scopeLocal['b']).toEqual('B');
-        expect(scopeLocal['c']).toEqual('C');
-      });
-
-      it('should write to Scope', (RootScope scope) {
-        scope.context['a'] = 'XXX';
-        scope.context['c'] = 'C';
-        var scopeLocal = new ScopeLocals(scope.context, {'a': 'A', 'b': 'B'});
-
-        scopeLocal['a'] = 'aW';
-        scopeLocal['b'] = 'bW';
-        scopeLocal['c'] = 'cW';
-
-        expect(scope.context['a']).toEqual('aW');
-        expect(scope.context['b']).toEqual('bW');
-        expect(scope.context['c']).toEqual('cW');
-
-        expect(scopeLocal['a']).toEqual('A');
-        expect(scopeLocal['b']).toEqual('B');
-        expect(scopeLocal['c']).toEqual('cW');
-      });
-    });
-
 
     describe(r'watch/digest', () {
       it(r'should watch and fire on simple property change', (RootScope rootScope) {
@@ -999,7 +1002,7 @@ void main() {
       });
 
 
-      it('should watch/observe on objects other then contex', (RootScope rootScope) {
+      it('should watch/observe on objects other then context (DEPRECATED)', (RootScope rootScope) {
         var log = '';
         var map = {'a': 'A', 'b': 'B'};
         rootScope.watch('a', (a, b) => log += a, context: map);
@@ -1028,7 +1031,7 @@ void main() {
 
       describe('exceptions', () {
         beforeEachModule((Module module) {
-          module.type(ExceptionHandler, implementedBy: LoggingExceptionHandler);
+          module.bind(ExceptionHandler, toImplementation: LoggingExceptionHandler);
         });
         it(r'should delegate exceptions', (RootScope rootScope, ExceptionHandler e) {
           LoggingExceptionHandler exceptionHandler = e;
@@ -1070,23 +1073,22 @@ void main() {
       });
 
 
-      it(r'should run digest multiple times', inject(
-              (RootScope rootScope) {
-            // tests a traversal edge case which we originally missed
-            var log = [];
-            var childA = rootScope.createChild({'log': log});
-            var childB = rootScope.createChild({'log': log});
+      it(r'should run digest multiple times', (RootScope rootScope) {
+        // tests a traversal edge case which we originally missed
+        var log = [];
+        var childA = rootScope.createChild({'log': log});
+        var childB = rootScope.createChild({'log': log});
 
-            rootScope.context['log'] = log;
+        rootScope.context['log'] = log;
 
-            rootScope.watch("log.add('r')", (_, __) => null);
-            childA.watch("log.add('a')", (_, __) => null);
-            childB.watch("log.add('b')", (_, __) => null);
+        rootScope.watch("log.add('r')", (_, __) => null);
+        childA.watch("log.add('a')", (_, __) => null);
+        childB.watch("log.add('b')", (_, __) => null);
 
-            // init
-            rootScope.digest();
-            expect(log.join('')).toEqual('rabrab');
-          }));
+        // init
+        rootScope.digest();
+        expect(log.join('')).toEqual('rabrab');
+      });
 
 
       it(r'should repeat watch cycle while model changes are identified', (RootScope rootScope) {
@@ -1134,7 +1136,7 @@ void main() {
         rootScope.watch('name', (a, b) {
           expect(() {
             rootScope.digest();
-          }).toThrow(r'digest already in progress');
+          }).toThrowWith(message: 'digest already in progress');
           callCount++;
         });
         rootScope.context['name'] = 'a';
@@ -1143,9 +1145,9 @@ void main() {
       });
 
 
-      it(r'should return a function that allows listeners to be unregistered', inject(
+      it(r'should return a function that allows listeners to be unregistered',
           (RootScope rootScope) {
-        var listener = jasmine.createSpy('watch listener');
+        var listener = guinness.createSpy('watch listener');
         var watch;
 
         watch = rootScope.watch('foo', listener);
@@ -1163,16 +1165,16 @@ void main() {
         watch.remove();
         rootScope.digest(); //trigger
         expect(listener).not.toHaveBeenCalled();
-      }));
+      });
 
 
       it(r'should be possible to remove every watch',
-          (RootScope rootScope, FilterMap filters) {
+          (RootScope rootScope, FormatterMap formatters) {
         rootScope.context['foo'] = 'bar';
         var watch1 = rootScope.watch('(foo|json)+"bar"', (v, p) => null,
-        filters: filters);
+        formatters: formatters);
         var watch2 = rootScope.watch('(foo|json)+"bar"', (v, p) => null,
-        filters: filters);
+        formatters: formatters);
 
         expect(() => watch1.remove()).not.toThrow();
         expect(() => watch2.remove()).not.toThrow();
@@ -1197,16 +1199,30 @@ void main() {
 
         expect(() {
           rootScope.digest();
-        }).toThrow('Model did not stabilize in 5 digests. '
+        }).toThrowWith(message: 'Model did not stabilize in 10 digests. '
+                   'Last 3 iterations:\n'
+                   'a: 7 <= 6, b: 7 <= 6\n'
+                   'a: 8 <= 7, b: 8 <= 7\n'
+                   'a: 9 <= 8, b: 9 <= 8');
+      });
+
+
+      it(r'should detect infinite digest through runAsync', (RootScope rootScope) {
+        rootScope.context['value'] = () { rootScope.runAsync(() {}); return 'a'; };
+        rootScope.watch('value()', (_, __) {});
+
+        expect(() {
+          rootScope.digest();
+        }).toThrowWith(message: 'Model did not stabilize in 10 digests. '
         'Last 3 iterations:\n'
-        'a: 2 <= 1, b: 2 <= 1\n'
-        'a: 3 <= 2, b: 3 <= 2\n'
-        'a: 4 <= 3, b: 4 <= 3');
+        'async:1\n'
+        'async:1\n'
+        'async:1');
       });
 
 
       it(r'should always call the watchr with newVal and oldVal equal on the first run',
-      inject((RootScope rootScope) {
+          (RootScope rootScope) {
         var log = [];
         var logger = (newVal, oldVal) {
           var val = (newVal == oldVal || (newVal != oldVal && oldVal != newVal)) ? newVal : 'xxx';
@@ -1226,15 +1242,15 @@ void main() {
             ..watch('numberValue', logger)
             ..digest();
 
-        expect(log.removeAt(0).isNaN).toEqual(true); //jasmine's toBe and toEqual don't work well with NaNs
+        expect(log.removeAt(0).isNaN).toEqual(true); //guinness's toBe and toEqual don't work well with NaNs
         expect(log).toEqual([null, '', false, 23]);
         log = [];
         rootScope.digest();
         expect(log).toEqual([]);
-      }));
+      });
 
 
-      it('should properly watch canstants', (RootScope rootScope, Logger log) {
+      it('should properly watch constants', (RootScope rootScope, Logger log) {
         rootScope.watch('[1, 2]', (v, o) => log([v, o]));
         expect(log).toEqual([]);
         rootScope.apply();
@@ -1242,7 +1258,7 @@ void main() {
       });
 
 
-      it('should properly watch array of fields', (RootScope rootScope, Logger log) {
+      it('should properly watch array of fields 1', (RootScope rootScope, Logger log) {
         rootScope.context['foo'] = 12;
         rootScope.context['bar'] = 34;
         rootScope.watch('[foo, bar]', (v, o) => log([v, o]));
@@ -1258,7 +1274,7 @@ void main() {
       });
 
 
-      it('should properly watch array of fields', (RootScope rootScope, Logger log) {
+      it('should properly watch array of fields 2', (RootScope rootScope, Logger log) {
         rootScope.context['foo'] = () => 12;
         rootScope.watch('foo()', (v, o) => log(v));
         expect(log).toEqual([]);
@@ -1267,7 +1283,7 @@ void main() {
       });
 
 
-      it('should properly watch array of fields', (RootScope rootScope, Logger log) {
+      it('should properly watch array of fields 3', (RootScope rootScope, Logger log) {
         rootScope.context['foo'] = 'abc';
         rootScope.watch('foo.contains("b")', (v, o) => log([v, o]));
         expect(log).toEqual([]);
@@ -1276,6 +1292,16 @@ void main() {
         log.clear();
       });
 
+      it('should watch closures both as a leaf and as method call', (RootScope rootScope, Logger log) {
+        rootScope.context['foo'] = new Foo();
+        rootScope.context['increment'] = null;
+        rootScope.watch('foo.increment', (v, _) => rootScope.context['increment'] = v);
+        rootScope.watch('increment(1)', (v, o) => log([v, o]));
+        expect(log).toEqual([]);
+        rootScope.apply();
+        expect(log).toEqual([[null, null], [2, null]]);
+        log.clear();
+      });
 
       it('should not trigger new watcher in the flush where it was added', (Scope scope) {
         var log = [] ;
@@ -1334,7 +1360,7 @@ void main() {
       });
 
 
-      it('should properly watch array of fields2', (RootScope rootScope, Logger log) {
+      it('should properly watch array of fields 4', (RootScope rootScope, Logger log) {
         rootScope.watch('[ctrl.foo, ctrl.bar]', (v, o) => log([v, o]));
         expect(log).toEqual([]);
         rootScope.apply();
@@ -1408,13 +1434,112 @@ void main() {
       });
     });
 
+    describe('microtask processing', () {
+      beforeEach((VmTurnZone zone, RootScope scope, Logger log) {
+        var onTurnDone = zone.onTurnDone;
+        zone.onTurnDone = () {
+          log('[');
+          onTurnDone();
+          log(']');
+        };
+        var onScheduleMicrotask = zone.onScheduleMicrotask;
+        zone.onScheduleMicrotask = (fn) {
+          log('(');
+          try {
+            onScheduleMicrotask(fn);
+          } catch (e) {
+            log('CATCH: $e');
+          }
+          log(')');
+        };
+      });
+
+      it('should schedule apply after future resolution',
+        async((Logger log, VmTurnZone zone, RootScope scope) {
+          Completer completer;
+          zone.run(() {
+            completer = new Completer();
+            completer.future.then((value) {
+              log('then($value)');
+            });
+          });
+
+          scope.runAsync(() => log('before'));
+          log.clear();
+          completer.complete('OK'); // this one causes APPLY which processe 'before'
+          // This one schedules work but apply already run so it does not execute.
+          scope.runAsync(() => log('NOT_EXECUTED'));
+
+          expect(log).toEqual(['(', ')', '[', 'before', 'then(OK)', ']']);
+        })
+      );
+
+      it('should schedule microtask to runAsync queue during digest',
+        async((Logger log, VmTurnZone zone, RootScope scope) {
+          Completer completer;
+          zone.run(() {
+            completer = new Completer();
+            completer.future.
+              then((value) {
+                scope.runAsync(() => log('in(${scope.state})'));
+                return new Future.value(value);
+              }).
+              then((value) {
+                log('then($value)');
+              });
+          });
+          log.clear();
+          completer.complete('OK');
+          expect(log).toEqual(['(', ')', '[', '(', ')', 'in(digest)', 'then(OK)', ']']);
+        })
+      );
+
+      it('should allow microtasks in flush phase and process them immediatly',
+        async((Logger log, VmTurnZone zone, RootScope scope) {
+          scope.watch('g()', (_, __) {});
+          scope.context['g'] = () {
+            log('!');
+            return 0;
+          };
+
+          zone.run(() {
+            scope.domWrite(() {
+              log('domWriteA');
+              return new Future.value(null).then((_) => scope.domWrite(() => log('domWriteB')));
+            });
+          });
+          expect(log).toEqual(
+              ['[', '!', '!', 'domWriteA', '(', ')', 'domWriteB', /* assert */'!', ']']);
+        })
+      );
+
+      it('should allow creation of Completers in flush phase',
+        async((Logger log, VmTurnZone zone, RootScope scope) {
+          Completer completer;
+          zone.run(() {
+            scope.domWrite(() {
+              log('new Completer');
+              completer = new Completer();
+              completer.future.then((value) {
+                log('then($value)');
+              });
+            });
+          });
+          log('=');
+          completer.complete('OK');
+          log(';');
+          expect(log).toEqual(
+              ['[', 'new Completer', ']', '=', '(', ')', '[', 'then(OK)', ']', ';']);
+        })
+      );
+    });
 
     describe('domRead/domWrite', () {
       beforeEachModule((Module module) {
-        module.type(ExceptionHandler, implementedBy: LoggingExceptionHandler);
+        module.bind(ExceptionHandler, toImplementation: LoggingExceptionHandler);
       });
 
-      it(r'should run writes before reads', (RootScope rootScope, Logger logger, ExceptionHandler e) {
+      it('should run writes before reads', (RootScope rootScope, Logger logger, ExceptionHandler e) {
         LoggingExceptionHandler exceptionHandler = e as LoggingExceptionHandler;
         rootScope.domWrite(() {
           logger('write1');
@@ -1435,15 +1560,49 @@ void main() {
         expect(exceptionHandler.errors[0].error).toEqual('write1');
         expect(exceptionHandler.errors[1].error).toEqual('read1');
       });
+
+      it("should run writes of child scopes first", (RootScope rootScope, Logger logger) {
+        final childScope = rootScope.createChild({});
+        childScope.domWrite(() {
+          logger("child1");
+        });
+        rootScope.domWrite(() {
+          logger("root");
+        });
+        childScope.domWrite(() {
+          logger("child2");
+        });
+
+        rootScope.flush();
+
+        expect(logger).toEqual(['child1', 'child2', 'root']);
+      });
+
+      it("should run reads of child scopes first", (RootScope rootScope, Logger logger) {
+        final childScope = rootScope.createChild({});
+        childScope.domRead(() {
+          logger("child1");
+        });
+        rootScope.domRead(() {
+          logger("root");
+        });
+        childScope.domRead(() {
+          logger("child2");
+        });
+
+        rootScope.flush();
+
+        expect(logger).toEqual(['child1', 'child2', 'root']);
+      });
     });
 
     describe('exceptionHander', () {
       beforeEachModule((Module module) {
-        module.type(ExceptionHandler, implementedBy: LoggingExceptionHandler);
+        module.bind(ExceptionHandler, toImplementation: LoggingExceptionHandler);
       });
 
       it('should call ExceptionHandler on zone errors',
-          async((RootScope rootScope, NgZone zone, ExceptionHandler e) {
+          async((RootScope rootScope, VmTurnZone zone, ExceptionHandler e) {
         zone.run(() {
           scheduleMicrotask(() => throw 'my error');
         });
@@ -1453,7 +1612,7 @@ void main() {
       }));
 
       it('should call ExceptionHandler on digest errors',
-        async((RootScope rootScope, NgZone zone, ExceptionHandler e) {
+        async((RootScope rootScope, VmTurnZone zone, ExceptionHandler e) {
         rootScope.context['badOne'] = () => new Map();
         rootScope.watch('badOne()', (_, __) => null);
 
@@ -1514,17 +1673,17 @@ void main() {
   });
 }
 
-@NgFilter(name: 'identity')
-class _IdentityFilter {
+@Formatter(name: 'identity')
+class _IdentityFormatter {
   Logger logger;
-  _IdentityFilter(this.logger);
+  _IdentityFormatter(this.logger);
   call(v) {
     logger('identity');
     return v;
   }
 }
 
-@NgFilter(name: 'keys')
+@Formatter(name: 'keys')
 class _MapKeys {
   Logger logger;
   _MapKeys(this.logger);
@@ -1534,50 +1693,50 @@ class _MapKeys {
   }
 }
 
-@NgFilter(name: 'multiply')
-class _MultiplyFilter {
+@Formatter(name: 'multiply')
+class _MultiplyFormatter {
   call(a, b) => a * b;
 }
 
-@NgFilter(name: 'listHead')
-class _ListHeadFilter {
+@Formatter(name: 'listHead')
+class _ListHeadFormatter {
   Logger logger;
-  _ListHeadFilter(this.logger);
+  _ListHeadFormatter(this.logger);
   call(list, head) {
     logger('listHead');
     return [head]..addAll(list);
   }
 }
 
-@NgFilter(name: 'listTail')
-class _ListTailFilter {
+@Formatter(name: 'listTail')
+class _ListTailFormatter {
   Logger logger;
-  _ListTailFilter(this.logger);
+  _ListTailFormatter(this.logger);
   call(list, tail) {
     logger('listTail');
     return new List.from(list)..add(tail);
   }
 }
 
-@NgFilter(name: 'sort')
-class _SortFilter {
+@Formatter(name: 'sort')
+class _SortFormatter {
   Logger logger;
-  _SortFilter(this.logger);
+  _SortFormatter(this.logger);
   call(list) {
     logger('sort');
     return new List.from(list)..sort();
   }
 }
 
-@NgFilter(name:'newFilter')
-class FilterOne {
+@Formatter(name:'newFormatter')
+class FormatterOne {
   call(String str) {
     return '$str 1';
   }
 }
 
-@NgFilter(name:'newFilter')
-class FilterTwo {
+@Formatter(name:'newFormatter')
+class FormatterTwo {
   call(String str) {
     return '$str 2';
   }
@@ -1595,4 +1754,16 @@ class MockScopeStatsEmitter implements ScopeStatsEmitter {
             AvgStopwatch evalStopwatch, AvgStopwatch processStopwatch) {
     invoked = true;
   }
+}
+
+class UnstableList {
+  List get list => new List.generate(3, (i) => i);
+}
+
+class Foo {
+  increment(x) => x+1;
+}
+
+class _RootContext implements ScopeAware {
+  var scope;
 }

@@ -1,48 +1,67 @@
 library compiler_spec;
 
 import '../_specs.dart';
+import 'package:angular/core_dom/directive_injector.dart';
 
 
-forBothCompilers(fn) {
-  describe('walking compiler', () {
+withElementProbeConfig(fn) {
+  describe('with ElementProbe enabled', () {
     beforeEachModule((Module m) {
-      m.type(Compiler, implementedBy: WalkingCompiler);
       return m;
     });
-    fn();
+    fn('elementProbe');
   });
 
-  describe('tagging compiler', () {
+  describe('with ElementProbe disabled', () {
     beforeEachModule((Module m) {
-      m.type(Compiler, implementedBy: TaggingCompiler);
+      m.bind(CompilerConfig, toValue: new CompilerConfig.withOptions(elementProbeEnabled: false));
       return m;
     });
-    fn();
+    fn('no-elementProbe');
+  });
+}
+
+forAllCompilersAndComponentFactories(fn) {
+  withElementProbeConfig(fn);
+
+  describe('transcluding components', () {
+    beforeEachModule((Module m) {
+      m.bind(ComponentFactory, toImplementation: TranscludingComponentFactory);
+
+      return m;
+    });
+    fn('transcluding');
   });
 }
 
 void main() {
-  forBothCompilers(() =>
+  forAllCompilersAndComponentFactories((compilerType) =>
   describe('dte.compiler', () {
     TestBed _;
 
     beforeEachModule((Module module) {
       module
-          ..type(TabComponent)
-          ..type(PublishTypesAttrDirective)
-          ..type(PaneComponent)
-          ..type(SimpleTranscludeInAttachAttrDirective)
-          ..type(IgnoreChildrenDirective)
-          ..type(IncludeTranscludeAttrDirective)
-          ..type(LocalAttrDirective)
-          ..type(OneOfTwoDirectives)
-          ..type(TwoOfTwoDirectives)
-          ..type(MyController)
-          ..type(MyParentController)
-          ..type(MyChildController);
+          ..bind(TabComponent)
+          ..bind(PublishModuleAttrDirective)
+          ..bind(PaneComponent)
+          ..bind(SimpleTranscludeInAttachAttrDirective)
+          ..bind(IgnoreChildrenDirective)
+          ..bind(IncludeTranscludeAttrDirective)
+          ..bind(LocalAttrDirective)
+          ..bind(OneOfTwoDirectives)
+          ..bind(TwoOfTwoDirectives)
+          ..bind(SameNameDecorator)
+          ..bind(SameNameTransclude)
+          ..bind(ScopeAwareComponent)
+          ..bind(Parent, toValue: null)
+          ..bind(Child)
+          ..bind(ChildTemplateComponent)
+          ..bind(TranscludeChildrenWithAttributeDirective)
+          ..bind(LoggedBinding)
+          ..bind(InjectorDependentComponent);
     });
 
-    beforeEach(inject((TestBed tb) => _ = tb));
+    beforeEach((TestBed tb) => _ = tb);
 
     it('should compile basic hello world', () {
       var element = _.compile('<div ng-bind="name"></div>');
@@ -109,7 +128,7 @@ void main() {
     it('should compile a text child of a repeat with a directive', () {
       _.compile(
             '<div ng-show="true">'
-              '<span ng-show=true" ng-repeat="r in robots">{{r}}</span>'
+              '<span ng-show="true" ng-repeat="r in robots">{{r}}</span>'
             '</div>');
     });
 
@@ -124,7 +143,7 @@ void main() {
       expect(element.text).toEqual('blank12');
     });
 
-    it('should compile repeater with children', (Compiler $compile) {
+    it('should compile repeater with children', (Compiler compile) {
       var element = _.compile('<div><div ng-repeat="item in items"><div ng-bind="item"></div></div></div>');
 
       _.rootScope.context['items'] = ['A', 'b'];
@@ -138,7 +157,7 @@ void main() {
       expect(element).toHaveHtml('<!--ANCHOR: [ng-repeat]=item in items-->');
     });
 
-    it('should compile text', (Compiler $compile) {
+    it('should compile text', (Compiler compile) {
       var element = _.compile('<div>{{name}}<span>!</span></div>');
       _.rootScope.context['name'] = 'OK';
 
@@ -147,7 +166,7 @@ void main() {
       expect(element.text).toEqual('OK!');
     });
 
-    it('should compile nested repeater', (Compiler $compile) {
+    it('should compile nested repeater', (Compiler compile) {
       var element = _.compile(
           '<div>' +
           '<ul ng-repeat="lis in uls">' +
@@ -169,6 +188,13 @@ void main() {
       expect(log).toEqual(['OneOfTwo', 'TwoOfTwo']);
     });
 
+    it('should not call bindings that are not present', async((Logger log) {
+      var element = _.compile('<log-bind></log-bind>');
+      _.rootScope.apply();
+      expect(log.length).toEqual(0);
+    }));
+
+
     it('should compile a directive that ignores children', (Logger log) {
       // The ng-repeat comes first, so it is not ignored, but the children *are*
       var element = _.compile('<div ng-repeat="i in [1,2]" ignore-children><div two-directives></div></div>');
@@ -180,6 +206,62 @@ void main() {
 
     it('should compile a text child after a directive child', () {
       _.compile('<div><span ng-show="true">hi</span>{{hello}}</div>');
+    });
+
+
+    describe("bind-", () {
+      beforeEachModule((Module module) {
+        module
+          ..bind(IoComponent);
+      });
+
+      it('should support bind- syntax', () {
+        var element = _.compile('<div ng-bind bind-ng-bind="name"></div>');
+
+        _.rootScope.context['name'] = 'angular';
+
+        expect(element.text).toEqual('');
+        _.rootScope.apply();
+        expect(element.text).toEqual('angular');
+      });
+
+      it('should work with attr bindings', async(() {
+        _.compile('<div><io bind-attr="\'A\'"></io></div>');
+        microLeap();
+        _.rootScope.apply();
+        microLeap();
+
+        var component = _.rootScope.context['ioComponent'];
+        expect(component.attr).toEqual('A');
+      }));
+
+      it('should work with one-way bindings', async(() {
+        _.compile('<div><io bind-oneway="name"></io></div>');
+        _.rootScope.context['name'] = 'misko';
+        microLeap();
+        _.rootScope.apply();
+        var component = _.rootScope.context['ioComponent'];
+        expect(component.oneway).toEqual('misko');
+
+        component.oneway = 'angular';
+        _.rootScope.apply();
+        // Not two-way, did not change.
+        expect(_.rootScope.context['name']).toEqual('misko');
+      }));
+
+      it('should work with two-way bindings', async(() {
+        _.compile('<div><io bind-expr="name"></io></div>');
+
+        _.rootScope.context['name'] = 'misko';
+        microLeap();
+        _.rootScope.apply();
+        var component = _.rootScope.context['ioComponent'];
+        expect(component.attr).toBeNull();
+        expect(component.expr).toEqual('misko');
+        component.expr = 'angular';
+        _.rootScope.apply();
+        expect(_.rootScope.context['name']).toEqual('angular');
+      }));
     });
 
 
@@ -207,48 +289,327 @@ void main() {
     describe('components', () {
       beforeEachModule((Module module) {
         module
-          ..type(SimpleComponent)
-          ..type(CamelCaseMapComponent)
-          ..type(IoComponent)
-          ..type(IoControllerComponent)
-          ..type(UnpublishedIoControllerComponent)
-          ..type(IncorrectMappingComponent)
-          ..type(NonAssignableMappingComponent)
-          ..type(ParentExpressionComponent)
-          ..type(PublishMeComponent)
-          ..type(PublishMeDirective)
-          ..type(LogComponent)
-          ..type(AttachDetachComponent)
-          ..type(SimpleAttachComponent)
-          ..type(SimpleComponent)
-          ..type(ExprAttrComponent)
-          ..type(LogElementComponent)
-          ..type(SayHelloFilter);
+          ..bind(AttachWithAttr)
+          ..bind(CamelCaseMapComponent)
+          ..bind(IoComponent)
+          ..bind(IoControllerComponent)
+          ..bind(UnpublishedIoControllerComponent)
+          ..bind(IncorrectMappingComponent)
+          ..bind(NonAssignableMappingComponent)
+          ..bind(ParentExpressionComponent)
+          ..bind(PublishMeComponent)
+          ..bind(LogComponent)
+          ..bind(AttachDetachComponent)
+          ..bind(SimpleAttachComponent)
+          ..bind(SimpleComponent)
+          ..bind(MultipleContentTagsComponent)
+          ..bind(SelectableContentComponent)
+          ..bind(ConditionalContentComponent)
+          ..bind(ExprAttrComponent)
+          ..bind(LogElementComponent)
+          ..bind(LoggedBinding)
+          ..bind(SayHelloFormatter)
+          ..bind(OuterComponent)
+          ..bind(InnerComponent)
+          ..bind(InnerInnerComponent)
+          ..bind(SimpleOuterComponent)
+          ..bind(SimpleInnerComponent)
+          ..bind(OuterWithDivComponent)
+          ..bind(OneTimeDecorator)
+          ..bind(OnceInside)
+          ..bind(OuterShadowless)
+          ..bind(InnerShadowy)
+          ..bind(TemplateUrlComponent);
       });
 
-      it('should select on element', async((NgZone zone) {
-        var element = _.compile(r'<div><simple></simple></div>');
-        microLeap();
-        _.rootScope.apply();
-        expect(element).toHaveText('INNER()');
-      }));
+      describe("distribution", () {
+        it('should safely remove components that have no content', async(() {
+          _.rootScope.context['flag'] = true;
+          _.compile('<div ng-if=flag><simple></simple></div>');
+          microLeap(); _.rootScope.apply();
+          _.rootScope.context['flag'] = false;
+          microLeap(); _.rootScope.apply();
+        }));
+
+        it('should not lose focus', async(() {
+          if (compilerType != 'transcluding') return;
+
+          _.rootScope.context['showClass'] = false;
+          var element = _.compile(r'<simple>'
+              '''aaa <input type="text" id="focused-input" ng-class="{'aClass' : showClass}"> bbb'''
+            '</simple>');
+          document.body.append(element);
+          microLeap(); _.rootScope.apply();
+
+          InputElement input = element.querySelector("#focused-input");
+          input.focus();
+
+          expect(document.activeElement.id).toEqual("focused-input");
+
+          // trigger redistribution
+          _.rootScope.context['showClass'] = true;
+          microLeap(); _.rootScope.apply();
+
+          expect(document.activeElement.id).toEqual("focused-input");
+        }));
+
+        it('should support multiple content tags', async(() {
+          var element = _.compile(r'<div>'
+            '<multiple-content-tags>'
+              '<div>B</div>'
+              '<div>C</div>'
+              '<div class="left">A</div>'
+            '</multiple-content-tags>'
+          '</div>');
+
+          microLeap();
+          _.rootScope.apply();
+          expect(element).toHaveText('(A, BC)');
+        }));
+
+        it('should redistribute only direct children', async(() {
+          var element = _.compile(r'<div>'
+            '<multiple-content-tags>'
+              '<div>B<div class="left">A</div></div>'
+              '<div>C</div>'
+            '</multiple-content-tags>'
+          '</div>');
+
+          microLeap();
+          _.rootScope.apply();
+
+          expect(element).toHaveText('(, BAC)');
+        }));
+
+        it("should redistribute when the light dom changes", async(() {
+          var element = _.compile(r'<div>'
+            '<multiple-content-tags>'
+              '<div ng-if="showLeft" class="left">A</div>'
+              '<div>B</div>'
+            '</multiple-content-tags>'
+          '</div>');
+          document.body.append(element);
+
+          microLeap();
+          _.rootScope.apply();
+          expect(element).toHaveText('(, B)');
+
+          _.rootScope.context['showLeft'] = true;
+          microLeap();
+          _.rootScope.apply();
+          expect(element).toHaveText('(A, B)');
+
+          _.rootScope.context['showLeft'] = false;
+          microLeap();
+          _.rootScope.apply();
+          expect(element).toHaveText('(, B)');
+        }));
+
+        it("should redistribute when a class has been added or removed", async(() {
+          var element = _.compile(r'<div>'
+            '<multiple-content-tags>'
+              '<div ng-class="{\'left\':showLeft}">A</div>'
+              '<div>B</div>'
+            '</multiple-content-tags>'
+          '</div>');
+          document.body.append(element);
+
+          microLeap();
+          _.rootScope.apply();
+          expect(element).toHaveText('(, AB)');
+
+          _.rootScope.context['showLeft'] = true;
+          microLeap();
+          _.rootScope.apply();
+          expect(element).toHaveText('(A, B)');
+
+          _.rootScope.context['showLeft'] = false;
+          microLeap();
+          _.rootScope.apply();
+          expect(element).toHaveText('(, AB)');
+        }));
+
+        it('should redistribute when the shadow dom changes', async(() {
+          if (compilerType == 'no-elementProbe') return;
+
+          var element = _.compile(r'<div>'
+            '<conditional-content>'
+              '<div class="left">A</div>'
+              '<div>B</div>'
+              '<div>C</div>'
+            '</conditional-content>'
+          '</div>');
+
+          final component = ngProbe(element.children[0]).directive(ConditionalContentComponent);
+
+          microLeap();
+          _.rootScope.apply();
+          expect(element).toHaveText('(, ABC)');
+
+          component.showLeft = true;
+          microLeap();
+          _.rootScope.apply();
+          expect(element).toHaveText('(A, BC)');
+
+          component.showLeft = false;
+          microLeap();
+          _.rootScope.apply();
+          expect(element).toHaveText('(, ABC)');
+        }));
+
+        it("should support nested compoonents", async((){
+          var element = _.compile(r'<div>'
+            '<outer-with-div>'
+              '<div ng-class="{\'left\':showLeft, \'right\':!showLeft}">A</div>'
+              '<div class="left">B</div>'
+              '<div class="left">C</div>'
+            '</outer-with-div>'
+          '</div>');
+          document.body.append(element);
+
+          microLeap();
+          _.rootScope.apply();
+
+          microLeap();
+          _.rootScope.apply();
+          expect(element).toHaveText('OUTER(INNER(BC))');
+
+          _.rootScope.context["showLeft"] = true;
+          microLeap();
+          _.rootScope.apply();
+
+          expect(element).toHaveText('OUTER(INNER(ABC))');
+        }));
+
+        it("should remove elements that no longer match the selector", async((){
+          var element = _.compile(r'<div>'
+            '<selectable-content-tag>'
+              '<div ng-class="{\'selected\':isSelected}">A</div>'
+              '<div class="selected">B</div>'
+              '<div>C</div>'
+            '</selectable-content-tag>'
+          '</div>');
+          document.body.append(element);
+
+          microLeap();
+          _.rootScope.apply();
+
+          _.rootScope.context["isSelected"] = true;
+          microLeap();
+          _.rootScope.apply();
+
+          expect(element).toHaveText('(AB)');
+
+          _.rootScope.context["isSelected"] = false;
+          microLeap();
+          _.rootScope.apply();
+
+          expect(element).toHaveText('(B)');
+        }));
+
+        it("should support nesting with content being direct child of a nested component", async((){
+          // platform.js does not emulate this behavior, so the test fails on firefox.
+          // Remove the if when this is fixed.
+          if (compilerType != "transcluding") return;
+
+          var element = _.compile(r'<div>'
+            '<outer>'
+              '<div ng-class="{\'left\':showLeft, \'right\':!showLeft}">A</div>'
+              '<div class="right">B</div>'
+              '<div class="right">C</div>'
+            '</outer>'
+          '</div>');
+          document.body.append(element);
+
+          microLeap();
+          _.rootScope.apply();
+          expect(element).toHaveText('OUTER(INNER(INNERINNER(,ABC)))');
+
+          _.rootScope.context["showLeft"] = true;
+          microLeap();
+          _.rootScope.apply();
+
+          expect(element).toHaveText('OUTER(INNER(INNERINNER(A,BC)))');
+        }));
+
+        it("should not duplicate elements when using components with templateUrl", async((MockHttpBackend backend) {
+          backend.expectGET("${TEST_SERVER_BASE_PREFIX}test/core_dom/template.html").respond(200, "<content></content>");
+
+          _.rootScope.context["show"] = true;
+          var element = _.compile(r'<div>'
+            '<template-url-component>'
+              '<div ng-if="show">A</div>'
+              '<div>B</div>'
+            '<template-url-component>'
+          '</div>');
+          document.body.append(element);
+
+          microLeap();
+          _.rootScope.apply();
+
+          backend.flush();
+
+          _.rootScope.context["show"] = false;
+          microLeap();
+          _.rootScope.apply();
+
+          _.rootScope.context["show"] = true;
+          microLeap();
+          _.rootScope.apply();
+
+          expect(element).toHaveText('AB');
+        }));
+      });
 
       it('should store ElementProbe with Elements', async(() {
+        if (compilerType == 'no-elementProbe') return;
+
         _.compile('<div><simple>innerText</simple></div>');
         microLeap();
+        _.rootScope.apply();
         var simpleElement = _.rootElement.querySelector('simple');
-        expect(simpleElement.text).toEqual('innerText');
+        expect(simpleElement).toHaveText('INNER(innerText)');
         var simpleProbe = ngProbe(simpleElement);
-        var simpleComponent = simpleProbe.injector.get(SimpleComponent);
-        expect(simpleComponent.scope.context['name']).toEqual('INNER');
+        var simpleComponent = simpleProbe.injector.getByKey(new Key(SimpleComponent));
+        expect(simpleComponent.name).toEqual('INNER');
         var shadowRoot = simpleElement.shadowRoot;
-        var shadowProbe = ngProbe(shadowRoot);
-        expect(shadowProbe).toBeNotNull();
-        expect(shadowProbe.element).toEqual(shadowRoot);
-        expect(shadowProbe.parent.element).toEqual(simpleElement);
+
+        // If there is no shadow root, skip this.
+        if (compilerType != 'transcluding') {
+          var shadowProbe = ngProbe(shadowRoot);
+          expect(shadowProbe).toBeNotNull();
+          expect(shadowProbe.element).toEqual(shadowRoot);
+          expect(shadowProbe.parent.element).toEqual(simpleElement);
+        }
       }));
 
-      it('should create a simple component', async((NgZone zone) {
+      describe('elementProbeEnabled option', () {
+        beforeEachModule((Module m) {
+          m.bind(CompilerConfig, toValue:
+              new CompilerConfig.withOptions(elementProbeEnabled: false));
+        });
+
+        it('should not store ElementProbe with Elements', async(() {
+          _.compile('<div><simple>innerText</simple></div>');
+          microLeap();
+          _.rootScope.apply();
+          var simpleElement = _.rootElement.querySelector('simple');
+          expect(simpleElement).toHaveText('INNER(innerText)');
+
+          expect(() => ngProbe(simpleElement))
+              .toThrowWith(message: "Could not find a probe for the node 'simple' nor its parents");
+
+          var shadowRoot = simpleElement.shadowRoot;
+
+          // If there is no shadow root, skip this.
+          if (compilerType != 'transcluding') {
+            expect(() => ngProbe(shadowRoot))
+                .toThrowWith(message: "Could not find a probe for the node 'Instance of 'ShadowRoot'' nor its parents");
+          }
+        }));
+      });
+
+      it('should create a simple component', async((VmTurnZone zone) {
         _.rootScope.context['name'] = 'OUTTER';
         var element = _.compile(r'<div>{{name}}:<simple>{{name}}</simple></div>');
         microLeap();
@@ -256,7 +617,14 @@ void main() {
         expect(element).toHaveText('OUTTER:INNER(OUTTER)');
       }));
 
-      it('should create a component that can access parent scope', async((NgZone zone) {
+      it('should create simple nested components', async((VmTurnZone zone) {
+        var element = _.compile(r'<div><simple-outer>TEXT</simple-outer></div>');
+        microLeap();
+        _.rootScope.apply();
+        expect(element).toHaveText('OUTER(INNER(TEXT))');
+      }));
+
+      it('should create a component that can access parent scope', async((VmTurnZone zone) {
         _.rootScope.context['fromParent'] = "should not be used";
         _.rootScope.context['val'] = "poof";
         var element = _.compile('<parent-expression from-parent=val></parent-expression>');
@@ -266,7 +634,7 @@ void main() {
         expect(element).toHaveText('inside poof');
       }));
 
-      it('should behave nicely if a mapped attribute is missing', async((NgZone zone) {
+      it('should behave nicely if a mapped attribute is missing', async((VmTurnZone zone) {
         var element = _.compile('<parent-expression></parent-expression>');
 
         microLeap();
@@ -274,13 +642,29 @@ void main() {
         expect(element).toHaveText('inside ');
       }));
 
-      it('should behave nicely if a mapped attribute evals to null', async((NgZone zone) {
+      it('should behave nicely if a mapped attribute evals to null', async((VmTurnZone zone) {
         _.rootScope.context['val'] = null;
         var element = _.compile('<parent-expression fromParent=val></parent-expression>');
 
         microLeap();
         _.rootScope.apply();
         expect(element).toHaveText('inside ');
+      }));
+
+      it('should not pass null to a inner directives', async((Logger logger) {
+        _.compile('<div>'
+        '<once-inside ng-repeat="x in nn" v="b"></once-inside>'
+        '</div>');
+
+        _.rootScope.context['nn'] = [1];
+        _.rootScope.apply();
+        microLeap();
+
+        _.rootScope.context['nn'].add(2);
+        _.rootScope.apply();
+        microLeap();
+
+        expect(logger.contains(null)).toBeFalsy();
       }));
 
       it('should create a component with I/O', async(() {
@@ -290,14 +674,13 @@ void main() {
         _.rootScope.context['name'] = 'misko';
         _.rootScope.apply();
         var component = _.rootScope.context['ioComponent'];
-        expect(component.scope.context['name']).toEqual(null);
-        expect(component.scope.context['attr']).toEqual('A');
-        expect(component.scope.context['expr']).toEqual('misko');
-        component.scope.context['expr'] = 'angular';
+        expect(component.attr).toEqual('A');
+        expect(component.expr).toEqual('misko');
+        component.expr = 'angular';
         _.rootScope.apply();
         expect(_.rootScope.context['name']).toEqual('angular');
         expect(_.rootScope.context['done']).toEqual(null);
-        component.scope.context['ondone']();
+        component.ondone();
         expect(_.rootScope.context['done']).toEqual(true);
       }));
 
@@ -321,8 +704,8 @@ void main() {
 
         var component = _.rootScope.context['ioComponent'];
         _.rootScope.apply();
-        expect(component.scope.context['expr']).toEqual('misko');
-        component.scope.context['expr'] = 'angular';
+        expect(component.expr).toEqual('misko');
+        component.expr = 'angular';
         _.rootScope.apply();
         expect(_.rootScope.context['name']).toEqual('angular');
       }));
@@ -391,7 +774,6 @@ void main() {
         component.expr = 'angular';
         _.rootScope.apply();
         expect(_.rootScope.context['name']).toEqual('angular');
-
         expect(_.rootScope.context['done']).toEqual(false);
         component.onDone();
         expect(_.rootScope.context['done']).toEqual(true);
@@ -403,10 +785,10 @@ void main() {
       it('should error on incorrect mapping', async(() {
         expect(() {
           _.compile(r'<div><incorrect-mapping></incorrect-mapping</div>');
-        }).toThrow("Unknown mapping 'foo\' for attribute 'attr'.");
+        }).toThrowWith(message: "Unknown mapping 'foo\' for attribute 'attr'.");
       }));
 
-      it('should support filters in attribute expressions', async(() {
+      it('should support formatters in attribute expressions', async(() {
         _.compile(r'''<expr-attr-component expr="'Misko' | hello" one-way="'James' | hello" once="'Chirayu' | hello"></expr-attr-component>''');
         ExprAttrComponent component = _.rootScope.context['exprAttrComponent'];
         _.rootScope.apply();
@@ -418,15 +800,15 @@ void main() {
       it('should error on non-asignable-mapping', async(() {
         expect(() {
           _.compile(r'<div><non-assignable-mapping></non-assignable-mapping</div>');
-        }).toThrow("Expression '1+2' is not assignable in mapping '@1+2' for attribute 'attr'.");
+        }).toThrowWith(message: "Expression '+(1, 2)' is not assignable in mapping '@1+2' for attribute 'attr'.");
       }));
 
       it('should expose mapped attributes as camel case', async(() {
         _.compile('<camel-case-map camel-case=G></camel-case-map>');
         microLeap();
         _.rootScope.apply();
-        var componentScope = _.rootScope.context['camelCase'];
-        expect(componentScope.context['camelCase']).toEqual('G');
+        var componentContext = _.rootScope.context['camelCase'];
+        expect(componentContext.camelCase).toEqual('G');
       }));
 
       // TODO: This is a terrible test
@@ -441,25 +823,24 @@ void main() {
         }
       }));
 
-      it('should publish component controller into the scope', async((NgZone zone) {
+      it('should publish component controller into the scope', async(() {
         var element = _.compile(r'<div><publish-me></publish-me></div>');
         microLeap();
         _.rootScope.apply();
         expect(element).toHaveText('WORKED');
       }));
 
-      it('should publish directive controller into the scope', async((NgZone zone) {
-        var element = _.compile(r'<div><div publish-me>{{ctrlName.value}}</div></div>');
-
-        microLeap();
-        _.rootScope.apply();
-        expect(element.text).toEqual('WORKED');
-      }));
-
-      it('should "publish" controller to injector under provided publishTypes', () {
+      it('should "publish" controller to injector under provided module', () {
         _.compile(r'<div publish-types></div>');
-        expect(PublishTypesAttrDirective._injector.get(PublishTypesAttrDirective)).
-        toBe(PublishTypesAttrDirective._injector.get(PublishTypesDirectiveSuperType));
+        expect(PublishModuleAttrDirective._injector.get(PublishModuleAttrDirective)).
+        toBe(PublishModuleAttrDirective._injector.get(PublishModuleDirectiveSuperType));
+      });
+
+      it('should expose PublishModuleDirectiveSuperType as PublishModuleDirectiveSuperType', () {
+        _.compile(r'<div publish-types probe="publishModuleProbe"></div>');
+        Probe probe = _.rootScope.context['publishModuleProbe'];
+        var directive = probe.injector.get(PublishModuleDirectiveSuperType);
+        expect(directive is PublishModuleAttrDirective).toBeTruthy();
       });
 
       it('should allow repeaters over controllers', async((Logger logger) {
@@ -470,23 +851,30 @@ void main() {
         expect(logger.length).toEqual(2);
       }));
 
+      it('should inject the correct Injectors - Directive and ComponentDirective', async(() {
+        _.compile('<cmp-inj></cmp-inj>');
+        _.rootScope.apply();
+        microLeap();
+        // assertions are in the component constructor.
+      }));
+
       describe('lifecycle', () {
         beforeEachModule((Module module) {
           var httpBackend = new MockHttpBackend();
 
           module
-            ..value(HttpBackend, httpBackend)
-            ..value(MockHttpBackend, httpBackend);
+            ..bind(HttpBackend, toValue: httpBackend)
+            ..bind(MockHttpBackend, toValue: httpBackend);
         });
 
-        it('should fire onTemplate method', async((Compiler $compile, Logger logger, MockHttpBackend backend) {
-          backend.whenGET('some/template.url').respond('<div>WORKED</div>');
+        it('should fire onShadowRoot method', async((Compiler compile, Logger logger, MockHttpBackend backend) {
+          backend.whenGET('${TEST_SERVER_BASE_PREFIX}test/core_dom/some/template.url').respond(200, '<div>WORKED</div>');
           var scope = _.rootScope.createChild({});
           scope.context['isReady'] = 'ready';
           scope.context['logger'] = logger;
           scope.context['once'] = null;
           var elts = es('<attach-detach attr-value="{{isReady}}" expr-value="isReady" once-value="once">{{logger("inner")}}</attach-detach>');
-          $compile(elts, _.injector.get(DirectiveMap))(_.injector.createChild([new Module()..value(Scope, scope)]), elts);
+          compile(elts, _.injector.get(DirectiveMap))(scope, null, elts);
           expect(logger).toEqual(['new']);
 
           expect(logger).toEqual(['new']);
@@ -503,8 +891,12 @@ void main() {
           expect(logger).toEqual(expected);
           logger.clear();
 
-          backend.flush();
-          microLeap();
+          expect(() {
+            microLeap();
+            backend.flush();
+            microLeap();
+          }).not.toThrow();
+
           expect(logger).toEqual(['templateLoaded', _.rootScope.context['shadowRoot']]);
           logger.clear();
 
@@ -513,11 +905,11 @@ void main() {
           expect(elts).toHaveText('WORKED');
         }));
 
-        it('should should not call attach after scope is destroyed', async((Compiler $compile, Logger logger, MockHttpBackend backend) {
-          backend.whenGET('foo.html').respond('<div>WORKED</div>');
+        it('should should not call attach after scope is destroyed', async((Compiler compile, Logger logger, MockHttpBackend backend) {
+          backend.whenGET('${TEST_SERVER_BASE_PREFIX}test/core_dom/foo.html').respond('<div>WORKED</div>');
           var elts = es('<simple-attach></simple-attach>');
           var scope = _.rootScope.createChild({});
-          $compile(elts, _.injector.get(DirectiveMap))(_.injector.createChild([new Module()..value(Scope, scope)]), elts);
+          compile(elts, _.injector.get(DirectiveMap))(scope, null, elts);
           expect(logger).toEqual(['SimpleAttachComponent']);
           scope.destroy();
 
@@ -527,41 +919,173 @@ void main() {
           expect(logger).toEqual(['SimpleAttachComponent']);
         }));
 
+        it('should call attach after mappings have been set', async((Logger logger) {
+          _.compile('<attach-with-attr attr="a" oneway="1+1"></attach-with-attr>');
+
+          _.rootScope.apply();
+          microLeap();
+
+          expect(logger).toEqual(['attr', 'oneway', 'attach']);
+        }));
+
         it('should inject compenent element as the dom.Element', async((Logger log, TestBed _, MockHttpBackend backend) {
-          backend.whenGET('foo.html').respond('<div>WORKED</div>');
+          backend.whenGET('${TEST_SERVER_BASE_PREFIX}test/core_dom/foo.html').respond('<div>WORKED</div>');
           _.compile('<log-element></log-element>');
           Element element = _.rootElement;
-          expect(log).toEqual([element, element, element.shadowRoot]);
+          expect(log).toEqual([element, element,
+            // If we don't have a shadowRoot, this is an invalid check
+            element.shadowRoot != null ? element.shadowRoot : log[2]]);
         }));
       });
 
       describe('invalid components', () {
         it('should throw a useful error message for missing selectors', () {
           Module module = new Module()
-              ..type(MissingSelector);
-          var injector = _.injector.createChild([module], forceNewInstances: [Compiler, DirectiveMap]);
+              ..bind(DirectiveMap)
+              ..bind(MissingSelector);
+          var injector = _.injector.createChild([module]);
           var c = injector.get(Compiler);
           var directives = injector.get(DirectiveMap);
           expect(() {
               c(es('<div></div>'), injector.get(DirectiveMap));
-          }).toThrow('Missing selector annotation for MissingSelector');
+          }).toThrowWith(message: 'Missing selector annotation for MissingSelector');
         });
 
 
         it('should throw a useful error message for invalid selector', () {
           Module module = new Module()
-            ..type(InvalidSelector);
-          var injector = _.injector.createChild([module], forceNewInstances: [Compiler, DirectiveMap]);
+            ..bind(DirectiveMap)
+            ..bind(InvalidSelector);
+          var injector = _.injector.createChild([module]);
           var c = injector.get(Compiler);
           var directives = injector.get(DirectiveMap);
 
           expect(() {
             c(es('<div></div>'), directives);
-          }).toThrow('Unknown selector format \'buttonbar button\' for InvalidSelector');
+          }).toThrowWith(message: 'Unknown selector format \'buttonbar button\' for InvalidSelector');
         });
       });
-    });
 
+      describe('useShadowDom option', () {
+        beforeEachModule((Module m) {
+          m.bind(ShadowyComponent);
+          m.bind(TranscludingComponent);
+        });
+
+        it('should create shadowy components', async((Logger log) {
+          _.compile('<shadowy></shadowy>');
+          expect(log).toEqual(['shadowy']);
+          expect(_.rootElement.shadowRoot).toBeNotNull();
+        }));
+
+        it('should create transcluding components', async((Logger log) {
+          _.compile('<transcluding></transcluding>');
+          expect(log).toEqual(['transcluding']);
+          expect(_.rootElement.shadowRoot).toBeNull();
+        }));
+
+        it('should correctly interpolate shadowless components inside shadowy', async(() {
+          var element = _.compile('<outer-shadowless>outer-text</outer-shadowless>');
+          microLeap();
+          _.rootScope.apply();
+          expect(element).toHaveText('inner-text');
+        }));
+
+        it('should create other components with the default strategy', async((ComponentFactory factory) {
+          _.compile('<simple></simple>');
+          if (factory is TranscludingComponentFactory) {
+            expect(_.rootElement.shadowRoot).toBeNull();
+          } else {
+            expect(factory is ShadowDomComponentFactory).toBeTruthy();
+            expect(_.rootElement.shadowRoot).toBeNotNull();
+          }
+        }));
+
+        describe('expando memory', () {
+          if (compilerType == 'no-elementProbe') return;
+
+          Expando expando;
+
+          beforeEach((Expando _expando) => expando = _expando);
+
+          ['shadowy', 'transcluding'].forEach((selector) {
+            it('should release expando when a node is freed ($selector)', async(() {
+              _.rootScope.context['flag'] = true;
+              _.compile('<div><div ng-if=flag><$selector>x</$selector></div></div>');
+              microLeap(); _.rootScope.apply();
+              var element = _.rootElement.querySelector('$selector');
+              if (element.shadowRoot != null) {
+                element = element.shadowRoot;
+              }
+              expect(expando[element]).not.toEqual(null);
+              _.rootScope.context['flag'] = false;
+              microLeap(); _.rootScope.apply();
+              expect(expando[element]).toEqual(null);
+            }));
+          });
+        });
+      });
+
+      describe('bindings', () {
+        it('should set a one-time binding with the correct value', (Logger logger) {
+          _.compile(r'<div one-time="v"></div>');
+
+          _.rootScope.context['v'] = 1;
+
+          var context = _.rootScope.context;
+          _.rootScope.watch('3+4', (v, _) => context['v'] = v);
+
+          // In the 1st digest iteration:
+          //   v will be set to 7
+          //   OneTimeDecorator.value will be set to 1
+          // In the 2nd digest iteration:
+          //   OneTimeDecorator.value will be set to 7
+          _.rootScope.apply();
+
+          expect(logger).toEqual([1, 7]);
+        });
+
+        it('should keep one-time binding until it is set to non-null', (Logger logger) {
+          _.compile(r'<div one-time="v"></div>');
+          _.rootScope.context['v'] = null;
+          _.rootScope.apply();
+          expect(logger).toEqual([null]);
+
+          _.rootScope.context['v'] = 7;
+          _.rootScope.apply();
+          expect(logger).toEqual([null, 7]);
+
+          // Check that the binding is removed.
+          _.rootScope.context['v'] = 8;
+          _.rootScope.apply();
+          expect(logger).toEqual([null, 7]);
+        });
+
+        it('should remove the one-time binding only if it stablizied to null', (Logger logger) {
+          _.compile(r'<div one-time="v"></div>');
+
+          _.rootScope.context['v'] = 1;
+
+          var context = _.rootScope.context;
+          _.rootScope.watch('3+4', (v, _) => context['v'] = null);
+
+          _.rootScope.apply();
+          expect(logger).toEqual([1, null]);
+
+          // Even though there was a null in the unstable model, we shouldn't remove the binding
+          context['v'] = 8;
+          _.rootScope.apply();
+           expect(logger).toEqual([1, null, 8]);
+
+          // Check that the binding is removed.
+          _.rootScope.context['v'] = 9;
+          _.rootScope.apply();
+          expect(logger).toEqual([1, null, 8]);
+        });
+
+
+      });
+    });
 
     describe('controller scoping', () {
       it('should make controllers available to sibling and child controllers', async((Logger log) {
@@ -571,9 +1095,18 @@ void main() {
         expect(log.result()).toEqual('TabComponent-0; LocalAttrDirective-0; PaneComponent-1; LocalAttrDirective-0; PaneComponent-2; LocalAttrDirective-0');
       }));
 
+      // TODO(rado): enable when the feature is accepted.
+      xit('should break injection at component injectors', async((Logger log) {
+        _.compile('<parent><child-tmp-cmp><child></child></child-tmp-cmp></parent>');
+        microLeap();
+        // The child in the light dom should receive parent,
+        // while the child from the template should receive the app level null parent.
+        expect(log.result()).toEqual('got parent; null parent');
+      }));
+
       it('should use the correct parent injector', async((Logger log) {
         // Getting the parent offsets correct while descending the template is tricky.  If we get it wrong, this
-        // test case will create too many TabCompoenents.
+        // test case will create too many TabComponents.
 
         _.compile('<div ng-bind="true"><div ignore-children></div><tab local><pane local></pane></tab>');
         microLeap();
@@ -581,7 +1114,24 @@ void main() {
         expect(log.result()).toEqual('Ignore; TabComponent-0; LocalAttrDirective-0; PaneComponent-1; LocalAttrDirective-0');
       }));
 
-      it('should reuse controllers for transclusions', async((Logger log) {
+      /*
+        This test is disabled because I (misko) thinks it has no real use case. It is easier
+        to understand in terms of ng-repeat
+
+          <tabs>
+            <!-- ng-repeat -->
+            <pane></pane>
+          </tabs>
+
+          Should pane be allowed to get a hold of ng-repeat? Right now ng-repeat injector is
+          to the side and is not in any of the parents of the pane. Making an injector a
+          parent of pane would put the ng-repeat between tabs and pane and it would break
+          the DirectChild between tabs and pane.
+
+          It is not clear to me (misko) that there is a use case for getting hold of the
+          transcluding directive such a ng-repeat.
+       */
+      xit('should reuse controllers for transclusions', async((Logger log) {
         _.compile('<div simple-transclude-in-attach include-transclude>view</div>');
         microLeap();
 
@@ -589,86 +1139,106 @@ void main() {
         expect(log.result()).toEqual('IncludeTransclude; SimpleTransclude');
       }));
 
-      it('should expose a parent controller to the scope of its children', (TestBed _) {
-        var element = _.compile('<div my-parent-controller>'
-            '  <div my-child-controller>{{ my_parent.data() }}</div>'
-            '</div>');
+      it('should call scope setter on ScopeAware components', async((TestBed _, Logger log, CompilerConfig config) {
+        var element = _.compile('<scope-aware-cmp></scope-aware-cmp>');
 
         _.rootScope.apply();
 
-        expect(element.text).toContain('my data');
-      });
+        expect(log.result()).toEqual('Scope set');
+        if (config.elementProbeEnabled) {
+          var controller = ngInjector(element).get(ScopeAwareComponent);
+          expect(controller.scope.context).toEqual(controller);
+        }
+      }));
 
-      it('should expose a ancestor controller to the scope of its children thru a undecorated element', (TestBed _) {
-        var element = _.compile(
-            '<div my-parent-controller>'
-              '<div>'
-                '<div my-child-controller>{{ my_parent.data() }}</div>'
-              '</div>'
-            '</div>');
+      it('should call scope setter on ScopeAware decorators', async((TestBed _, Logger log, CompilerConfig config) {
+        var element = _.compile('<div scope-aware-dec></div>');
 
         _.rootScope.apply();
 
-        expect(element.text).toContain('my data');
-      });
+        expect(log.result()).toEqual('Scope set');
+
+        if (config.elementProbeEnabled) {
+          var scopePassedIn = ngInjector(element).get(ScopeAwareComponent).scope;
+          expect(scopePassedIn).toEqual(_.rootScope);
+        }
+      }));
     });
 
 
-    describe('NgDirective', () {
-      it('should allow creation of a new scope', () {
-        _.rootScope.context['name'] = 'cover me';
-        _.compile('<div><div my-controller>{{name}}</div></div>');
+    describe('Decorator', () {
+      it('should allow multiple directives with the same selector of different type', (DirectiveMap map) {
+        _.compile('<div><div same-name="worked"></div></div>');
         _.rootScope.apply();
-        expect(_.rootScope.context['name']).toEqual('cover me');
-        expect(_.rootElement.text).toEqual('MyController');
+        SameNameTransclude transclude = _.rootScope.context['sameTransclude'];
+        SameNameDecorator decorator = _.rootScope.context['sameDecorator'];
+
+        expect(transclude.valueTransclude).toEqual('worked');
+        expect(decorator.valueDecorator).toEqual('worked');
       });
     });
 
+    describe('Injection accross application injection boundaries', () {
+      it('should create directive injectors for elements only',
+          async((TestBed _, Logger logger, CompilerConfig config) {
+        if (!config.elementProbeEnabled) return;
+        _.compile('<tab></tab>');
+        var directiveInjector = ngInjector(_.rootElement);
+        var lazyInjector = NgView.createChildInjectorWithReload(
+            _.injector,
+            [new Module()..bind(LazyPane)..bind(LazyPaneHelper)]);
+        var dirMap = lazyInjector.get(DirectiveMap);
+        ViewFactory viewFactory = _.compiler([new Element.tag('lazy-pane')], dirMap);
+        var childScope = _.rootScope.createChild({});
+        viewFactory(childScope, directiveInjector);
+        expect(logger).toContain('LazyPane-0');
+      }));
+    });
+
+    it('should set attributes on a directive transcluding its children', () {
+      _.compile('<div><transclude-children-with-attr attr="value"/></div>');
+      _.rootScope.apply();
+
+      var dir = _.rootScope.context['transclude-children-with-attr'];
+      expect(dir.attr).toEqual('value');
+    });
   }));
 }
 
-
-@NgController(
-  selector: '[my-parent-controller]',
-  publishAs: 'my_parent')
-class MyParentController {
-  data() {
-    return "my data";
-  }
-}
-
-@NgController(
-  selector: '[my-child-controller]',
-  publishAs: 'my_child')
-class MyChildController {}
-
-@NgComponent(
+@Component(
     selector: 'tab',
-    visibility: NgDirective.DIRECT_CHILDREN_VISIBILITY)
+    visibility: Visibility.DIRECT_CHILD)
 class TabComponent {
   int id = 0;
-  Logger log;
-  LocalAttrDirective local;
-  TabComponent(Logger this.log, LocalAttrDirective this.local, Scope scope) {
+  TabComponent(Logger log, LocalAttrDirective local) {
     log('TabComponent-${id++}');
     local.ping();
   }
 }
 
-@NgComponent(selector: 'pane')
+@Component(
+  selector: 'lazy-pane',
+  visibility: Visibility.CHILDREN)
+class LazyPane {
+  int id = 0;
+  LazyPane(Logger logger, LazyPaneHelper lph) {
+    logger('LazyPane-${id++}');
+  }
+}
+
+class LazyPaneHelper {}
+
+@Component(selector: 'pane')
 class PaneComponent {
-  TabComponent tabComponent;
-  LocalAttrDirective localDirective;
-  Logger log;
-  PaneComponent(TabComponent this.tabComponent, LocalAttrDirective this.localDirective, Logger this.log, Scope scope) {
+  PaneComponent(TabComponent tabComponent, LocalAttrDirective localDirective, Logger log) {
     log('PaneComponent-${tabComponent.id++}');
     localDirective.ping();
   }
 }
 
-@NgDirective(
+@Decorator(
     selector: '[local]',
-    visibility: NgDirective.LOCAL_VISIBILITY)
+    visibility: Visibility.LOCAL)
 class LocalAttrDirective {
   int id = 0;
   Logger log;
@@ -678,9 +1248,35 @@ class LocalAttrDirective {
   }
 }
 
-@NgDirective(
+@Decorator(
+    selector: 'parent',
+    visibility: Visibility.CHILDREN)
+class Parent {
+  Parent(Logger log) {}
+}
+
+
+@Decorator(
+    selector: 'child',
+    visibility: Visibility.CHILDREN)
+class Child {
+  Child(Parent p, Logger log) {
+    log(p == null ? 'null parent' : 'got parent');
+  }
+}
+
+@Component(
+    selector: 'child-tmp-cmp',
+    template: '<child></child><content></content>'
+)
+class ChildTemplateComponent {
+  ChildTemplateComponent() {}
+}
+
+@Decorator(
     selector: '[simple-transclude-in-attach]',
-    visibility: NgDirective.CHILDREN_VISIBILITY, children: NgAnnotation.TRANSCLUDE_CHILDREN)
+    visibility: Visibility.LOCAL,
+    children: Directive.TRANSCLUDE_CHILDREN)
 class SimpleTranscludeInAttachAttrDirective {
   SimpleTranscludeInAttachAttrDirective(ViewPort viewPort, BoundViewFactory boundViewFactory, Logger log, RootScope scope) {
     scope.runAsync(() {
@@ -691,30 +1287,44 @@ class SimpleTranscludeInAttachAttrDirective {
   }
 }
 
-@NgDirective(selector: '[include-transclude]')
+@Decorator(
+    children: Directive.TRANSCLUDE_CHILDREN,
+    selector:'transclude-children-with-attr',
+    map: const {
+        'attr': '@attr'
+    })
+class TranscludeChildrenWithAttributeDirective {
+  var attr;
+
+  TranscludeChildrenWithAttributeDirective(RootScope scope) {
+    scope.context['transclude-children-with-attr'] = this;
+  }
+}
+
+@Decorator(selector: '[include-transclude]')
 class IncludeTranscludeAttrDirective {
   IncludeTranscludeAttrDirective(SimpleTranscludeInAttachAttrDirective simple, Logger log) {
     log('IncludeTransclude');
   }
 }
 
-@NgDirective(selector: '[two-directives]')
+@Decorator(selector: '[two-directives]')
 class OneOfTwoDirectives {
   OneOfTwoDirectives(Logger log) {
     log('OneOfTwo');
   }
 }
 
-@NgDirective(selector: '[two-directives]')
+@Decorator(selector: '[two-directives]')
 class TwoOfTwoDirectives {
   TwoOfTwoDirectives(Logger log) {
     log('TwoOfTwo');
   }
 }
 
-@NgDirective(
+@Decorator(
     selector: '[ignore-children]',
-    children: NgAnnotation.IGNORE_CHILDREN
+    children: Directive.IGNORE_CHILDREN
 )
 class IgnoreChildrenDirective {
   IgnoreChildrenDirective(Logger log) {
@@ -722,50 +1332,107 @@ class IgnoreChildrenDirective {
   }
 }
 
-class PublishTypesDirectiveSuperType {
+class PublishModuleDirectiveSuperType {
 }
 
-@NgDirective(
+@Decorator(
     selector: '[publish-types]',
-    publishTypes: const [PublishTypesDirectiveSuperType])
-class PublishTypesAttrDirective implements PublishTypesDirectiveSuperType {
-  static Injector _injector;
-  PublishTypesAttrDirective(Injector injector) {
+    module: PublishModuleAttrDirective.module)
+class PublishModuleAttrDirective implements PublishModuleDirectiveSuperType {
+  static module(i) =>
+      i.bind(PublishModuleDirectiveSuperType, toInstanceOf: PublishModuleAttrDirective);
+
+  static DirectiveInjector _injector;
+  PublishModuleAttrDirective(DirectiveInjector injector) {
     _injector = injector;
   }
 }
 
-@NgComponent(
+@Component(
     selector: 'simple',
-    template: r'{{name}}(<content>SHADOW-CONTENT</content>)')
+    template: r'{{name}}(<content></content>)')
 class SimpleComponent {
+  var name = 'INNER';
+}
+
+@Component(
+    selector: 'selectable-content-tag',
+    template: r'(<content select=".selected"></content>)')
+class SelectableContentComponent {
+  SelectableContentComponent();
+}
+
+@Component(
+    selector: 'multiple-content-tags',
+    template: r'(<content select=".left"></content>, <content></content>)')
+class MultipleContentTagsComponent implements ScopeAware {
   Scope scope;
-  SimpleComponent(Scope this.scope) {
-    scope.context['name'] = 'INNER';
+  MultipleContentTagsComponent();
+}
+
+@Component(
+  selector: 'shadowy',
+  template: r'With shadow DOM',
+  useShadowDom: true
+)
+class ShadowyComponent {
+  ShadowyComponent(Logger log) {
+    log('shadowy');
   }
 }
 
-@NgComponent(
+@Component(
+    selector: 'transcluding',
+    template: r'Without shadow DOM',
+    useShadowDom: false
+)
+class TranscludingComponent {
+  TranscludingComponent(Logger log) {
+    log('transcluding');
+  }
+}
+
+@Component(
+    selector: 'conditional-content',
+    template: r'(<div ng-if="showLeft"><content select=".left"></content></div>, <content></content>)')
+class ConditionalContentComponent implements ScopeAware {
+  Scope scope;
+  var showLeft;
+  ConditionalContentComponent();
+}
+
+@Component(
+  selector: 'sometimes',
+  template: r'<div ng-if="sometimes"><content></content></div>')
+class SometimesComponent {
+  @NgTwoWay('sometimes')
+  var sometimes;
+}
+
+@Component(
     selector: 'io',
     template: r'<content></content>',
     map: const {
-        'attr': '@scope.context.attr',
-        'expr': '<=>scope.context.expr',
-        'ondone': '&scope.context.ondone',
+        'attr': '@attr',
+        'expr': '<=>expr',
+        'oneway': '=>oneway',
+        'ondone': '&ondone',
     })
-class IoComponent {
-  Scope scope;
-  IoComponent(Scope scope) {
-    this.scope = scope;
+class IoComponent implements ScopeAware {
+  var attr;
+  var oneway;
+  var expr = 'initialExpr';
+  Function ondone;
+  var done;
+
+  void set scope(Scope scope) {
     scope.rootScope.context['ioComponent'] = this;
-    scope.context['expr'] = 'initialExpr';
   }
 }
 
-@NgComponent(
+@Component(
     selector: 'io-controller',
     template: r'<content></content>',
-    publishAs: 'ctrl',
     map: const {
         'attr': '@attr',
         'expr': '<=>expr',
@@ -773,20 +1440,19 @@ class IoComponent {
         'ondone': '&onDone',
         'on-optional': '&onOptional'
     })
-class IoControllerComponent {
-  Scope scope;
+class IoControllerComponent implements ScopeAware {
   var attr;
   var expr;
   var exprOnce;
   var onDone;
   var onOptional;
-  IoControllerComponent(Scope scope) {
-    this.scope = scope;
+
+  void set scope(Scope scope) {
     scope.rootScope.context['ioComponent'] = this;
   }
 }
 
-@NgComponent(
+@Component(
     selector: 'unpublished-io-controller',
     template: r'<content></content>',
     map: const {
@@ -795,81 +1461,71 @@ class IoControllerComponent {
         'ondone': '&onDone',
         'onOptional': '&onOptional'
     })
-class UnpublishedIoControllerComponent {
-  Scope scope;
+class UnpublishedIoControllerComponent implements ScopeAware {
   var attr;
   var expr;
   var exprOnce;
   var onDone;
   var onOptional;
-  UnpublishedIoControllerComponent(Scope scope) {
-    this.scope = scope;
+
+  void set scope(Scope scope) {
     scope.rootScope.context['ioComponent'] = this;
   }
 }
 
-@NgComponent(
+@Component(
     selector: 'incorrect-mapping',
     template: r'<content></content>',
     map: const { 'attr': 'foo' })
 class IncorrectMappingComponent { }
 
-@NgComponent(
+@Component(
     selector: 'non-assignable-mapping',
     template: r'<content></content>',
     map: const { 'attr': '@1+2' })
 class NonAssignableMappingComponent { }
 
-@NgComponent(
+@Component(
     selector: 'camel-case-map',
     map: const {
-      'camel-case': '@scope.context.camelCase',
+      'camel-case': '@camelCase',
     })
-class CamelCaseMapComponent {
-  Scope scope;
-  CamelCaseMapComponent(Scope this.scope) {
-    scope.rootScope.context['camelCase'] = scope;
+class CamelCaseMapComponent implements ScopeAware {
+  var camelCase;
+
+  void set scope(Scope scope) {
+    scope.rootScope.context['camelCase'] = this;
   }
 }
 
-@NgComponent(
+@Component(
     selector: 'parent-expression',
     template: '<div>inside {{fromParent()}}</div>',
     map: const {
-      'from-parent': '&scope.context.fromParent',
+      'from-parent': '&fromParent',
     })
 class ParentExpressionComponent {
   Scope scope;
-  ParentExpressionComponent(Scope this.scope);
+  var fromParent;
 }
 
-@NgComponent(
+@Component(
     selector: 'publish-me',
-    template: r'<content>{{ctrlName.value}}</content>',
-    publishAs: 'ctrlName')
+    template: r'{{value}}')
 class PublishMeComponent {
   String value = 'WORKED';
 }
 
-@NgController (
-    selector: '[publish-me]',
-    publishAs: 'ctrlName')
-class PublishMeDirective {
-  String value = 'WORKED';
-}
-
-
-@NgComponent(
+@Component(
     selector: 'log',
-    template: r'<content></content>',
-    publishAs: 'ctrlName')
+    template: r'<content></content>')
 class LogComponent {
-  LogComponent(Scope scope, Logger logger) {
-    logger(scope);
+  LogComponent(Logger logger) {
+    logger("LogComponent");
   }
 }
 
-@NgComponent(
+@Component(
     selector: 'attach-detach',
     templateUrl: 'some/template.url',
     map: const {
@@ -880,7 +1536,7 @@ class LogComponent {
         'optional-two': '<=>optional',
         'optional-once': '=>!optional',
     })
-class AttachDetachComponent implements NgAttachAware, NgDetachAware, NgShadowRootAware {
+class AttachDetachComponent implements AttachAware, DetachAware, ShadowRootAware, ScopeAware {
   Logger logger;
   Scope scope;
   String attrValue = 'too early';
@@ -888,80 +1544,256 @@ class AttachDetachComponent implements NgAttachAware, NgDetachAware, NgShadowRoo
   String onceValue = 'too early';
   String optional;
 
-  AttachDetachComponent(Logger this.logger, TemplateLoader templateLoader, Scope this.scope) {
+  AttachDetachComponent(this.logger, TemplateLoader templateLoader) {
     logger('new');
     templateLoader.template.then((_) => logger('templateLoaded'));
   }
 
   attach() => logger('attach:@$attrValue; =>$exprValue; =>!$onceValue');
   detach() => logger('detach');
-  onShadowRoot(shadowRoot) {
+  onShadowRoot(ShadowRoot shadowRoot) {
     scope.rootScope.context['shadowRoot'] = shadowRoot;
     logger(shadowRoot);
   }
 }
 
-@NgController(
-    selector: '[my-controller]',
-    publishAs: 'myCtrl')
-class MyController {
-  MyController(Scope scope) {
-    scope.context['name'] = 'MyController';
-  }
-}
-
-@NgComponent()
+@Component()
 class MissingSelector {}
 
-@NgComponent(selector: 'buttonbar button')
+@Component(selector: 'buttonbar button')
 class InvalidSelector {}
 
-@NgFilter(name:'hello')
-class SayHelloFilter {
+@Formatter(name:'hello')
+class SayHelloFormatter {
   call(String str) {
     return 'Hello, $str!';
   }
 }
 
-@NgComponent(
+@Component(
     selector: 'expr-attr-component',
     template: r'<content></content>',
-    publishAs: 'ctrl',
     map: const {
         'expr': '<=>expr',
         'one-way': '=>oneWay',
         'once': '=>!exprOnce'
     })
-class ExprAttrComponent {
+class ExprAttrComponent implements ScopeAware {
   var expr;
   var oneWay;
   var exprOnce;
 
-  ExprAttrComponent(Scope scope) {
+  void set scope(Scope scope) {
     scope.rootScope.context['exprAttrComponent'] = this;
   }
 }
 
-@NgComponent(
+@Component(
     selector: 'simple-attach',
     templateUrl: 'foo.html')
-class SimpleAttachComponent implements NgAttachAware, NgShadowRootAware {
+class SimpleAttachComponent implements AttachAware, ShadowRootAware {
   Logger logger;
+
   SimpleAttachComponent(this.logger) {
     logger('SimpleAttachComponent');
   }
-  attach() => logger('attach');
-  onShadowRoot(_) => logger('onShadowRoot');
+
+  void attach() {
+    logger('attach');
+  }
+
+  void onShadowRoot(_) {
+    logger('onShadowRoot');
+  }
 }
 
-@NgComponent(
+@Decorator(
+    selector: 'attach-with-attr'
+)
+class AttachWithAttr implements AttachAware {
+  Logger logger;
+  AttachWithAttr(this.logger);
+  attach() => logger('attach');
+  @NgAttr('attr')
+  set attr(v) => logger('attr');
+  @NgOneWay('oneway')
+  set oneway(v) => logger('oneway');
+}
+
+@Component(
     selector: 'log-element',
     templateUrl: 'foo.html')
 class LogElementComponent{
   LogElementComponent(Logger logger, Element element, Node node,
-                        ShadowRoot shadowRoot) {
+                      ShadowRoot shadowRoot) {
     logger(element);
     logger(node);
     logger(shadowRoot);
   }
+}
+
+@Decorator(
+    selector: '[one-time]',
+    map: const {
+      'one-time': '=>!value'
+})
+class OneTimeDecorator {
+  Logger log;
+
+  OneTimeDecorator(this.log);
+
+  void set value(v) => log(v);
+}
+
+@Decorator(
+  selector: '[same-name]',
+  children: Directive.TRANSCLUDE_CHILDREN,
+  map: const { '.': '@valueTransclude' }
+)
+class SameNameTransclude {
+  var valueTransclude;
+  SameNameTransclude(ViewPort port, ViewFactory factory, RootScope scope) {
+    port.insertNew(factory);
+    scope.context['sameTransclude'] = this;
+  }
+}
+
+@Decorator(
+    selector: '[same-name]',
+    map: const { 'same-name': '@valueDecorator' }
+)
+class SameNameDecorator {
+  var valueDecorator;
+  SameNameDecorator(RootScope scope) {
+    scope.context['sameDecorator'] = this;
+  }
+}
+
+@Component(
+    selector: 'scope-aware-cmp'
+)
+@Decorator(
+    selector: '[scope-aware-dec]'
+)
+class ScopeAwareComponent implements ScopeAware {
+  Logger log;
+  Scope _scope;
+  ScopeAwareComponent(this.log) {}
+  void set scope(Scope scope) {
+    log('Scope set');
+    _scope = scope;
+    // Despite a new scope is created with a ScopeAware component
+    // scope setter should not be called, in this case.
+    scope.createChild(this);
+  }
+  Scope get scope => _scope;
+}
+
+@Component(
+  selector: 'outer-shadowless',
+  template: '<inner-shadowy>inner-text</inner-shadowy>',
+  useShadowDom: false)
+class OuterShadowless {}
+
+@Component(
+  selector: 'inner-shadowy',
+  template: '<content></content>')
+class InnerShadowy {}
+
+@Component(
+  selector: 'once-inside',
+  template: '<div one-time="ot"></div>'
+)
+class OnceInside {
+  var ot;
+
+  Logger log;
+  @NgAttr("v")
+  set v(x) { log(x); ot = "($x)"; }
+  OnceInside(Logger this.log) { log('!'); }
+}
+
+@Component(
+    selector: 'cmp-inj')
+class InjectorDependentComponent {
+  DirectiveInjector i;
+  ComponentDirectiveInjector cdi;
+  InjectorDependentComponent(this.i, this.cdi) {
+    expect(i).toBeAnInstanceOf(DirectiveInjector);
+    expect(cdi).toBeAnInstanceOf(ComponentDirectiveInjector);
+    expect(cdi.parent).toBe(i);
+  }
+}
+
+
+@Component(
+    selector: 'outer-with-div',
+    template: 'OUTER(<simple><div><content select=".left"></content></div></simple>)'
+)
+class OuterWithDivComponent implements ScopeAware {
+  Scope scope;
+  OuterWithDivComponent();
+}
+
+@Component(
+    selector: 'outer',
+    template: 'OUTER(<inner><content></content></inner>)'
+)
+class OuterComponent implements ScopeAware {
+  Scope scope;
+  OuterComponent();
+}
+
+@Component(
+    selector: 'inner',
+    template: 'INNER(<innerinner><content></content></innerinner>)'
+)
+class InnerComponent implements ScopeAware {
+  Scope scope;
+  InnerComponent();
+}
+
+@Component(
+    selector: 'simple-inner',
+    template: 'INNER(<content></content>)'
+)
+class SimpleInnerComponent implements ScopeAware {
+  Scope scope;
+}
+
+@Component(
+    selector: 'simple-outer',
+    template: 'OUTER(<simple-inner><content></content></simple-inner>)'
+)
+class SimpleOuterComponent implements ScopeAware {
+  Scope scope;
+}
+
+@Component(
+    selector: 'innerinner',
+    template: 'INNERINNER(<content select=".left"></content>,<content select=".right"></content>)'
+)
+class InnerInnerComponent {
+  InnerInnerComponent() {}
+}
+
+@Component(
+    selector: 'template-url-component',
+    templateUrl: 'template.html'
+)
+class TemplateUrlComponent {
+}
+
+@Component(
+    selector: 'log-bind',
+    map: const {
+      'optional-one': '=>optional',
+      'optional-two': '<=>optional',
+      'optional-once': '=>!optional',
+    }
+)
+class LoggedBinding {
+  Logger logger;
+  LoggedBinding(this.logger);
+  set optional(input) => logger(input);
 }

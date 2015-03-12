@@ -4,34 +4,36 @@ typedef void EventFunction(event);
 
 /**
  * [EventHandler] is responsible for handling events bound using on-* syntax
- * (i.e. `on-click="ctrl.doSomething();"`). The root of the application has an
- * EventHandler attached as does every [NgComponent].
+ * (i.e. `on-click="doSomething();"`). The root of the application has an
+ * EventHandler attached as does every [Component].
  *
- * Events bound within [NgComponent] are handled by EventHandler attached to
+ * Events bound within [Component] are handled by EventHandler attached to
  * their [ShadowRoot]. All other events are handled by EventHandler attached
- * to the application root ([NgApp]).
+ * to the application root ([Application]).
  *
  * **Note**: The expressions are executed within the closest context.
  *
  * Example:
  *
  *     <div foo>
- *       <button on-click="ctrl.say('Hello');">Button</button>;
+ *       <button on-click="say('Hello');">Button</button>;
  *     </div>
  *
- *     @NgComponent(selector: '[foo]', publishAs: ctrl)
- *     class FooController {
- *       say(String something) => print(something);
+ *     @Component(selector: '[foo]')
+ *     class FooComponent {
+ *       void say(String something) {
+ *         print(something);
+ *       }
  *     }
  *
  * When button is clicked, "Hello" will be printed in the console.
  */
-@NgInjectableService()
+@Injectable()
 class EventHandler {
   dom.Node _rootNode;
   final Expando _expando;
   final ExceptionHandler _exceptionHandler;
-  final _listeners = <String, Function>{};
+  final _listeners = new HashMap<String, Function>();
 
   EventHandler(this._rootNode, this._expando, this._exceptionHandler);
 
@@ -78,30 +80,20 @@ class EventHandler {
   }
 
   /**
-  * Converts event name into attribute. Event named 'someCustomEvent' needs to
-  * be transformed into on-some-custom-event.
+  * Converts event name into attribute name.
   */
-  static String eventNameToAttrName(String eventName) {
-    var part = eventName.replaceAllMapped(new RegExp("([A-Z])"), (Match match) {
-      return '-${match.group(0).toLowerCase()}';
-    });
-    return 'on-${part}';
-  }
+  static String eventNameToAttrName(String eventName) => 'on-$eventName';
 
   /**
-  * Converts attribute into event name. Attribute 'on-some-custom-event'
-  * corresponds to event named 'someCustomEvent'.
+  * Converts attribute name into event name.
   */
   static String attrNameToEventName(String attrName) {
-    var part = attrName.startsWith("on-") ? attrName.substring(3) : attrName;
-    part = part.replaceAllMapped(new RegExp(r'\-(\w)'), (Match match) {
-      return match.group(0).toUpperCase();
-    });
-    return part.replaceAll("-", "");
+    assert(attrName.startsWith('on-'));
+    return attrName.substring(3);
   }
 }
 
-@NgInjectableService()
+@Injectable()
 class ShadowRootEventHandler extends EventHandler {
   ShadowRootEventHandler(dom.ShadowRoot shadowRoot,
                          Expando expando,

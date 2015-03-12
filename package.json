@@ -8,12 +8,15 @@
   },
   "devDependencies": {
     "karma" : "~0.12.0",
-    "karma-dart" : "~0.2.6",
+    "karma-dart" : "~0.2.8",
+    "karma-sauce-launcher": "^0.2.3",
     "karma-script-launcher": "*",
-    "karma-chrome-launcher": "*",
+    "karma-chrome-launcher": "~0.1.3",
     "karma-firefox-launcher": "*",
     "karma-junit-reporter": "~0.2.1",
     "jasmine-node": "*",
+    "jasmine-reporters": "~0.4.1",
+    "protractor-dart": "0.0.5",
     "qq": "*"
   },
   "licenses": [

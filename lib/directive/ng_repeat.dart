@@ -1,10 +1,9 @@
 part of angular.directive;
 
 /**
- * The `ngRepeat` directive instantiates a template once per item from a
- * collection. Each template instance gets its own scope, where the given loop
- * variable is set to the current collection item, and `$index` is set to the
- * item index or key.
+ * Instantiates a template once per item from a collection. Each template instance gets its own
+ * scope, where the given loop variable is set to the current collection item,
+ * and `$index` is set to the item index or key. `Selector: [ng-repeat]`
  *
  * Special properties are exposed on the local scope of each template instance,
  * including:
@@ -35,7 +34,7 @@ part of angular.directive;
  *   specified the ng-repeat associates elements by identity in the collection.
  *   It is an error to have more than one tracking function to resolve to the
  *   same key. (This would mean that two distinct objects are mapped to the same
- *   DOM element, which is not possible.)  Filters should be applied to the
+ *   DOM element, which is not possible.)  Formatters should be applied to the
  *   expression, before specifying a tracking expression.
  *
  *     For example: `item in items` is equivalent to `item in items track by
@@ -55,7 +54,7 @@ part of angular.directive;
  *     property is same.
  *
  *     For example: `item in items | filter:searchText track by item.id` is a
- *     pattern that might be used to apply a filter to items in conjunction with
+ *     pattern that might be used to apply a formatter to items in conjunction with
  *     a tracking expression.
  *
  * # Example:
@@ -65,11 +64,11 @@ part of angular.directive;
  *     </ul>
  */
 
-@NgDirective(
-    children: NgAnnotation.TRANSCLUDE_CHILDREN,
+@Decorator(
+    children: Directive.TRANSCLUDE_CHILDREN,
     selector: '[ng-repeat]',
     map: const {'.': '@expression'})
-class NgRepeatDirective {
+class NgRepeat {
   static RegExp _SYNTAX = new RegExp(r'^\s*(.+)\s+in\s+(.*?)\s*(?:track\s+by\s+(.+)\s*)?(\s+lazily\s*)?$');
   static RegExp _LHS_SYNTAX = new RegExp(r'^(?:([$\w]+)|\(([$\w]+)\s*,\s*([$\w]+)\))$');
 
@@ -77,18 +76,17 @@ class NgRepeatDirective {
   final BoundViewFactory _boundViewFactory;
   final Scope _scope;
   final Parser _parser;
-  final FilterMap filters;
+  final FormatterMap formatters;
 
   String _expression;
   String _valueIdentifier;
   String _keyIdentifier;
   String _listExpr;
-  List<_Row> _rows;
+  List<View> _views;
   Function _generateId = (key, value, index) => value;
   Watch _watch;
 
-  NgRepeatDirective(this._viewPort, this._boundViewFactory, this._scope,
-                    this._parser, this.filters);
+  NgRepeat(this._viewPort, this._boundViewFactory, this._scope, this._parser, this.formatters);
 
   set expression(value) {
     assert(value != null);
@@ -107,13 +105,12 @@ class NgRepeatDirective {
     if (trackByExpr != null) {
       Expression trackBy = _parser(trackByExpr);
       _generateId = ((key, value, index) {
-        final context = <String, Object>{}
+        final context = new HashMap<String, Object>()
             ..[_valueIdentifier] = value
             ..[r'$index'] = index
             ..[r'$id'] = (obj) => obj;
         if (_keyIdentifier != null) context[_keyIdentifier] = key;
-        return relaxFnArgs(trackBy.eval)(new ScopeLocals(_scope.context,
-            context));
+        return relaxFnArgs(trackBy.eval)(new ContextLocals(_scope.context, context));
       });
     }
 
@@ -131,105 +128,104 @@ class NgRepeatDirective {
 
     _watch = _scope.watch(
         _listExpr,
-        (CollectionChangeRecord changes, _) {
-          if (changes is! CollectionChangeRecord) return;
-          _onChange(changes);
+        (changes, _) {
+          if (changes is CollectionChangeRecord && changes != null) {
+            _onCollectionChange(changes);
+          } else if (_views != null) {
+            _views.forEach(_viewPort.remove);
+            _views = null;
+          }
         },
         collection: true,
-        filters: filters
+        formatters: formatters
     );
   }
 
-  // Computes and executes DOM changes when the item list changes
-  void _onChange(CollectionChangeRecord changes) {
+  void _onCollectionChange(CollectionChangeRecord changes) {
     final int length = changes.length;
-    final rows = new List<_Row>(length);
+    final views = new List<View>(length);
     final changeFunctions = new List<Function>(length);
     final removedIndexes = <int>[];
-    final int domLength = _rows == null ? 0 : _rows.length;
+    final int domLength = _views == null ? 0 : _views.length;
     final leftInDom = new List.generate(domLength, (i) => domLength - 1 - i);
     var domIndex;
 
-    var addRow = (int index, value, View previousView) {
-      var childContext = _updateContext(new PrototypeMap(_scope.context), index,
-          length)..[_valueIdentifier] = value;
-      var childScope = _scope.createChild(childContext);
-      var view = _boundViewFactory(childScope);
-      var nodes = view.nodes;
-      rows[index] = new _Row(_generateId(index, value, index))
-          ..view = view
-          ..scope = childScope
-          ..nodes = nodes
-          ..startNode = nodes.first
-          ..endNode = nodes.last;
-      _viewPort.insert(view, insertAfter: previousView);
-    };
+    Function addFn, moveFn, removeFn;
 
-    if (_rows == null) {
-      _rows = new List<_Row>(length);
-      for (var i = 0; i < length; i++) {
-        changeFunctions[i] = (index, previousView) {
-          addRow(index, changes.iterable.elementAt(i), previousView);
-        };
-      }
+    if (_views == null) {
+      addFn = changes.forEachItem;
+      moveFn = (_) {};
+      removeFn = (_) {};
     } else {
-      changes.forEachRemoval((removal) {
-        var index = removal.previousIndex;
-        var row = _rows[index];
-        row.scope.destroy();
-        _viewPort.remove(row.view);
-        leftInDom.removeAt(domLength - 1 - index);
-      });
-
-      changes.forEachAddition((addition) {
-        changeFunctions[addition.currentIndex] = (index, previousView) {
-          addRow(index, addition.item, previousView);
-        };
-      });
-
-      changes.forEachMove((move) {
-        var previousIndex = move.previousIndex;
-        var value = move.item;
-        changeFunctions[move.currentIndex] = (index, previousView) {
-          var previousRow = _rows[previousIndex];
-          var childScope = previousRow.scope;
-          var childContext = _updateContext(childScope.context, index, length);
-          if (!identical(childScope.context[_valueIdentifier], value)) {
-            childContext[_valueIdentifier] = value;
-          }
-          rows[index] = _rows[previousIndex];
-          // Only move the DOM node when required
-          if (domIndex < 0 || leftInDom[domIndex] != previousIndex) {
-            _viewPort.move(previousRow.view, moveAfter: previousView);
-            leftInDom.remove(previousIndex);
-          }
-          domIndex--;
-        };
-      });
+      addFn = changes.forEachAddition;
+      moveFn = changes.forEachMove;
+      removeFn = changes.forEachRemoval;
     }
+
+    removeFn((CollectionChangeItem removal) {
+      var index = removal.previousIndex;
+      _viewPort.remove(_views[index]);
+      leftInDom.removeAt(domLength - 1 - index);
+    });
+
+    addFn((CollectionChangeItem addition) {
+      var value = addition.item;
+      changeFunctions[addition.currentIndex] = (index, previousView) {
+        var childScope = _scope.createProtoChild();
+        var childContext = _updateContext(childScope.context, index, length)
+            ..[_valueIdentifier] = value
+            ..[r'$parent'] = _scope.context;
+        var view = views[index] = _boundViewFactory(childScope);
+        _viewPort.insert(view, insertAfter: previousView);
+      };
+    });
+
+    moveFn((CollectionChangeItem move) {
+      var previousIndex = move.previousIndex;
+      var value = move.item;
+      changeFunctions[move.currentIndex] = (index, moveAfter) {
+        var previousView = _views[previousIndex];
+        var childScope = previousView.scope;
+        var childContext = _updateContext(childScope.context, index, length);
+        if (!identical(childScope.context[_valueIdentifier], value)) {
+          childContext[_valueIdentifier] = value;
+        }
+        views[index] = _views[previousIndex];
+        // Only move the DOM node when required
+        if (domIndex < 0 || leftInDom[domIndex] != previousIndex) {
+          _viewPort.move(previousView, moveAfter: moveAfter);
+          leftInDom.remove(previousIndex);
+        }
+        domIndex--;
+      };
+    });
 
     var previousView = null;
     domIndex = leftInDom.length - 1;
     for(var targetIndex = 0; targetIndex < length; targetIndex++) {
       var changeFn = changeFunctions[targetIndex];
       if (changeFn == null) {
-        rows[targetIndex] = _rows[targetIndex];
+        views[targetIndex] = _views[targetIndex];
+        if (domIndex < 0 || leftInDom[domIndex] != targetIndex) {
+          _viewPort.move(views[targetIndex], moveAfter: previousView);
+          leftInDom.remove(targetIndex);
+        }
         domIndex--;
-        // The element has not moved but `$last` and `$middle` might still need
-        // to be updated
-        _updateContext(rows[targetIndex].scope.context, targetIndex, length);
+        // The element has not moved but `$last` and `$middle` might still need to be updated
+        _updateContext(views[targetIndex].scope.context, targetIndex, length);
       } else {
         changeFn(targetIndex, previousView);
       }
-      previousView = rows[targetIndex].view;
+      previousView = views[targetIndex];
     }
 
-    _rows = rows;
+    _views = views;
   }
 
-  PrototypeMap _updateContext(PrototypeMap context, int index, int length) {
-    var first = (index == 0);
-    var last = (index == length - 1);
+  ContextLocals _updateContext(ContextLocals context, int index, int len) {
+    var first = index == 0;
+    var last = index == len - 1;
+
     return context
         ..[r'$index'] = index
         ..[r'$first'] = first
@@ -238,15 +234,4 @@ class NgRepeatDirective {
         ..[r'$odd'] = index.isOdd
         ..[r'$even'] = index.isEven;
   }
-}
-
-class _Row {
-  final id;
-  Scope scope;
-  View view;
-  dom.Element startNode;
-  dom.Element endNode;
-  List<dom.Element> nodes;
-
-  _Row(this.id);
 }

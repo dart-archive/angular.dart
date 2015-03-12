@@ -6,53 +6,55 @@ import 'dart:math';
 import 'package:intl/intl.dart';
 
 import 'package:di/di.dart';
+import 'package:di/annotations.dart';
 
 import 'package:angular/core/parser/parser.dart';
 import 'package:angular/core/parser/lexer.dart';
 import 'package:angular/utils.dart';
+import 'package:angular/ng_tracing.dart';
 
-import 'package:angular/core/service.dart';
-export 'package:angular/core/service.dart';
+import 'package:angular/core/annotation_src.dart';
 
+import 'package:angular/cache/module.dart';
 import 'package:angular/change_detection/watch_group.dart';
 export 'package:angular/change_detection/watch_group.dart';
+import 'package:angular/change_detection/ast_parser.dart';
 import 'package:angular/change_detection/change_detection.dart';
 import 'package:angular/change_detection/dirty_checking_change_detector.dart';
+import 'package:angular/core/formatter.dart';
+export 'package:angular/core/formatter.dart';
 import 'package:angular/core/parser/utils.dart';
-import 'package:angular/core/parser/syntax.dart';
+import 'package:angular/core/registry.dart';
+import 'package:angular/core/static_keys.dart';
+import 'package:angular/core/pending_async.dart';
+export 'package:angular/core/pending_async.dart';
 
-part "cache.dart";
-part "directive.dart";
 part "exception_handler.dart";
-part "filter.dart";
 part "interpolate.dart";
-part "registry.dart";
 part "scope.dart";
 part "zone.dart";
 
 
-class NgCoreModule extends Module {
-  NgCoreModule() {
-    type(ScopeDigestTTL);
+class CoreModule extends Module {
+  CoreModule() {
+    bind(ScopeDigestTTL);
 
-    type(MetadataExtractor);
-    type(Cache);
-    type(ExceptionHandler);
-    type(FilterMap);
-    type(Interpolate);
-    type(RootScope);
-    factory(Scope, (injector) => injector.get(RootScope));
-    factory(ClosureMap, (_) => throw "Must provide dynamic/static ClosureMap.");
-    type(ScopeStats);
-    type(ScopeStatsEmitter);
-    factory(ScopeStatsConfig, (i) => new ScopeStatsConfig());
-    value(Object, {}); // RootScope context
-    type(NgZone);
+    bind(ExceptionHandler);
+    bind(FormatterMap);
+    bind(Interpolate);
+    bind(RootScope);
+    bind(PendingAsync);
+    bind(Scope, toInstanceOf: RootScope);
+    bind(ClosureMap, toFactory: () => throw "Must provide dynamic/static ClosureMap.");
+    bind(ScopeStats);
+    bind(ScopeStatsEmitter);
+    bind(ScopeStatsConfig);
+    bind(Object, toValue: {}); // RootScope context
 
-    type(Parser, implementedBy: DynamicParser);
-    type(ParserBackend, implementedBy: DynamicParserBackend);
-    type(DynamicParser);
-    type(DynamicParserBackend);
-    type(Lexer);
+    bind(Parser);
+    bind(RuntimeParserBackend);
+    bind(ParserBackend, toInstanceOf: RuntimeParserBackend);
+    bind(Lexer);
+    bind(ASTParser);
   }
 }

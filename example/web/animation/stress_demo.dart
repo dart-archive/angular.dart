@@ -1,19 +1,18 @@
 part of animation;
 
-@NgComponent(
+@Component(
     selector: 'stress-demo',
+    useShadowDom: false,
     template: '''
       <div class="stress-demo">
-        <button ng-click="ctrl.visible = !ctrl.visible">
+        <button ng-click="visible = !visible">
           Toggle Visibility</button>
         <div>
-          <div class="stress-box" ng-repeat="number in ctrl.numbers"></div>
+          <div class="stress-box" ng-repeat="number in numbers"></div>
         </div>
       </div>
-    ''',
-    publishAs: 'ctrl',
-    applyAuthorStyles: true)
-class StressDemoComponent {
+    ''')
+class StressDemo {
   bool _visible = true;
   final numbers = <int>[1, 2];
 

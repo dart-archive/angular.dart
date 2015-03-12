@@ -1,228 +1,222 @@
 library ng_specs;
 
 import 'dart:html' hide Animation;
+import 'dart:js' as js;
 
 import 'package:angular/angular.dart';
 import 'package:angular/mock/module.dart';
-import 'package:angular/mock/test_injection.dart';
-import 'package:unittest/unittest.dart' as unit;
 
-import 'jasmine_syntax.dart' as jasmine_syntax;
+import 'package:unittest/unittest.dart' as unit;
+import 'package:guinness/guinness_html.dart' as gns;
 
 export 'dart:html' hide Animation;
-export 'package:unittest/unittest.dart';
+
+export 'package:unittest/unittest.dart' hide expect;
+export 'package:guinness/guinness_html.dart';
+
 export 'package:mock/mock.dart';
-export 'package:unittest/mock.dart';
 export 'package:di/di.dart';
-export 'package:di/dynamic_injector.dart';
 export 'package:angular/angular.dart';
-export 'package:angular/bootstrap.dart';
+export 'package:angular/application.dart';
 export 'package:angular/introspection.dart';
+export 'package:angular/cache/module.dart';
+export 'package:angular/cache/js_cache_register.dart';
+export 'package:angular/core/annotation.dart';
+export 'package:angular/core/registry.dart';
 export 'package:angular/core/module_internal.dart';
 export 'package:angular/core_dom/module_internal.dart';
+export 'package:angular/core_dom/type_to_uri_mapper.dart';
 export 'package:angular/core/parser/parser.dart';
 export 'package:angular/core/parser/lexer.dart';
 export 'package:angular/directive/module.dart';
-export 'package:angular/filter/module.dart';
+export 'package:angular/formatter/module.dart';
 export 'package:angular/routing/module.dart';
 export 'package:angular/animate/module.dart';
+export 'package:angular/touch/module.dart';
 export 'package:angular/mock/module.dart';
-export 'package:angular/mock/test_injection.dart';
 export 'package:perf_api/perf_api.dart';
 
 es(String html) {
-  var div = new DivElement();
-  div.setInnerHtml(html, treeSanitizer: new NullTreeSanitizer());
+  var div = new DivElement()..setInnerHtml(html, treeSanitizer: new NullTreeSanitizer());
   return new List.from(div.nodes);
 }
 
 e(String html) => es(html).first;
 
-Expect expect(actual, [unit.Matcher matcher = null]) {
-  if (matcher != null) {
-    unit.expect(actual, matcher);
-  }
-  return new Expect(actual);
+// All our tests files are served under this prefix when run under Karma.  (i.e.
+// this file, _specs.dart, is at path /base/test/_specs.dart.  However, if
+// you're using a different test server or reconfigured the base prefix, then
+// you can set this to something different.
+String TEST_SERVER_BASE_PREFIX = "/base/";
+
+Expect expect(actual, [matcher]) {
+  final expect = new Expect(actual);
+  if (matcher != null) expect.to(matcher);
+  return expect;
 }
 
-class Expect {
-  var actual;
-  var not;
-  Expect(this.actual) {
-    not = new NotExpect(this);
-  }
+class Expect extends gns.Expect {
+  Expect(actual) : super(actual);
 
-  toEqual(expected) => unit.expect(actual, unit.equals(expected));
-  toContain(expected) => unit.expect(actual, unit.contains(expected));
-  toBe(expected) => unit.expect(actual,
-      unit.predicate((actual) => identical(expected, actual), '$expected'));
-  toThrow([exception]) => unit.expect(actual, exception == null ? unit.throws : unit.throwsA(new ExceptionContains(exception)));
-  toBeFalsy() => unit.expect(actual, (v) => v == null ? true : v is bool ? v == false : false);
-  toBeTruthy() => unit.expect(actual, (v) => v is bool ? v == true : true);
-  toBeDefined() => unit.expect(actual, (v) => v != null);
-  toBeNull() => unit.expect(actual, unit.isNull);
-  toBeNotNull() => unit.expect(actual, unit.isNotNull);
+  NotExpect get not => new NotExpect(actual);
 
-  toHaveHtml(expected) => unit.expect(_toHtml(actual), unit.equals(expected));
-  toHaveText(expected) => unit.expect(_elementText(actual), unit.equals(expected));
+  void toBeValid() => _expect(actual.valid && !actual.invalid, true, reason: 'Form is not valid');
 
-  toHaveBeenCalled() => unit.expect(actual.called, true, reason: 'method not called');
-  toHaveBeenCalledOnce() => unit.expect(actual.count, 1, reason: 'method invoked ${actual.count} expected once');
-  toHaveBeenCalledWith([a,b,c,d,e,f]) =>
-      unit.expect(actual.firstArgsMatch(a,b,c,d,e,f), true,
-      reason: 'method invoked with correct arguments');
-  toHaveBeenCalledOnceWith([a,b,c,d,e,f]) =>
-      unit.expect(actual.count == 1 && actual.firstArgsMatch(a,b,c,d,e,f),
-                 true,
-                 reason: 'method invoked once with correct arguments. (Called ${actual.count} times)');
+  void toBePristine() => _expect(actual.pristine && !actual.dirty, true, reason: 'Form is dirty');
 
-  toHaveClass(cls) => unit.expect(actual.classes.contains(cls), true, reason: ' Expected ${actual} to have css class ${cls}');
+  void toHaveText(String text) => _expect(actual, new _TextMatcher(text));
 
-  toEqualSelect(options) {
-    var actualOptions = [];
-
-    for (var option in actual.querySelectorAll('option')) {
-      if (option.selected) {
-        actualOptions.add([option.value]);
-      } else {
-        actualOptions.add(option.value);
-      }
-    }
-    return unit.expect(actualOptions, options);
-  }
-
-  toEqualValid() {
-    // TODO: implement onece we have forms
-  }
-  toEqualInvalid() {
-    // TODO: implement onece we have forms
-  }
-  toEqualPristine() {
-    // TODO: implement onece we have forms
-  }
-  toEqualDirty() {
-    // TODO: implement onece we have forms
-  }
-
-
-  _toHtml(node, [bool outer = false]) {
-    if (node is Comment) {
-      return '<!--${node.text}-->';
-    } else if (node is DocumentFragment) {
-      var acc = '';
-      node.childNodes.forEach((n) { acc += _toHtml(n, true); });
-      return acc;
-    } else if (node is List) {
-      var acc = '';
-      node.forEach((n) { acc += _toHtml(n); });
-      return acc;
-    } else if (node is Element) {
-      // Remove all the "ng-binding" internal classes
-      node = node.clone(true) as Element;
-      node.classes.remove('ng-binding');
-      node.querySelectorAll(".ng-binding").forEach((Element e) {
-        e.classes.remove('ng-binding');
-      });
-      var htmlString = outer ? node.outerHtml : node.innerHtml;
-      // Strip out empty class attributes.  This seems like a Dart bug...
-      return htmlString.replaceAll(' class=""', '').trim();
-    } else {
-      throw "JQuery._toHtml not implemented for node type [${node.nodeType}]";
-    }
-  }
-
-  _elementText(n, [bool notShadow = false]) {
-    if (n is List) {
-      return n.map((nn) => _elementText(nn)).join("");
-    }
-
-    if (n is Comment) return '';
-
-    if (!notShadow && n is Element && n.shadowRoot != null) {
-      var shadowText = n.shadowRoot.text;
-      var domText = _elementText(n, true);
-      return shadowText.replaceFirst("SHADOW-CONTENT", domText);
-    }
-
-    if (n.nodes == null || n.nodes.length == 0) return n.text;
-
-    return n.nodes.map((cn) => _elementText(cn)).join("");
-  }
+  Function get _expect => gns.guinness.matchers.expect;
 }
 
-class NotExpect {
-  Expect expect;
-  get actual => expect.actual;
-  NotExpect(this.expect);
+class NotExpect extends gns.NotExpect {
+  NotExpect(actual) : super(actual);
 
-  toHaveBeenCalled() => unit.expect(actual.called, false, reason: 'method called');
-  toThrow() => actual();
+  void toBeValid() => _expect(actual.valid && !actual.invalid, false, reason: 'Form is valid');
 
-  toHaveClass(cls) => unit.expect(actual.classes.contains(cls), false, reason: ' Expected ${actual} to not have css class ${cls}');
-  toBe(expected) => unit.expect(actual,
-      unit.predicate((actual) => !identical(expected, actual), 'not $expected'));
-  toEqual(expected) => unit.expect(actual,
-      unit.predicate((actual) => expected != actual, 'not $expected'));
-  toContain(expected) => unit.expect(actual,
-      unit.predicate((actual) => !actual.contains(expected), 'not $expected'));
+  void toBePristine() => _expect(actual.pristine && !actual.dirty, false, reason: 'Form is pristine');
+
+  Function get _expect => gns.guinness.matchers.expect;
 }
 
-class ExceptionContains extends unit.Matcher {
 
-  final _expected;
+class _TextMatcher extends unit.Matcher {
+  final String expected;
 
-  const ExceptionContains(this._expected);
-
-  bool matches(item, Map matchState) {
-    if (item is String) {
-      return item.indexOf(_expected) >= 0;
-    }
-    return matches('$item', matchState);
-  }
+  _TextMatcher(this.expected);
 
   unit.Description describe(unit.Description description) =>
-      description.add('exception contains ').addDescriptionOf(_expected);
+      description..replace("element matching: ${expected}");
 
-  unit.Description describeMismatch(item, unit.Description mismatchDescription,
-                               Map matchState, bool verbose) {
-      return super.describeMismatch('$item', mismatchDescription, matchState,
-          verbose);
-  }
+  unit.Description describeMismatch(actual, unit.Description mismatchDescription,
+      Map matchState, bool verbose) =>
+      mismatchDescription..add(_elementText(actual));
+
+  bool matches(actual, Map matchState) =>
+      _elementText(actual) == expected;
 }
 
-// TODO: Decide if we want this function to be called 'es' or '$'
-$(String selector) =>
-  es(selector);
+String _elementText(n) {
+  hasShadowRoot(n) => n is Element && n.shadowRoot != null;
+  if (n is Iterable) return n.map((nn) => _elementText(nn)).join("");
+  if (n is Comment) return '';
+  if (n is ContentElement) return _elementText(n.getDistributedNodes());
+  if (hasShadowRoot(n)) return _elementText(n.shadowRoot.nodes);
+  if (n.nodes == null || n.nodes.isEmpty) return n.text;
+  return _elementText(n.nodes);
+}
 
 
-_injectify(fn) {
+Function _injectify(Function fn) {
   // The function does two things:
   // First: if the it() passed a function, we wrap it in
   //        the "sync" FunctionComposition.
   // Second: when we are calling the FunctionComposition,
   //         we inject "inject" into the middle of the
   //         composition.
-  if (fn is! FunctionComposition) {
-    fn = sync(fn);
-  }
-  return fn.outer(inject(fn.inner));
+  if (fn is! FunctionComposition) fn = sync(fn);
+  var fc = fn as FunctionComposition;
+  return fc.outer(inject(fc.inner));
 }
 
-// Jasmine syntax
-beforeEachModule(fn) => jasmine_syntax.beforeEach(module(fn), priority:1);
-beforeEach(fn) => jasmine_syntax.beforeEach(_injectify(fn));
-afterEach(fn) => jasmine_syntax.afterEach(_injectify(fn));
-it(name, fn) => jasmine_syntax.it(name, _injectify(fn));
-iit(name, fn) => jasmine_syntax.iit(name, _injectify(fn));
-xit(name, fn) => jasmine_syntax.xit(name, fn);
-xdescribe(name, fn) => jasmine_syntax.xdescribe(name, fn);
-ddescribe(name, fn) => jasmine_syntax.ddescribe(name, fn);
-describe(name, fn) => jasmine_syntax.describe(name, fn);
+// Replace guinness syntax elements to inject dependencies.
+void beforeEachModule(Function fn) {
+  gns.beforeEach(module(fn), priority:1);
+}
 
-var jasmine = jasmine_syntax.jasmine;
+void beforeEach(Function fn) {
+  gns.beforeEach(_injectify(fn));
+}
 
+void afterEach(Function fn) {
+   gns.afterEach(_injectify(fn));
+}
+
+// For sharding across multiple instances of karma.
+// _numKarmaShards values:
+//   1:   (default) Use one shard. (i.e. there's no sharding.)
+//   0:   No shards!  So no tests are run.  However, the preprocessors are still
+//        executed and the browsers are launched.  This can be used to validate
+//        the configuration and browsers without running any tests.
+//        scripts/travis/build.sh uses this to run the preprocessors once to
+//        generate the dart2js output.  It then runs the tests with multiple
+//        shards knowing that these shards will all use the dart2js output
+//        generated from the dummy run.
+//   > 1: Specifies that there are this many number of total karma shards.  If
+//        there are N karma shards and T tests, then each shard runs about T/N
+//        tests.  In this case, the _shardId - which must be [0, N) - indicates
+//        the current karma shard so we can select the appropriate subset of
+//        tests to run.
+int _numShards = 1;
+int _shardId = 0;
+int _itCount = 0;
+bool _failOnIit = false;
+
+_safeJsGet(dottedName) => dottedName.split(".").fold(
+    js.context, (a, b) => (a == null ? a : a[b]));
+
+_initSharding() {
+  _failOnIit = (_safeJsGet("__karma__.config.clientArgs.travis") != null);
+  _numShards = _safeJsGet("__karma__.config.clientArgs.travis.numKarmaShards");
+  _shardId = _safeJsGet("__karma__.config.clientArgs.travis.karmaShardId");
+  if (_numShards == null || _shardId == null) {
+    _numShards = 1;
+    _shardId = 0;
+  }
+}
+
+void _itFirstTime(String name, Function fn) {
+  _initSharding();
+  if (_numShards > 0) {
+    _it(name, fn);
+    it = _it;
+  } else {
+    // This is a test run who purpose is to prime the dart2js cache.  Do not
+    // actually run any tests.
+    gns.it('should print the dart2js cache', () {});
+    it = (String name, Function fn) {};
+  }
+}
+
+void _it(String name, Function fn) {
+  _itCount += 1;
+  if (_itCount % _numShards == _shardId) {
+    gns.it(name, _injectify(fn));
+  }
+}
+
+var it = _itFirstTime;
+
+void iit(String name, Function fn) {
+  if (_failOnIit) {
+    throw "iit is not allowed when running under a CI server";
+  }
+  gns.iit(name, _injectify(fn));
+}
+
+void ddescribe(String name, Function fn) {
+  if (_failOnIit) {
+    throw "ddescribe is not allowed when running under a CI server";
+  }
+  gns.ddescribe(name, fn);
+}
+
+_removeNgBinding(node) {
+  if (node is Element) {
+    var el = node.clone(true) as Element;
+    el.classes.remove('ng-binding');
+    el.querySelectorAll(".ng-binding").forEach((Element e) {
+      e.classes.remove('ng-binding');
+    });
+    return el;
+  }
+  return node;
+}
 
 main() {
-  jasmine_syntax.beforeEach(setUpInjector, priority:3);
-  jasmine_syntax.afterEach(tearDownInjector);
+  gns.beforeEach(setUpInjector, priority:3);
+  gns.afterEach(tearDownInjector);
+
+  gns.guinnessEnableHtmlMatchers();
+  gns.guinness.matchers.config.preprocessHtml = _removeNgBinding;
 }

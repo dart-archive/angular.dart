@@ -3,7 +3,7 @@ library angular.core.parser.eval_access;
 import 'package:angular/core/parser/parser.dart';
 import 'package:angular/core/parser/syntax.dart' as syntax;
 import 'package:angular/core/parser/utils.dart';
-import 'package:angular/core/module_internal.dart';
+import 'package:angular/core/formatter.dart' show FormatterMap;
 
 class AccessScopeFast extends syntax.AccessScope with AccessFast {
   final Getter getter;
@@ -12,7 +12,7 @@ class AccessScopeFast extends syntax.AccessScope with AccessFast {
   AccessScopeFast(String name, this.getter, this.setter)
       : super(name),
         isThis = name == 'this';
-  eval(scope, [FilterMap filters]) => isThis ? scope : _eval(scope);
+  eval(scope, [FormatterMap formatters]) => isThis ? scope : _eval(scope);
   assign(scope, value) => _assign(scope, scope, value);
 }
 
@@ -21,15 +21,15 @@ class AccessMemberFast extends syntax.AccessMember with AccessFast {
   final Setter setter;
   AccessMemberFast(object, String name, this.getter, this.setter)
       : super(object, name);
-  eval(scope, [FilterMap filters]) => _eval(object.eval(scope, filters));
+  eval(scope, [FormatterMap formatters]) => _eval(object.eval(scope, formatters));
   assign(scope, value) => _assign(scope, object.eval(scope), value);
   _assignToNonExisting(scope, value) => object.assign(scope, { name: value });
 }
 
 class AccessKeyed extends syntax.AccessKeyed {
   AccessKeyed(object, key) : super(object, key);
-  eval(scope, [FilterMap filters]) =>
-      getKeyed(object.eval(scope, filters), key.eval(scope, filters));
+  eval(scope, [FormatterMap formatters]) =>
+      getKeyed(object.eval(scope, formatters), key.eval(scope, formatters));
   assign(scope, value) => setKeyed(object.eval(scope), key.eval(scope), value);
 }
 
@@ -38,22 +38,26 @@ class AccessKeyed extends syntax.AccessKeyed {
  * where we have a pair of pre-compiled getter and setter functions that we
  * use to do the access the field.
  */
+// todo(vicb) - parser should not depend on ContextLocals
+// todo(vicb) - Map should not be a special case so that we can access the props
 abstract class AccessFast {
   String get name;
   Getter get getter;
   Setter get setter;
 
-  _eval(holder) {
+  dynamic _eval(holder) {
     if (holder == null) return null;
-    return (holder is Map) ? holder[name] : getter(holder);
+    if (holder is Map) return holder[name];
+    return getter(holder);
   }
 
-  _assign(scope, holder, value) {
+  dynamic _assign(scope, holder, value) {
     if (holder == null) {
       _assignToNonExisting(scope, value);
       return value;
     } else {
-      return (holder is Map) ? (holder[name] = value) : setter(holder, value);
+      if (holder is Map) return holder[name] = value;
+      return setter(holder, value);
     }
   }
 

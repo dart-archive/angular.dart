@@ -10,6 +10,8 @@ class MockWindow extends Mock implements Window {
   final onHashChangeController = new dart_async.StreamController<Event>();
   final onClickController = new dart_async.StreamController<MouseEvent>();
 
+  var animationFrameCompleter = new dart_async.Completer<num>();
+
   dart_async.Stream<PopStateEvent> get onPopState => onPopStateController.stream;
   dart_async.Stream<Event> get onHashChange => onHashChangeController.stream;
   dart_async.Stream<Event> get onClick => onClickController.stream;

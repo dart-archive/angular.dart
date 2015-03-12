@@ -6,22 +6,24 @@
 </head>
 <body class="ng-cloak" ng-app animation-demo>
   <nav>
-    <button ng-repeat="page in demo.pages"
-        ng-click="demo.currentPage = page"
-        ng-class="{'current': demo.currentPage == page}">
+    <button ng-repeat="page in pages"
+        ng-click="currentPage = page"
+        ng-class="{'current': currentPage == page}">
       {{page}}
     </button>
   </nav>
-  <div class="content" ng-switch="demo.currentPage">
+  <div class="content" ng-switch="currentPage">
     <div class="demo" ng-switch-default>
+
       <h2>About</h2>
       <p>The NgAnimate module is a port with modifications of the original
         AngularJS animation module. The default implementation does nothing.
         It simply provides hooks into the angular subsystem. Adding
-        <code>NgAnimateModule</code> however is a whole different story. Once
+        <code>AnimationModule</code> however is a whole different story. Once
         added it allows you define and run css animations on your elements with
         pure CSS.</p>
       <p>Check out the demos above.</p>
+
     </div>
     <div class="demo" ng-switch-when="ng-repeat">
       <h2>ng-repeat Demo</h2>

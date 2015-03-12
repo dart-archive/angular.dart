@@ -5,36 +5,50 @@ import '../_specs.dart';
 void main() {
   describe('test bed', () {
     TestBed _;
-    Compiler $compile;
+    Compiler compile;
     Injector injector;
-    Scope $rootScope;
+    Scope rootScope;
 
     beforeEachModule((Module module) {
-      module..type(MyTestBedDirective);
+      module..bind(MyTestBedDirective);
       return (TestBed tb) => _ = tb;
     });
 
-    it('should allow for a scope-based compile', () {
+    it('should allow for a scope-based compile', (Scope scope) {
+      Scope childScope = scope.createChild({});
 
-      inject((Scope scope) {
-        Scope childScope = scope.createChild({});
+      _.compile('<div my-directive probe="i"></div>', scope: childScope);
 
-        var element = $('<div my-directive probe="i"></div>');
-        _.compile(element, scope: childScope);
+      Probe probe = _.rootScope.context['i'];
+      var directiveInst = probe.directive(MyTestBedDirective);
 
-        Probe probe = _.rootScope.context['i'];
-        var directiveInst = probe.directive(MyTestBedDirective);
+      childScope.destroy();
 
-        childScope.destroy();
+      expect(directiveInst.destroyed).toBe(true);
+    });
 
-        expect(directiveInst.destroyed).toBe(true);
-      });
+    it('should handle whitespace cleanly', () {
+      var root = _.compile('''
+        <div>
+          <h1
+             attr="Hi">
+          </h1>
+        </div>
+      <span  
+       attr2="Bye"
+
+      ></span>
+      ''');
+
+      expect(root).toBeAnInstanceOf(DivElement);
+      expect(_.rootElements[1]).toBeAnInstanceOf(SpanElement);
+      expect(_.rootElements.length).toBe(2);
     });
 
   });
 }
 
-@NgDirective(selector: '[my-directive]')
+@Decorator(selector: '[my-directive]')
 class MyTestBedDirective {
   bool destroyed = false;
 

@@ -1,11 +1,9 @@
 library angular.tools.transformer.metadata_generator;
 
-import 'dart:async';
 import 'package:analyzer/src/generated/element.dart';
 import 'package:angular/tools/transformer/options.dart';
 import 'package:barback/barback.dart';
 import 'package:code_transformers/resolver.dart';
-import 'package:di/transformer/refactor.dart';
 import 'package:path/path.dart' as path;
 
 import 'metadata_extractor.dart';
@@ -17,18 +15,14 @@ class MetadataGenerator extends Transformer with ResolverTransformer {
     this.resolvers = resolvers;
   }
 
-  Future<bool> isPrimary(Asset input) => options.isDartEntry(input);
-
   void applyResolver(Transform transform, Resolver resolver) {
     var asset = transform.primaryInput;
     var id = asset.id;
-    var outputFilename = '${path.url.basenameWithoutExtension(id.path)}'
-        '_static_metadata.dart';
+    var outputFilename = '${path.url.basenameWithoutExtension(id.path)}_static_metadata.dart';
     var outputPath = path.url.join(path.url.dirname(id.path), outputFilename);
     var outputId = new AssetId(id.package, outputPath);
 
-    var extractor = new AnnotationExtractor(transform.logger, resolver,
-        outputId);
+    var extractor = new AnnotationExtractor(transform.logger, resolver, outputId);
 
     var outputBuffer = new StringBuffer();
     _writeHeader(asset.id, outputBuffer);
@@ -61,23 +55,21 @@ class MetadataGenerator extends Transformer with ResolverTransformer {
 
     _writeClassPreamble(outputBuffer);
     for (var type in annotatedTypes) {
-      type.writeClassAnnotations(
-          outputBuffer, transform.logger, resolver, importPrefixes);
+      type.writeClassAnnotations(outputBuffer, transform.logger, resolver, importPrefixes);
     }
     _writeClassEpilogue(outputBuffer);
 
-    transform.addOutput(
-          new Asset.fromString(outputId, outputBuffer.toString()));
-    transform.addOutput(asset);
+    transform..addOutput(new Asset.fromString(outputId, outputBuffer.toString()))
+             ..addOutput(asset);
   }
 }
 
 void _writeHeader(AssetId id, StringSink sink) {
-  var libPath = path.withoutExtension(id.path).replaceAll('/', '.');
+  var libPath = path.withoutExtension(id.path).replaceAll('/', '.').replaceAll('-', '_');
   sink.write('''
 library ${id.package}.$libPath.generated_metadata;
 
-import 'package:angular/angular.dart' show MetadataExtractor;
+import 'package:angular/core/registry.dart' show MetadataExtractor;
 import 'package:di/di.dart' show Module;
 
 ''');
@@ -86,7 +78,7 @@ import 'package:di/di.dart' show Module;
 void _writePreamble(StringSink sink) {
   sink.write('''
 Module get metadataModule => new Module()
-    ..value(MetadataExtractor, new _StaticMetadataExtractor());
+    ..bind(MetadataExtractor, toValue: new _StaticMetadataExtractor());
 
 class _StaticMetadataExtractor implements MetadataExtractor {
   Iterable call(Type type) {

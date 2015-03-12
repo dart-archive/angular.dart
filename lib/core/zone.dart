@@ -1,11 +1,30 @@
 part of angular.core_internal;
 
-typedef void ZoneOnTurn();
+/**
+ * Handles a [VmTurnZone] onTurnDone event.
+ */
+typedef void ZoneOnTurnDone();
+
+typedef void CountPendingAsync(int count);
+
+/**
+ * Handles a [VmTurnZone] onTurnDone event.
+ */
+typedef void ZoneOnTurnStart();
+
+typedef void ZoneScheduleMicrotask(fn());
+
+typedef async.Timer ZoneCreateTimer(async.ZoneDelegate delegate,
+    async.Zone zone, Duration duration, fn());
+
+/**
+ * Handles a [VmTurnZone] onError event.
+ */
 typedef void ZoneOnError(dynamic error, dynamic stacktrace,
                          LongStackTrace longStacktrace);
 
 /**
- * Contains the locations of runAsync calls across VM turns.
+ * Contains the locations of async calls across VM turns.
  */
 class LongStackTrace {
   final String reason;
@@ -25,32 +44,67 @@ class LongStackTrace {
   }
 }
 
-/**
- * A better zone API which implements onTurnDone.
- */
-class NgZone {
-  final async.Zone _outerZone = async.Zone.current;
-  async.Zone _zone;
 
-  NgZone() {
-    _zone = _outerZone.fork(specification: new async.ZoneSpecification(
+/**
+ * A [Zone] wrapper that lets you schedule tasks after its private microtask
+ * queue is exhausted but before the next "turn", i.e. event loop iteration.
+ * This lets you freely schedule microtasks that prepare data, and set an
+ * [onTurnDone] handler that will consume that data after it's ready but before
+ * the browser has a chance to re-render.
+ * The wrapper maintains an "inner" and "outer" [Zone] and a private queue of
+ * all the microtasks scheduled on the inner [Zone].
+ *
+ * In a typical app, [ngDynamicApp] or [ngStaticApp] will create a singleton
+ * [VmTurnZone] whose outer [Zone] is the root [Zone] and whose default [onTurnDone]
+ * runs the Angular digest.  A component may want to inject this singleton if it
+ * needs to run code _outside_ the Angular digest.
+ */
+class VmTurnZone {
+  /// an "outer" [Zone], which is the one that created this.
+  async.Zone _outerZone;
+
+  /// an "inner" [Zone], which is a child of the outer [Zone].
+  async.Zone _innerZone;
+
+  /**
+   * Associates with this
+   *
+   * - an "outer" [Zone], which is the one that created this.
+   * - an "inner" [Zone], which is a child of the outer [Zone].
+   *
+   * Defaults [onError] to forward errors to the outer [Zone].
+   * Defaults [onTurnStart] and [onTurnDone] to no-op functions.
+   */
+  VmTurnZone() {
+    _outerZone = async.Zone.current;
+    _innerZone = _outerZone.fork(specification: new async.ZoneSpecification(
         run: _onRun,
         runUnary: _onRunUnary,
         scheduleMicrotask: _onScheduleMicrotask,
+        createTimer: _onCreateTimer,
         handleUncaughtError: _uncaughtError
     ));
-    // Prevent silently ignoring uncaught exceptions by forwarding such
-    // exceptions to the outer zone by default.
-    onError = (e, s, ls) => _outerZone.handleUncaughtError(e, s);
+    onError = _defaultOnError;
+    onTurnDone = _defaultOnTurnDone;
+    onTurnStart = _defaultOnTurnStart;
+    onScheduleMicrotask = _defaultOnScheduleMicrotask;
+    onCreateTimer = _defaultOnCreateTimer;
+    countPendingAsync = _defaultCountPendingAsync;
   }
-
 
   List _asyncQueue = [];
   bool _errorThrownFromOnRun = false;
 
-  _onRunBase(async.Zone self, async.ZoneDelegate delegate, async.Zone zone, fn()) {
+  var _currentlyInTurn = false;
+
+  dynamic _onRunBase(async.Zone self, async.ZoneDelegate delegate, async.Zone zone, fn()) {
+    var scope = traceEnter(VmTurnZone_run);
     _runningInTurn++;
     try {
+      if (!_currentlyInTurn) {
+        _currentlyInTurn = true;
+        delegate.run(zone, onTurnStart);
+      }
       return fn();
     } catch (e, s) {
       onError(e, s, _longStacktrace);
@@ -59,41 +113,64 @@ class NgZone {
     } finally {
       _runningInTurn--;
       if (_runningInTurn == 0) _finishTurn(zone, delegate);
+      traceLeave(scope);
     }
   }
+
   // Called from the parent zone.
-  _onRun(async.Zone self, async.ZoneDelegate delegate, async.Zone zone, fn()) =>
-    _onRunBase(self, delegate, zone, () => delegate.run(zone, fn));
+  dynamic _onRun(async.Zone self, async.ZoneDelegate delegate, async.Zone zone, fn()) =>
+      _onRunBase(self, delegate, zone, () => delegate.run(zone, fn));
 
-  _onRunUnary(async.Zone self, async.ZoneDelegate delegate, async.Zone zone,
-              fn(args), args) =>
-    _onRunBase(self, delegate, zone, () => delegate.runUnary(zone, fn, args));
+  dynamic _onRunUnary(async.Zone self, async.ZoneDelegate delegate, async.Zone zone,
+                      fn(args), args) =>
+      _onRunBase(self, delegate, zone, () => delegate.runUnary(zone, fn, args));
 
-  _onScheduleMicrotask(async.Zone self, async.ZoneDelegate delegate,
-                       async.Zone zone, fn()) {
-    _asyncQueue.add(() => delegate.run(zone, fn));
-    if (_runningInTurn == 0 && !_inFinishTurn)  _finishTurn(zone, delegate);
+  void _onScheduleMicrotask(async.Zone self, async.ZoneDelegate delegate, async.Zone zone, fn()) {
+    var s = traceEnter(VmTurnZone_scheduleMicrotask);
+    try {
+      onScheduleMicrotask(() => delegate.run(zone, fn));
+      if (_runningInTurn == 0 && !_inFinishTurn)  _finishTurn(zone, delegate);
+    } finally {
+      traceLeave(s);
+    }
   }
 
-  _uncaughtError(async.Zone self, async.ZoneDelegate delegate, async.Zone zone,
-                 e, StackTrace s) {
+  async.Timer _onCreateTimer(async.Zone self, async.ZoneDelegate delegate, async.Zone zone, Duration duration, fn()) {
+    var s = traceEnter(VmTurnZone_createTimer);
+    try {
+      return onCreateTimer(delegate, zone, duration, fn);
+    } finally {
+      traceLeave(s);
+    }
+  }
+
+  void _uncaughtError(async.Zone self, async.ZoneDelegate delegate, async.Zone zone,
+                      e, StackTrace s) {
     if (!_errorThrownFromOnRun) onError(e, s, _longStacktrace);
     _errorThrownFromOnRun = false;
   }
 
   var _inFinishTurn = false;
-  _finishTurn(zone, delegate) {
+
+  void _finishTurn(zone, delegate) {
     if (_inFinishTurn) return;
     _inFinishTurn = true;
     try {
       // Two loops here: the inner one runs all queued microtasks,
       // the outer runs onTurnDone (e.g. scope.digest) and then
       // any microtasks which may have been queued from onTurnDone.
+      // If any microtasks were scheduled during onTurnDone, onTurnStart
+      // will be executed before those microtasks.
       do {
+        if (!_currentlyInTurn) {
+          _currentlyInTurn = true;
+          delegate.run(zone, onTurnStart);
+        }
         while (!_asyncQueue.isEmpty) {
-          delegate.run(zone, _asyncQueue.removeAt(0));
+          _asyncQueue.removeAt(0)();
         }
         delegate.run(zone, onTurnDone);
+        _currentlyInTurn = false;
       } while (!_asyncQueue.isEmpty);
     } catch (e, s) {
       onError(e, s, _longStacktrace);
@@ -107,21 +184,58 @@ class NgZone {
   int _runningInTurn = 0;
 
   /**
-   * A function called with any errors from the zone.
+   * Called with any errors from the inner zone.
    */
-  var onError = (e, s, ls) => print('$e\n$s\n$ls');
+  ZoneOnError onError;
+  /// Forwards uncaught exceptions to the outer zone.
+  void _defaultOnError(dynamic e, dynamic s, LongStackTrace ls) =>
+      _outerZone.handleUncaughtError(e, s);
 
   /**
-   * A function that is called at the end of each VM turn in which the
-   * in-zone code or any runAsync callbacks were run.
+   * Called at the beginning of each VM turn in which inner zone code runs.
+   * "At the beginning" means before any of the microtasks from the private
+   * microtask queue of the inner zone is executed. Notes
+   *
+   * - [onTurnStart] runs repeatedly until no more microstasks are scheduled
+   *   within [onTurnStart], [run] or [onTurnDone]. You usually don't want it to
+   *   schedule any.  For example, if its first line of code is `new Future.value()`,
+   *   the turn will _never_ end.
    */
-  var onTurnDone = () => null;  // Type was ZoneOnTurn: dartbug 13519
+  ZoneOnTurnStart onTurnStart;
+  void _defaultOnTurnStart() => null;
 
   /**
-   * A function that is called when uncaught errors are thrown inside the zone.
+   * Called at the end of each VM turn in which inner zone code runs.
+   * "At the end" means after the private microtask queue of the inner zone is
+   * exhausted but before the next VM turn.  Notes
+   *
+   * - This won't wait for microtasks scheduled in zones other than the inner
+   *   zone, e.g. those scheduled with [runOutsideAngular].
+   * - [onTurnDone] runs repeatedly until no more tasks are scheduled within
+   *   [onTurnStart], [run] or [onTurnDone]. You usually don't want it to
+   *   schedule any.  For example, if its first line of code is `new Future.value()`,
+   *   the turn will _never_ end.
    */
-  // var onError = (dynamic e, dynamic s, LongStackTrace ls) => print('EXCEPTION: $e\n$s\n$ls');
-  // Type was ZoneOnError: dartbug 13519
+  ZoneOnTurnDone onTurnDone;
+  CountPendingAsync countPendingAsync;
+  void _defaultOnTurnDone() => null;
+  void _defaultCountPendingAsync(int count) => null;
+
+  /**
+   * Called any time a microtask is scheduled. If you override [onScheduleMicrotask], you
+   * are expected to call the function at some point.
+   */
+  ZoneScheduleMicrotask onScheduleMicrotask;
+  void _defaultOnScheduleMicrotask(fn) => _asyncQueue.add(fn);
+
+  /**
+   * Called any time a timer is created. If you override [onCreateTimer],
+   * you are expected to return a [Timer] which call the function at some point.
+   */
+  ZoneCreateTimer onCreateTimer;
+  async.Timer _defaultOnCreateTimer(async.ZoneDelegate delegate,
+      async.Zone zone, Duration duration, fn())
+      => new _WrappedTimer(this, delegate, zone, duration, fn);
 
   LongStackTrace _longStacktrace = null;
 
@@ -131,7 +245,7 @@ class NgZone {
     return new LongStackTrace(name, shortStacktrace, _longStacktrace);
   }
 
-  _getStacktrace() {
+  StackTrace _getStacktrace() {
     try {
       throw [];
     } catch (e, s) {
@@ -140,17 +254,28 @@ class NgZone {
   }
 
   /**
-   * Runs the provided function in the zone.  Any runAsync calls (e.g. futures)
-   * will also be run in this zone.
+   * Runs [body] in the inner zone and returns whatever it returns.
    *
-   * Returns the return value of body.
+   * In a typical app where the inner zone is the Angular zone, this allows one to make use of the
+   * Angular's auto digest mechanism.
+   *
+   *    VmTurnZone zone = <ref to app.zone>;
+   *
+   *    void functionCalledFromJS() {
+   *      zone.run(() {
+   *        // auto-digest will run after this function is called from JS
+   *      })
+   *    }
    */
-  dynamic run(body()) => _zone.run(body);
+  dynamic run(body()) => _innerZone.run(body);
 
   /**
-   * Allows one to escape the auto-digest mechanism of Angular.
+   * Runs [body] in the outer zone and returns whatever it returns.
    *
-   *     myFunction(NgZone zone, Element element) {
+   * In a typical app where the inner zone is the Angular zone, this allows one to escape Angular's
+   * auto-digest mechanism.
+   *
+   *     void myFunction(VmTurnZone zone, Element element) {
    *       element.onClick.listen(() {
    *         // auto-digest will run after element click.
    *       });
@@ -163,11 +288,45 @@ class NgZone {
    */
   dynamic runOutsideAngular(body()) => _outerZone.run(body);
 
+  /**
+   * Throws an [AssertionError] if no task is currently running in the inner
+   * zone.  In a typical app where the inner zone is the Angular zone, this can
+   * be used to assert that the digest will indeed run at the end of the current
+   * turn.
+   */
   void assertInTurn() {
     assert(_runningInTurn > 0 || _inFinishTurn);
   }
 
+  /**
+   * Same as [assertInTurn].
+   */
   void assertInZone() {
     assertInTurn();
+  }
+}
+
+
+// Automatically adjusts the pending async task count when the timer is
+// scheduled, canceled or fired.
+class _WrappedTimer implements async.Timer {
+  async.Timer _realTimer;
+  VmTurnZone _vmTurnZone;
+
+  _WrappedTimer(this._vmTurnZone, async.ZoneDelegate delegate, async.Zone zone, Duration duration, Function fn()) {
+    _vmTurnZone.countPendingAsync(1);
+    _realTimer = delegate.createTimer(zone, duration, () {
+      fn();
+      _vmTurnZone.countPendingAsync(-1);
+    });
+  }
+
+  bool get isActive => _realTimer.isActive;
+
+  void cancel() {
+    if (_realTimer.isActive) {
+      _vmTurnZone.countPendingAsync(-1);
+    }
+    _realTimer.cancel();
   }
 }

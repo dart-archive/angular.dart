@@ -9,6 +9,7 @@ part of angular.watch_group;
 abstract class AST {
   static final String _CONTEXT = '#';
   final String expression;
+  var parsedExp; // The parsed version of expression.
   AST(expression)
       : expression = expression.startsWith('#.')
           ? expression.substring(2)
@@ -84,7 +85,26 @@ class PureFunctionAST extends AST {
         super('$name(${_argList(argsAST)})');
 
   WatchRecord<_Handler> setupWatch(WatchGroup watchGroup) =>
-      watchGroup.addFunctionWatch(fn, argsAST, const {}, expression);
+      watchGroup.addFunctionWatch(fn, argsAST, const {}, expression, true);
+}
+
+/**
+ * SYNTAX: fn(arg0, arg1, ...)
+ *
+ * Invoke a (non-pure) function.
+ */
+class ClosureAST extends AST {
+  final String name;
+  final /* dartbug.com/16401 Function */ fn;
+  final List<AST> argsAST;
+
+  ClosureAST(name, this.fn, argsAST)
+      : argsAST = argsAST,
+        name = name,
+        super('$name(${_argList(argsAST)})');
+
+  WatchRecord<_Handler> setupWatch(WatchGroup watchGroup) =>
+      watchGroup.addFunctionWatch(fn, argsAST, const {}, expression, false);
 }
 
 /**
@@ -124,8 +144,8 @@ String _argList(List<AST> items) => items.join(', ');
 /**
  * The name is a bit oxymoron, but it is essentially the NullObject pattern.
  *
- * This allows children to set a handler on this Record and then let it write the initial
- * constant value to the forwarding Record.
+ * This allows children to set a handler on this Record and then let it write
+ * the initial constant value to the forwarding Record.
  */
 class _ConstantWatchRecord extends WatchRecord<_Handler> {
   final currentValue;

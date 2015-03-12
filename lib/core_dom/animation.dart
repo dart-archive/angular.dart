@@ -1,14 +1,20 @@
 part of angular.core.dom_internal;
 
 /**
- * The [NgAnimate] service provides dom lifecycle management, detection and
+ * The [Animate] service provides dom lifecycle management, detection and
  * analysis of css animations, and hooks for custom animations. When any of
  * these animations are run, [Animation]s are returned so the animation can be
  * controlled and so that custom dom manipulations can occur when animations
  * complete.
  */
-@NgInjectableService()
-class NgAnimate {
+@Injectable()
+class Animate {
+  /**
+   * When set to false, all animations are disabled.  When true, animations are
+   * allowed.
+   */
+  bool animationsAllowed = true;
+
   /**
    * Add the [cssClass] to the classes on [element] after running any
    * defined animations.

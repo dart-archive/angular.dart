@@ -16,13 +16,14 @@ void main() {
     TestBed _;
     beforeEach((TestBed tb) => _ = tb);
 
-    var hb, callback, realBackendSpy;
+    MockHttpBackend hb;
+    var callback, realBackendSpy;
 
     var noop = (_, __) {};
     var undefined = null;
 
     beforeEach((HttpBackend httpBackend) {
-      callback = jasmine.createSpy('callback');
+      callback = guinness.createSpy('callback');
       hb = httpBackend;
     });
 
@@ -31,12 +32,27 @@ void main() {
       hb.when('GET', '/url1').respond(200, 'content', {});
       hb.when('GET', '/url1').respond(201, 'another', {});
 
-      callback.andCallFake((status, response) {
+      callback.andCallFake((status, response, _) {
         expect(status).toBe(200);
         expect(response).toBe('content');
       });
 
-      hb('GET', '/url1', null, callback);
+      hb('GET', '/url1', callback);
+      expect(callback).not.toHaveBeenCalled();
+      hb.flush();
+      expect(callback).toHaveBeenCalledOnce();
+    });
+
+    it('should match when with credentials is set', () {
+      hb.when('GET', '/url1').respond(200, 'content', {});
+      hb.when('GET', '/url1', null, null, true).respond(201, 'another', {});
+
+      callback.andCallFake((status, response, _) {
+        expect(status).toBe(201);
+        expect(response).toBe('another');
+      });
+
+      hb('GET', '/url1', callback, withCredentials: true);
       expect(callback).not.toHaveBeenCalled();
       hb.flush();
       expect(callback).toHaveBeenCalledOnce();
@@ -48,13 +64,13 @@ void main() {
       hb.when('GET', '/url2').respond(200, {'key': 'value'}, {});
 
 
-      callback.andCallFake((status, response) {
+      callback.andCallFake((status, response, _) {
         expect(status).toBe(200);
         logger(response);
       });
 
-      hb('GET', '/url1', null, callback);
-      hb('GET', '/url2', null, callback);
+      hb('GET', '/url1', callback);
+      hb('GET', '/url2', callback);
       hb.flush();
       expect(logger).toEqual(['["abc"]', '{"key":"value"}']);
     });
@@ -63,8 +79,9 @@ void main() {
     it('should throw error when unexpected request', () {
       hb.when('GET', '/url1').respond(200, 'content');
       expect(() {
-        hb('GET', '/xxx');
-      }).toThrow('Unexpected request: GET /xxx\nNo more requests expected');
+        hb('GET', '/xxx', noop);
+        hb.flush();
+      }).toThrowWith(message: 'Unexpected request: GET /xxx\nNo more requests expected');
     });
 
 
@@ -77,7 +94,7 @@ void main() {
         });
         hb.flush();
         microLeap();
-      }).toThrow('exceptiona');
+      }).toThrowWith(message: 'exceptiona');
     }));
 
 
@@ -87,20 +104,20 @@ void main() {
         hb.when('GET', '/url', null, {'X': 'val2'}).respond(202, 'content2');
         hb.when('GET', '/url').respond(203, 'content3');
 
-        hb('GET', '/url', null, (status, response) {
+        hb('GET', '/url', (status, response, _) {
           expect(status).toBe(203);
           expect(response).toBe('content3');
         });
 
-        hb('GET', '/url', null, (status, response) {
+        hb('GET', '/url', (status, response, _) {
           expect(status).toBe(201);
           expect(response).toBe('content1');
-        }, {'X': 'val1'});
+        }, headers: {'X': 'val1'});
 
-        hb('GET', '/url', null, (status, response) {
+        hb('GET', '/url', (status, response, _) {
           expect(status).toBe(202);
           expect(response).toBe('content2');
-        }, {'X': 'val2'});
+        }, headers: {'X': 'val2'});
 
         hb.flush();
       } catch (e,s) { print("$e $s"); }
@@ -111,15 +128,15 @@ void main() {
       hb.when('GET', '/a/b', '{a: true}').respond(201, 'content1');
       hb.when('GET', '/a/b').respond(202, 'content2');
 
-      hb('GET', '/a/b', '{a: true}', (status, response) {
+      hb('GET', '/a/b', (status, response) {
         expect(status).toBe(201);
         expect(response).toBe('content1');
-      });
+      }, data: '{a: true}');
 
-      hb('GET', '/a/b', '{}', (status, response) {
+      hb('GET', '/a/b', (status, response) {
         expect(status).toBe(202);
         expect(response).toBe('content2');
-      });
+      }, data: '{}');
 
       hb.flush();
     });
@@ -127,14 +144,14 @@ void main() {
 
     it('should match only method', () {
       hb.when('GET').respond(202, 'c');
-      callback.andCallFake((status, response) {
+      callback.andCallFake((status, response, _) {
         expect(status).toBe(202);
         expect(response).toBe('c');
       });
 
-      hb('GET', '/some', null, callback, {});
-      hb('GET', '/another', null, callback, {'X-Fake': 'Header'});
-      hb('GET', '/third', 'some-data', callback, {});
+      hb('GET', '/some', callback, headers: {});
+      hb('GET', '/another', callback, headers: {'X-Fake': 'Header'});
+      hb('GET', '/third', callback, data: 'some-data', headers: {});
       hb.flush();
 
       expect(callback).toHaveBeenCalled();
@@ -145,21 +162,21 @@ void main() {
       hb.when('GET', '/url1').respond(200, 'first');
       hb.when('GET', '/url2').respond(201, 'second');
 
-      hb('GET', '/url2', null, callback);
-      hb('GET', '/url1', null, callback);
+      hb('GET', '/url2', callback);
+      hb('GET', '/url1', callback);
 
       hb.flush();
 
       expect(callback.callCount).toBe(2);
-      expect(callback.argsForCall[0]).toEqual([201, 'second', '']);
-      expect(callback.argsForCall[1]).toEqual([200, 'first', '']);
+      expect(callback.calls[0].positionalArguments).toEqual([201, 'second', '']);
+      expect(callback.calls[1].positionalArguments).toEqual([200, 'first', '']);
     });
 
 
     describe('respond()', () {
       it('should take values', () {
         hb.expect('GET', '/url1').respond(200, 'first', {'header': 'val'});
-        hb('GET', '/url1', null, callback);
+        hb('GET', '/url1', callback);
         hb.flush();
 
         expect(callback).toHaveBeenCalledOnceWith(200, 'first', "header: val");
@@ -170,22 +187,22 @@ void main() {
           return [301, m + u + ';' + d + ';a=' + h['a'], {'Connection': 'keep-alive'}];
         });
 
-        hb('GET', '/some', 'data', callback, {'a': 'b'});
+        hb('GET', '/some', callback, data: 'data', headers: {'a': 'b'});
         hb.flush();
 
         expect(callback).toHaveBeenCalledOnceWith(301, 'GET/some;data;a=b', 'Connection: keep-alive');
       });
 
       it('should default status code to 200', () {
-        callback.andCallFake((status, response) {
+        callback.andCallFake((status, response, _) {
           expect(status).toBe(200);
           expect(response).toBe('some-data');
         });
 
         hb.expect('GET', '/url1').respond('some-data');
         hb.expect('GET', '/url2').respond('some-data', {'X-Header': 'true'});
-        hb('GET', '/url1', null, callback);
-        hb('GET', '/url2', null, callback);
+        hb('GET', '/url1', callback);
+        hb('GET', '/url2', callback);
         hb.flush();
         expect(callback).toHaveBeenCalled();
         expect(callback.callCount).toBe(2);
@@ -196,31 +213,29 @@ void main() {
         hb.expect('GET', '/url1').respond(200, 'first');
         hb.expect('GET', '/url2').respond('second');
 
-        hb('GET', '/url1', null, callback);
-        hb('GET', '/url2', null, callback);
+        hb('GET', '/url1', callback);
+        hb('GET', '/url2', callback);
 
         hb.flush();
 
         expect(callback.callCount).toBe(2);
-        expect(callback.argsForCall[0]).toEqual([200, 'first', '']);
-        expect(callback.argsForCall[1]).toEqual([200, 'second', '']);
+        expect(callback.calls[0].positionalArguments).toEqual([200, 'first', '']);
+        expect(callback.calls[1].positionalArguments).toEqual([200, 'second', '']);
       });
     });
 
 
     describe('expect()', () {
       it('should require specified order', () {
-        hb.expect('GET', '/url1').respond(200, '');
-        hb.expect('GET', '/url2').respond(200, '');
-
         expect(() {
-          hb('GET', '/url2', null, noop, {});
-        }).toThrow('Unexpected request: GET /url2\nExpected GET /url1');
+          hb('GET', '/url2', noop, headers: {});
+          hb.flushExpected('GET', '/url1').respond(200, '');
+        }).toThrowWith(message: 'Unexpected request: GET /url2\nExpected GET /url1');
       });
 
 
       it('should have precedence over when()', () {
-        callback.andCallFake((status, response) {
+        callback.andCallFake((status, response, _) {
           expect(status).toBe(299);
           expect(response).toBe('expect');
         });
@@ -228,7 +243,7 @@ void main() {
         hb.when('GET', '/url').respond(200, 'when');
         hb.expect('GET', '/url').respond(299, 'expect');
 
-        hb('GET', '/url', null, callback, null);
+        hb('GET', '/url', callback);
         hb.flush();
         expect(callback).toHaveBeenCalledOnce();
       });
@@ -239,8 +254,9 @@ void main() {
         hb.expect('GET', '/match', null, {'Content-Type': 'application/json'}).respond(200, '', {});
 
         expect(() {
-          hb('GET', '/match', null, noop, {});
-        }).toThrow('Expected GET /match with different headers\n' +
+          hb('GET', '/match', noop, headers: {});
+          hb.flush();
+        }).toThrowWith(message: 'Expected GET /match with different headers\n' +
         'EXPECTED: {"Content-Type":"application/json"}\nGOT:      {}');
       });
 
@@ -250,21 +266,22 @@ void main() {
         hb.expect('GET', '/match', 'some-data').respond(200, '', {});
 
         expect(() {
-          hb('GET', '/match', 'different', noop, null);
-        }).toThrow('Expected GET /match with different data\n' +
+          hb('GET', '/match', noop, data: 'different');
+          hb.flush();
+        }).toThrowWith(message: 'Expected GET /match with different data\n' +
         'EXPECTED: some-data\nGOT:      different');
       });
 
 
       it("should use when's respond() when no expect() respond is defined", () {
-        callback.andCallFake((status, response) {
+        callback.andCallFake((status, response, _) {
           expect(status).toBe(201);
           expect(response).toBe('data');
         });
 
         hb.when('GET', '/some').respond(201, 'data');
         hb.expect('GET', '/some');
-        hb('GET', '/some', null, callback);
+        hb('GET', '/some', callback);
         hb.flush();
 
         expect(callback).toHaveBeenCalled();
@@ -277,8 +294,8 @@ void main() {
       it('flush() should flush requests fired during callbacks', () {
         hb.when('GET', '/some').respond(200, '');
         hb.when('GET', '/other').respond(200, '');
-        hb('GET', '/some', null, (_, __) {
-          hb('GET', '/other', null, callback);
+        hb('GET', '/some', (_, __) {
+          hb('GET', '/other', callback);
         });
 
         hb.flush();
@@ -288,9 +305,9 @@ void main() {
 
       it('should flush given number of pending requests', () {
         hb.when('GET').respond(200, '');
-        hb('GET', '/some', null, callback);
-        hb('GET', '/some', null, callback);
-        hb('GET', '/some', null, callback);
+        hb('GET', '/some', callback);
+        hb('GET', '/some', callback);
+        hb('GET', '/some', callback);
 
         hb.flush(2);
         expect(callback).toHaveBeenCalled();
@@ -300,21 +317,21 @@ void main() {
 
       it('should throw exception when flushing more requests than pending', () {
         hb.when('GET').respond(200, '');
-        hb('GET', '/url', null, callback);
+        hb('GET', '/url', callback);
 
-        expect(() {hb.flush(2);}).toThrow('No more pending request to flush !');
+        expect(() {hb.flush(2); }).toThrowWith(message: 'No more pending request to flush !');
         expect(callback).toHaveBeenCalledOnce();
       });
 
 
       it('should throw exception when no request to flush', () {
-        expect(() {hb.flush();}).toThrow('No pending request to flush !');
+        expect(() {hb.flush();}).toThrowWith(message: 'No pending request to flush !');
 
         hb.when('GET').respond(200, '');
-        hb('GET', '/some', null, callback);
+        hb('GET', '/some', callback);
         hb.flush();
 
-        expect(() {hb.flush();}).toThrow('No pending request to flush !');
+        expect(() {hb.flush();}).toThrowWith(message: 'No pending request to flush !');
       });
 
 
@@ -322,8 +339,8 @@ void main() {
         hb.expect('GET', '/url1').respond();
         hb.expect('GET', '/url2').respond();
 
-        hb('GET', '/url1', null, noop);
-        expect(() {hb.flush();}).toThrow('Unsatisfied requests: GET /url2');
+        hb('GET', '/url1', noop);
+        expect(() {hb.flush();}).toThrowWith(message: 'Unsatisfied requests: GET /url2');
       });
     });
 
@@ -331,11 +348,12 @@ void main() {
     it('should abort requests when timeout promise resolves', () {
       hb.expect('GET', '/url1').respond(200);
 
-      var canceler, then = jasmine.createSpy('then').andCallFake((fn) {
+      var canceler, then = guinness.createSpy('then').andCallFake((fn) {
         canceler = fn;
       });
 
-      hb('GET', '/url1', null, callback, null, new _Chain(then: then));
+      hb('GET', '/url1', callback, timeout: new _Chain(then: then));
+      hb.flush();
       expect(canceler is Function).toBe(true);
 
       canceler();  // simulate promise resolution
@@ -349,25 +367,26 @@ void main() {
     it('should throw an exception if no response defined', () {
       hb.when('GET', '/test');
       expect(() {
-        hb('GET', '/test', null, callback);
-      }).toThrow('No response defined !');
+        hb('GET', '/test', callback);
+        hb.flush();
+      }).toThrowWith(message: 'No response defined !');
     });
 
 
     it('should throw an exception if no response for exception and no definition', () {
       hb.expect('GET', '/url');
       expect(() {
-        hb('GET', '/url', null, callback);
-      }).toThrow('No response defined !');
+        hb('GET', '/url', callback);
+        hb.flush();
+      }).toThrowWith(message: 'No response defined !');
     });
-
 
     it('should respond undefined when JSONP method', () {
       hb.when('JSONP', '/url1').respond(200);
       hb.expect('JSONP', '/url2').respond(200);
 
-      expect(hb('JSONP', '/url1')).toBeNull();
-      expect(hb('JSONP', '/url2')).toBeNull();
+      expect(hb('JSONP', '/url1', noop)).toBeNull();
+      expect(hb('JSONP', '/url2', noop)).toBeNull();
     });
 
 
@@ -378,10 +397,12 @@ void main() {
         hb.expect('GET', '/u2').respond(200, '', {});
         hb.expect('POST', '/u3').respond(201, '', {});
 
-        hb('POST', '/u1', 'ddd', noop, {});
+        hb('POST', '/u1', noop, data: 'ddd', headers: {});
+        expect(() {hb.flush(1); }).toThrow();
 
-        expect(() {hb.verifyNoOutstandingExpectation();}).
-        toThrow('Unsatisfied requests: GET /u2, POST /u3');
+        expect(() {
+          hb.verifyNoOutstandingExpectation();
+        }).toThrowWith(message: 'Unsatisfied requests: GET /u2, POST /u3');
       });
 
 
@@ -397,8 +418,9 @@ void main() {
         hb.expect('POST', '/u3').respond(201, '', {});
         hb.when('DELETE', '/some').respond(200, '');
 
-        hb('GET', '/u2');
-        hb('POST', '/u3');
+        hb('GET', '/u2', noop);
+        hb('POST', '/u3', noop);
+        hb.flush();
 
         expect(() {hb.verifyNoOutstandingExpectation();}).not.toThrow();
       });
@@ -408,11 +430,11 @@ void main() {
 
       it('should throw exception if not all requests were flushed', () {
         hb.when('GET').respond(200);
-        hb('GET', '/some', null, noop, {});
+        hb('GET', '/some', noop, headers: {});
 
         expect(() {
           hb.verifyNoOutstandingRequest();
-        }).toThrow('Unflushed requests: 1');
+        }).toThrowWith(message: 'Unflushed requests: 1');
       });
     });
 
@@ -429,14 +451,14 @@ void main() {
 
 
       it('should remove all pending responses', () {
-        var cancelledClb = jasmine.createSpy('cancelled');
+        var cancelledClb = guinness.createSpy('cancelled');
 
         hb.expect('GET', '/url').respond(200, '');
-        hb('GET', '/url', null, cancelledClb);
+        hb('GET', '/url', cancelledClb);
         hb.resetExpectations();
 
         hb.expect('GET', '/url').respond(300, '');
-        hb('GET', '/url', null, callback, {});
+        hb('GET', '/url', callback, headers: {});
         hb.flush();
 
         expect(callback).toHaveBeenCalledOnce();
@@ -445,13 +467,13 @@ void main() {
 
 
       it('should not remove definitions', () {
-        var cancelledClb = jasmine.createSpy('cancelled');
+        var cancelledClb = guinness.createSpy('cancelled');
 
         hb.when('GET', '/url').respond(200, 'success');
-        hb('GET', '/url', null, cancelledClb);
+        hb('GET', '/url', cancelledClb);
         hb.resetExpectations();
 
-        hb('GET', '/url', null, callback, {});
+        hb('GET', '/url', callback, headers: {});
         hb.flush();
 
         expect(callback).toHaveBeenCalledOnce();
@@ -477,7 +499,7 @@ void main() {
         var shortcut = step[0], method = step[1];
         it('should provide $shortcut  shortcut method', () {
           shortcut('/foo').respond('bar');
-          hb(method, '/foo', undefined, callback);
+          hb(method, '/foo', callback);
           hb.flush();
           expect(callback).toHaveBeenCalledOnceWith(200, 'bar', '');
         });
@@ -485,24 +507,57 @@ void main() {
     });
 
 
+    describe("flushExpected()", () {
+      it("flushes all the requests until a matching one is found", () {
+        hb.when("GET", '/first').respond("OK");
+
+        hb("GET", '/first', callback);
+        hb("GET", '/second', callback);
+        hb("GET", '/third', callback);
+
+        hb.flushExpected("GET", "/second").respond("OK");
+
+        expect(hb.requests.length).toEqual(1);
+        expect(hb.requests.first.url).toEqual("/third");
+      });
+    });
+
+
+    describe('flush shortcuts', () {
+      [[(x, r) => hb.flushGET(x).respond(r), 'GET'],
+      [(x, r) => hb.flushPOST(x).respond(r), 'POST'],
+      [(x, r) => hb.flushPUT(x).respond(r), 'PUT'],
+      [(x, r) => hb.flushPATCH(x).respond(r), 'PATCH'],
+      [(x, r) => hb.flushDELETE(x).respond(r), 'DELETE'],
+      [(x, r) => hb.flushJSONP(x).respond(r), 'JSONP']
+      ].forEach((step) {
+        var shortcut = step[0], method = step[1];
+        it('should provide $shortcut  shortcut method', () {
+          hb(method, '/foo', callback);
+          shortcut('/foo', 'bar');
+          expect(callback).toHaveBeenCalledOnceWith(200, 'bar', '');
+        });
+      });
+    });
+
     describe('MockHttpExpectation', () {
 
       it('should accept url as regexp', () {
         var exp = new MockHttpExpectation('GET', new RegExp('^\/x'));
 
-        expect(exp.match('GET', '/x')).toBe(true);
-        expect(exp.match('GET', '/xxx/x')).toBe(true);
-        expect(exp.match('GET', 'x')).toBe(false);
-        expect(exp.match('GET', 'a/x')).toBe(false);
+        expect(exp.match(new RecordedRequest(method: 'GET', url: '/x'))).toBe(true);
+        expect(exp.match(new RecordedRequest(method: 'GET', url: '/xxx/x'))).toBe(true);
+        expect(exp.match(new RecordedRequest(method: 'GET', url: 'x'))).toBe(false);
+        expect(exp.match(new RecordedRequest(method: 'GET', url: 'a/x'))).toBe(false);
       });
 
 
       it('should accept data as regexp', () {
         var exp = new MockHttpExpectation('POST', '/url', new RegExp('\{.*?\}'));
 
-        expect(exp.match('POST', '/url', '{"a": "aa"}')).toBe(true);
-        expect(exp.match('POST', '/url', '{"one": "two"}')).toBe(true);
-        expect(exp.match('POST', '/url', '{"one"')).toBe(false);
+        expect(exp.match(new RecordedRequest(method: 'POST', url: '/url', data: '{"a": "aa"}'))).toBe(true);
+        expect(exp.match(new RecordedRequest(method: 'POST', url: '/url', data: '{"one": "two"}'))).toBe(true);
+        expect(exp.match(new RecordedRequest(method: 'POST', url: '/url', data: '{"one"'))).toBe(false);
       });
 
 
@@ -511,8 +566,9 @@ void main() {
           return h['Content-Type'] == 'application/json';
         });
 
-        expect(exp.matchHeaders({})).toBe(false);
-        expect(exp.matchHeaders({'Content-Type': 'application/json', 'X-Another': 'true'})).toBe(true);
+        expect(exp.matchHeaders(new RecordedRequest(headers: {}))).toBe(false);
+        expect(exp.matchHeaders(new RecordedRequest(
+            headers: {'Content-Type': 'application/json', 'X-Another': 'true'}))).toBe(true);
       });
     });
   });

@@ -10,10 +10,10 @@ import 'package:angular/tools/io_impl.dart';
 import 'package:angular/tools/common.dart';
 
 import 'package:di/di.dart';
-import 'package:di/dynamic_injector.dart';
 
-import 'package:angular/core/module_internal.dart';
 import 'package:angular/core/parser/parser.dart';
+import 'package:angular/core/parser/lexer.dart';
+import 'package:angular/cache/module.dart';
 import 'package:angular/tools/parser_getter_setter/generator.dart';
 
 main(args) {
@@ -53,10 +53,13 @@ main(args) {
 
   printer.write('// Found ${expressions.length} expressions\n');
   Module module = new Module()
-      ..type(Parser, implementedBy: DynamicParser)
-      ..type(ParserBackend, implementedBy: DartGetterSetterGen);
-  Injector injector =
-      new DynamicInjector(modules: [module], allowImplicitInjection: true);
+      ..bind(ParserGetterSetter)
+      ..bind(Lexer)
+      ..bind(DartGetterSetterGen)
+      ..bind(CacheRegister)
+      ..bind(Parser)
+      ..bind(ParserBackend, inject: [DartGetterSetterGen]);
+  Injector injector = new ModuleInjector([module]);
 
   runZoned(() {
     // Run the generator.

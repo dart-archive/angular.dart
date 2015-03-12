@@ -8,9 +8,10 @@ var VALUE = 'val';
 var CACHED_VALUE = 'cached_value';
 
 class FakeCache extends UnboundedCache<String, HttpResponse> {
-  get(x) => x == 'f' ? new HttpResponse(200, CACHED_VALUE) : null;
-  put(_,__) => null;
-
+  HttpResponse get(x) => x == 'f' ? new HttpResponse(200, CACHED_VALUE) : null;
+  HttpResponse put(_,__) => null;
+  void clear() {}
+  int get length => 0;
 }
 
 class SubstringRewriter extends UrlRewriter {
@@ -46,9 +47,9 @@ void main() {
       locationWrapper = new MockLocationWrapper();
       cache = new FakeCache();
       module
-        ..value(HttpBackend, backend)
-        ..value(LocationWrapper, locationWrapper)
-        ..type(ExceptionHandler, implementedBy: LoggingExceptionHandler);
+        ..bind(HttpBackend, toValue: backend)
+        ..bind(LocationWrapper, toValue: locationWrapper)
+        ..bind(ExceptionHandler, toImplementation: LoggingExceptionHandler);
     });
 
     afterEach((ExceptionHandler eh, Scope scope) {
@@ -64,21 +65,34 @@ void main() {
 
       beforeEach((Http h) {
         http = h;
-        callback = jasmine.createSpy('callback');
+        callback = guinness.createSpy('callback');
       });
 
+      describe('PendingAsync', () {
+        it('should register requests with PendingAsync', async((
+            Http http, PendingAsync pendingAsync) {
+          var log = [];
+          http(url: '/url', method: 'GET');
+          pendingAsync.whenStable(() {
+            log.add('whenStable');
+          });
+          log.add(1);
+          backend.flushGET('/url').respond('');
+          microLeap();
+          log.add(2);
+          expect(log).toEqual([1, 'whenStable', 2]);
+        }));
+      });
 
       it('should do basic request', async(() {
-        backend.expect('GET', '/url').respond('');
         http(url: '/url', method: 'GET');
-        flush();
+        backend.flushGET('/url').respond('');
       }));
 
 
       it('should pass data if specified', async(() {
-        backend.expect('POST', '/url', 'some-data').respond('');
         http(url: '/url', method: 'POST', data: 'some-data');
-        flush();
+        backend.flushPOST('/url', 'some-data').respond('');
       }));
 
 
@@ -88,15 +102,25 @@ void main() {
         // we don't care about the data field.
         backend.expect('POST', '/url', 'null').respond('');
 
-        http(url: '/url', method: 'POST');
+
         expect(() {
-          flush();
-        }).toThrow('with different data');
+          http(url: '/url', method: 'POST');
+          backend.flush();
+        }).toThrowWith(message: 'with different data');
 
         // satisfy the expectation for our afterEach's assert.
         http(url: '/url', method: 'POST', data: 'null');
-        flush();
+        backend.flush();
       }));
+
+      describe('backend', () {
+        it('should pass on withCredentials to backend and use GET as default method',
+            async(() {
+          backend.expect('GET', '/url', null, null, true).respond('');
+          http(url: '/url', method: 'GET', withCredentials: true);
+          flush();
+        }));
+      });
 
 
       describe('params', () {
@@ -629,7 +653,7 @@ void main() {
           microLeap();
 
           expect(callback).toHaveBeenCalledOnce();
-          expect(callback.mostRecentCall.args[0].data).toEqual('content');
+          expect(callback.mostRecentCall.positionalArguments[0].data).toEqual('content');
         }));
 
 
@@ -660,7 +684,7 @@ void main() {
           flush();
 
           expect(callback).toHaveBeenCalledOnce();
-          expect(callback.mostRecentCall.args[0].data).toEqual('content2');
+          expect(callback.mostRecentCall.positionalArguments[0].data).toEqual('content2');
         }));
 
 
@@ -672,7 +696,7 @@ void main() {
           flush();
 
           expect(callback).toHaveBeenCalledOnce();
-          expect(callback.mostRecentCall.args[0].data).toEqual('content2');
+          expect(callback.mostRecentCall.positionalArguments[0].data).toEqual('content2');
         }));
 
 
@@ -695,7 +719,7 @@ void main() {
           flush();
 
           expect(callback).toHaveBeenCalledOnce();
-          expect(callback.mostRecentCall.args[0].data).toEqual('content2');
+          expect(callback.mostRecentCall.positionalArguments[0].data).toEqual('content2');
         }));
 
 
@@ -777,7 +801,7 @@ void main() {
             microLeap();
 
             expect(callback).toHaveBeenCalledOnce();
-            expect(callback.mostRecentCall.args[0].data).toEqual('content');
+            expect(callback.mostRecentCall.positionalArguments[0].data).toEqual('content');
 
             // Invalidate cache entry.
             http.defaults.cache.remove("/url");
@@ -807,7 +831,7 @@ void main() {
             microLeap();
 
             expect(callback).toHaveBeenCalledOnce();
-            expect(callback.mostRecentCall.args[0].data).toEqual('content-default-cache');
+            expect(callback.mostRecentCall.positionalArguments[0].data).toEqual('content-default-cache');
             callback.reset();
 
             // Serve request from local cache when it is given (but default filled too).
@@ -815,7 +839,7 @@ void main() {
             microLeap();
 
             expect(callback).toHaveBeenCalledOnce();
-            expect(callback.mostRecentCall.args[0].data).toEqual('content-local-cache');
+            expect(callback.mostRecentCall.positionalArguments[0].data).toEqual('content-local-cache');
           }));
 
           it('should be skipped if {cache: false} is passed in request config', async(() {
@@ -829,6 +853,22 @@ void main() {
             http(method: 'GET', url: '/url', cache: false);
             flush();
           }));
+
+          it('should use default cache if {cache: true} is passed in request config', async(() {
+            http.defaults.cache = cache;
+
+            // Fill default cache.
+            backend.expect('GET', '/url').respond(200, 'content-cache');
+            http(method: 'GET', url: '/url', cache: true);
+            flush();
+
+            // Serve request from default cache when {cache: true} is set.
+            http(method: 'GET', url: '/url', cache: true).then(callback);
+            microLeap();
+
+            expect(callback).toHaveBeenCalledOnce();
+            expect(callback.mostRecentCall.positionalArguments[0].data).toEqual('content-cache');
+          }));
         });
       });
 
@@ -837,8 +877,8 @@ void main() {
       // Dart futures fully.
       xdescribe('timeout', () {
 
-        it('should abort requests when timeout promise resolves', ($q) {
-          var canceler = $q.defer();
+        it('should abort requests when timeout promise resolves', (q) {
+          var canceler = q.defer();
 
           backend.expect('GET', '/some').respond(200);
 
@@ -851,7 +891,7 @@ void main() {
                 callback();
               });
 
-          //$rootScope.apply(() {
+          //rootScope.apply(() {
           canceler.resolve();
           //});
 
@@ -893,7 +933,7 @@ void main() {
           expect(http.pendingRequests.length).toEqual(0);
 
           http(method: 'get', url: '/cached', cache: true);
-          jasmine.spyOn(http.pendingRequests, 'add').andCallThrough();
+          guinness.spyOn(http.pendingRequests, 'add').andCallThrough();
           //expect(http.pendingRequests.add).toHaveBeenCalledOnce();
 
           expect(http.pendingRequests.length).toEqual(0);
@@ -927,21 +967,76 @@ void main() {
           flush();
         }));
       });
+
+      describe('request interceptors', () {
+        bool interceptorCalled;
+
+        beforeEach(() {
+          interceptorCalled = false;
+        });
+
+        describe('synchronous', () {
+          beforeEachModule((Module module) {
+            module.bind(HttpInterceptors, toValue: new HttpInterceptors()
+              // The first interceptor is sync, causing the second interceptor to be called synchronously
+              ..add(new HttpInterceptor(request: (cfg) => cfg))
+              ..add(new HttpInterceptor(request: (cfg) {
+                interceptorCalled = true;
+                return cfg;
+              })));
+          });
+
+          it('should call backend synchronously if request interceptor chain is '
+             'synchronous', async(() {
+            backend.expect('POST', '/url', '').respond('');
+            http(url: '/url', method: 'POST', data: '');
+
+            expect(interceptorCalled).toBe(true);
+            expect(backend.requests.isEmpty).toBe(false);  // request made immediately
+            flush();
+          }));
+        });
+
+        describe('asynchronous', () {
+          beforeEachModule((Module module) {
+            module.bind(HttpInterceptors, toValue: new HttpInterceptors()
+              // The first interceptor is async, causing the second interceptor to be
+              // called in a microtask
+              ..add(new HttpInterceptor(request: (cfg) => new Future.value(cfg)))
+              ..add(new HttpInterceptor(request: (cfg) {
+                interceptorCalled = true;
+                return cfg;
+              })));
+          });
+
+          it('should call backend asynchronously if request interceptor chain is '
+             'asynchronous', async(() {
+            backend.expect('POST', '/url', '').respond('');
+            http(url: '/url', method: 'POST', data: '');
+            expect(interceptorCalled).toBe(false);
+            expect(backend.expectations.isEmpty).toBe(false);
+            backend.verifyNoOutstandingRequest();
+
+            flush();
+            expect(interceptorCalled).toBe(true);
+          }));
+        });
+      });
     });
 
     describe('url rewriting', () {
       beforeEachModule((Module module) {
-        module.type(UrlRewriter, implementedBy: SubstringRewriter);
+        module.bind(UrlRewriter, toImplementation: SubstringRewriter);
       });
 
 
-      it('should rewrite URLs before calling the backend', async((Http http, NgZone zone) {
+      it('should rewrite URLs before calling the backend', async((Http http, VmTurnZone zone) {
         backend.when('GET', 'a').respond(200, VALUE);
 
         var called = 0;
         zone.run(() {
-          http.getString('a[not sent to backed]').then((v) {
-            expect(v).toEqual(VALUE);
+          http.get('a[not sent to backed]').then((v) {
+            expect(v.responseText).toEqual(VALUE);
             called += 1;
           });
         });
@@ -954,17 +1049,17 @@ void main() {
       }));
 
 
-      it('should support pending requests for different raw URLs', async((Http http, NgZone zone) {
+      it('should support pending requests for different raw URLs', async((Http http, VmTurnZone zone) {
         backend.when('GET', 'a').respond(200, VALUE);
 
         var called = 0;
         zone.run(() {
-          http.getString('a[some string]', cache: cache).then((v) {
-            expect(v).toEqual(VALUE);
+          http.get('a[some string]', cache: cache).then((v) {
+            expect(v.responseText).toEqual(VALUE);
             called += 1;
           });
-          http.getString('a[different string]', cache: cache).then((v) {
-            expect(v).toEqual(VALUE);
+          http.get('a[different string]', cache: cache).then((v) {
+            expect(v.responseText).toEqual(VALUE);
             called += 10;
           });
         });
@@ -976,11 +1071,11 @@ void main() {
       }));
 
 
-      it('should support caching', async((Http http, NgZone zone) {
+      it('should support caching', async((Http http, VmTurnZone zone) {
         var called = 0;
         zone.run(() {
-          http.getString('fromCache', cache: cache).then((v) {
-            expect(v).toEqual(CACHED_VALUE);
+          http.get('fromCache', cache: cache).then((v) {
+            expect(v.responseText).toEqual(CACHED_VALUE);
             called += 1;
           });
         });
@@ -990,17 +1085,17 @@ void main() {
     });
 
     describe('caching', () {
-      it('should not cache if no cache is present', async((Http http, NgZone zone) {
+      it('should not cache if no cache is present', async((Http http, VmTurnZone zone) {
         backend.when('GET', 'a').respond(200, VALUE, null);
 
         var called = 0;
         zone.run(() {
-          http.getString('a').then((v) {
-            expect(v).toEqual(VALUE);
+          http.get('a').then((v) {
+            expect(v.responseText).toEqual(VALUE);
             called += 1;
           });
-          http.getString('a').then((v) {
-            expect(v).toEqual(VALUE);
+          http.get('a').then((v) {
+            expect(v.responseText).toEqual(VALUE);
             called += 10;
           });
         });
@@ -1013,17 +1108,17 @@ void main() {
       }));
 
 
-      it('should return a pending request', async((Http http, NgZone zone) {
+      it('should return a pending request', async((Http http, VmTurnZone zone) {
         backend.when('GET', 'a').respond(200, VALUE);
 
         var called = 0;
         zone.run(() {
-          http.getString('a', cache: cache).then((v) {
-            expect(v).toEqual(VALUE);
+          http.get('a', cache: cache).then((v) {
+            expect(v.responseText).toEqual(VALUE);
             called += 1;
           });
-          http.getString('a', cache: cache).then((v) {
-            expect(v).toEqual(VALUE);
+          http.get('a', cache: cache).then((v) {
+            expect(v.responseText).toEqual(VALUE);
             called += 10;
           });
         });
@@ -1035,13 +1130,13 @@ void main() {
       }));
 
 
-      it('should not return a pending request after the request is complete', async((Http http, NgZone zone) {
+      it('should not return a pending request after the request is complete', async((Http http, VmTurnZone zone) {
         backend.when('GET', 'a').respond(200, VALUE, null);
 
         var called = 0;
         zone.run(() {
-          http.getString('a', cache: cache).then((v) {
-            expect(v).toEqual(VALUE);
+          http.get('a', cache: cache).then((v) {
+            expect(v.responseText).toEqual(VALUE);
             called += 1;
           });
         });
@@ -1050,8 +1145,8 @@ void main() {
         flush();
 
         zone.run(() {
-          http.getString('a', cache: cache).then((v) {
-            expect(v).toEqual(VALUE);
+          http.get('a', cache: cache).then((v) {
+            expect(v.responseText).toEqual(VALUE);
             called += 10;
           });
         });
@@ -1063,12 +1158,12 @@ void main() {
       }));
 
 
-      it('should return a cached value if present', async((Http http, NgZone zone) {
+      it('should return a cached value if present', async((Http http, VmTurnZone zone) {
         var called = 0;
         // The URL string 'f' is primed in the FakeCache
         zone.run(() {
-          http.getString('f', cache: cache).then((v) {
-            expect(v).toEqual(CACHED_VALUE);
+          http.get('f', cache: cache).then((v) {
+            expect(v.responseText).toEqual(CACHED_VALUE);
             called += 1;
           });
           expect(called).toEqual(0);
@@ -1080,12 +1175,12 @@ void main() {
 
 
     describe('error handling', () {
-      it('should reject 404 status codes', async((Http http, NgZone zone) {
+      it('should reject 404 status codes', async((Http http, VmTurnZone zone) {
         backend.when('GET', '404.html').respond(404, VALUE);
 
         var response = null;
         zone.run(() {
-          http.getString('404.html').then(
+          http.get('404.html').then(
                   (v) => response = 'FAILED',
               onError:(v) { assert(v != null); return response = v; });
         });
@@ -1171,7 +1266,7 @@ void main() {
 
         beforeEach((Http h) {
           http = h;
-          callback = jasmine.createSpy('callback');
+          callback = guinness.createSpy('callback');
         });
 
         describe('request', () {
@@ -1250,7 +1345,7 @@ void main() {
               flush();
 
               expect(callback).toHaveBeenCalledOnce();
-              expect(callback.mostRecentCall.args[0].data).toEqual({'foo': 'bar', 'baz': 23});
+              expect(callback.mostRecentCall.positionalArguments[0].data).toEqual({'foo': 'bar', 'baz': 23});
             }));
 
 
@@ -1260,7 +1355,7 @@ void main() {
               flush();
 
               expect(callback).toHaveBeenCalledOnce();
-              expect(callback.mostRecentCall.args[0].data).toEqual([1, 'abc', {'foo': 'bar'}]);
+              expect(callback.mostRecentCall.positionalArguments[0].data).toEqual([1, 'abc', {'foo': 'bar'}]);
             }));
 
 
@@ -1270,7 +1365,7 @@ void main() {
               flush();
 
               expect(callback).toHaveBeenCalledOnce();
-              expect(callback.mostRecentCall.args[0].data).toEqual([1, 'abc', {'foo':'bar'}]);
+              expect(callback.mostRecentCall.positionalArguments[0].data).toEqual([1, 'abc', {'foo':'bar'}]);
             }));
 
 
@@ -1280,7 +1375,7 @@ void main() {
               flush();
 
               expect(callback).toHaveBeenCalledOnce();
-              expect(callback.mostRecentCall.args[0].data).toEqual([1, 'abc', {'foo':'bar'}]);
+              expect(callback.mostRecentCall.positionalArguments[0].data).toEqual([1, 'abc', {'foo':'bar'}]);
             }));
 
 
@@ -1291,9 +1386,13 @@ void main() {
               http.get('/url').then((_) {
                 callbackCalled = true;
               }, onError: (e,s) {
-                // Dartium throws "Unexpected character"
-                // dart2js throws "Unexpected token"
-                expect('$e').toContain('Unexpected');
+                // Dartium -> "Unexpected character"
+                // dart2js:
+                // - Chrome -> "Unexpected token"
+                // - Firefox -> "unexpected character"
+                // - IE -> "Invalid character"
+                // Commented out as this expectation is not robust !
+                // expect('$e', unit.).toContain('nexpected');
                 onErrorCalled = true;
               });
               flush();
@@ -1308,7 +1407,7 @@ void main() {
               flush();
 
               expect(callback).toHaveBeenCalledOnce();
-              expect(callback.mostRecentCall.args[0].data).toEqual('{{some}}');
+              expect(callback.mostRecentCall.positionalArguments[0].data).toEqual('{{some}}');
             }));
           });
 
@@ -1323,7 +1422,7 @@ void main() {
             flush();
 
             expect(callback).toHaveBeenCalledOnce();
-            expect(callback.mostRecentCall.args[0].data).toEqual('header1');
+            expect(callback.mostRecentCall.positionalArguments[0].data).toEqual('header1');
           }));
 
           it('should pipeline more functions', async(() {
@@ -1338,10 +1437,43 @@ void main() {
             flush();
 
             expect(callback).toHaveBeenCalledOnce();
-            expect(callback.mostRecentCall.args[0].data).toEqual('RESP-FIRST:V1');
+            expect(callback.mostRecentCall.positionalArguments[0].data).toEqual('RESP-FIRST:V1');
           }));
         });
       });
+    });
+
+    describe('coalesce', () {
+      beforeEachModule((Module module) {
+        var duration = new Duration(milliseconds: 100);
+        module.bind(HttpConfig, toValue: new HttpConfig.withOptions(coalesceDuration: duration));
+      });
+
+      it('should coalesce requests', async((Http http) {
+        backend.expect('GET', '/foo').respond(200, 'foo');
+        backend.expect('GET', '/bar').respond(200, 'bar');
+
+        var fooResp, barResp;
+        http.get('/foo').then((HttpResponse resp) => fooResp = resp.data);
+        http.get('/bar').then((HttpResponse resp) => barResp = resp.data);
+
+        microLeap();
+        backend.flush();
+        microLeap();
+        expect(fooResp).toBeNull();
+        expect(barResp).toBeNull();
+
+        clockTick(milliseconds: 99);
+        microLeap();
+        expect(fooResp).toBeNull();
+        expect(barResp).toBeNull();
+
+        clockTick(milliseconds: 1);
+        microLeap();
+        expect(fooResp).toEqual('foo');
+        expect(barResp).toEqual('bar');
+      }));
+
     });
   });
 }

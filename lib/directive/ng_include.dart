@@ -1,61 +1,57 @@
 part of angular.directive;
 
 /**
- * Fetches, compiles and includes an external Angular template/HTML.
+ * Fetches, compiles and includes an external Angular template/HTML. `Selector: [ng-include]`
  *
  * A new child [Scope] is created for the included DOM subtree.
  *
- * [NgIncludeDirective] provides only one small part of the power of
- * [NgComponent].  Consider using directives and components instead as they
+ * [NgInclude] provides only one small part of the power of
+ * [Component].  Consider using directives and components instead as they
  * provide this feature as well as much more.
  *
  * Note: The browser's Same Origin Policy (<http://v.gd/5LE5CA>) and
  * Cross-Origin Resource Sharing (CORS) policy (<http://v.gd/nXoY8y>) restrict
  * whether the template is successfully loaded.  For example,
- * [NgIncludeDirective] won't work for cross-domain requests on all browsers and
+ * [NgInclude] won't work for cross-domain requests on all browsers and
  * for `file://` access on some browsers.
  */
-@NgDirective(
+@Decorator(
     selector: '[ng-include]',
     map: const {'ng-include': '@url'})
-class NgIncludeDirective {
+class NgInclude {
 
   final dom.Element element;
   final Scope scope;
-  final ViewCache viewCache;
-  final Injector injector;
+  final ViewFactoryCache viewFactoryCache;
+  final DirectiveInjector directiveInjector;
   final DirectiveMap directives;
 
   View _view;
-  Scope _scope;
+  Scope _childScope;
 
-  NgIncludeDirective(this.element, this.scope, this.viewCache, this.injector, this.directives);
+  NgInclude(this.element, this.scope, this.viewFactoryCache,
+            this.directiveInjector, this.directives);
 
   _cleanUp() {
     if (_view == null) return;
-
     _view.nodes.forEach((node) => node.remove);
-    _scope.destroy();
+    _childScope.destroy();
+    _childScope = null;
     element.innerHtml = '';
-
     _view = null;
-    _scope = null;
   }
 
-  _updateContent(createView) {
+  _updateContent(ViewFactory viewFactory) {
     // create a new scope
-    _scope = scope.createChild(new PrototypeMap(scope.context));
-    _view = createView(injector.createChild([new Module()
-        ..value(Scope, _scope)]));
-
+    _childScope = scope.createProtoChild();
+    _view = viewFactory(_childScope, directiveInjector);
     _view.nodes.forEach((node) => element.append(node));
   }
-
 
   set url(value) {
     _cleanUp();
     if (value != null && value != '') {
-      viewCache.fromUrl(value, directives).then(_updateContent);
+      viewFactoryCache.fromUrl(value, directives, Uri.base).then(_updateContent);
     }
   }
 }

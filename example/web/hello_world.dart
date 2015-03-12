@@ -1,15 +1,14 @@
 import 'package:angular/angular.dart';
-import 'package:angular/angular_dynamic.dart';
+import 'package:angular/application_factory.dart';
 
-@NgController(
-    selector: '[hello-world-controller]',
-    publishAs: 'ctrl')
-class HelloWorldController {
+@Injectable()
+class HelloWorld {
   String name = "world";
+  String color = "#aaaaaa";
 }
 
 main() {
-  ngDynamicApp()
-      .addModule(new Module()..type(HelloWorldController))
+  applicationFactory()
+      .rootContextType(HelloWorld)
       .run();
 }

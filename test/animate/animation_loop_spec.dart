@@ -8,11 +8,11 @@ main() {
     TestBed _;
     AnimationLoop runner;
     MockAnimationFrame frame;
-    beforeEach(async(inject((TestBed tb, NgZone zone) {
+    beforeEach(async((TestBed tb, VmTurnZone zone) {
       _ = tb;
       frame = new MockAnimationFrame();
       runner = new AnimationLoop(frame, new Profiler(), zone);
-    })));
+    }));
     
     it('should play animations with window animation frames', async(() {
       var animation = new MockAnimation();

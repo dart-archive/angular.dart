@@ -1,25 +1,26 @@
 part of angular.directive;
 
 /**
-  * The `ngStyle` directive allows you to set CSS style on an HTML element
-  * conditionally.
-  *
-  * @example
-  *     <span ng-style="{color:'red'}">Sample Text</span>
-  */
-@NgDirective(
+ * Conditionally sets a CSS style on an HTML element. `Selector: [ng-style]`
+ *
+ * # Example
+ *
+ *     <span ng-style="{color:'red'}">Sample Text</span>
+ */
+@Decorator(
     selector: '[ng-style]',
-    map: const {'ng-style': '@styleExpression'})
-class NgStyleDirective {
+    map: const {'ng-style': '@styleExpression'},
+    exportExpressionAttrs: const ['ng-style'])
+class NgStyle {
   final dom.Element _element;
   final Scope _scope;
 
   String _styleExpression;
   Watch _watch;
 
-  NgStyleDirective(this._element, this._scope);
+  NgStyle(this._element, this._scope);
 
-/**
+ /**
   * ng-style attribute takes an expression which evaluates to an
   * object whose keys are CSS style names and values are corresponding values
   * for those CSS keys.

@@ -9,14 +9,14 @@ void main() {
       it('should throw an error on scheduleMicrotask', () {
         expect(sync(() {
           scheduleMicrotask(() => dump("i never run"));
-        })).toThrow('scheduleMicrotask called from sync function');
+        })).toThrowWith(message: 'scheduleMicrotask called from sync function');
       });
 
 
       it('should throw an error on timer', () {
         expect(sync(() {
           Timer.run(() => dump("i never run"));
-        })).toThrow('Timer created from sync function');
+        })).toThrowWith(message: 'Timer created from sync function');
       });
 
 
@@ -24,7 +24,7 @@ void main() {
         expect(sync(() {
           new Timer.periodic(new Duration(milliseconds: 10),
               (_) => dump("i never run"));
-        })).toThrow('periodic Timer created from sync function');
+        })).toThrowWith(message: 'periodic Timer created from sync function');
       });
     });
 
@@ -126,7 +126,7 @@ void main() {
               throw ["dangling"];
             });
           })();
-        }).toThrow("dangling");
+        }).toThrowWith(message: "dangling");
       });
 
 
@@ -135,7 +135,7 @@ void main() {
           async(() {
             throw "blah";
           })();
-        }).toThrow("blah");
+        }).toThrowWith(message: "blah");
       });
 
 
@@ -143,14 +143,14 @@ void main() {
         expect(async(() {
           new Future.value('s').then((_) { throw "blah then"; });
           microLeap();
-        })).toThrow("blah then");
+        })).toThrowWith(message: "blah then");
       });
 
       it('should throw errors from the microLeap call', async(() {
         new Future.value('s').then((_) { throw "blah then 2"; });
         expect(() {
           microLeap();
-        }).toThrow("blah then 2");
+        }).toThrowWith(message: "blah then 2");
       }));
 
       describe('timers', () {
@@ -330,8 +330,30 @@ void main() {
           expect(async(() {
             new Timer.periodic(new Duration(milliseconds: 10),
                 (_) => dump("i never run"));
-          })).toThrow('1 active timer(s) are still in the queue.');
+          })).toThrowWith(message: '1 active timer(s) are still in the queue.');
         });
+
+        it('should report no timers when there are none', async(() {
+          expect(isTimerQueueEmpty()).toBe(true);
+          expect(isNonPeriodicTimerQueueEmpty()).toBe(true);
+          expect(isPeriodicTimerQueueEmpty()).toBe(true);
+        }));
+
+        it('should report remaining non-periodic timers', async(() {
+          new Future(() => null);
+          expect(isTimerQueueEmpty()).toBe(false);
+          expect(isNonPeriodicTimerQueueEmpty()).toBe(false);
+          expect(isPeriodicTimerQueueEmpty()).toBe(true);
+          clockTick();
+        }));
+
+        it('should report remaining periodic timers', async(() {
+          var t = new Timer.periodic(new Duration(seconds: 1), (_) => null);
+          expect(isTimerQueueEmpty()).toBe(false);
+          expect(isNonPeriodicTimerQueueEmpty()).toBe(true);
+          expect(isPeriodicTimerQueueEmpty()).toBe(false);
+          t.cancel();
+        }));
       });
     });
   });

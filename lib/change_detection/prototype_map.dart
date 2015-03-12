@@ -2,7 +2,7 @@ part of angular.watch_group;
 
 class PrototypeMap<K, V> implements Map<K,V> {
   final Map<K, V> prototype;
-  final Map<K, V> self = new Map();
+  final Map<K, V> self = new HashMap();
 
   PrototypeMap(this.prototype);
 
@@ -34,4 +34,6 @@ class PrototypeMap<K, V> implements Map<K,V> {
   }
   // todo(vbe) include prototype ?
   V putIfAbsent(key, fn) => self.putIfAbsent(key, fn);
+
+  toString() => self.toString();
 }

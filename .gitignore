@@ -17,3 +17,7 @@ dartium
 **/*.dart.precompiled.js
 docs.angulardart.org
 dartdoc-viewer
+docs
+/e2e_bin
+.pub
+*.orig

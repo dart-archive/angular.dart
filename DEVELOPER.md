@@ -38,7 +38,7 @@ following products on your development machine:
 * [Node.js](http://nodejs.org): We use Node to run a development web server,
   run tests, and generate distributable files. We also use Node's Package
   Manager (`npm`). Depending on your system, you can install Node either from
-  source or as a pre-packaged bundle.
+  source or as a pre-packaged bundle. You will need node v0.10.29+.
 
 ## Getting the Sources
 
@@ -78,10 +78,10 @@ illustrative purposes.)
 # CHROME_BIN: path to a Chrome browser executable; e.g.,
 export CHROME_BIN="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
 
-# CHROME_CANARY_BIN: path to a Dartium browser executable; e.g.,
-export CHROME_CANARY_BIN="$DART_EDITOR_DIR/chromium/Chromium.app/Contents/MacOS/Chromium"
+# DARTIUM_BIN: path to a Dartium browser executable; e.g.,
+export DARTIUM_BIN="$DART_EDITOR_DIR/chromium/Chromium.app/Contents/MacOS/Chromium"
 ```
-**Note**: the `$CHROME_CANARY_BIN` environment variable is used by karma to run
+**Note**: the `$DARTIUM_BIN` environment variable is used by karma to run
 your tests in dartium instead of chromium. If you don't do this, the dart2js
 compile will make the tests run extremely slow since it has to wait for a full
 js compile each time.
@@ -115,46 +115,27 @@ pub install
 
 NOTE: scripts are being written to embody the following steps.
 
-To run base tests:
+To run all unit tests:
 
 ```shell
-# Source a script to define yet more environment variables
-. ./scripts/env.sh
-
-# Run io tests:
-dart --checked test/io/all.dart
-
-# Run expression extractor tests:
-scripts/test-expression-extractor.sh
-
-# Run the Dart Analyzer:
-./scripts/analyze.sh
+# Run all tests
+./scripts/run-test.sh
 ```
 
-To run Karma tests over Dartium, execute the following shell commands (which
-will launch the Karma server):
+To run Karma tests over Dartium, execute the following shell command:
 
 ```shell
-. ./scripts/env.sh
 node "node_modules/karma/bin/karma" start karma.conf \
     --reporters=junit,dots --port=8765 --runner-port=8766 \
-    --browsers=Dartium
+    --browsers=Dartium --single-run
 ```
 
-In another shell window or tab, or from your favorite IDE, launch the Karma
-tests proper by executing:
+To make a persistent Karma server that watches for changes in your files and
+runs tests on change, replace `--single-run` with `--auto-watch`.
 
-```shell
-. ./scripts/env.sh
-karma_run.sh
-```
 
 **Note:**: If the dart analyzer fails with warnings, the tests will not run.
 You can manually run the tests if this happens:
-
-```shell
-karma run --port=8765
-```
 
 **Note**: If you want to only run a single test you can alter the test you wish
 to run by changing `it` to `iit` or `describe` to `ddescribe`. This will only
@@ -173,6 +154,32 @@ http://localhost:8765/debug.html
 
 ## WebStorm configuration
 
+### Recent releases
+
+With the recent releases of WebStorm and the karma plugin, you could run the
+test suite by only adding a karma run configuration.
+
+Right-click on the `karma.conf.js` at the root of the project and select
+"create 'karma.conf.js'...".
+
+Set the parameters as follow:
+- **Node interpreter**: `/path/to/node`
+- **Karma node package**: `/path/to/node_modules/karma`
+- **Configuration file (usually *.conf.js)**: `path/to/angular.dart/karma.conf.js`
+- **Environment variables**:
+    - **DARTIUM_BIN**: `/path/to/dartium`
+    - **PATH**: `/path/to/dart-sdk/bin`
+    - **DART_FLAGS**: `--checked`
+
+Now just hit the run button next to the configuration name in the Toolbar and
+you should see the test running. The test suite is automatically executed each
+time a source file is modified.
+
+If you encounter troubles with this configuration, try using the one from the
+following section.
+
+### Former releases
+
 Start by creating a run configuration to launch the Karma server. Go to the menu
 "Run > Edit Configuration Menu" add create a `Node.js` configuration named
 "Karma server".
@@ -183,26 +190,26 @@ Set the parameters as follow:
 - **JavaScript file**: `node_modules/karma/bin/karma`
 - **Application parameters**: `start karma.conf --reporters dots --port 8765 --browsers=Dartium`
 - **Environment variables**:
-    - **CHROME_CANARY_BIN**: `/path/to/dartium`
+    - **DARTIUM_BIN**: `/path/to/dartium`
     - **PATH**: `/path/to/dart-sdk/bin`
-    - **DART_FLAGS**: `--enable_type_checks --enable_asserts`
+    - **DART_FLAGS**: `--checked`
 
-Launch the server by selecting the "Karmer server" configuration in the toolbar
+Launch the server by selecting the "Karma server" configuration in the toolbar
 and pressing the play icon. You should see the following message at the bottom
 of the run window:
 `INFO [Chrome 34.0.1847 (Linux)]: Connected on socket 97GpzQz-MfHFPHgHOVkc with id 10199707`
 
-### Running the tests
+#### Running the tests
 
 You need to create a "Karma tests" run configuration. Start by copying the
-"Karma server" run configuration and xhange the **Application parameters** to
+"Karma server" run configuration and change the **Application parameters** to
 `run --port=8765`.
 
 To execute the test suite, you just need to run this "Karma tests"
 configuration. You should make sure to execute "Karma server" first _(You do not
 need to restart the server once it has been started once)_.
 
-### Debugging
+#### Debugging
 
 You need to create a "JavaScript Debug" configuration named "Karma debug". Set
 the parameters as follow:

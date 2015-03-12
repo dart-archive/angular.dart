@@ -1,13 +1,6 @@
 library angular.tools.transformer.options;
 
-import 'dart:async';
-
-import 'package:barback/barback.dart';
-import 'package:analyzer/analyzer.dart' as analyzer;
-import 'package:analyzer/src/generated/ast.dart';
-import 'package:code_transformers/resolver.dart';
-import 'package:di/transformer/options.dart' as di;
-import 'package:path/path.dart' as path;
+import 'package:di/transformer.dart' as di show TransformOptions;
 
 /** Options used by Angular transformers */
 class TransformOptions {
@@ -34,17 +27,20 @@ class TransformOptions {
    */
   final di.TransformOptions diOptions;
 
+  /// Option to generate the template cache.
+  final bool generateTemplateCache;
+
   TransformOptions({String sdkDirectory, List<String> htmlFiles,
       Map<String, String> templateUriRewrites,
-      di.TransformOptions diOptions}) :
+      di.TransformOptions diOptions, bool generateTemplateCache}) :
       sdkDirectory = sdkDirectory,
       htmlFiles = htmlFiles != null ? htmlFiles : [],
       templateUriRewrites = templateUriRewrites != null ?
           templateUriRewrites : {},
-      diOptions = diOptions {
+      diOptions = diOptions,
+      generateTemplateCache = generateTemplateCache != null ?
+          generateTemplateCache : false {
     if (sdkDirectory == null)
       throw new ArgumentError('sdkDirectory must be provided.');
   }
-
-  Future<bool> isDartEntry(Asset asset) => isPossibleDartEntry(asset);
 }

@@ -5,9 +5,9 @@ import '../_specs.dart';
 main() {
   module((Module module) {
     module
-      ..type(AnimationOptimizer)
-      ..type(NgAnimateDirective)
-      ..type(NgAnimateChildrenDirective);
+      ..bind(AnimationOptimizer)
+      ..bind(NgAnimate)
+      ..bind(NgAnimateChildren);
   });
   describe('ng-animate', () {
     TestBed _;
@@ -16,9 +16,9 @@ main() {
       setUpInjector();
       module((Module module) {
         module
-          ..type(AnimationOptimizer)
-          ..type(NgAnimateDirective)
-          ..type(NgAnimateChildrenDirective);
+          ..bind(AnimationOptimizer)
+          ..bind(NgAnimate)
+          ..bind(NgAnimateChildren);
       });
       inject((TestBed tb, AnimationOptimizer opt) {
         _ = tb;

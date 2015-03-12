@@ -3,7 +3,7 @@ library todo;
 import 'dart:html';
 
 import 'package:angular/angular.dart';
-import 'package:angular/angular_dynamic.dart';
+import 'package:angular/application_factory.dart';
 import 'package:angular/playback/playback_http.dart';
 
 class Item {
@@ -25,26 +25,26 @@ class Item {
 
 // ServerController interface. Logic in main.dart determines which
 // implementation we should use.
-abstract class ServerController {
-  init(TodoController todo);
+abstract class Server {
+  init(Todo todo);
 }
 
 
 // An implementation of ServerController that does nothing.
-@NgInjectableService()
-class NoServerController implements ServerController {
-  init(TodoController todo) { }
+@Injectable()
+class NoOpServer implements Server {
+  init(Todo todo) { }
 }
 
 
 // An implementation of ServerController that fetches items from
 // the server over HTTP.
-@NgInjectableService()
-class HttpServerController implements ServerController {
+@Injectable()
+class HttpServer implements Server {
   final Http _http;
-  HttpServerController(this._http);
+  HttpServer(this._http);
 
-  init(TodoController todo) {
+  init(Todo todo) {
     _http(method: 'GET', url: '/todos').then((HttpResponse data) {
       data.data.forEach((d) {
         todo.items.add(new Item(d["text"], d["done"]));
@@ -53,15 +53,12 @@ class HttpServerController implements ServerController {
   }
 }
 
-
-@NgController(
-    selector: '[todo-controller]',
-    publishAs: 'todo')
-class TodoController {
+@Injectable()
+class Todo {
   var items = <Item>[];
   Item newItem;
 
-  TodoController(ServerController serverController) {
+  Todo(Server serverController) {
     newItem = new Item();
     items = [
         new Item('Write Angular in Dart', true),
@@ -71,9 +68,6 @@ class TodoController {
 
     serverController.init(this);
   }
-
-  // workaround for https://github.com/angular/angular.dart/issues/37
-  dynamic operator [](String key) => key == 'newItem' ? newItem : null;
 
   void add() {
     if (newItem.isEmpty) return;
@@ -95,32 +89,30 @@ class TodoController {
   int remaining() => items.fold(0, (count, item) => count += item.done ? 0 : 1);
 }
 
+
 main() {
   print(window.location.search);
-  var module = new Module()
-      ..type(TodoController)
-      ..type(PlaybackHttpBackendConfig);
+  var module = new Module()..bind(PlaybackHttpBackendConfig);
 
   // If these is a query in the URL, use the server-backed
   // TodoController.  Otherwise, use the stored-data controller.
   var query = window.location.search;
-  if (query.contains('?')) {
-    module.type(ServerController, implementedBy: HttpServerController);
-  } else {
-    module.type(ServerController, implementedBy: NoServerController);
-  }
+  module.bind(Server, toImplementation: query.contains('?') ? HttpServer : NoOpServer);
 
   if (query == '?record') {
     print('Using recording HttpBackend');
     var wrapper = new HttpBackendWrapper(new HttpBackend());
-    module.value(HttpBackendWrapper, new HttpBackendWrapper(new HttpBackend()));
-    module.type(HttpBackend, implementedBy: RecordingHttpBackend);
+    module.bind(HttpBackendWrapper, toValue: new HttpBackendWrapper(new HttpBackend()));
+    module.bind(HttpBackend, toImplementation: RecordingHttpBackend);
   }
 
   if (query == '?playback') {
     print('Using playback HttpBackend');
-    module.type(HttpBackend, implementedBy: PlaybackHttpBackend);
+    module.bind(HttpBackend, toImplementation: PlaybackHttpBackend);
   }
 
-  ngDynamicApp().addModule(module).run();
+  applicationFactory()
+      .addModule(module)
+      .rootContextType(Todo)
+      .run();
 }

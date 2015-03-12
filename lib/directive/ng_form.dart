@@ -1,28 +1,27 @@
 part of angular.directive;
 
 /**
- * The form directive listens on submission requests and, depending,
- * on if an action is set, the form will automatically either allow
- * or prevent the default browser submission from occurring.
+ * Listens on form submission requests and if an action is set, either allows or
+ * prevents the default browser form submission action from occurring. `Selector: [ng-form]` or
+ * `.ng-form` or `form` or `fieldset`
  */
-@NgDirective(
+@Decorator(
     selector: 'form',
-    publishTypes : const <Type>[NgControl],
-    visibility: NgDirective.CHILDREN_VISIBILITY)
-@NgDirective(
+    module: NgForm.module)
+@Decorator(
     selector: 'fieldset',
-    publishTypes : const <Type>[NgControl],
-    visibility: NgDirective.CHILDREN_VISIBILITY)
-@NgDirective(
+    module: NgForm.module)
+@Decorator(
     selector: '.ng-form',
-    publishTypes : const <Type>[NgControl],
-    visibility: NgDirective.CHILDREN_VISIBILITY)
-@NgDirective(
+    module: NgForm.module)
+@Decorator(
     selector: '[ng-form]',
-    publishTypes : const <Type>[NgControl],
-    map: const { 'ng-form': '@name' },
-    visibility: NgDirective.CHILDREN_VISIBILITY)
+    module: NgForm.module,
+    map: const { 'ng-form': '&name' })
 class NgForm extends NgControl {
+  static module(DirectiveBinder binder) =>
+      binder.bind(NgControl, toInstanceOf: NG_FORM_KEY, visibility: Visibility.CHILDREN);
+
   final Scope _scope;
 
   /**
@@ -35,7 +34,7 @@ class NgForm extends NgControl {
    * * [element] - The form DOM element.
    * * [injector] - An instance of Injector.
    */
-  NgForm(this._scope, NgElement element, Injector injector, NgAnimate animate) :
+  NgForm(this._scope, NgElement element, DirectiveInjector injector, Animate animate) :
     super(element, injector, animate) {
 
     if (!element.node.attributes.containsKey('action')) {
@@ -53,19 +52,26 @@ class NgForm extends NgControl {
     * The name of the control. This is usually fetched via the name attribute that is
     * present on the element that the control is bound to.
     */
-  @NgAttr('name')
-  get name => _name;
-  set name(String value) {
-    if (value != null) {
-      super.name = value;
-      _scope.context[name] = this;
-    }
-  }
+  @NgCallback('name')
+  String get name => super.name;
+  void set name(exp) {
+    // The type could not be added on the parameter as the base setter takes a String
+    assert(exp is BoundExpression);
+    var name = exp.expression.toString();
+    if (name != null && name.isNotEmpty) {
+      super.name = name;
+      try {
+        exp.assign(this);
+      } catch (e) {
+        throw 'There must be a "$name" field on your component to store the form instance.';
+      }
+     }
+   }
 
   /**
     * The list of associated child controls.
     */
-  get controls => _controlByName;
+  Map<String, List<NgControl>> get controls => _controlByName;
 
   /**
     * Returns the child control that is associated with the given name. If multiple
@@ -74,7 +80,9 @@ class NgForm extends NgControl {
   NgControl operator[](String name) =>
       controls.containsKey(name) ? controls[name][0] : null;
 }
-
+/**
+ * Creates a top-level dummy NgForm to hold Form controls that aren't located inside a form.
+ */
 class NgNullForm extends NgNullControl implements NgForm {
   var _scope;
 

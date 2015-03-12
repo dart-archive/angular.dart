@@ -1,16 +1,19 @@
 import 'dart:io' as io;
 
 import 'package:di/di.dart';
-import 'package:di/dynamic_injector.dart';
-import 'package:angular/core/module_internal.dart';
+import 'package:angular/cache/module.dart';
+import 'package:angular/core/parser/lexer.dart';
 import 'package:angular/core/parser/parser.dart';
 import 'package:angular/tools/parser_getter_setter/generator.dart';
 
 main(arguments) {
-  Module module = new Module()..type(Parser, implementedBy: DynamicParser);
-  module.type(ParserBackend, implementedBy: DartGetterSetterGen);
-  Injector injector = new DynamicInjector(modules: [module],
-      allowImplicitInjection: true);
+  Module module = new Module()
+    ..bind(Lexer)
+    ..bind(ParserGetterSetter)
+    ..bind(Parser)
+    ..install(new CacheModule());
+  module.bind(ParserBackend, toImplementation: DartGetterSetterGen);
+  Injector injector = new ModuleInjector([module]);
 
   // List generated using:
   // node node_modules/karma/bin/karma run | grep -Eo ":XNAY:.*:XNAY:" | sed -e 's/:XNAY://g' | sed -e "s/^/'/" | sed -e "s/$/',/" | sort | uniq > missing_expressions
@@ -97,6 +100,8 @@ main(arguments) {
       'map["square"] = 6',
       'method',
       'method()',
+      'causeException',
+      'causeException()',
       'notAFn()',
       'notmixed',
       'obj[0].name=1',

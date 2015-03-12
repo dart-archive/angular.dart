@@ -5,8 +5,9 @@
 </head>
 <body hello-world-controller>
 
-<h3>Hello {{ctrl.name}}!</h3>
-name: <input type="text" ng-model="ctrl.name">
+<h3 ng-style="{color:color}">Hello {{name}}!</h3>
+Name: <input type="text" ng-model="name" ng-model-options="{ debounce: {'default': 500, 'blur': 0} }" />
+Color: <input type="color" ng-model="color"/>
 
 <script type="application/dart" src="hello_world.dart"></script>
 <script src="packages/browser/dart.js"></script>
