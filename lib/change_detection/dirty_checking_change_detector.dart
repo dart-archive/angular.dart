@@ -1001,7 +1001,7 @@ class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
       _linkedRecords.put(record);
     }
 
-    prev._next = null;
+    if (prev != null) prev._next = null;
     _itTail = prev;
     _undoDeltas();
   }
