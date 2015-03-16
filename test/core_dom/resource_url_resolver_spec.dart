@@ -241,6 +241,60 @@ void main() {
     _run_resolver(useRelativeUrls: true);
     _run_resolver(useRelativeUrls: false);
   });
+
+  describe('url_resolver uri rewrite', () {
+    ResourceUrlResolver resolver;
+
+    beforeEach((){
+      var config = new ResourceResolverConfig.resolveRelativeUrls(true);
+      var typeMapper = new DynamicTypeToUriMapper();
+      resolver = new ResourceUrlResolver
+          .forTests(typeMapper, config, 'http://localhost');
+    });
+
+    it('should not rewrite absolute paths, empty paths and custom schemas',
+        () {
+      Uri baseUri = new Uri();
+      expect(resolver.combine(baseUri, "/test")).toEqual("/test");
+      expect(resolver.combine(baseUri, "#")).toEqual("#");
+      expect(resolver.combine(baseUri, "#abc")).toEqual("#abc");
+      expect(resolver.combine(baseUri, "")).toEqual("");
+      expect(resolver.combine(baseUri, "javascript:void()"))
+          .toEqual("javascript:void()");
+      expect(resolver.combine(baseUri, "data:uriloijoi"))
+          .toEqual("data:uriloijoi");
+    });
+
+    it('should rewrite package relative base uris', () {
+      Uri baseUri = Uri.parse("/packages/a.b.c/comp.dart");
+      expect(resolver.combine(baseUri, "test.jpg"))
+          .toEqual("/packages/a.b.c/test.jpg");
+      expect(resolver.combine(baseUri, "test/test.jpg"))
+          .toEqual("/packages/a.b.c/test/test.jpg");
+    });
+
+    it('should rewrite current base uri to absolute without scheme', () {
+      Uri baseUri = Uri.parse("http://localhost/test/test2/test.jgp");
+      expect(resolver.combine(baseUri, 'test4.jpg'))
+          .toEqual('/test/test2/test4.jpg');
+    });
+
+    it('should rewrite external URIs to contain full scheme', () {
+      Uri baseUri = Uri.parse("http://foo.com/test/test.jgp");
+      expect(resolver.combine(baseUri, 'test4.jpg'))
+          .toEqual('http://foo.com/test/test4.jpg');
+    });
+
+    it('should not remove hash from URI', () {
+      Uri baseUri = Uri.parse("/packages/a.b.c/comp.dart");
+      expect(resolver.combine(baseUri, "test.jpg#1234"))
+          .toEqual("/packages/a.b.c/test.jpg#1234");
+
+      Uri externalUri = Uri.parse("http://foo.com/test/test.jgp");
+      expect(resolver.combine(externalUri, 'test4.jpg#1234'))
+          .toEqual('http://foo.com/test/test4.jpg#1234');
+    });
+  });
 }
 
 class NullSanitizer implements NodeValidator {
