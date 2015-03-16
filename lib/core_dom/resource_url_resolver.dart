@@ -8,7 +8,6 @@
 library angular.core_dom.resource_url_resolver;
 
 import 'dart:html';
-import 'dart:js' as js;
 
 import 'package:di/di.dart';
 import 'package:di/annotations.dart';
@@ -29,12 +28,14 @@ class ResourceUrlResolver {
   static final RegExp quotes = new RegExp("[\"\']");
 
   // Reconstruct the Uri without the http or https restriction due to Uri.base.origin
-  final _baseUri = _getBaseUri();
+  final String _baseUri;
 
   final TypeToUriMapper _uriMapper;
   final ResourceResolverConfig _config;
 
-  ResourceUrlResolver(this._uriMapper, this._config);
+  ResourceUrlResolver(this._uriMapper, this._config): _baseUri = _getBaseUri();
+
+  ResourceUrlResolver.forTests(this._uriMapper, this._config, this._baseUri);
 
   static final NodeTreeSanitizer _nullTreeSanitizer = new _NullTreeSanitizer();
   static final docForParsing = document.implementation.createHtmlDocument('');
@@ -139,34 +140,42 @@ class ResourceUrlResolver {
   /// URIs, while [uri] is assumed to use 'packages/' syntax for
   /// package-relative URIs. Resulting URIs will use 'packages/' to indicate
   /// package-relative URIs.
-  String combine(Uri baseUri, String uri) {
+  String combine(Uri baseUri, String path) {
     if (!_config.useRelativeUrls) {
-       return uri;
+       return path;
     }
 
-    if (uri == null) {
-      uri = baseUri.path;
+    Uri resolved;
+    if (path == null) {
+      resolved = baseUri;
     } else {
+      Uri uri = Uri.parse(path);
       // if it's absolute but not package-relative, then just use that
       // The "packages/" test is just for backward compatibility.  It's ok to
       // not resolve them, even through they're relative URLs, because in a Dart
       // application, "packages/" is managed by pub which creates a symlinked
       // hierarchy and they should all resolve to the same file at any level
       // that a "packages/" exists.
-      if (uri.startsWith("/") || uri.startsWith('packages/')) {
-        return uri;
+      if (uri.path.startsWith("/") ||
+          uri.path.startsWith('packages/') ||
+          uri.path.trim() == '' || // Covers both empty strings and # fragments
+          uri.isAbsolute) {
+        return _uriToPath(uri);
       }
+      // Not an absolute uri. Resolve it to the base.
+      resolved = baseUri.resolve(path);
     }
-    // If it's not absolute, then resolve it first
-    Uri resolved = baseUri.resolve(uri);
 
-    // If it's package-relative, tack on '/packages/'
-    if (resolved.scheme == 'package') {
-      return '/packages/${resolved.path}';
-    } else if (resolved.isAbsolute && resolved.toString().startsWith(_baseUri)) {
-      return resolved.path;
-    } else {
-      return resolved.toString();
+    return _uriToPath(resolved);
+  }
+
+  String _uriToPath(Uri uri) {
+    if (uri.scheme == 'package') {
+      return '/packages/${uri.path}';
+    } else if (uri.isAbsolute && uri.toString().startsWith(_baseUri)) {
+      return uri.path;
+    }  else {
+      return uri.toString();
     }
   }
 
