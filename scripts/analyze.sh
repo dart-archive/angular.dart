@@ -24,7 +24,13 @@ for FILE in $(ls lib/angular.dart \
                  lib/change_detection/watch_group.dart \
              )
 do
-  echo export \'../$FILE\' hide main, NestedRouteInitializer\; >> $OUT
+  # Use `package:` imports where possible to avoid ambiguous resolution.
+  if [[ $FILE == lib* ]]; then
+    FILE=$(echo $FILE | sed -e 's!lib\(.*\)!package:angular\1!')
+  else
+    FILE=../$FILE
+  fi
+  echo export \'$FILE\' hide main, NestedRouteInitializer\; >> $OUT
 done
 
 $NGDART_SCRIPT_DIR/generate-expressions.sh
