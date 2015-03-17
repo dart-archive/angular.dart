@@ -160,9 +160,9 @@ class ResourceUrlResolver {
     // If it's not absolute, then resolve it first
     Uri resolved = baseUri.resolve(uri);
 
-    // If it's package-relative, tack on '/packages/'
+    // If it's package-relative, tack on [packageRoot].
     if (resolved.scheme == 'package') {
-      return '/packages/${resolved.path}';
+      return '${_config.packageRoot}${resolved.path}';
     } else if (resolved.isAbsolute && resolved.toString().startsWith(_baseUri)) {
       return resolved.path;
     } else {
@@ -181,9 +181,13 @@ class ResourceUrlResolver {
 
 @Injectable()
 class ResourceResolverConfig {
+  static const String DEFAULT_PACKAGE_ROOT = '/packages/';
   bool useRelativeUrls;
+  String packageRoot;
 
-  ResourceResolverConfig(): useRelativeUrls = true;
+  ResourceResolverConfig(): useRelativeUrls = true,
+      packageRoot = DEFAULT_PACKAGE_ROOT;
 
-  ResourceResolverConfig.resolveRelativeUrls(this.useRelativeUrls);
+  ResourceResolverConfig.resolveRelativeUrls(this.useRelativeUrls,
+      {this.packageRoot: DEFAULT_PACKAGE_ROOT});
 }
