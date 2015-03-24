@@ -219,9 +219,9 @@ _run_resolver({useRelativeUrls}) {
         expectedForHttpScheme:    'http://www.google.com/something');
 
     testBothSchemes(
-        urlToResolve:             '''http://www.google.com/something/foo('bar)''',
-        expectedForPackageScheme: '''http://www.google.com/something/foo('bar)''',
-        expectedForHttpScheme:    '''http://www.google.com/something/foo('bar)''');
+        urlToResolve:             '''http://www.google.com/something/foo('bar%29''',
+        expectedForPackageScheme: '''http://www.google.com/something/foo('bar%29''',
+        expectedForHttpScheme:    '''http://www.google.com/something/foo('bar%29''');
 
     testBothSchemes(
         urlToResolve:             'HTTP://LOCALHOST/a/b/image4.png',
@@ -242,7 +242,7 @@ void main() {
     _run_resolver(useRelativeUrls: false);
   });
 
-  describe('url_resolver uri rewrite', () {
+  describe('url_resolver', () {
     ResourceUrlResolver resolver;
 
     beforeEach((){
@@ -252,47 +252,60 @@ void main() {
           .forTests(typeMapper, config, 'http://localhost');
     });
 
-    it('should not rewrite absolute paths, empty paths and custom schemas',
-        () {
-      Uri baseUri = new Uri();
-      expect(resolver.combine(baseUri, "/test")).toEqual("/test");
-      expect(resolver.combine(baseUri, "#")).toEqual("#");
-      expect(resolver.combine(baseUri, "#abc")).toEqual("#abc");
-      expect(resolver.combine(baseUri, "")).toEqual("");
-      expect(resolver.combine(baseUri, "javascript:void()"))
-          .toEqual("javascript:void()");
-      expect(resolver.combine(baseUri, "data:uriloijoi"))
-          .toEqual("data:uriloijoi");
+    describe('uri rewrite', () {
+      it('should not rewrite absolute paths, empty paths and custom schemas',
+          () {
+        Uri baseUri = new Uri();
+        expect(resolver.combine(baseUri, "/test")).toEqual("/test");
+        expect(resolver.combine(baseUri, "#")).toEqual("#");
+        expect(resolver.combine(baseUri, "#abc")).toEqual("#abc");
+        expect(resolver.combine(baseUri, "")).toEqual("");
+        expect(resolver.combine(baseUri, "javascript:void()"))
+        .toEqual("javascript:void()");
+        expect(resolver.combine(baseUri, "data:uriloijoi"))
+        .toEqual("data:uriloijoi");
+      });
+
+      it('should rewrite package relative base uris', () {
+        Uri baseUri = Uri.parse("/packages/a.b.c/comp.dart");
+        expect(resolver.combine(baseUri, "test.jpg"))
+        .toEqual("/packages/a.b.c/test.jpg");
+        expect(resolver.combine(baseUri, "test/test.jpg"))
+        .toEqual("/packages/a.b.c/test/test.jpg");
+      });
+
+      it('should rewrite current base uri to absolute without scheme', () {
+        Uri baseUri = Uri.parse("http://localhost/test/test2/test.jgp");
+        expect(resolver.combine(baseUri, 'test4.jpg'))
+        .toEqual('/test/test2/test4.jpg');
+      });
+
+      it('should rewrite external URIs to contain full scheme', () {
+        Uri baseUri = Uri.parse("http://foo.com/test/test.jgp");
+        expect(resolver.combine(baseUri, 'test4.jpg'))
+        .toEqual('http://foo.com/test/test4.jpg');
+      });
+
+      it('should not remove hash from URI', () {
+        Uri baseUri = Uri.parse("/packages/a.b.c/comp.dart");
+        expect(resolver.combine(baseUri, "test.jpg#1234"))
+        .toEqual("/packages/a.b.c/test.jpg#1234");
+
+        Uri externalUri = Uri.parse("http://foo.com/test/test.jgp");
+        expect(resolver.combine(externalUri, 'test4.jpg#1234'))
+        .toEqual('http://foo.com/test/test4.jpg#1234');
+      });
     });
 
-    it('should rewrite package relative base uris', () {
-      Uri baseUri = Uri.parse("/packages/a.b.c/comp.dart");
-      expect(resolver.combine(baseUri, "test.jpg"))
-          .toEqual("/packages/a.b.c/test.jpg");
-      expect(resolver.combine(baseUri, "test/test.jpg"))
-          .toEqual("/packages/a.b.c/test/test.jpg");
-    });
-
-    it('should rewrite current base uri to absolute without scheme', () {
-      Uri baseUri = Uri.parse("http://localhost/test/test2/test.jgp");
-      expect(resolver.combine(baseUri, 'test4.jpg'))
-          .toEqual('/test/test2/test4.jpg');
-    });
-
-    it('should rewrite external URIs to contain full scheme', () {
-      Uri baseUri = Uri.parse("http://foo.com/test/test.jgp");
-      expect(resolver.combine(baseUri, 'test4.jpg'))
-          .toEqual('http://foo.com/test/test4.jpg');
-    });
-
-    it('should not remove hash from URI', () {
-      Uri baseUri = Uri.parse("/packages/a.b.c/comp.dart");
-      expect(resolver.combine(baseUri, "test.jpg#1234"))
-          .toEqual("/packages/a.b.c/test.jpg#1234");
-
-      Uri externalUri = Uri.parse("http://foo.com/test/test.jgp");
-      expect(resolver.combine(externalUri, 'test4.jpg#1234'))
-          .toEqual('http://foo.com/test/test4.jpg#1234');
+    describe('css rewrite', () {
+      it('should not rewrite two urls at once', () {
+        Uri baseUri = Uri.parse('/test/');
+        var result = resolver.resolveCssText(
+            ".a{image:url('a.png')}"
+            ".b{image:url('b.png')}", baseUri);
+        expect(result).toEqual(".a{image:url('/test/a.png')}"
+            ".b{image:url('/test/b.png')}");
+      });
     });
   });
 }
