@@ -203,8 +203,8 @@ class _Processor {
   }
 
   _CacheEntry uriToEntry(String uri, Element reference) {
-    uri = rewriteUri(uri);
     uri = urlResolver.combineWithElement(reference, uri);
+    uri = rewriteUri(uri);
     if (Uri.parse(uri).scheme != '') {
       warn('Cannot cache non-local URIs. $uri', reference);
       return null;
