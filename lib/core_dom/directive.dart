@@ -22,7 +22,7 @@ class NodeAttrs {
 
   NodeAttrs(this.element);
 
-  operator [](String attrName) => element.getAttribute(attrName);
+  String operator [](String attrName) => element.getAttribute(attrName);
 
   void operator []=(String attrName, String value) {
     if (_mustacheAttrs.containsKey(attrName)) {

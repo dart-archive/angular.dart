@@ -54,7 +54,7 @@ class NgForm extends NgControl {
     */
   @NgCallback('name')
   String get name => super.name;
-  void set name(exp) {
+  void set name(String exp) {
     // The type could not be added on the parameter as the base setter takes a String
     assert(exp is BoundExpression);
     var name = exp.expression.toString();
@@ -88,7 +88,7 @@ class NgNullForm extends NgNullControl implements NgForm {
 
   NgNullForm() {}
   operator []=(String key, value) {}
-  operator[](name) {}
+  operator[](String name) {}
 
   get controls => null;
 }

@@ -10,8 +10,8 @@ class AccessScopeFast extends syntax.AccessScope with AccessFast {
   final Setter setter;
   final bool isThis;
   AccessScopeFast(String name, this.getter, this.setter)
-      : super(name),
-        isThis = name == 'this';
+      : isThis = name == 'this',
+        super(name);
   eval(scope, [FormatterMap formatters]) => isThis ? scope : _eval(scope);
   assign(scope, value) => _assign(scope, scope, value);
 }
