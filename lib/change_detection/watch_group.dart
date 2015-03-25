@@ -539,7 +539,7 @@ class Watch {
  * Notice how the [_Handler]s coalesce their watching. Also notice that any
  * changes detected at one handler are propagated to the next handler.
  */
-abstract class _Handler implements _LinkedList, _LinkedListItem, _WatchList {
+abstract class _Handler implements _LinkedList<_Handler>, _LinkedListItem<_Handler>, _WatchList {
   // Used for forwarding changes to delegates
   _Handler _head, _tail;
   _Handler _next, _previous;

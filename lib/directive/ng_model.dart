@@ -124,7 +124,7 @@ class NgModel extends NgControl implements AttachAware {
 
   @NgAttr('name')
   String get name => _name;
-  void set name(value) {
+  void set name(String value) {
     _name = value;
     _parentControl.addControl(this);
   }
@@ -306,7 +306,7 @@ class InputCheckbox {
   final NgModelOptions ngModelOptions;
   final Scope scope;
 
-  InputCheckbox(dom.Element this.inputElement, this.ngModel,
+  InputCheckbox(this.inputElement, this.ngModel,
                 this.scope, this.ngTrueValue, this.ngFalseValue, this.ngModelOptions) {
     ngModel.render = (value) {
       scope.rootScope.domWrite(() {
@@ -436,7 +436,7 @@ class InputNumberLike {
     }
   }
 
-  InputNumberLike(dom.Element this.inputElement, this.ngModel, this.scope, this.ngModelOptions) {
+  InputNumberLike(this.inputElement, this.ngModel, this.scope, this.ngModelOptions) {
     ngModel.render = (value) {
       scope.rootScope.domWrite(() {
         if (value != typedValue
@@ -491,7 +491,7 @@ class NgBindTypeForDateLike {
   final dom.InputElement inputElement;
   String _idlAttrKind = DEFAULT;
 
-  NgBindTypeForDateLike(dom.Element this.inputElement);
+  NgBindTypeForDateLike(this.inputElement);
 
   @NgAttr('ng-bind-type')
   void set idlAttrKind(final String _kind) {
@@ -610,7 +610,7 @@ class InputDateLike {
   final Scope scope;
   NgBindTypeForDateLike ngBindType;
 
-  InputDateLike(dom.Element this.inputElement, this.ngModel, this.scope,
+  InputDateLike(this.inputElement, this.ngModel, this.scope,
       this.ngBindType, this.ngModelOptions) {
     if (inputElement.type == 'datetime-local') {
       ngBindType.idlAttrKind = NgBindTypeForDateLike.NUMBER;
@@ -787,7 +787,7 @@ class InputRadio {
   final NgValue ngValue;
   final Scope scope;
 
-  InputRadio(dom.Element this.radioButtonElement, this.ngModel,
+  InputRadio(this.radioButtonElement, this.ngModel,
              this.scope, this.ngValue, NodeAttrs attrs) {
     // If there's no "name" set, we'll set a unique name.  This ensures
     // less surprising behavior about which radio buttons are grouped together.
@@ -828,7 +828,7 @@ class ContentEditable extends InputTextLike {
 
   // The implementation is identical to InputTextLike but use innerHtml instead of value
   String get typedValue => (inputElement as dynamic).innerHtml;
-  void set typedValue(String value) {
-    (inputElement as dynamic).innerHtml = (value == null) ? '' : value;
+  void set typedValue(value) {
+    (inputElement as dynamic).innerHtml = (value == null) ? '' : value.toString();
   }
 }

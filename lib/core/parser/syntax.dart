@@ -202,7 +202,7 @@ const defaultFormatterMap = const _DefaultFormatterMap();
 class _DefaultFormatterMap implements FormatterMap {
   const _DefaultFormatterMap();
 
-  call(name) => throw 'No Formatter: $name found!';
-  Type operator[](annotation) => null;
-  forEach(fn) { }
+  call(String name) => throw 'No Formatter: $name found!';
+  Type operator[](String annotation) => null;
+  forEach(fn(name, value)) { }
 }

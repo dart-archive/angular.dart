@@ -63,7 +63,7 @@ class ShadowDomComponentFactory implements ComponentFactory {
         componentCssRewriter, treeSanitizer, styleElementCache, resourceResolver);
   }
 
-  bind(DirectiveRef ref, directives, injector) =>
+  bind(DirectiveRef ref, directives, Injector injector) =>
       new BoundShadowDomComponentFactory(this, ref, directives, injector);
 }
 
