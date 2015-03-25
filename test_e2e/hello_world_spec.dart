@@ -1,5 +1,4 @@
 import 'dart:html';
-import 'package:js/js.dart';
 import 'package:protractor/protractor_api.dart';
 
 main() {
