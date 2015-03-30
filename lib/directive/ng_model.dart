@@ -828,7 +828,7 @@ class ContentEditable extends InputTextLike {
 
   // The implementation is identical to InputTextLike but use innerHtml instead of value
   String get typedValue => (inputElement as dynamic).innerHtml;
-  void set typedValue(value) {
-    (inputElement as dynamic).innerHtml = (value == null) ? '' : value.toString();
+  void set typedValue(String value) {
+    (inputElement as dynamic).innerHtml = (value == null) ? '' : value;
   }
 }

@@ -470,7 +470,7 @@ class DirtyCheckingRecord<H> implements WatchRecord<H> {
    * [DirtyCheckingRecord] into different access modes. If Object it sets up
    * reflection. If [Map] then it sets up map accessor.
    */
-  set object(object) {
+  set object(Object object) {
     _group._cancelObservable(this);
     // The watched object can change inside this method, so use _object throughout.
     _object = object;

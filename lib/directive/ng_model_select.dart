@@ -33,7 +33,7 @@ class InputSelect implements AttachAware {
   _SelectMode _mode = new _SelectMode(null, null, null);
   bool _dirty = false;
 
-  InputSelect(this._selectElement, this._attrs, this._model, this._scope) {
+  InputSelect(dom.Element this._selectElement, this._attrs, this._model, this._scope) {
     _nullOption = _selectElement
         .querySelectorAll('option')
         .firstWhere((o) => o.value == '', orElse: () => null);

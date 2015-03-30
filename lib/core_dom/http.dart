@@ -701,7 +701,7 @@ class Http {
     dom.HttpRequest request = event.currentTarget;
     var response = new HttpResponse(
         request.status, request.response, parseHeaders(request), config);
-    return runCoalesced(() => onError(response));
+    return runCoalesced(() => onError(new async.Future.error(response)));
   }
 
   _coalesce(fn()) {
