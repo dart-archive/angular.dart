@@ -134,7 +134,7 @@ _run_karma_tests() {(
     ( while true ; do { sleep 60 ; echo -n . ; } ; done ) &
     HEARTBEAT_PID=$!
     NUM_KARMA_SHARDS=0 BROWSERS=SL_Chrome _run_once 0
-    kill $HEARTBEAT_PID
+    #ckck kill $HEARTBEAT_PID
     # Run sharded karma tests.
     export NUM_KARMA_SHARDS=4
     seq 0 $((NUM_KARMA_SHARDS-1)) | xargs -n 1 -P $NUM_KARMA_SHARDS -I SHARD_ID \
