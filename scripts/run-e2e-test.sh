@@ -72,11 +72,11 @@ case "$PLATFORM" in
 esac
 
 
-install_deps() {(
-  SELENIUM_VERSION="2.42"
-  CHROMEDRIVER_VERSION="2.10"
-  SELENIUM_ZIP="selenium-server-standalone-$SELENIUM_VERSION.0.jar"
+SELENIUM_VERSION="2.45"
+CHROMEDRIVER_VERSION="2.14"  # 2.15 requires Chrome>40 and Dartium from 1.10.0-dev.0.1 is Chrome 39.
+SELENIUM_ZIP="selenium-server-standalone-$SELENIUM_VERSION.0.jar"
 
+install_deps() {(
   mkdir -p e2e_bin && cd e2e_bin
   if [[ ! -e "$SELENIUM_ZIP" ]]; then
     curl -O "http://selenium-release.storage.googleapis.com/$SELENIUM_VERSION/$SELENIUM_ZIP"
@@ -113,7 +113,7 @@ function start_all_servers() {(
   export PATH=$PATH:$PWD/e2e_bin
 
   # Start selenium.  Kill all output - selenium is extremely noisy.
-  java -jar ./e2e_bin/selenium-server-standalone-2.42.0.jar >/dev/null 2>&1 &
+  java -jar ./e2e_bin/selenium-server-standalone-${SELENIUM_VERSION}.0.jar >/dev/null 2>&1 &
 
   sleep 4 # wait for selenium startup
 )}
