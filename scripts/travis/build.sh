@@ -131,7 +131,7 @@ _run_karma_tests() {(
     # Ref: test/_specs.dart: _numKarma shards.
     # Prime the dart2jsaas cache.
     # dart2jsaas can be slow and Travis can kill us if we don't produce output. So print a dot every now and then while priming the cache.
-    ( while true ; do { sleep 60 ; echo -n . ; } ; done ) &
+    ( while true ; do { sleep 6 ; echo -n '-*-' ; } ; done ) &
     HEARTBEAT_PID=$!
     NUM_KARMA_SHARDS=0 BROWSERS=SL_Chrome _run_once 0
     #ckck kill $HEARTBEAT_PID
