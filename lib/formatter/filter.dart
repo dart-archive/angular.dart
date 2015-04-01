@@ -113,8 +113,8 @@ class Filter implements Function {
   static _isSubstringCaseInsensitive(String a, String b) =>
       a != null && b != null && a.toLowerCase().contains(b.toLowerCase());
   static _identical(a, b) => identical(a, b) ||
-                             (a is String && b is String && a == b) ||
-                             (a is num && b is num && a.isNaN && b.isNaN);
+      (a is String && b is String && a == b) ||
+      (a is num && b is num && a.isNaN && b.isNaN);
 
   Filter(this._parser);
 
@@ -149,8 +149,9 @@ class Filter implements Function {
         return item == what;
       } else if (what is String) {
         what = (what as String).toLowerCase();
-        return item ? (what == "true"  || what == "yes" || what == "on")
-                    : (what == "false" || what == "no"  || what == "off");
+        return item
+            ? (what == "true" || what == "yes" || what == "on")
+            : (what == "false" || what == "no" || what == "off");
       } else {
         return false;
       }
@@ -167,10 +168,11 @@ class Filter implements Function {
 
   bool _search(var item, var what) {
     if (what is Map) {
-      return what.keys.every((key) => _search(
-              (key == r'$') ? item : _parser(key).eval(item), what[key]));
+      return what.keys.every((key) =>
+          _search((key == r'$') ? item : _parser(key).eval(item), what[key]));
     } else if (item is Map) {
-      return item.keys.any((k) => !k.startsWith(r'$') && _search(item[k], what));
+      return item.keys
+          .any((k) => !k.startsWith(r'$') && _search(item[k], what));
     } else if (item is List) {
       return item.any((i) => _search(i, what));
     } else {
@@ -191,13 +193,16 @@ class Filter implements Function {
   List call(List items, var expression, [var comparator]) {
     if (expression == null) {
       return items.toList(growable: false); // Missing expression → passthrough.
-    } else if (expression is! Map && expression is! Function &&
-               expression is! String && expression is! bool &&
-               expression is! num) {
+    } else if (expression is! Map &&
+        expression is! Function &&
+        expression is! String &&
+        expression is! bool &&
+        expression is! num) {
       return const []; // Bad expression → no items for you!
     }
     _configureComparator(comparator);
-    List results = items.where(_toPredicate(expression)).toList(growable: false);
+    List results =
+        items.where(_toPredicate(expression)).toList(growable: false);
     _comparator = null;
     return results;
   }

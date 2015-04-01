@@ -1,6 +1,5 @@
 part of angular.watch_group;
 
-
 class _LinkedListItem<I extends _LinkedListItem> {
   I _previous, _next;
 }
@@ -9,7 +8,7 @@ class _LinkedList<L extends _LinkedListItem> {
   L _head, _tail;
 
   static _Handler _add(_Handler list, _LinkedListItem item) {
-    assert(item._next     == null);
+    assert(item._next == null);
     assert(item._previous == null);
     if (list._tail == null) {
       list._head = list._tail = item;
@@ -27,8 +26,10 @@ class _LinkedList<L extends _LinkedListItem> {
     var previous = item._previous;
     var next = item._next;
 
-    if (previous == null) list._head = next;     else previous._next = next;
-    if (next == null)     list._tail = previous; else next._previous = previous;
+    if (previous == null) list._head = next;
+    else previous._next = next;
+    if (next == null) list._tail = previous;
+    else next._previous = previous;
   }
 }
 
@@ -36,7 +37,7 @@ class _ArgHandlerList {
   _ArgHandler _argHandlerHead, _argHandlerTail;
 
   static _Handler _add(_ArgHandlerList list, _ArgHandler item) {
-    assert(item._nextArgHandler     == null);
+    assert(item._nextArgHandler == null);
     assert(item._previousArgHandler == null);
     if (list._argHandlerTail == null) {
       list._argHandlerHead = list._argHandlerTail = item;
@@ -54,8 +55,10 @@ class _ArgHandlerList {
     var previous = item._previousArgHandler;
     var next = item._nextArgHandler;
 
-    if (previous == null) list._argHandlerHead = next;     else previous._nextArgHandler = next;
-    if (next == null)     list._argHandlerTail = previous; else next._previousArgHandler = previous;
+    if (previous == null) list._argHandlerHead = next;
+    else previous._nextArgHandler = next;
+    if (next == null) list._argHandlerTail = previous;
+    else next._previousArgHandler = previous;
   }
 }
 
@@ -63,7 +66,7 @@ class _WatchList {
   Watch _watchHead, _watchTail;
 
   static Watch _add(_WatchList list, Watch item) {
-    assert(item._nextWatch     == null);
+    assert(item._nextWatch == null);
     assert(item._previousWatch == null);
     if (list._watchTail == null) {
       list._watchHead = list._watchTail = item;
@@ -81,8 +84,10 @@ class _WatchList {
     var previous = item._previousWatch;
     var next = item._nextWatch;
 
-    if (previous == null) list._watchHead = next;     else previous._nextWatch = next;
-    if (next == null)     list._watchTail = previous; else next._previousWatch = previous;
+    if (previous == null) list._watchHead = next;
+    else previous._nextWatch = next;
+    if (next == null) list._watchTail = previous;
+    else next._previousWatch = previous;
   }
 }
 
@@ -91,7 +96,7 @@ abstract class _EvalWatchList {
   _EvalWatchRecord get _marker;
 
   static _EvalWatchRecord _add(_EvalWatchList list, _EvalWatchRecord item) {
-    assert(item._nextEvalWatch     == null);
+    assert(item._nextEvalWatch == null);
     assert(item._prevEvalWatch == null);
     var prev = list._evalWatchTail;
     var next = prev._nextEvalWatch;
@@ -121,8 +126,8 @@ abstract class _EvalWatchList {
     if (list._evalWatchHead == list._evalWatchTail) {
       list._evalWatchHead = list._evalWatchTail = list._marker;
       list._marker
-          .._nextEvalWatch = next
-          .._prevEvalWatch = prev;
+        .._nextEvalWatch = next
+        .._prevEvalWatch = prev;
       if (prev != null) prev._nextEvalWatch = list._marker;
       if (next != null) next._prevEvalWatch = list._marker;
     } else {
@@ -138,7 +143,7 @@ class _WatchGroupList {
   WatchGroup _watchGroupHead, _watchGroupTail;
 
   static WatchGroup _add(_WatchGroupList list, WatchGroup item) {
-    assert(item._nextWatchGroup     == null);
+    assert(item._nextWatchGroup == null);
     assert(item._prevWatchGroup == null);
     if (list._watchGroupTail == null) {
       list._watchGroupHead = list._watchGroupTail = item;
@@ -156,7 +161,9 @@ class _WatchGroupList {
     var previous = item._prevWatchGroup;
     var next = item._nextWatchGroup;
 
-    if (previous == null) list._watchGroupHead = next;     else previous._nextWatchGroup = next;
-    if (next == null)     list._watchGroupTail = previous; else next._prevWatchGroup = previous;
+    if (previous == null) list._watchGroupHead = next;
+    else previous._nextWatchGroup = next;
+    if (next == null) list._watchGroupTail = previous;
+    else next._prevWatchGroup = previous;
   }
 }

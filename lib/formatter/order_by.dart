@@ -153,14 +153,15 @@ class OrderBy implements Function {
         .firstWhere(_isNonZero, orElse: _returnZero);
   }
 
-  static List _sorted(
-      List items, List<_Mapper> mappers, List<Comparator> comparators, bool descending) {
+  static List _sorted(List items, List<_Mapper> mappers,
+      List<Comparator> comparators, bool descending) {
     // Do the standard decorate-sort-undecorate aka Schwartzian dance since Dart
     // doesn't support a key/transform parameter to sort().
     // Ref: http://en.wikipedia.org/wiki/Schwartzian_transform
     mapper(e) => mappers.map((m) => m(e)).toList(growable: false);
     List decorated = items.map(mapper).toList(growable: false);
-    List<int> indices = new Iterable.generate(decorated.length, _nop).toList(growable: false);
+    List<int> indices =
+        new Iterable.generate(decorated.length, _nop).toList(growable: false);
     comparator(i, j) => _compareLists(decorated[i], decorated[j], comparators);
     indices.sort((descending) ? (i, j) => comparator(j, i) : comparator);
     return indices.map((i) => items[i]).toList(growable: false);
@@ -172,7 +173,7 @@ class OrderBy implements Function {
    * - `expression`: String/Function or Array of String/Function.
    * - `descending`: When specified, use descending order. (The default is ascending order.)
    */
-  List call(Iterable items, var expression, [bool descending=false]) {
+  List call(Iterable items, var expression, [bool descending = false]) {
     if (items == null) return null;
     if (items is! List) items = items.toList();
     List expressions = null;

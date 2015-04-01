@@ -91,7 +91,7 @@ class _AnnotationWriter {
     return true;
   }
 
-   bool _writeAnnotation(Annotation annotation) {
+  bool _writeAnnotation(Annotation annotation) {
     var element = annotation.element;
     if (element is ConstructorElement) {
       sink.write('const ${prefixes[element.library]}'
@@ -185,8 +185,10 @@ class _AnnotationWriter {
         return true;
       }
     }
-    if (expression is BooleanLiteral || expression is DoubleLiteral ||
-        expression is IntegerLiteral || expression is NullLiteral) {
+    if (expression is BooleanLiteral ||
+        expression is DoubleLiteral ||
+        expression is IntegerLiteral ||
+        expression is NullLiteral) {
       sink.write(expression.toSource());
       return true;
     }
@@ -233,7 +235,8 @@ class AnnotationExtractor {
     directiveType = resolver.getType('angular.core.annotation_src.Directive');
     formatterType = resolver.getType('angular.core.annotation_src.Formatter');
     if (directiveType == null) {
-      logger.warning('Unable to resolve Directive, skipping member annotations.');
+      logger
+          .warning('Unable to resolve Directive, skipping member annotations.');
     }
     if (formatterType == null) {
       logger.warning('Unable to resolve Formatter.');
@@ -247,7 +250,8 @@ class AnnotationExtractor {
     while (classElement != null) {
       if (resolver.getImportUri(classElement.library, from: outputId) == null) {
         warn('Dropping annotations for ${classElement.name} because the '
-            'containing file cannot be imported (must be in a lib folder).', classElement);
+            'containing file cannot be imported (must be in a lib folder).',
+            classElement);
         return null;
       }
       if (classElement.node != null) {
@@ -265,26 +269,25 @@ class AnnotationExtractor {
     if (!visitor.hasAnnotations) return null;
 
     var type = new AnnotatedType(cls);
-    type.annotations = visitor.classAnnotations
-        .where((Annotation annotation) {
-          var element = annotation.element;
-          if (element != null && !element.isPublic) {
-            warn('Annotation $annotation is not public.', cls);
-            return false;
-          }
-          if (element is! ConstructorElement) {
-            // Only keeping constructor elements.
-            return false;
-          }
-          ConstructorElement ctor = element;
-          var annotationClass = ctor.enclosingElement;
-          if (!annotationClass.isPublic) {
-            warn('Annotation $annotation is not public.', cls);
-            return false;
-          }
-          return element.enclosingElement.type.isAssignableTo(directiveType.type) ||
-                 element.enclosingElement.type.isAssignableTo(formatterType.type);
-        }).toList();
+    type.annotations = visitor.classAnnotations.where((Annotation annotation) {
+      var element = annotation.element;
+      if (element != null && !element.isPublic) {
+        warn('Annotation $annotation is not public.', cls);
+        return false;
+      }
+      if (element is! ConstructorElement) {
+        // Only keeping constructor elements.
+        return false;
+      }
+      ConstructorElement ctor = element;
+      var annotationClass = ctor.enclosingElement;
+      if (!annotationClass.isPublic) {
+        warn('Annotation $annotation is not public.', cls);
+        return false;
+      }
+      return element.enclosingElement.type.isAssignableTo(directiveType.type) ||
+          element.enclosingElement.type.isAssignableTo(formatterType.type);
+    }).toList();
 
     if (type.annotations.isEmpty) return null;
 
@@ -308,14 +311,13 @@ class AnnotationExtractor {
 
   /// Folds all AttrFieldAnnotations into the Directive annotation on the
   /// class.
-  void _foldMemberAnnotations(Map<String, Annotation> memberAnnotations,
-      AnnotatedType type) {
+  void _foldMemberAnnotations(
+      Map<String, Annotation> memberAnnotations, AnnotatedType type) {
     // Filter down to Directive constructors.
     var ngAnnotations = type.annotations.where((a) {
       var element = a.element;
       if (element is! ConstructorElement) return false;
-      return element.enclosingElement.type.isAssignableTo(
-          directiveType.type);
+      return element.enclosingElement.type.isAssignableTo(directiveType.type);
     });
 
     var mapType = resolver.getType('dart.core.Map').type;
@@ -355,9 +357,9 @@ class AnnotationExtractor {
       // If we don't have a 'map' parameter yet, add one.
       if (mapArg == null) {
         var map = new MapLiteral(null, null, null, [], null);
-        var label = new Label(new SimpleIdentifier(
-            new _GeneratedToken(TokenType.STRING, 'map')),
-        new _GeneratedToken(TokenType.COLON, ':'));
+        var label = new Label(
+            new SimpleIdentifier(new _GeneratedToken(TokenType.STRING, 'map')),
+            new _GeneratedToken(TokenType.COLON, ':'));
         mapArg = new NamedExpression(label, map);
         annotation.arguments.arguments.add(mapArg);
       }
@@ -365,23 +367,23 @@ class AnnotationExtractor {
       var map = mapArg.expression;
       if (map is! MapLiteral) {
         warn('Expected \'map\' argument of $annotation to be a map literal',
-             type.type);
+            type.type);
         return;
       }
       memberAnnotations.forEach((memberName, annotation) {
         var key = annotation.arguments.arguments.first;
         // If the key already exists then it means we have two annotations for
         // same member.
-        if (map.entries.any((entry) => entry.key.toString() == key.toString())) {
+        if (map.entries
+            .any((entry) => entry.key.toString() == key.toString())) {
           warn('Directive $annotation already contains an entry for $key',
-               type.type);
+              type.type);
           return;
         }
 
         var typeName = annotation.element.enclosingElement.name;
         var value = '${_annotationToMapping[typeName]}$memberName';
-        var entry = new MapLiteralEntry(
-            key,
+        var entry = new MapLiteralEntry(key,
             new _GeneratedToken(TokenType.COLON, ':'),
             new SimpleStringLiteral(stringToken(value), value));
         map.entries.add(entry);
@@ -393,7 +395,8 @@ class AnnotationExtractor {
       new _GeneratedToken(TokenType.STRING, '\'$str\'');
 
   void warn(String msg, Element element) {
-    logger.warning(msg, asset: resolver.getSourceAssetId(element),
+    logger.warning(msg,
+        asset: resolver.getSourceAssetId(element),
         span: resolver.getSourceSpan(element));
   }
 }
@@ -403,7 +406,6 @@ class _GeneratedToken extends Token {
   final String lexeme;
   _GeneratedToken(TokenType type, this.lexeme) : super(type, 0);
 }
-
 
 /**
  * AST visitor which walks the current AST and finds all annotated
@@ -423,10 +425,10 @@ class _AnnotationVisitor extends GeneralizingAstVisitor {
 
     if (parent.element is ClassElement && !visitingSupertype) {
       classAnnotations.add(annotation);
-
     } else if (allowedMemberAnnotations.contains(annotation.element)) {
       if (parent is MethodDeclaration) {
-        memberAnnotations.putIfAbsent(parent.name.name, () => [])
+        memberAnnotations
+            .putIfAbsent(parent.name.name, () => [])
             .add(annotation);
       } else if (parent is FieldDeclaration) {
         var name = parent.fields.variables.first.name.name;

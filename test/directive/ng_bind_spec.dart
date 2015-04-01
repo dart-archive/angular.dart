@@ -8,14 +8,14 @@ main() {
 
     beforeEach((TestBed tb) => _ = tb);
 
-    it('should set.text', (Scope scope, Injector injector, Compiler compiler, DirectiveMap directives) {
+    it('should set.text', (Scope scope, Injector injector, Compiler compiler,
+        DirectiveMap directives) {
       var element = e('<div ng-bind="a"></div>');
       compiler([element], directives)(scope, null, [element]);
       scope.context['a'] = "abc123";
       scope.apply();
       expect(element.text).toEqual('abc123');
     });
-
 
     it('should bind to non string values', (Scope scope) {
       var element = _.compile('<div ng-bind="value"></div>');

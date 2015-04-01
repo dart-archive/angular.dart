@@ -18,7 +18,8 @@ class StaticAngularGenerator extends Transformer with ResolverTransformer {
   void applyResolver(Transform transform, Resolver resolver) {
     var asset = transform.primaryInput;
 
-    var dynamicApp = resolver.getLibraryFunction('angular.app.factory.applicationFactory');
+    var dynamicApp =
+        resolver.getLibraryFunction('angular.app.factory.applicationFactory');
     if (dynamicApp == null) {
       // No dynamic app imports, exit.
       transform.addOutput(transform.primaryInput);
@@ -32,7 +33,8 @@ class StaticAngularGenerator extends Transformer with ResolverTransformer {
 
     for (var directive in unit.directives) {
       if (directive is ImportDirective &&
-          directive.uri.stringValue == 'package:angular/application_factory.dart') {
+          directive.uri.stringValue ==
+              'package:angular/application_factory.dart') {
         var uri = directive.uri;
         transaction.edit(uri.beginToken.offset, uri.end,
             '\'package:angular/application_factory_static.dart\'');
@@ -48,8 +50,7 @@ class StaticAngularGenerator extends Transformer with ResolverTransformer {
     _addImport(transaction, unit,
         '${generatedFilePrefix}_static_expressions.dart',
         'generated_static_expressions');
-    _addImport(transaction, unit,
-        '${generatedFilePrefix}_static_metadata.dart',
+    _addImport(transaction, unit, '${generatedFilePrefix}_static_metadata.dart',
         'generated_static_metadata');
     _addImport(transaction, unit,
         '${generatedFilePrefix}_static_type_to_uri_mapper.dart',
@@ -62,7 +63,8 @@ class StaticAngularGenerator extends Transformer with ResolverTransformer {
 
     var printer = transaction.commit();
     var url = id.path.startsWith('lib/')
-        ? 'package:${id.package}/${id.path.substring(4)}' : id.path;
+        ? 'package:${id.package}/${id.path.substring(4)}'
+        : id.path;
     printer.build(url);
     transform.addOutput(new Asset.fromString(id, printer.text));
   }
@@ -79,8 +81,8 @@ class _NgDynamicToStaticVisitor extends GeneralizingAstVisitor {
   final Element ngDynamicFn;
   final TextEditTransaction transaction;
   final bool generateTemplateCache;
-  _NgDynamicToStaticVisitor(this.ngDynamicFn, this.transaction,
-      this.generateTemplateCache);
+  _NgDynamicToStaticVisitor(
+      this.ngDynamicFn, this.transaction, this.generateTemplateCache);
 
   visitMethodInvocation(MethodInvocation m) {
     if (m.methodName.bestElement == ngDynamicFn) {
@@ -88,20 +90,15 @@ class _NgDynamicToStaticVisitor extends GeneralizingAstVisitor {
           m.methodName.endToken.end, 'staticApplicationFactory');
 
       var args = m.argumentList;
-      transaction.edit(
-          args.beginToken.offset + 1,
-          args.end - 1,
-          ['generated_static_metadata.typeAnnotations',
-           'generated_static_expressions.getters',
-           'generated_static_expressions.setters',
-           'generated_static_expressions.symbols',
-           'generated_static_type_to_uri_mapper.typeToUriMapper'
-          ].join(', ')
-        );
+      transaction.edit(args.beginToken.offset + 1, args.end - 1, [
+        'generated_static_metadata.typeAnnotations',
+        'generated_static_expressions.getters',
+        'generated_static_expressions.setters',
+        'generated_static_expressions.symbols',
+        'generated_static_type_to_uri_mapper.typeToUriMapper'
+      ].join(', '));
       if (generateTemplateCache) {
-        transaction.edit(
-            m.end,
-            m.end,
+        transaction.edit(m.end, m.end,
             '..addModule(generated_template_cache.templateCacheModule)');
       }
     }

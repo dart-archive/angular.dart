@@ -53,8 +53,8 @@ abstract class ChangeDetector<H> extends ChangeDetectorGroup<H> {
    * linked list of [Record]s. The [Record]s are returned in the
    * same order as they were registered.
    */
-  Iterator<Record<H>> collectChanges({EvalExceptionHandler exceptionHandler,
-                                      AvgStopwatch stopwatch });
+  Iterator<Record<H>> collectChanges(
+      {EvalExceptionHandler exceptionHandler, AvgStopwatch stopwatch});
 }
 
 abstract class Record<H> {
@@ -189,7 +189,6 @@ class AvgStopwatch extends Stopwatch {
 
   int increment(int count) => _count += count;
 
-  double get ratePerMs => elapsedMicroseconds == 0
-      ? 0.0
-      : _count / elapsedMicroseconds * 1000;
+  double get ratePerMs =>
+      elapsedMicroseconds == 0 ? 0.0 : _count / elapsedMicroseconds * 1000;
 }

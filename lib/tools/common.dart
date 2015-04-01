@@ -6,7 +6,7 @@ class DirectiveInfo {
   String selector;
   String template;
   List<String> expressions;
-   _AttributeList _expressionAttrs;
+  _AttributeList _expressionAttrs;
 
   DirectiveInfo([this.selector, List<String> expAttrs, this.expressions]) {
     expressionAttrs = expAttrs;
@@ -37,7 +37,7 @@ class DirectiveMetadata {
   List<String> exportExpressions;
 
   DirectiveMetadata([this.className, this.selector, this.attributeMappings,
-                     this.exportExpressionAttrs, this.exportExpressions]) {
+      this.exportExpressionAttrs, this.exportExpressions]) {
     if (attributeMappings == null) {
       attributeMappings = <String, String>{};
     }

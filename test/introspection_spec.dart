@@ -16,7 +16,8 @@ void main() {
         var shadowRoot = span.createShadowRoot();
         shadowRoot.innerHtml = '<ul><li>stash</li><li>secret</li><ul>';
 
-        expect(toHtml(ngQuery(div, 'li'))).toEqual('<li>stash</li><li>secret</li>');
+        expect(toHtml(ngQuery(div, 'li')))
+            .toEqual('<li>stash</li><li>secret</li>');
         expect(toHtml(ngQuery(div, 'li', 'stash'))).toEqual('<li>stash</li>');
         expect(toHtml(ngQuery(div, 'li', 'secret'))).toEqual('<li>secret</li>');
         expect(toHtml(ngQuery(div, 'li', 'xxx'))).toEqual('');
@@ -26,7 +27,8 @@ void main() {
         var div = new Element.html('<div></div>');
         var shadowRoot = div.createShadowRoot();
         shadowRoot.innerHtml = '<ul><li>stash</li><li>secret</li><ul>';
-        expect(toHtml(ngQuery(div, 'li'))).toEqual('<li>stash</li><li>secret</li>');
+        expect(toHtml(ngQuery(div, 'li')))
+            .toEqual('<li>stash</li><li>secret</li>');
       });
     });
 
@@ -56,7 +58,8 @@ void main() {
         _.rootElement.remove();
       });
 
-      it('should return the correct binding expression for mustache interpolation', (TestBed _) {
+      it('should return the correct binding expression for mustache interpolation',
+          (TestBed _) {
         _.compile('<div my-attr="{{foobar}}"></div>');
 
         ElementProbe probe = ngProbe(_.rootElement);
@@ -67,7 +70,8 @@ void main() {
         expect(probe.bindingExpressions).toEqual(['foobar']);
       });
 
-      it('should return the correct binding expressions for repeated bindings', (TestBed _) {
+      it('should return the correct binding expressions for repeated bindings',
+          (TestBed _) {
         _.compile('<div my-attr="{{foo}} then {{bar}}"></div>');
 
         ElementProbe probe = ngProbe(_.rootElement);
@@ -85,8 +89,9 @@ void main() {
           var elt;
 
           beforeEachModule((Module m) {
-            m.bind(CompilerConfig, toValue:
-                new CompilerConfig.withOptions(elementProbeEnabled: elementProbeEnabled));
+            m.bind(CompilerConfig,
+                toValue: new CompilerConfig.withOptions(
+                    elementProbeEnabled: elementProbeEnabled));
           });
 
           beforeEach((TestBed _) {
@@ -104,8 +109,8 @@ void main() {
             });
           } else {
             it('should throw an exception', () {
-              expect(() => getTestability(elt)).toThrowWith(message:
-                  "Could not find an ElementProbe for div.  This might happen "
+              expect(() => getTestability(elt)).toThrowWith(
+                  message: "Could not find an ElementProbe for div.  This might happen "
                   "either because there is no Angular directive for that node OR "
                   "because your application is running with ElementProbes "
                   "disabled (CompilerConfig.elementProbeEnabled = false).");
@@ -152,13 +157,15 @@ void main() {
         expect(angular['resumeBootstrap']).toBeDefined();
         expect(angular['getTestability']).toBeDefined();
 
-        expect(js.context['ngProbe'].apply([document.getElementById('a')])).toBeDefined();
+        expect(js.context['ngProbe'].apply([document.getElementById('a')]))
+            .toBeDefined();
 
         expect(testability).toBeDefined();
       });
 
       it('should expose allowAnimations', () {
-        allowAnimations(allowed) => testability['allowAnimations'].apply([allowed]);
+        allowAnimations(allowed) =>
+            testability['allowAnimations'].apply([allowed]);
         expect(allowAnimations(false)).toEqual(true);
         expect(allowAnimations(false)).toEqual(false);
         expect(allowAnimations(true)).toEqual(false);
@@ -168,44 +175,52 @@ void main() {
       describe('bindings', () {
         it('should find bindings', () {
           // exactMatch should fail.
-          var bindingNodes = testability['findBindings'].apply(['introspection', true]);
+          var bindingNodes =
+              testability['findBindings'].apply(['introspection', true]);
           expect(bindingNodes.length).toEqual(0);
 
           // substring search (default) should succeed.
           // exactMatch should default to false.
           bindingNodes = testability['findBindings'].apply(['introspection']);
           expect(bindingNodes.length).toEqual(1);
-          bindingNodes = testability['findBindings'].apply(['introspection', false]);
+          bindingNodes =
+              testability['findBindings'].apply(['introspection', false]);
           expect(bindingNodes.length).toEqual(1);
 
           // and so should exact search with the correct query.
-          bindingNodes = testability['findBindings'].apply(["'introspection FTW'", true]);
+          bindingNodes =
+              testability['findBindings'].apply(["'introspection FTW'", true]);
           expect(bindingNodes.length).toEqual(1);
         });
 
         it('should find ng-bind bindings', () {
-          var bindingElems = testability['findBindings'].apply(['introspection FTW']);
+          var bindingElems =
+              testability['findBindings'].apply(['introspection FTW']);
           expect(bindingElems.length).toEqual(1);
           expect(bindingElems[0]).toEqual(document.getElementById('a'));
         });
 
         it('should find attribute mustache bindings', () {
-          var bindingElems = testability['findBindings'].apply(['attrMustache']);
+          var bindingElems =
+              testability['findBindings'].apply(['attrMustache']);
           expect(bindingElems.length).toEqual(1);
           expect(bindingElems[0]).toEqual(document.getElementById('b'));
         });
 
         it('should find text mustache bindings', () {
-          var bindingElems = testability['findBindings'].apply(['textMustache']);
+          var bindingElems =
+              testability['findBindings'].apply(['textMustache']);
           expect(bindingElems.length).toEqual(1);
           expect(bindingElems[0]).toEqual(document.getElementById('c'));
         });
 
         it('should find exact mustache bindings', () {
-          var bindingAttrElems = testability['findBindings'].apply(['attrMustache', true]);
+          var bindingAttrElems =
+              testability['findBindings'].apply(['attrMustache', true]);
           expect(bindingAttrElems.length).toEqual(1);
 
-          var bindingTextElems = testability['findBindings'].apply(['textMustache', true]);
+          var bindingTextElems =
+              testability['findBindings'].apply(['textMustache', true]);
           expect(bindingTextElems.length).toEqual(1);
         });
 
@@ -217,17 +232,19 @@ void main() {
 
         it('should find elements with more than one binding by either', () {
           var firstBindingElems = testability['findBindings'].apply(['first']);
-          var secondBindingElems = testability['findBindings'].apply(['second']);
+          var secondBindingElems =
+              testability['findBindings'].apply(['second']);
           expect(firstBindingElems.length).toEqual(1);
           expect(secondBindingElems.length).toEqual(1);
           expect(firstBindingElems[0]).toEqual(secondBindingElems[0]);
-
         });
 
         it('should return nodes instead of elements if requested', () {
-          var bindingNodes = testability['findBindings'].apply(['textMustache', false, true]);
+          var bindingNodes =
+              testability['findBindings'].apply(['textMustache', false, true]);
           expect(bindingNodes.length).toEqual(1);
-          expect(bindingNodes[0]).toEqual(document.getElementById('c').firstChild);
+          expect(bindingNodes[0])
+              .toEqual(document.getElementById('c').firstChild);
         });
       });
 

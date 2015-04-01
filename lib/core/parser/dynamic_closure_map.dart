@@ -1,6 +1,6 @@
 library angular.core.dynamic_closure_map;
 
-@MirrorsUsed(targets: const [ DynamicClosureMap ], metaTargets: const [] )
+@MirrorsUsed(targets: const [DynamicClosureMap], metaTargets: const [])
 import 'dart:mirrors';
 import 'package:angular/core/parser/parser.dart';
 

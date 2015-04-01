@@ -9,8 +9,7 @@ void main() {
     beforeEach((TestBed tb) => _ = tb);
 
     it('should switch on value change', () {
-      var element = _.compile(
-          '<div ng-switch="select">' +
+      var element = _.compile('<div ng-switch="select">' +
           '<div ng-switch-when="1">first:{{name}}</div>' +
           '<div ng-switch-when="2">second:{{name}}</div>' +
           '<div ng-switch-when="true">true:{{name}}</div>' +
@@ -34,19 +33,17 @@ void main() {
       expect(element.text).toEqual('true:misko');
     });
 
-
     it('should show all switch-whens that match the current value', () {
-      var element = _.compile(
-          '<ul ng-switch="select">' +
+      var element = _.compile('<ul ng-switch="select">' +
           '<li ng-switch-when="1">first:{{name}}</li>' +
           '<li ng-switch-when="1">, first too:{{name}}</li>' +
           '<li ng-switch-when="2">second:{{name}}</li>' +
           '<li ng-switch-when="true">true:{{name}}</li>' +
           '</ul>');
       expect(element.innerHtml).toEqual('<!--ANCHOR: [ng-switch-when]=1-->'
-      '<!--ANCHOR: [ng-switch-when]=1-->'
-      '<!--ANCHOR: [ng-switch-when]=2-->'
-      '<!--ANCHOR: [ng-switch-when]=true-->');
+          '<!--ANCHOR: [ng-switch-when]=1-->'
+          '<!--ANCHOR: [ng-switch-when]=2-->'
+          '<!--ANCHOR: [ng-switch-when]=true-->');
       _.rootScope.context['select'] = 1;
       _.rootScope.apply();
       expect(element.text).toEqual('first:, first too:');
@@ -64,10 +61,8 @@ void main() {
       expect(element.text).toEqual('true:misko');
     });
 
-
     it('should switch on switch-when-default', () {
-      var element = _.compile(
-          '<div ng-switch="select">' +
+      var element = _.compile('<div ng-switch="select">' +
           '<div ng-switch-when="1">one</div>' +
           '<div ng-switch-default>other</div>' +
           '</div ng-switch>');
@@ -78,10 +73,8 @@ void main() {
       expect(element.text).toEqual('one');
     });
 
-
     it('should show all switch-when-default', () {
-      var element = _.compile(
-          '<ul ng-switch="select">' +
+      var element = _.compile('<ul ng-switch="select">' +
           '<li ng-switch-when="1">one</li>' +
           '<li ng-switch-default>other</li>' +
           '<li ng-switch-default>, other too</li>' +
@@ -93,10 +86,8 @@ void main() {
       expect(element.text).toEqual('one');
     });
 
-
     it('should always display the elements that do not match a switch', () {
-      var element = _.compile(
-          '<ul ng-switch="select">' +
+      var element = _.compile('<ul ng-switch="select">' +
           '<li>always </li>' +
           '<li ng-switch-when="1">one </li>' +
           '<li ng-switch-when="2">two </li>' +
@@ -110,13 +101,11 @@ void main() {
       expect(element.text).toEqual('always one ');
     });
 
-
     it('should display the elements that do not have ngSwitchWhen nor ' +
-    'ngSwitchDefault at the position specified in the template, when the ' +
-    'first and last elements in the ngSwitch body do not have a ngSwitch* ' +
-    'directive', () {
-      var element = _.compile(
-          '<ul ng-switch="select">' +
+        'ngSwitchDefault at the position specified in the template, when the ' +
+        'first and last elements in the ngSwitch body do not have a ngSwitch* ' +
+        'directive', () {
+      var element = _.compile('<ul ng-switch="select">' +
           '<li>1</li>' +
           '<li ng-switch-when="1">2</li>' +
           '<li>3</li>' +
@@ -133,12 +122,10 @@ void main() {
       expect(element.text).toEqual('12368');
     });
 
-
     it('should display the elements that do not have ngSwitchWhen nor ' +
-    'ngSwitchDefault at the position specified in the template when the ' +
-    'first and last elements in the ngSwitch have a ngSwitch* directive', () {
-      var element = _.compile(
-          '<ul ng-switch="select">' +
+        'ngSwitchDefault at the position specified in the template when the ' +
+        'first and last elements in the ngSwitch have a ngSwitch* directive', () {
+      var element = _.compile('<ul ng-switch="select">' +
           '<li ng-switch-when="1">2</li>' +
           '<li>3</li>' +
           '<li ng-switch-when="2">4</li>' +
@@ -153,10 +140,8 @@ void main() {
       expect(element.text).toEqual('236');
     });
 
-
     it('should call change on switch', () {
-      var element = _.compile(
-          '<div ng-switch="url" change="name=\'works\'">' +
+      var element = _.compile('<div ng-switch="url" change="name=\'works\'">' +
           '<div ng-switch-when="a">{{name}}</div>' +
           '</div ng-switch>');
       _.rootScope.context['url'] = 'a';
@@ -165,16 +150,15 @@ void main() {
       expect(element.text).toEqual('works');
     });
 
-
     it('should properly create and destroy child scopes', () {
-      var element = _.compile(
-          '<div ng-switch="url">' +
+      var element = _.compile('<div ng-switch="url">' +
           '<div ng-switch-when="a" probe="probe">{{name}}</div>' +
           '</div ng-switch>');
       _.rootScope.apply();
 
-      var getChildScope = () => _.rootScope.context['probe'] == null ?
-          null : _.rootScope.context['probe'].scope;
+      var getChildScope = () => _.rootScope.context['probe'] == null
+          ? null
+          : _.rootScope.context['probe'].scope;
 
       expect(getChildScope()).toBeNull();
 

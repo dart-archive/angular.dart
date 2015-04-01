@@ -11,7 +11,8 @@ main() {
 
     beforeEach((TestBed tb) => _ = tb);
 
-    it('should bind click listener when href zero length string', (Scope scope) {
+    it('should bind click listener when href zero length string',
+        (Scope scope) {
       _.compile('<a href="" ng-click="abc = 4; event = \$event"></a>');
       _.triggerEvent(_.rootElement, 'click', 'MouseEvent');
       expect(_.rootScope.context['abc']).toEqual(4);
@@ -36,12 +37,14 @@ main() {
       expect(window.location.href.endsWith("#")).toEqual(true);
     });
 
-    it('should not cancel click with non-empty interpolated href', (Scope scope) {
+    it('should not cancel click with non-empty interpolated href',
+        (Scope scope) {
       // NOTE(deboer): In Firefox, after the dispatchEvent, the location.href
       // value does not update synchronously.  I do not know how to test this.
       if (isBrowser('Firefox')) return;
 
-      _.compile('<a href="{{url}}" ng-click="abc = true; event = \$event"></a>');
+      _.compile(
+          '<a href="{{url}}" ng-click="abc = true; event = \$event"></a>');
       _.triggerEvent(_.rootElement, 'click', 'MouseEvent');
       expect(_.rootScope.context['abc']).toEqual(true);
       expect(_.rootScope.context['event'] is dom.UIEvent).toEqual(true);

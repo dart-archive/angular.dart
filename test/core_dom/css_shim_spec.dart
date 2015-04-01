@@ -5,8 +5,7 @@ import 'package:angular/core_dom/css_shim.dart';
 
 main() {
   describe("cssShim", () {
-    s(String css, String tag) =>
-        shimCssText(css, tag).replaceAll("\n", "");
+    s(String css, String tag) => shimCssText(css, tag).replaceAll("\n", "");
 
     it("should handle empty string", () {
       expect(s("", "a")).toEqual("");
@@ -37,17 +36,21 @@ main() {
     });
 
     it("should handle media rules", () {
-      final css = "@media screen and (max-width: 800px) {div {font-size: 50px;}}";
+      final css =
+          "@media screen and (max-width: 800px) {div {font-size: 50px;}}";
 
-      final expected = "@media screen and (max-width: 800px) {div[a] {font-size: 50px;}}";
+      final expected =
+          "@media screen and (max-width: 800px) {div[a] {font-size: 50px;}}";
 
       expect(s(css, "a")).toEqual(expected);
     });
 
     it("should handle media rules with simple rules", () {
-      final css = "@media screen and (max-width: 800px) {div {font-size: 50px;}} div {}";
+      final css =
+          "@media screen and (max-width: 800px) {div {font-size: 50px;}} div {}";
 
-      final expected = "@media screen and (max-width: 800px) {div[a] {font-size: 50px;}}div[a] {}";
+      final expected =
+          "@media screen and (max-width: 800px) {div[a] {font-size: 50px;}}div[a] {}";
 
       expect(s(css, "a")).toEqual(expected);
     });
@@ -61,10 +64,14 @@ main() {
       expect(s('.one.two > three {}', "a")).toEqual('.one.two[a]>three[a] {}');
       expect(s('one[attr="value"] {}', "a")).toEqual('one[attr="value"][a] {}');
       expect(s('one[attr=value] {}', "a")).toEqual('one[attr=value][a] {}');
-      expect(s('one[attr^="value"] {}', "a")).toEqual('one[attr^="value"][a] {}');
-      expect(s(r'one[attr$="value"] {}', "a")).toEqual(r'one[attr$="value"][a] {}');
-      expect(s('one[attr*="value"] {}', "a")).toEqual('one[attr*="value"][a] {}');
-      expect(s('one[attr|="value"] {}', "a")).toEqual('one[attr|="value"][a] {}');
+      expect(s('one[attr^="value"] {}', "a"))
+          .toEqual('one[attr^="value"][a] {}');
+      expect(s(r'one[attr$="value"] {}', "a"))
+          .toEqual(r'one[attr$="value"][a] {}');
+      expect(s('one[attr*="value"] {}', "a"))
+          .toEqual('one[attr*="value"][a] {}');
+      expect(s('one[attr|="value"] {}', "a"))
+          .toEqual('one[attr|="value"][a] {}');
       expect(s('one[attr] {}', "a")).toEqual('one[attr][a] {}');
       expect(s('[is="one"] {}', "a")).toEqual('one[a] {}');
     });
@@ -83,7 +90,8 @@ main() {
     });
 
     it("should support polyfill-unscoped-next-selector", () {
-      var css = s("polyfill-unscoped-next-selector {content: 'x > y'} z {}", "a");
+      var css =
+          s("polyfill-unscoped-next-selector {content: 'x > y'} z {}", "a");
       expect(css).toEqual('x > y {}');
 
       css = s('polyfill-unscoped-next-selector {content: "x > y"} z {}', "a");

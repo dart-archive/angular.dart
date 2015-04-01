@@ -12,9 +12,8 @@ part of angular.formatter_internal;
  *     expression | number[:fractionSize]
  *
  */
-@Formatter(name:'number')
+@Formatter(name: 'number')
 class Number {
-
   var _nfs = new Map<String, Map<num, NumberFormat>>();
 
   /**
@@ -27,7 +26,8 @@ class Number {
     if (value is String) value = double.parse(value);
     if (!(value is num)) return value;
     if (value.isNaN) return '';
-    var verifiedLocale = Intl.verifiedLocale(Intl.getCurrentLocale(), NumberFormat.localeExists);
+    var verifiedLocale =
+        Intl.verifiedLocale(Intl.getCurrentLocale(), NumberFormat.localeExists);
     _nfs.putIfAbsent(verifiedLocale, () => new Map<num, NumberFormat>());
     var nf = _nfs[verifiedLocale][fractionSize];
     if (nf == null) {

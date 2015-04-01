@@ -1,6 +1,4 @@
-import 'dart:html';
 import 'package:protractor/protractor_api.dart';
-
 
 class AppState {
   var items = element.all(by.repeater('item in items'));
@@ -19,9 +17,11 @@ class AppState {
   input(i) => items.get(i).findElement(by.tagName("input"));
 
   // Initial state.
-  var todos = ['Write Angular in Dart',
-               'Write Dart in Angular',
-               'Do something useful'];
+  var todos = [
+    'Write Angular in Dart',
+    'Write Dart in Angular',
+    'Do something useful'
+  ];
   var checks = [true, false, false];
 
   get numTodos => todos.length;
@@ -46,7 +46,6 @@ class AppState {
     expect(newItemInput.evaluate('newItem.text')).toEqual(text);
   }
 }
-
 
 main() {
   describe('todo example', () {
@@ -85,7 +84,8 @@ main() {
       S.assertTodos();
     });
 
-    it('should enable/disable add and clear buttons when input is empty/has text', () {
+    it('should enable/disable add and clear buttons when input is empty/has text',
+        () {
       S.assertNewItem('');
 
       // type a character

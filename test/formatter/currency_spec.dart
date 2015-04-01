@@ -11,13 +11,11 @@ void main() {
       currency = injector.get(map['currency']);
     });
 
-
     it('should do basic currency filtering', () {
       expect(currency(0)).toEqual(r'$0.00');
       expect(currency(-999)).toEqual(r'($999.00)');
       expect(currency(1234.5678, r"USD$")).toEqual(r'USD$1,234.57');
     });
-
 
     it('should return empty string for non-numbers', () {
       expect(currency(null)).toEqual(null);
@@ -31,7 +29,8 @@ void main() {
     });
 
     it('should accept various locales', () {
-      expect(Intl.withLocale('de', () => currency(0.008, '€', false))).toEqual(r'0,01€');
+      expect(Intl.withLocale('de', () => currency(0.008, '€', false)))
+          .toEqual(r'0,01€');
     });
   });
 }

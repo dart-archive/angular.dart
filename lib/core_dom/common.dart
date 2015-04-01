@@ -3,7 +3,7 @@ part of angular.core.dom_internal;
 List<dom.Node> cloneElements(List<dom.Node> elements) {
   int length = elements.length;
   var clones = new List(length);
-  for(var i=0; i < length; i++) {
+  for (var i = 0; i < length; i++) {
     clones[i] = elements[i].clone(true);
   }
   return clones;
@@ -16,7 +16,8 @@ class MappingParts {
   final AST dstAST;
   final String originalValue;
 
-  MappingParts(this.attrName, this.attrValueAST, this.mode, this.dstAST, this.originalValue);
+  MappingParts(this.attrName, this.attrValueAST, this.mode, this.dstAST,
+      this.originalValue);
 }
 
 class DirectiveRef {
@@ -31,7 +32,8 @@ class DirectiveRef {
   final mappings = <MappingParts>[];
   final List<String> bindingExpressions;
 
-  DirectiveRef(this.element, type, this.annotation, this.typeKey, [ this.value, this.valueAST, this.bindingExpressions ])
+  DirectiveRef(this.element, type, this.annotation, this.typeKey,
+      [this.value, this.valueAST, this.bindingExpressions])
       : type = type,
         factory = Module.DEFAULT_REFLECTOR.factoryFor(type),
         paramKeys = Module.DEFAULT_REFLECTOR.parameterKeysFor(type);
@@ -41,7 +43,7 @@ class DirectiveRef {
         ? (element as dom.Element).outerHtml
         : element.nodeValue;
     return '{ element: $html, selector: ${annotation.selector}, value: $value, '
-           'ast: ${valueAST == null ? 'null' : '$valueAST'}, '
-           'type: $type }';
+        'ast: ${valueAST == null ? 'null' : '$valueAST'}, '
+        'type: $type }';
   }
 }

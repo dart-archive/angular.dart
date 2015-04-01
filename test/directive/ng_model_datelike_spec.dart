@@ -31,15 +31,15 @@ void main() {
     return (dt != null && !dt.isUtc) ? dt.toUtc() : dt;
   }
 
-  bool isBrowser(String pattern) => 
+  bool isBrowser(String pattern) =>
       dom.window.navigator.userAgent.indexOf(pattern) > 0;
 
   /** Use this function to determine if a non type=text or type=textarea
    * input is supported by the browser under test. If [shouldWorkForChrome]
    * and then browser is Chrome, then `expect()` the input element to be supported.
    */
-  bool nonTextInputElementSupported(InputElement input, {bool
-      shouldWorkForChrome: true}) {
+  bool nonTextInputElementSupported(InputElement input,
+      {bool shouldWorkForChrome: true}) {
     const testValue = '!'; // any string that is not valid for the input.
     String savedValue = input.value;
     input.value = testValue;
@@ -245,8 +245,8 @@ void main() {
         expect(inputElement.value).toEqual(dtAsString);
       });
 
-      it('should update model from the input "valueAsNumber" IDL attribute', ()
-          {
+      it('should update model from the input "valueAsNumber" IDL attribute',
+          () {
         _.compile('<input type=datetime-local ng-model=model>');
         inputElement = _.rootElement as dom.InputElement;
         if (!nonTextInputElementSupported(inputElement)) return; // skip test
@@ -321,8 +321,8 @@ void main() {
       it('should update model from the input "value" IDL attribute', () {
         _.compile('<input type=datetime ng-bind-type=string ng-model=model>');
         inputElement = _.rootElement as dom.InputElement;
-        if (!nonTextInputElementSupported(inputElement, shouldWorkForChrome:
-            false)) return; // skip test
+        if (!nonTextInputElementSupported(inputElement,
+            shouldWorkForChrome: false)) return; // skip test
 
         inputElement.value = dtAsString;
         _.triggerEvent(inputElement, 'change');

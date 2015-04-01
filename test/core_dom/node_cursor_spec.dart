@@ -15,7 +15,6 @@ main() {
       d.append(b);
     });
 
-
     it('should allow single level traversal', () {
       var cursor = new NodeCursor([a, b]);
 
@@ -24,7 +23,6 @@ main() {
       expect(cursor.current, equals(b));
       expect(cursor.moveNext(), equals(false));
     });
-
 
     it('should descend and ascend', () {
       var cursor = new NodeCursor([d, c]);
@@ -64,13 +62,13 @@ main() {
       expect(cursor.moveNext(), equals(false));
     });
 
-
     it('should create child cursor upon replace of top level', () {
       var parentCursor = new NodeCursor([a]);
       var childCursor = parentCursor.replaceWithAnchor('child');
 
       expect(parentCursor.elements.length, equals(1));
-      expect(STRINGIFY(parentCursor.elements[0]), equals('<!--ANCHOR: child-->'));
+      expect(
+          STRINGIFY(parentCursor.elements[0]), equals('<!--ANCHOR: child-->'));
       expect(childCursor.elements, equals([a]));
 
       var leafCursor = childCursor.replaceWithAnchor('leaf');
@@ -80,7 +78,6 @@ main() {
       expect(leafCursor.elements, equals([a]));
     });
 
-
     it('should create child cursor upon replace of mid level', () {
       var dom = es('<div><span>text</span></div>');
       var parentCursor = new NodeCursor(dom);
@@ -89,7 +86,8 @@ main() {
       var childCursor = parentCursor.replaceWithAnchor('child');
       expect(STRINGIFY(dom), equals('[<div><!--ANCHOR: child--></div>]'));
 
-      expect(STRINGIFY(childCursor.elements.first), equals('<span>text</span>'));
+      expect(
+          STRINGIFY(childCursor.elements.first), equals('<span>text</span>'));
     });
 
     it('should preserve the top-level elements', () {
@@ -97,12 +95,11 @@ main() {
       var parentCursor = new NodeCursor(dom);
 
       var childCursor = parentCursor.replaceWithAnchor('child');
-      expect(STRINGIFY(dom), equals('[<!--ANCHOR: child-->, MoreText, <div>other</div>]'));
+      expect(STRINGIFY(dom),
+          equals('[<!--ANCHOR: child-->, MoreText, <div>other</div>]'));
 
-      expect(STRINGIFY(childCursor.elements.first), equals('<span>text</span>'));
+      expect(
+          STRINGIFY(childCursor.elements.first), equals('<span>text</span>'));
     });
   });
 }
-
-
-

@@ -56,7 +56,8 @@ class DirtyCheckingChangeDetectorGroup<H> implements ChangeDetectorGroup<H> {
    * Same as [_tail] but includes child-group records as well.
    */
   DirtyCheckingRecord get _childInclRecordTail {
-    DirtyCheckingChangeDetectorGroup tail = this, nextTail;
+    DirtyCheckingChangeDetectorGroup tail = this,
+        nextTail;
     while ((nextTail = tail._childTail) != null) {
       tail = nextTail;
     }
@@ -70,10 +71,9 @@ class DirtyCheckingChangeDetectorGroup<H> implements ChangeDetectorGroup<H> {
       current = parent;
     }
     return current is DirtyCheckingChangeDetector
-      ? true
-      : current._prev != null && current._next != null;
+        ? true
+        : current._prev != null && current._next != null;
   }
-
 
   DirtyCheckingChangeDetector get _root {
     var root = this;
@@ -89,7 +89,11 @@ class DirtyCheckingChangeDetectorGroup<H> implements ChangeDetectorGroup<H> {
    * child groups and so on. We keep track of parent, children and next,
    * previous here.
    */
-  DirtyCheckingChangeDetectorGroup _parent, _childHead, _childTail, _prev, _next;
+  DirtyCheckingChangeDetectorGroup _parent,
+      _childHead,
+      _childTail,
+      _prev,
+      _next;
 
   DirtyCheckingChangeDetectorGroup(this._parent, this._fieldGetterFactory) {
     // we need to insert the marker record at the beginning.
@@ -122,7 +126,8 @@ class DirtyCheckingChangeDetectorGroup<H> implements ChangeDetectorGroup<H> {
 
   WatchRecord<H> watch(Object object, String field, H handler) {
     assert(_root != null); // prove that we are not deleted connected;
-    return _recordAdd(new DirtyCheckingRecord(this, _fieldGetterFactory, handler, field, object));
+    return _recordAdd(new DirtyCheckingRecord(
+        this, _fieldGetterFactory, handler, field, object));
   }
 
   /**
@@ -218,7 +223,8 @@ class DirtyCheckingChangeDetectorGroup<H> implements ChangeDetectorGroup<H> {
   }
 
   /// Register an observable object in this group.
-  void _registerObservable(DirtyCheckingRecord<H> record, StreamSubscription subscription) {
+  void _registerObservable(
+      DirtyCheckingRecord<H> record, StreamSubscription subscription) {
     if (_observableRecords == null) _observableRecords = new HashMap.identity();
     _observableRecords[record] = subscription;
   }
@@ -268,7 +274,8 @@ class DirtyCheckingChangeDetectorGroup<H> implements ChangeDetectorGroup<H> {
     }
     records.add(record.toString());
 
-    lines.add('DirtyCheckingChangeDetectorGroup(fields: ${records.join(', ')})');
+    lines
+        .add('DirtyCheckingChangeDetectorGroup(fields: ${records.join(', ')})');
     var childGroup = _childHead;
     while (childGroup != null) {
       lines.add('  ' + childGroup.toString().split('\n').join('\n  '));
@@ -280,7 +287,6 @@ class DirtyCheckingChangeDetectorGroup<H> implements ChangeDetectorGroup<H> {
 
 class DirtyCheckingChangeDetector<H> extends DirtyCheckingChangeDetectorGroup<H>
     implements ChangeDetector<H> {
-
   final DirtyCheckingRecord _fakeHead = new DirtyCheckingRecord.marker();
 
   DirtyCheckingChangeDetector(FieldGetterFactory fieldGetterFactory)
@@ -309,7 +315,7 @@ class DirtyCheckingChangeDetector<H> extends DirtyCheckingChangeDetectorGroup<H>
         if (groupRecord == record) {
           if (record._group != null && record._group != group) {
             throw "Wrong group: $record "
-                  "Got ${record._group} Expecting: $group";
+                "Got ${record._group} Expecting: $group";
           }
           record = record._nextRecord;
         } else {
@@ -319,14 +325,14 @@ class DirtyCheckingChangeDetector<H> extends DirtyCheckingChangeDetectorGroup<H>
         if (groupRecord._nextRecord != null &&
             groupRecord._nextRecord._prevRecord != groupRecord) {
           throw "prev/next pointer missmatch on "
-                "$groupRecord -> ${groupRecord._nextRecord} "
-                "<= ${groupRecord._nextRecord._prevRecord} in $this";
+              "$groupRecord -> ${groupRecord._nextRecord} "
+              "<= ${groupRecord._nextRecord._prevRecord} in $this";
         }
         if (groupRecord._prevRecord != null &&
             groupRecord._prevRecord._nextRecord != groupRecord) {
-              throw "prev/next pointer missmatch on "
-                    "$groupRecord -> ${groupRecord._prevRecord} "
-                    "<= ${groupRecord._prevRecord._nextChange} in $this";
+          throw "prev/next pointer missmatch on "
+              "$groupRecord -> ${groupRecord._prevRecord} "
+              "<= ${groupRecord._prevRecord._nextChange} in $this";
         }
         if (groupRecord == groupLast) {
           done = true;
@@ -334,14 +340,14 @@ class DirtyCheckingChangeDetector<H> extends DirtyCheckingChangeDetectorGroup<H>
         groupRecord = groupRecord._nextRecord;
       }
     }
-    if(record != null) {
+    if (record != null) {
       throw "Extra records at tail: $record on $this";
     }
     return true;
   }
 
-  Iterator<Record<H>> collectChanges({EvalExceptionHandler exceptionHandler,
-                                      AvgStopwatch stopwatch}) {
+  Iterator<Record<H>> collectChanges(
+      {EvalExceptionHandler exceptionHandler, AvgStopwatch stopwatch}) {
     if (stopwatch != null) stopwatch.start();
 
     DirtyCheckingRecord changeTail = _fakeHead;
@@ -363,7 +369,9 @@ class DirtyCheckingChangeDetector<H> extends DirtyCheckingChangeDetectorGroup<H>
     }
 
     changeTail._nextChange = null;
-    if (stopwatch != null) stopwatch..stop()..increment(count);
+    if (stopwatch != null) stopwatch
+      ..stop()
+      ..increment(count);
     DirtyCheckingRecord changeHead = _fakeHead._nextChange;
     _fakeHead._nextChange = null;
 
@@ -375,7 +383,7 @@ class DirtyCheckingChangeDetector<H> extends DirtyCheckingChangeDetectorGroup<H>
   }
 }
 
-class _ChangeIterator<H> implements Iterator<Record<H>>{
+class _ChangeIterator<H> implements Iterator<Record<H>> {
   DirtyCheckingRecord _current;
   DirtyCheckingRecord _next;
   DirtyCheckingRecord get current => _current;
@@ -409,18 +417,19 @@ class _ChangeIterator<H> implements Iterator<Record<H>>{
  */
 class DirtyCheckingRecord<H> implements WatchRecord<H> {
   static const List<String> _MODE_NAMES = const [
-      'MARKER',
-      'NOOP',
-      'IDENTITY',
-      'GETTER',
-      'NOTIFIED GETTER',
-      'GETTER / CLOSURE',
-      'OBSERVABLE GETTER / CLOSURE',
-      'MAP[]',
-      'ITERABLE',
-      'NOTIFIED LIST',
-      'MAP',
-      'NOTIFIED MAP'];
+    'MARKER',
+    'NOOP',
+    'IDENTITY',
+    'GETTER',
+    'NOTIFIED GETTER',
+    'GETTER / CLOSURE',
+    'OBSERVABLE GETTER / CLOSURE',
+    'MAP[]',
+    'ITERABLE',
+    'NOTIFIED LIST',
+    'MAP',
+    'NOTIFIED MAP'
+  ];
   static const int _MODE_MARKER_ = 0;
   static const int _MODE_NOOP_ = 1;
   static const int _MODE_IDENTITY_ = 2;
@@ -450,7 +459,8 @@ class DirtyCheckingRecord<H> implements WatchRecord<H> {
   var _object;
   FieldGetter _getter;
 
-  DirtyCheckingRecord(this._group, this._fieldGetterFactory, this.handler, this.field, _object) {
+  DirtyCheckingRecord(this._group, this._fieldGetterFactory, this.handler,
+      this.field, _object) {
     object = _object;
   }
 
@@ -505,7 +515,8 @@ class DirtyCheckingRecord<H> implements WatchRecord<H> {
         if (_object is obs.Observable) {
           _mode = _MODE_MAP_NOTIFIED_; // Run the dccd after the map is added
           var subscription = (_object as obs.Observable).changes.listen((_) {
-            _mode = _MODE_MAP_NOTIFIED_; // Run the dccd after the map is updated
+            _mode =
+                _MODE_MAP_NOTIFIED_; // Run the dccd after the map is updated
           });
           _group._registerObservable(this, subscription);
         } else {
@@ -522,8 +533,10 @@ class DirtyCheckingRecord<H> implements WatchRecord<H> {
         }
         if (_object is obs.ObservableList) {
           _mode = _MODE_LIST_NOTIFIED_; // Run the dccd after the list is added
-          var subscription = (_object as obs.ObservableList).listChanges.listen((_) {
-            _mode = _MODE_LIST_NOTIFIED_; // Run the dccd after the list is updated
+          var subscription = (_object as obs.ObservableList).listChanges
+              .listen((_) {
+            _mode =
+                _MODE_LIST_NOTIFIED_; // Run the dccd after the list is updated
           });
           _group._registerObservable(this, subscription);
         } else {
@@ -540,7 +553,8 @@ class DirtyCheckingRecord<H> implements WatchRecord<H> {
       if (_object is obs.Observable) {
         _mode = _MODE_MAP_FIELD_NOTIFIED_;
         var subscription = (_object as obs.Observable).changes.listen((_) {
-          _mode = _MODE_MAP_FIELD_NOTIFIED_; // Run the dccd after the map is updated
+          _mode =
+              _MODE_MAP_FIELD_NOTIFIED_; // Run the dccd after the map is updated
         });
         _group._registerObservable(this, subscription);
         _getter = null;
@@ -549,9 +563,9 @@ class DirtyCheckingRecord<H> implements WatchRecord<H> {
         _getter = null;
       }
     } else {
-      _mode = _object is obs.Observable ?
-          _MODE_GETTER_OBS_OR_METHOD_CLOSURE_ :
-          _MODE_GETTER_OR_METHOD_CLOSURE_;
+      _mode = _object is obs.Observable
+          ? _MODE_GETTER_OBS_OR_METHOD_CLOSURE_
+          : _MODE_GETTER_OR_METHOD_CLOSURE_;
       _getter = _fieldGetterFactory.getter(_object, field);
     }
   }
@@ -588,7 +602,8 @@ class DirtyCheckingRecord<H> implements WatchRecord<H> {
         // no-op if closure (see _MODE_GETTER_OR_METHOD_CLOSURE_) or until the next notification
         _mode = _MODE_NOOP_;
         if (current is! Function || identical(current, _getter(object))) {
-          var subscription = (object as obs.Observable).changes.listen((records) {
+          var subscription = (object as obs.Observable).changes
+              .listen((records) {
             _mode = _MODE_GETTER_NOTIFIED_;
           });
           _group._registerObservable(this, subscription);
@@ -598,7 +613,7 @@ class DirtyCheckingRecord<H> implements WatchRecord<H> {
         current = object[field];
         break;
       case _MODE_MAP_FIELD_NOTIFIED_:
-        _mode = _MODE_NOOP_;  // no-op until next notification
+        _mode = _MODE_NOOP_; // no-op until next notification
         current = object[field];
         break;
       case _MODE_IDENTITY_:
@@ -658,9 +673,8 @@ class _MapChangeRecord<K, V> implements MapChangeRecord<K, V> {
   KeyValueRecord<K, V> _additionsHead, _additionsTail;
   KeyValueRecord<K, V> _removalsHead, _removalsTail;
 
-  get isDirty => _additionsHead != null ||
-                 _changesHead != null ||
-                 _removalsHead != null;
+  get isDirty =>
+      _additionsHead != null || _changesHead != null || _removalsHead != null;
 
   _revertToPreviousState() {
     if (!isDirty) {
@@ -669,8 +683,10 @@ class _MapChangeRecord<K, V> implements MapChangeRecord<K, V> {
     KeyValueRecord record, prev;
     int i = 0;
     for (record = _mapHead = _previousMapHead;
-         record != null;
-         prev = record, record = record._nextPrevious, ++i) {
+        record != null;
+        prev = record,
+        record = record._nextPrevious,
+        ++i) {
       record._currentValue = record._previousValue;
       if (prev != null) {
         prev._next = prev._nextPrevious = record;
@@ -700,13 +716,13 @@ class _MapChangeRecord<K, V> implements MapChangeRecord<K, V> {
     }
   }
 
-  void forEachAddition(void f(MapKeyValue<K, V> addition)){
+  void forEachAddition(void f(MapKeyValue<K, V> addition)) {
     for (r = _additionsHead; r != null; r = r._nextAdded) {
       f(r);
     }
   }
 
-  void forEachRemoval(void f(MapKeyValue<K, V> removal)){
+  void forEachRemoval(void f(MapKeyValue<K, V> removal)) {
     for (r = _removalsHead; r != null; r = r._nextRemoved) {
       f(r);
     }
@@ -767,8 +783,8 @@ class _MapChangeRecord<K, V> implements MapChangeRecord<K, V> {
     if (isDirty) {
       // Record the state of the mapping for a possible _revertToPreviousState()
       for (KeyValueRecord record = _previousMapHead = _mapHead;
-           record != null;
-           record = record._next) {
+          record != null;
+          record = record._next) {
         record._nextPrevious = record._next;
       }
       _undoDeltas();
@@ -839,8 +855,7 @@ class _MapChangeRecord<K, V> implements MapChangeRecord<K, V> {
     }
   }
 
-  bool _isInRemovals(KeyValueRecord record) =>
-      record == _removalsHead ||
+  bool _isInRemovals(KeyValueRecord record) => record == _removalsHead ||
       record._nextRemoved != null ||
       record._prevRemoved != null;
 
@@ -920,7 +935,11 @@ class _MapChangeRecord<K, V> implements MapChangeRecord<K, V> {
   }
 
   String toString() {
-    List itemsList = [], previousList = [], changesList = [], additionsList = [], removalsList = [];
+    List itemsList = [],
+        previousList = [],
+        changesList = [],
+        additionsList = [],
+        removalsList = [];
     KeyValueRecord<K, V> r;
     for (r = _mapHead; r != null; r = r._next) {
       itemsList.add("$r");
@@ -963,8 +982,8 @@ class KeyValueRecord<K, V> implements MapKeyValue<K, V> {
   KeyValueRecord(this.key);
 
   String toString() => _previousValue == _currentValue
-        ? "$key"
-        : '$key[$_previousValue -> $_currentValue]';
+      ? "$key"
+      : '$key[$_previousValue -> $_currentValue]';
 }
 
 class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
@@ -991,8 +1010,10 @@ class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
     int i = 0;
 
     for (ItemRecord<V> record = _itHead = _previousItHead;
-         record != null;
-         prev = record, record = record._nextPrevious, i++) {
+        record != null;
+        prev = record,
+        record = record._nextPrevious,
+        i++) {
       record.currentIndex = record.previousIndex = i;
       record._prev = prev;
       if (prev != null) prev._next = prev._nextPrevious = record;
@@ -1018,7 +1039,7 @@ class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
     }
   }
 
-  void forEachAddition(void f(CollectionChangeItem<V> addition)){
+  void forEachAddition(void f(CollectionChangeItem<V> addition)) {
     for (var r = _additionsHead; r != null; r = r._nextAdded) {
       f(r);
     }
@@ -1030,7 +1051,7 @@ class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
     }
   }
 
-  void forEachRemoval(void f(CollectionChangeItem<V> removal)){
+  void forEachRemoval(void f(CollectionChangeItem<V> removal)) {
     for (var r = _removalsHead; r != null; r = r._nextRemoved) {
       f(r);
     }
@@ -1042,7 +1063,8 @@ class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
   bool _check(Iterable collection) {
     _reset();
 
-    if (collection is UnmodifiableListView && identical(_iterable, collection)) {
+    if (collection is UnmodifiableListView &&
+        identical(_iterable, collection)) {
       // Short circuit and assume that the list has not been modified.
       return false;
     }
@@ -1092,7 +1114,9 @@ class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
   void _reset() {
     if (isDirty) {
       // Record the state of the collection for a possible `_revertToPreviousState()`
-      for (ItemRecord<V> r = _previousItHead = _itHead; r != null; r = r._next) {
+      for (ItemRecord<V> r = _previousItHead = _itHead;
+          r != null;
+          r = r._next) {
         r._nextPrevious = r._next;
       }
       _undoDeltas();
@@ -1124,9 +1148,8 @@ class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
   }
 
   /// A [_CollectionChangeRecord] is considered dirty if it has additions, moves or removals.
-  bool get isDirty => _additionsHead != null ||
-                      _movesHead != null ||
-                      _removalsHead != null;
+  bool get isDirty =>
+      _additionsHead != null || _movesHead != null || _removalsHead != null;
 
   /**
    * This is the core function which handles differences between collections.
@@ -1194,7 +1217,8 @@ class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
    * of 'b' rather then switch 'a' with 'b' and then add 'a' at the end.
    */
   ItemRecord<V> verifyReinsertion(ItemRecord record, item, int index) {
-    ItemRecord<V> reinsertRecord = _unlinkedRecords == null ? null : _unlinkedRecords.get(item);
+    ItemRecord<V> reinsertRecord =
+        _unlinkedRecords == null ? null : _unlinkedRecords.get(item);
     if (reinsertRecord != null) {
       record = _reinsertAfter(reinsertRecord, record._prev, index);
     } else if (record.currentIndex != index) {
@@ -1224,7 +1248,8 @@ class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
     if (_removalsTail != null) _removalsTail._nextRemoved = null;
   }
 
-  ItemRecord<V> _reinsertAfter(ItemRecord<V> record, ItemRecord<V> prevRecord, int index) {
+  ItemRecord<V> _reinsertAfter(
+      ItemRecord<V> record, ItemRecord<V> prevRecord, int index) {
     if (_unlinkedRecords != null) _unlinkedRecords.remove(record);
     var prev = record._prevRemoved;
     var next = record._nextRemoved;
@@ -1245,14 +1270,16 @@ class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
     return record;
   }
 
-  ItemRecord<V> _moveAfter(ItemRecord<V> record, ItemRecord<V> prevRecord, int index) {
+  ItemRecord<V> _moveAfter(
+      ItemRecord<V> record, ItemRecord<V> prevRecord, int index) {
     _unlink(record);
     _insertAfter(record, prevRecord, index);
     _addToMoves(record, index);
     return record;
   }
 
-  ItemRecord<V> _addAfter(ItemRecord<V> record, ItemRecord<V> prevRecord, int index) {
+  ItemRecord<V> _addAfter(
+      ItemRecord<V> record, ItemRecord<V> prevRecord, int index) {
     _insertAfter(record, prevRecord, index);
 
     if (_additionsTail == null) {
@@ -1266,7 +1293,8 @@ class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
     return record;
   }
 
-  ItemRecord<V> _insertAfter(ItemRecord<V> record, ItemRecord<V> prevRecord, int index) {
+  ItemRecord<V> _insertAfter(
+      ItemRecord<V> record, ItemRecord<V> prevRecord, int index) {
     assert(record != prevRecord);
     assert(record._next == null);
     assert(record._prev == null);
@@ -1391,7 +1419,7 @@ removals: ${removals.join(", ")}
   }
 }
 
-class ItemRecord<V> extends CollectionChangeItem<V>  {
+class ItemRecord<V> extends CollectionChangeItem<V> {
   int currentIndex;
   int previousIndex;
   V item;
@@ -1425,8 +1453,11 @@ class _DuplicateItemRecordList {
       record._nextDup = null;
       record._prevDup = null;
     } else {
-      assert(record.item ==  _head.item ||
-             record.item is num && record.item.isNaN && _head.item is num && _head.item.isNaN);
+      assert(record.item == _head.item ||
+          record.item is num &&
+              record.item.isNaN &&
+              _head.item is num &&
+              _head.item.isNaN);
       _tail._nextDup = record;
       record._prevDup = _tail;
       record._nextDup = null;
@@ -1440,10 +1471,10 @@ class _DuplicateItemRecordList {
     ItemRecord record;
     for (record = _head; record != null; record = record._nextDup) {
       if ((afterIndex == null || afterIndex < record.currentIndex) &&
-           _looseIdentical(record.item, item)) {
-          return record;
-        }
+          _looseIdentical(record.item, item)) {
+        return record;
       }
+    }
     return null;
   }
 
@@ -1455,7 +1486,9 @@ class _DuplicateItemRecordList {
   bool remove(ItemRecord record) {
     assert(() {
       // verify that the record being removed is in the list.
-      for (ItemRecord cursor = _head; cursor != null; cursor = cursor._nextDup) {
+      for (ItemRecord cursor = _head;
+          cursor != null;
+          cursor = cursor._nextDup) {
         if (identical(cursor, record)) return true;
       }
       return false;
@@ -1550,7 +1583,10 @@ bool _looseIdentical(dst, src) {
   if (dst is String && src is String && dst == src) return true;
 
   //  we need this for JavaScript since in JS NaN !== NaN.
-  if (dst is num && (dst as num).isNaN && src is num && (src as num).isNaN) return true;
+  if (dst is num &&
+      (dst as num).isNaN &&
+      src is num &&
+      (src as num).isNaN) return true;
 
   return false;
 }

@@ -14,7 +14,7 @@ part of angular.formatter_internal;
  *
  *     json_expression | json
  */
-@Formatter(name:'json')
+@Formatter(name: 'json')
 class Json implements Function {
   String call(jsonObj) => JSON.encode(jsonObj);
 }

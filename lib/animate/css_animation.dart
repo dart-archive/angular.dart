@@ -32,19 +32,11 @@ class CssAnimation extends LoopedAnimation {
   num _startTime;
   num _duration;
 
-  CssAnimation(
-      this.element,
-      this.eventClass,
-      this.activeClass,
-      { this.addAtStart,
-        this.removeAtStart,
-        this.addAtEnd,
-        this.removeAtEnd,
-        CssAnimationMap animationMap,
-        AnimationOptimizer optimizer })
+  CssAnimation(this.element, this.eventClass, this.activeClass,
+      {this.addAtStart, this.removeAtStart, this.addAtEnd, this.removeAtEnd,
+      CssAnimationMap animationMap, AnimationOptimizer optimizer})
       : _animationMap = animationMap,
-        _optimizer = optimizer
-  {
+        _optimizer = optimizer {
     if (_optimizer != null) _optimizer.track(this, element);
     if (_animationMap != null) _animationMap.track(this);
     element.classes.add(eventClass);
@@ -127,6 +119,8 @@ class CssAnimation extends LoopedAnimation {
     if (_animationMap != null) _animationMap.forget(this);
     if (_optimizer != null) _optimizer.forget(this);
 
-    element.classes..remove(eventClass)..remove(activeClass);
+    element.classes
+      ..remove(eventClass)
+      ..remove(activeClass);
   }
 }

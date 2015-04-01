@@ -44,7 +44,6 @@ void main() {
       expect(_.rootElements[1]).toBeAnInstanceOf(SpanElement);
       expect(_.rootElements.length).toBe(2);
     });
-
   });
 }
 

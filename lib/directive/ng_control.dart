@@ -8,12 +8,12 @@ part of angular.directive;
  * user input with NgModel.
  */
 abstract class NgControl implements AttachAware, DetachAware {
-  static const String NG_INVALID        = "ng-invalid";
-  static const String NG_PRISTINE       = "ng-pristine";
-  static const String NG_DIRTY          = "ng-dirty";
-  static const String NG_TOUCHED        = "ng-touched";
-  static const String NG_UNTOUCHED      = "ng-untouched";
-  static const String NG_SUBMIT_VALID   = "ng-submit-valid";
+  static const String NG_INVALID = "ng-invalid";
+  static const String NG_PRISTINE = "ng-pristine";
+  static const String NG_DIRTY = "ng-dirty";
+  static const String NG_TOUCHED = "ng-touched";
+  static const String NG_UNTOUCHED = "ng-untouched";
+  static const String NG_SUBMIT_VALID = "ng-submit-valid";
   static const String NG_SUBMIT_INVALID = "ng-submit-invalid";
 
   String _name;
@@ -30,13 +30,15 @@ abstract class NgControl implements AttachAware, DetachAware {
     * The list of errors present on the control represented by an error name and
     * an inner control instance.
     */
-  final Map<String, Set<NgControl>> errorStates = new Map<String, Set<NgControl>>();
+  final Map<String, Set<NgControl>> errorStates =
+      new Map<String, Set<NgControl>>();
 
   /**
     * The list of info messages present on the control represented by an state name and
     * an inner control instance.
     */
-  final Map<String, Set<NgControl>> infoStates = new Map<String, Set<NgControl>>();
+  final Map<String, Set<NgControl>> infoStates =
+      new Map<String, Set<NgControl>>();
 
   NgControl(NgElement this._element, DirectiveInjector injector,
       Animate this._animate)
@@ -49,7 +51,9 @@ abstract class NgControl implements AttachAware, DetachAware {
 
   @override
   void detach() {
-    _parentControl..removeStates(this)..removeControl(this);
+    _parentControl
+      ..removeStates(this)
+      ..removeControl(this);
   }
 
   /**
@@ -73,10 +77,14 @@ abstract class NgControl implements AttachAware, DetachAware {
   void onSubmit(bool valid) {
     if (valid) {
       _submitValid = true;
-      element..addClass(NG_SUBMIT_VALID)..removeClass(NG_SUBMIT_INVALID);
+      element
+        ..addClass(NG_SUBMIT_VALID)
+        ..removeClass(NG_SUBMIT_INVALID);
     } else {
       _submitValid = false;
-      element..addClass(NG_SUBMIT_INVALID)..removeClass(NG_SUBMIT_VALID);
+      element
+        ..addClass(NG_SUBMIT_INVALID)
+        ..removeClass(NG_SUBMIT_VALID);
     }
     _controls.forEach((control) {
       control.onSubmit(valid);
@@ -113,32 +121,32 @@ abstract class NgControl implements AttachAware, DetachAware {
   /**
     * A control is considered valid if all inner models are valid.
     */
-  bool get valid              => !invalid;
+  bool get valid => !invalid;
 
   /**
     * A control is considered invalid if any inner models are invalid.
     */
-  bool get invalid            => errorStates.isNotEmpty;
+  bool get invalid => errorStates.isNotEmpty;
 
   /**
     * Whether or not the control's or model's data has not been changed.
     */
-  bool get pristine           => !dirty;
+  bool get pristine => !dirty;
 
   /**
     * Whether or not the control's or model's data has been changed.
     */
-  bool get dirty              => infoStates.containsKey(NG_DIRTY);
+  bool get dirty => infoStates.containsKey(NG_DIRTY);
 
   /**
     * Whether or not the control/model has not been interacted with by the user.
     */
-  bool get untouched          => !touched;
+  bool get untouched => !touched;
 
   /**
     * Whether or not the control/model has been interacted with by the user.
     */
-  bool get touched            => infoStates.containsKey(NG_TOUCHED);
+  bool get touched => infoStates.containsKey(NG_TOUCHED);
 
   /**
    * Registers a form control into the form for validation.
@@ -148,7 +156,9 @@ abstract class NgControl implements AttachAware, DetachAware {
   void addControl(NgControl control) {
     _controls.add(control);
     if (control.name != null) {
-      _controlByName.putIfAbsent(control.name, () => <NgControl>[]).add(control);
+      _controlByName
+          .putIfAbsent(control.name, () => <NgControl>[])
+          .add(control);
     }
   }
 
@@ -200,8 +210,9 @@ abstract class NgControl implements AttachAware, DetachAware {
    */
   void clearErrorStates() {
     errorStates.forEach((errorName, state) {
-      element..removeClass(errorName + '-invalid')
-             ..removeClass(errorName + '-valid');
+      element
+        ..removeClass(errorName + '-invalid')
+        ..removeClass(errorName + '-valid');
 
       _parentControl.removeErrorState(this, errorName);
     });
@@ -230,7 +241,9 @@ abstract class NgControl implements AttachAware, DetachAware {
    * * [errorName] - The name of the given error (e.g. ng-required, ng-pattern, etc...).
    */
   void addErrorState(NgControl childControl, String errorName) {
-    element..addClass(errorName + '-invalid')..removeClass(errorName + '-valid');
+    element
+      ..addClass(errorName + '-invalid')
+      ..removeClass(errorName + '-valid');
     errorStates.putIfAbsent(errorName, () => new Set()).add(childControl);
     _parentControl.addErrorState(this, errorName);
   }
@@ -250,12 +263,14 @@ abstract class NgControl implements AttachAware, DetachAware {
     if (!hasError) {
       errorStates.remove(errorName);
       _parentControl.removeErrorState(this, errorName);
-      element..removeClass(errorName + '-invalid')..addClass(errorName + '-valid');
+      element
+        ..removeClass(errorName + '-invalid')
+        ..addClass(errorName + '-valid');
     }
   }
 
   String _getOppositeInfoState(String state) {
-    switch(state) {
+    switch (state) {
       case NG_DIRTY:
         return NG_PRISTINE;
       case NG_TOUCHED:
@@ -293,8 +308,8 @@ abstract class NgControl implements AttachAware, DetachAware {
   void removeInfoState(NgControl childControl, String stateName) {
     String oppositeState = _getOppositeInfoState(stateName);
     if (infoStates.containsKey(stateName)) {
-      bool hasState = _controls.any((child) =>
-          child.infoStates.containsKey(stateName));
+      bool hasState =
+          _controls.any((child) => child.infoStates.containsKey(stateName));
       if (!hasState) {
         if (oppositeState != null) element.addClass(oppositeState);
         element.removeClass(stateName);
@@ -304,10 +319,11 @@ abstract class NgControl implements AttachAware, DetachAware {
     } else if (oppositeState != null) {
       NgControl parent = this;
       do {
-        parent.element..addClass(oppositeState)..removeClass(stateName);
+        parent.element
+          ..addClass(oppositeState)
+          ..removeClass(stateName);
         parent = parent.parentControl;
-      }
-      while(parent != null && parent is! NgNullControl);
+      } while (parent != null && parent is! NgNullControl);
     }
   }
 }
@@ -316,7 +332,12 @@ abstract class NgControl implements AttachAware, DetachAware {
  */
 class NgNullControl implements NgControl {
   var _name, _dirty, _valid, _submitValid, _pristine, _element, _touched;
-  var _controls, _parentControl, _controlName, _animate, infoStates, errorStates;
+  var _controls,
+      _parentControl,
+      _controlName,
+      _animate,
+      infoStates,
+      errorStates;
   var errors, _controlByName;
   NgElement element;
 

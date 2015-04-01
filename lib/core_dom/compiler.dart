@@ -1,6 +1,5 @@
 part of angular.core.dom_internal;
 
-
 @Injectable()
 class Compiler implements Function {
   final Profiler _perf;
@@ -11,14 +10,14 @@ class Compiler implements Function {
   ViewFactory call(List<dom.Node> elements, DirectiveMap directives) {
     var s = traceEnter(Compiler_compile);
     var timerId;
-    assert((timerId = _perf.startTimer('ng.compile', _html(elements))) != false);
+    assert(
+        (timerId = _perf.startTimer('ng.compile', _html(elements))) != false);
     final elementBinders = <TaggedElementBinder>[];
-    _compileView(
-        new NodeCursor(elements),
-        null, directives, -1, null, elementBinders, true);
+    _compileView(new NodeCursor(elements), null, directives, -1, null,
+        elementBinders, true);
 
-    var viewFactory = new ViewFactory(
-        elements, _removeUnusedBinders(elementBinders), _perf);
+    var viewFactory =
+        new ViewFactory(elements, _removeUnusedBinders(elementBinders), _perf);
 
     assert(_perf.stopTimer(timerId) != false);
     traceLeave(s);
@@ -26,23 +25,22 @@ class Compiler implements Function {
   }
 
   ElementBinder _elementBinderForNode(NodeCursor domCursor,
-                                      ElementBinder useExistingElementBinder,
-                                      DirectiveMap directives,
-                                      List elementBinders) {
+      ElementBinder useExistingElementBinder, DirectiveMap directives,
+      List elementBinders) {
     var node = domCursor.current;
 
     if (node.nodeType == dom.Node.ELEMENT_NODE) {
       // If the node is an element, call selector matchElement.
       // If text, call selector.matchText
 
-      ElementBinder elementBinder = useExistingElementBinder == null ?
-          directives.selector.matchElement(node) : useExistingElementBinder;
+      ElementBinder elementBinder = useExistingElementBinder == null
+          ? directives.selector.matchElement(node)
+          : useExistingElementBinder;
 
       if (elementBinder.hasTemplate) {
         var templateBinder = elementBinder as TemplateElementBinder;
-        templateBinder.templateViewFactory = _compileTransclusion(
-            domCursor, templateBinder.template,
-            templateBinder.templateBinder, directives);
+        templateBinder.templateViewFactory = _compileTransclusion(domCursor,
+            templateBinder.template, templateBinder.templateBinder, directives);
       }
       return elementBinder;
     } else if (node.nodeType == dom.Node.TEXT_NODE) {
@@ -51,20 +49,18 @@ class Compiler implements Function {
     return null;
   }
 
-  void _compileNode(NodeCursor domCursor,
-                    ElementBinder elementBinder,
-                    DirectiveMap directives,
-                    List elementBinders,
-                    int parentElementBinderOffset,
-                    bool isTopLevel,
-                    TaggedElementBinder directParentElementBinder) {
+  void _compileNode(NodeCursor domCursor, ElementBinder elementBinder,
+      DirectiveMap directives, List elementBinders,
+      int parentElementBinderOffset, bool isTopLevel,
+      TaggedElementBinder directParentElementBinder) {
     var node = domCursor.current;
     if (node.nodeType == dom.Node.ELEMENT_NODE) {
       TaggedElementBinder taggedElementBinder;
       int taggedElementBinderIndex;
       if (elementBinder.hasDirectivesOrEvents || elementBinder.hasTemplate) {
         taggedElementBinder = _addBinder(elementBinders,
-            new TaggedElementBinder(elementBinder, parentElementBinderOffset, isTopLevel));
+            new TaggedElementBinder(
+                elementBinder, parentElementBinderOffset, isTopLevel));
         taggedElementBinderIndex = elementBinders.length - 1;
         node.classes.add('ng-binding');
       } else {
@@ -79,7 +75,8 @@ class Compiler implements Function {
             addedDummy = true;
             // add a dummy to the list which may be removed later.
             taggedElementBinder = _addBinder(elementBinders,
-                new TaggedElementBinder(null, parentElementBinderOffset, isTopLevel));
+                new TaggedElementBinder(
+                    null, parentElementBinderOffset, isTopLevel));
           }
 
           _compileView(domCursor, null, directives, taggedElementBinderIndex,
@@ -97,16 +94,16 @@ class Compiler implements Function {
         }
       }
     } else if (node.nodeType == dom.Node.TEXT_NODE ||
-               node.nodeType == dom.Node.COMMENT_NODE) {
+        node.nodeType == dom.Node.COMMENT_NODE) {
       if (elementBinder != null &&
           elementBinder.hasDirectivesOrEvents &&
           directParentElementBinder != null) {
-        directParentElementBinder.addText(
-            new TaggedTextBinder(elementBinder, domCursor.index));
+        directParentElementBinder
+            .addText(new TaggedTextBinder(elementBinder, domCursor.index));
       } else if (isTopLevel) {
         // Always add an elementBinder for top-level text.
-        _addBinder(elementBinders,
-            new TaggedElementBinder(elementBinder, parentElementBinderOffset, isTopLevel));
+        _addBinder(elementBinders, new TaggedElementBinder(
+            elementBinder, parentElementBinderOffset, isTopLevel));
       }
     } else {
       throw "Unsupported node type for $node: [${node.nodeType}]";
@@ -114,30 +111,26 @@ class Compiler implements Function {
   }
 
   List<TaggedElementBinder> _compileView(NodeCursor domCursor,
-                                         ElementBinder useExistingElementBinder,
-                                         DirectiveMap directives,
-                                         int parentElementBinderOffset,
-                                         TaggedElementBinder directParentElementBinder,
-                                         List<TaggedElementBinder> elementBinders,
-                                         bool isTopLevel) {
+      ElementBinder useExistingElementBinder, DirectiveMap directives,
+      int parentElementBinderOffset,
+      TaggedElementBinder directParentElementBinder,
+      List<TaggedElementBinder> elementBinders, bool isTopLevel) {
     assert(parentElementBinderOffset != null);
     assert(parentElementBinderOffset < elementBinders.length);
     if (domCursor.current == null) return null;
 
     do {
-      _compileNode(domCursor,
-          _elementBinderForNode(domCursor, useExistingElementBinder, directives, elementBinders),
-          directives, elementBinders, parentElementBinderOffset,
-          isTopLevel, directParentElementBinder);
+      _compileNode(domCursor, _elementBinderForNode(
+              domCursor, useExistingElementBinder, directives, elementBinders),
+          directives, elementBinders, parentElementBinderOffset, isTopLevel,
+          directParentElementBinder);
     } while (domCursor.moveNext());
 
     return elementBinders;
   }
 
-  ViewFactory _compileTransclusion(
-      NodeCursor templateCursor,
-      DirectiveRef directiveRef,
-      ElementBinder transcludedElementBinder,
+  ViewFactory _compileTransclusion(NodeCursor templateCursor,
+      DirectiveRef directiveRef, ElementBinder transcludedElementBinder,
       DirectiveMap directives) {
     var s = traceEnter(Compiler_template);
     var anchorName = directiveRef.annotation.selector +
@@ -145,16 +138,17 @@ class Compiler implements Function {
 
     var transcludeCursor = templateCursor.replaceWithAnchor(anchorName);
     var elementBinders = [];
-    _compileView(transcludeCursor, transcludedElementBinder,
-        directives, -1, null, elementBinders, true);
+    _compileView(transcludeCursor, transcludedElementBinder, directives, -1,
+        null, elementBinders, true);
 
-    var viewFactory = new ViewFactory(transcludeCursor.elements,
-        _removeUnusedBinders(elementBinders), _perf);
+    var viewFactory = new ViewFactory(
+        transcludeCursor.elements, _removeUnusedBinders(elementBinders), _perf);
     traceLeave(s);
     return viewFactory;
   }
 
-  List<TaggedElementBinder> _removeUnusedBinders(List<TaggedElementBinder> binders) {
+  List<TaggedElementBinder> _removeUnusedBinders(
+      List<TaggedElementBinder> binders) {
     // In order to support text nodes with directiveless parents, we
     // add dummy ElementBinders to the list.  After the entire template
     // has been compiled, we remove the dummies and update the offset indices

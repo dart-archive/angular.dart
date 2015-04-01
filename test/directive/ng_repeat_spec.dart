@@ -4,8 +4,7 @@ import '../_specs.dart';
 
 // Mock animate instance that throws on move
 class MockAnimate extends Animate {
-  Animation move(Iterable<Node> nodes, Node parent,
-                 {Node insertBefore}) {
+  Animation move(Iterable<Node> nodes, Node parent, {Node insertBefore}) {
     throw "Move should not be called";
   }
 }
@@ -15,7 +14,8 @@ main() {
     Element element;
     var compile, scope, exceptionHandler, directives;
 
-    beforeEach((Injector injector, Scope rootScope, Compiler compiler, DirectiveMap _directives) {
+    beforeEach((Injector injector, Scope rootScope, Compiler compiler,
+        DirectiveMap _directives) {
       exceptionHandler = injector.get(ExceptionHandler);
       scope = rootScope;
       compile = (html, [scope]) {
@@ -32,8 +32,10 @@ main() {
       directives = _directives;
     });
 
-    it(r'should set create a list of items', (Scope scope, Compiler compiler, Injector injector) {
-      var element = es('<div><div ng-repeat="item in items">{{item}}</div></div>');
+    it(r'should set create a list of items',
+        (Scope scope, Compiler compiler, Injector injector) {
+      var element =
+          es('<div><div ng-repeat="item in items">{{item}}</div></div>');
       ViewFactory viewFactory = compiler(element, directives);
       View view = viewFactory(scope, null, element);
       scope.context['items'] = ['a', 'b'];
@@ -42,12 +44,12 @@ main() {
     });
 
     it(r'should support $parent to access the parent context',
-       (Scope scope, Compiler compiler, Injector injector) {
+        (Scope scope, Compiler compiler, Injector injector) {
       var element = es('<div>'
-                         '<span ng-repeat="list in lists">'
-                           r'<span ng-repeat="i in list">{{$parent.$index}}-{{$index}},</span>'
-                         '</span>'
-                       '</div>');
+          '<span ng-repeat="list in lists">'
+          r'<span ng-repeat="i in list">{{$parent.$index}}-{{$index}},</span>'
+          '</span>'
+          '</div>');
       ViewFactory viewFactory = compiler(element, directives);
       View view = viewFactory(scope, null, element);
       scope.context['lists'] = [[0, 0, 0], [0]];
@@ -55,24 +57,25 @@ main() {
       expect(element).toHaveText('0-0,0-1,0-2,1-0,');
     });
 
-
-    it(r'should set create a list of items', (Scope scope, Compiler compiler, Injector injector) {
+    it(r'should set create a list of items',
+        (Scope scope, Compiler compiler, Injector injector) {
       scope.context['items'] = [];
       scope.watch('1', (_, __) {
         scope.context['items'].add('a');
         scope.context['items'].add('b');
       });
-      var element = es('<div><div ng-repeat="item in items">{{item}}</div></div>');
+      var element =
+          es('<div><div ng-repeat="item in items">{{item}}</div></div>');
       ViewFactory viewFactory = compiler(element, directives);
       View view = viewFactory(scope, null, element);
       scope.apply();
       expect(element).toHaveText('ab');
     });
 
-
     it(r'should set create a list of items from iterable',
         (Scope scope, Compiler compiler, Injector injector) {
-      var element = es('<div><div ng-repeat="item in items">{{item}}</div></div>');
+      var element =
+          es('<div><div ng-repeat="item in items">{{item}}</div></div>');
       ViewFactory viewFactory = compiler(element, directives);
       View view = viewFactory(scope, null, element);
       scope.context['items'] = ['a', 'b'].map((i) => i); // makes an iterable
@@ -80,15 +83,13 @@ main() {
       expect(element).toHaveText('ab');
     });
 
-
     it(r'should iterate over an array of objects', () {
-      element = compile(
-        '<ul>'
+      element = compile('<ul>'
           '<li ng-repeat="item in items">{{item.name}};</li>'
-        '</ul>');
+          '</ul>');
 
       // INIT
-      scope.context['items'] = [{"name": 'misko'}, {"name":'shyam'}];
+      scope.context['items'] = [{"name": 'misko'}, {"name": 'shyam'}];
       scope.apply();
       expect(element.querySelectorAll('li').length).toEqual(2);
       expect(element.text).toEqual('misko;shyam;');
@@ -107,28 +108,24 @@ main() {
       expect(element.text).toEqual('shyam;');
     });
 
-
     it(r'should gracefully handle nulls', () {
-      element = compile(
-        '<div>'
+      element = compile('<div>'
           '<ul>'
-            '<li ng-repeat="item in null">{{item.name}};</li>'
+          '<li ng-repeat="item in null">{{item.name}};</li>'
           '</ul>'
-        '</div>');
+          '</div>');
       scope.apply();
       expect(element.querySelectorAll('ul').length).toEqual(1);
       expect(element.querySelectorAll('li').length).toEqual(0);
     });
 
-
     it('should gracefully handle ref changing to null and back', () {
       scope.context['items'] = ['odin', 'dva'];
-      element = compile(
-        '<div>'
+      element = compile('<div>'
           '<ul>'
-            '<li ng-repeat="item in items">{{item}};</li>'
+          '<li ng-repeat="item in items">{{item}};</li>'
           '</ul>'
-        '</div>');
+          '</div>');
       scope.apply();
       expect(element.querySelectorAll('ul').length).toEqual(1);
       expect(element.querySelectorAll('li').length).toEqual(2);
@@ -149,12 +146,11 @@ main() {
 
     it('should gracefully handle ref changing to non-list and back', () {
       scope.context['items'] = ['odin', 'dva'];
-      element = compile(
-        '<div>'
+      element = compile('<div>'
           '<ul>'
-            '<li ng-repeat="item in items">{{item}};</li>'
+          '<li ng-repeat="item in items">{{item}};</li>'
           '</ul>'
-        '</div>');
+          '</div>');
       scope.apply();
       expect(element.querySelectorAll('ul').length).toEqual(1);
       expect(element.querySelectorAll('li').length).toEqual(2);
@@ -173,7 +169,6 @@ main() {
       expect(element.text).toEqual('odin;dva;tri;');
     });
 
-
     it('should support formatters', () {
       element = compile(
           '<div><span ng-repeat="item in items | filter:myFilter">{{item}}</span></div>');
@@ -185,20 +180,17 @@ main() {
 
     it('should support function as a formatter', () {
       scope.context['isEven'] = (num) => num % 2 == 0;
-      var element = compile(
-          '<div ng-show="true">'
-            '<span ng-repeat="r in [1, 2] | filter:isEven">{{r}}</span>'
+      var element = compile('<div ng-show="true">'
+          '<span ng-repeat="r in [1, 2] | filter:isEven">{{r}}</span>'
           '</div>');
       scope.apply();
       expect(element.text).toEqual('2');
     });
 
-
     describe('track by', () {
       it(r'should track using expression function', () {
-        element = compile(
-            '<ul>'
-                '<li ng-repeat="item in items track by item.id">{{item.name}};</li>'
+        element = compile('<ul>'
+            '<li ng-repeat="item in items track by item.id">{{item.name}};</li>'
             '</ul>');
         scope.context['items'] = [{"id": 'misko'}, {"id": 'igor'}];
         scope.apply();
@@ -211,11 +203,9 @@ main() {
         expect(element.querySelectorAll('li')[1]).toBe(li0);
       });
 
-
       it(r'should track using build in $id function', () {
-        element = compile(
-            '<ul>'
-                r'<li ng-repeat="item in items track by $id(item)">{{item.name}};</li>'
+        element = compile('<ul>'
+            r'<li ng-repeat="item in items track by $id(item)">{{item.name}};</li>'
             '</ul>');
         scope.context['items'] = [{"name": 'misko'}, {"name": 'igor'}];
         scope.apply();
@@ -228,11 +218,9 @@ main() {
         expect(element.querySelectorAll('li')[1]).toBe(li0);
       });
 
-
       it(r'should iterate over an array of primitives', () {
-        element = compile(
-            r'<ul>'
-                r'<li ng-repeat="item in items track by $index">{{item}};</li>'
+        element = compile(r'<ul>'
+            r'<li ng-repeat="item in items track by $index">{{item}};</li>'
             r'</ul>');
 
         // INIT
@@ -308,34 +296,31 @@ main() {
         expect(element.querySelectorAll('li').length).toEqual(2);
         expect(element.text).toEqual('89;23;');
       });
-
     });
-
 
     it(r'should error on wrong parsing of ngRepeat', () {
       expect(() {
         compile('<ul><li ng-repeat="i dont parse"></li></ul>')();
-      }).toThrowWith(message: "[NgErr7] ngRepeat error! Expected expression in form of "
-                 "'_item_ in _collection_[ track by _id_]' but got "
-                 "'i dont parse'.");
+      }).toThrowWith(
+          message: "[NgErr7] ngRepeat error! Expected expression in form of "
+          "'_item_ in _collection_[ track by _id_]' but got "
+          "'i dont parse'.");
     });
 
-
-    it("should throw error when left-hand-side of ngRepeat can't be parsed", () {
-        expect(() {
-          compile('<ul><li ng-repeat="i dont parse in foo"></li></ul>')();
-        }).toThrowWith(message: "[NgErr8] ngRepeat error! '_item_' in '_item_ in "
-                  "_collection_' should be an identifier or '(_key_, _value_)' "
-                  "expression, but got 'i dont parse'.");
+    it("should throw error when left-hand-side of ngRepeat can't be parsed",
+        () {
+      expect(() {
+        compile('<ul><li ng-repeat="i dont parse in foo"></li></ul>')();
+      }).toThrowWith(message: "[NgErr8] ngRepeat error! '_item_' in '_item_ in "
+          "_collection_' should be an identifier or '(_key_, _value_)' "
+          "expression, but got 'i dont parse'.");
     });
-
 
     it(r'should expose iterator offset as $index when iterating over arrays',
         () {
-      element = compile(
-        '<ul>' +
+      element = compile('<ul>' +
           '<li ng-repeat="item in items">{{item}}:{{\$index}}|</li>' +
-        '</ul>');
+          '</ul>');
       scope.context['items'] = ['misko', 'shyam', 'frodo'];
       scope.apply();
       expect(element.text).toEqual('misko:0|shyam:1|frodo:2|');
@@ -343,53 +328,49 @@ main() {
 
     it(r'should expose iterator position as $first, $middle and $last when iterating over arrays',
         () {
-      element = compile(
-        '<ul>'
+      element = compile('<ul>'
           '<li ng-repeat="item in items">{{item}}:{{\$first}}-{{\$middle}}-{{\$last}}|</li>'
-        '</ul>');
+          '</ul>');
       scope.context['items'] = ['misko', 'shyam', 'doug'];
       scope.apply();
-      expect(element.text)
-          .toEqual('misko:true-false-false|'
-                   'shyam:false-true-false|'
-                   'doug:false-false-true|');
+      expect(element.text).toEqual('misko:true-false-false|'
+          'shyam:false-true-false|'
+          'doug:false-false-true|');
 
       scope.context['items'].add('frodo');
       scope.apply();
-      expect(element.text)
-          .toEqual('misko:true-false-false|'
-                   'shyam:false-true-false|'
-                   'doug:false-true-false|'
-                   'frodo:false-false-true|');
+      expect(element.text).toEqual('misko:true-false-false|'
+          'shyam:false-true-false|'
+          'doug:false-true-false|'
+          'frodo:false-false-true|');
 
       scope.context['items'].removeLast();
       scope.context['items'].removeLast();
       scope.apply();
 
       expect(element.text).toEqual('misko:true-false-false|'
-                                   'shyam:false-false-true|');
+          'shyam:false-false-true|');
       scope.context['items'].removeLast();
       scope.apply();
       expect(element.text).toEqual('misko:true-false-true|');
     });
 
     it(r'should report odd', () {
-      element = compile(
-        '<ul>'
+      element = compile('<ul>'
           '<li ng-repeat="item in items">{{item}}:{{\$odd}}-{{\$even}}|</li>'
-        '</ul>');
+          '</ul>');
       scope.context['items'] = ['misko', 'shyam', 'doug'];
       scope.apply();
       expect(element.text).toEqual('misko:false-true|'
-                                   'shyam:true-false|'
-                                   'doug:false-true|');
+          'shyam:true-false|'
+          'doug:false-true|');
 
       scope.context['items'].add('frodo');
       scope.apply();
       expect(element.text).toEqual('misko:false-true|'
-                                   'shyam:true-false|'
-                                   'doug:false-true|'
-                                   'frodo:true-false|');
+          'shyam:true-false|'
+          'doug:false-true|'
+          'frodo:true-false|');
 
       scope.context['items'].removeLast();
       scope.context['items'].removeLast();
@@ -402,13 +383,12 @@ main() {
     });
 
     it(r'should repeat over nested arrays', () {
-      element = compile(
-        '<ul>' +
+      element = compile('<ul>' +
           '<li ng-repeat="subgroup in groups">' +
-            '<div ng-repeat="group in subgroup">{{group}}|</div>X' +
+          '<div ng-repeat="group in subgroup">{{group}}|</div>X' +
           '</li>' +
-        '</ul>');
-      scope.context['groups'] = [['a', 'b'], ['c','d']];
+          '</ul>');
+      scope.context['groups'] = [['a', 'b'], ['c', 'd']];
       scope.apply();
 
       expect(element.text).toEqual('a|b|Xc|d|X');
@@ -416,8 +396,7 @@ main() {
 
     describe('nested watching', () {
       it('should not error when the first watched item is removed', () {
-        element = compile(
-            '<ul>'
+        element = compile('<ul>'
             '  <li ng-repeat="i in items">{{ i }}</li>'
             '</ul>');
         scope.context['items'] = ['misko', 'shyam', 'frodo'];
@@ -429,8 +408,7 @@ main() {
       });
 
       it('should not error when the last watched item is removed', () {
-        element = compile(
-            '<ul>'
+        element = compile('<ul>'
             '  <li ng-repeat="i in items">{{ i }}</li>'
             '</ul>');
         scope.context['items'] = ['misko', 'shyam', 'frodo'];
@@ -441,15 +419,17 @@ main() {
         expect(element.children.length).toEqual(2);
       });
 
-      it('should not error when multiple watched items are removed at the same time', () {
-        element = compile(
-            '<ul>'
+      it('should not error when multiple watched items are removed at the same time',
+          () {
+        element = compile('<ul>'
             '  <li ng-repeat="i in items">{{ i }}</li>'
             '</ul>');
         scope.context['items'] = ['misko', 'shyam', 'frodo', 'igor'];
         scope.apply();
         expect(element.children.length).toEqual(4);
-        scope.context['items']..remove('shyam')..remove('frodo');
+        scope.context['items']
+          ..remove('shyam')
+          ..remove('frodo');
         scope.apply();
         expect(element.children.length).toEqual(2);
       });
@@ -459,10 +439,9 @@ main() {
       var a, b, c, d, lis;
 
       beforeEach(() {
-        element = compile(
-          '<ul>'
+        element = compile('<ul>'
             r'<li ng-repeat="item in items">{{ $index }}</li>'
-          '</ul>');
+            '</ul>');
         a = {};
         b = {};
         c = {};
@@ -512,8 +491,8 @@ main() {
         expect(newElements[2]).toEqual(lis[0]);
       });
 
-
-      it(r'should reuse elements even when model is composed of primitives', () {
+      it(r'should reuse elements even when model is composed of primitives',
+          () {
         // rebuilding repeater from scratch can be expensive, we should try to
         // avoid it even for model that is composed of primitives.
 
@@ -532,15 +511,13 @@ main() {
       });
     });
 
-
     it('should correctly handle detached state', () {
       scope.context['items'] = [1];
 
       var parentScope = scope.createProtoChild();
-      element = compile(
-        '<ul>'
+      element = compile('<ul>'
           '<li ng-repeat="item in items">{{item}}</li>'
-        '</ul>', parentScope);
+          '</ul>', parentScope);
 
       parentScope.destroy();
       expect(scope.apply).not.toThrow();
@@ -548,10 +525,10 @@ main() {
 
     it(r'should not move blocks when elements only added or removed',
         (Injector injector, Scope rootScope, Compiler compiler,
-         DirectiveMap _directives, ExceptionHandler exceptionHandler) {
+            DirectiveMap _directives, ExceptionHandler exceptionHandler) {
       var throwOnMove = new MockAnimate();
-      var child = injector.createChild(
-          [new Module()..bind(Animate, toValue: throwOnMove)]);
+      var child = injector
+          .createChild([new Module()..bind(Animate, toValue: throwOnMove)]);
 
       scope = rootScope;
       compile = (html) {
@@ -562,21 +539,21 @@ main() {
       };
       directives = _directives;
 
-      element = compile(
-          '<ul>'
-            '<li ng-repeat="item in items">{{item}}</li>'
+      element = compile('<ul>'
+          '<li ng-repeat="item in items">{{item}}</li>'
           '</ul>');
 
-      scope..context['items'] = ['a', 'b', 'c']
-           ..apply()
-           // grow
-           ..context['items'].add('d')
-           ..apply()
-           // shrink
-           ..context['items'].removeLast()
-           ..apply()
-           ..context['items'].removeAt(0)
-           ..apply();
+      scope
+        ..context['items'] = ['a', 'b', 'c']
+        ..apply()
+        // grow
+        ..context['items'].add('d')
+        ..apply()
+        // shrink
+        ..context['items'].removeLast()
+        ..apply()
+        ..context['items'].removeAt(0)
+        ..apply();
 
       expect(element).toHaveText('bc');
     });

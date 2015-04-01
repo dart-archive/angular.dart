@@ -13,8 +13,8 @@ import 'package:path/path.dart' as path;
 /// Gathers the contents of all URIs which are referenced by the contents of
 /// the application.
 /// Returns a map from URI to contents.
-Future<Map<String, String>> gatherReferencedUris(Transform transform,
-    Resolver resolver, TransformOptions options,
+Future<Map<String, String>> gatherReferencedUris(
+    Transform transform, Resolver resolver, TransformOptions options,
     {bool skipNonCached: false, bool templatesOnly: false}) {
   var urlResolver =
       new TransformerResourceUrlResolver(resolver, transform.primaryInput.id);
@@ -35,8 +35,9 @@ class _Processor {
   ConstructorElement componentAnnotation;
 
   static const String cacheAnnotationName =
-    'angular.template_cache_annotation.NgTemplateCache';
-  static const String componentAnnotationName = 'angular.core.annotation_src.Component';
+      'angular.template_cache_annotation.NgTemplateCache';
+  static const String componentAnnotationName =
+      'angular.core.annotation_src.Component';
   static final RegExp pkgRegex = new RegExp(r'.*\/packages\/([^\/]*)(\/.*)');
 
   _Processor(this.transform, this.resolver, this.options, this.skipNonCached,
@@ -68,23 +69,24 @@ class _Processor {
         .expand((unit) => unit.types)
         .where((type) => type.node != null)
         .expand(_AnnotatedElement.fromElement)
-        .where((e) =>
-            (e.annotation.element == cacheAnnotation ||
+        .where((e) => (e.annotation.element == cacheAnnotation ||
             e.annotation.element == componentAnnotation))
         .toList();
 
     var uriToEntry = <String, _CacheEntry>{};
-    annotations.where((anno) => anno.annotation.element == componentAnnotation)
+    annotations
+        .where((anno) => anno.annotation.element == componentAnnotation)
         .expand(processComponentAnnotation)
         .forEach((entry) {
-          uriToEntry[entry.uri] = entry;
-        });
+      uriToEntry[entry.uri] = entry;
+    });
     if (!templatesOnly) {
-      annotations.where((anno) => anno.annotation.element == cacheAnnotation)
+      annotations
+          .where((anno) => anno.annotation.element == cacheAnnotation)
           .expand(processCacheAnnotation)
           .forEach((entry) {
-            uriToEntry[entry.uri] = entry;
-          });
+        uriToEntry[entry.uri] = entry;
+      });
     }
 
     var futures = uriToEntry.values.map(cacheEntry);
@@ -110,14 +112,14 @@ class _Processor {
       if (arg is NamedExpression) {
         var paramName = arg.name.label.name;
         if (paramName == 'templateUrl') {
-          var entry = extractString('templateUrl', arg.expression,
-              annotation.element);
+          var entry =
+              extractString('templateUrl', arg.expression, annotation.element);
           if (entry != null) {
             entries.add(entry);
           }
         } else if (paramName == 'cssUrl' && !templatesOnly) {
-          entries.addAll(extractListOrString(paramName, arg.expression,
-              annotation.element));
+          entries.addAll(extractListOrString(
+              paramName, arg.expression, annotation.element));
         }
       }
     }
@@ -151,16 +153,16 @@ class _Processor {
       if (arg is NamedExpression) {
         var paramName = arg.name.label.name;
         if (paramName == 'preCacheUrls') {
-          entries.addAll(extractListOrString(paramName, arg.expression,
-              annotation.element));
+          entries.addAll(extractListOrString(
+              paramName, arg.expression, annotation.element));
         }
       }
     }
     return entries;
   }
 
-  List<_CacheEntry> extractListOrString(String paramName,
-      Expression expression, Element element) {
+  List<_CacheEntry> extractListOrString(
+      String paramName, Expression expression, Element element) {
     var entries = [];
     if (expression is StringLiteral) {
       var entry = uriToEntry(expression.stringValue, element);
@@ -184,8 +186,8 @@ class _Processor {
     return entries;
   }
 
-  _CacheEntry extractString(String paramName, Expression expression,
-      Element element) {
+  _CacheEntry extractString(
+      String paramName, Expression expression, Element element) {
     if (expression is StringLiteral) {
       return uriToEntry(expression.stringValue, element);
     }
@@ -237,7 +239,8 @@ class _Processor {
   }
 
   void warn(String msg, Element element) {
-    logger.warning(msg, asset: resolver.getSourceAssetId(element),
+    logger.warning(msg,
+        asset: resolver.getSourceAssetId(element),
         span: resolver.getSourceSpan(element));
   }
 
@@ -265,7 +268,7 @@ class _AnnotatedElement {
 
   static Iterable<_AnnotatedElement> fromElement(Element element) {
     AnnotatedNode node = element.node;
-    return node.metadata.map(
-        (annotation) => new _AnnotatedElement(annotation, element));
+    return node.metadata
+        .map((annotation) => new _AnnotatedElement(annotation, element));
   }
 }

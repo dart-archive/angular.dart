@@ -49,9 +49,9 @@ class NodeAttrs {
    * [:true:]
    */
   observe(String attrName, notifyFn(String value)) {
-    if (_observers == null) _observers = new HashMap<String, List<_AttributeChanged>>();
-    _observers.putIfAbsent(attrName, () => <_AttributeChanged>[])
-              .add(notifyFn);
+    if (_observers == null) _observers =
+        new HashMap<String, List<_AttributeChanged>>();
+    _observers.putIfAbsent(attrName, () => <_AttributeChanged>[]).add(notifyFn);
 
     if (_mustacheAttrs.containsKey(attrName)) {
       if (_mustacheAttrs[attrName].isComputed) notifyFn(this[attrName]);

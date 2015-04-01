@@ -20,16 +20,17 @@
  */
 library angular.formatter;
 
-export "package:angular/formatter/module_internal.dart" show
-    FormatterModule,
-    Currency,
-    Date,
-    Filter,
-    Json,
-    LimitTo,
-    Lowercase,
-    Arrayify,
-    Number,
-    OrderBy,
-    Uppercase,
-    Stringify;
+export "package:angular/formatter/module_internal.dart"
+    show
+        FormatterModule,
+        Currency,
+        Date,
+        Filter,
+        Json,
+        LimitTo,
+        Lowercase,
+        Arrayify,
+        Number,
+        OrderBy,
+        Uppercase,
+        Stringify;

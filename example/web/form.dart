@@ -11,18 +11,25 @@ class FormCtrl {
   static const String _COLOR_RGB = "rgb";
   static const String _COLOR_NAME = "name";
 
-  static const _COLOR_TYPES = const [_COLOR_RGB, _COLOR_HSL, _COLOR_HEX, _COLOR_NAME];
+  static const _COLOR_TYPES = const [
+    _COLOR_RGB,
+    _COLOR_HSL,
+    _COLOR_HEX,
+    _COLOR_NAME
+  ];
 
-  static const _RESOLUTIONS = const ['1024x600',
-                                     '1280x800',
-                                     '1366x768',
-                                     '1440x900',
-                                     '1600x900',
-                                     '1680x1050',
-                                     '1920x1080',
-                                     '1920x1200',
-                                     '2560x1440',
-                                     '2560x1600'];
+  static const _RESOLUTIONS = const [
+    '1024x600',
+    '1280x800',
+    '1366x768',
+    '1440x900',
+    '1600x900',
+    '1680x1050',
+    '1920x1080',
+    '1920x1200',
+    '2560x1440',
+    '2560x1600'
+  ];
 
   Scope scope;
   final List colors = [];
@@ -50,11 +57,10 @@ class FormCtrl {
 
   int getTotalSquares(inputValue) {
     var value = 4;
-    if(inputValue != null) {
+    if (inputValue != null) {
       try {
         value = double.parse(inputValue.toString());
-      } catch(e) {
-      }
+      } catch (e) {}
     }
     return (value * value).toInt();
   }
@@ -63,7 +69,7 @@ class FormCtrl {
     formattedColors.clear();
     colors.forEach((color) {
       var value = null;
-      switch(color['type']) {
+      switch (color['type']) {
         case _COLOR_HEX:
           value = color['hex'];
           break;
@@ -71,7 +77,7 @@ class FormCtrl {
           var hue = color['hue'];
           var saturation = color['saturation'];
           var luminance = color['luminance'];
-          if(hue != null && saturation != null && luminance != null) {
+          if (hue != null && saturation != null && luminance != null) {
             value = "hsl($hue, $saturation%, $luminance%)";
           }
           break;
@@ -79,7 +85,7 @@ class FormCtrl {
           var red = color['red'];
           var blue = color['blue'];
           var green = color['green'];
-          if(red != null && green != null && blue != null) {
+          if (red != null && green != null && blue != null) {
             value = "rgb($red, $green, $blue)";
           }
           break;
@@ -87,7 +93,7 @@ class FormCtrl {
           value = color['name'];
           break;
       }
-      if(value != null) {
+      if (value != null) {
         formattedColors.add(value);
       }
     });
@@ -96,23 +102,21 @@ class FormCtrl {
 
   void newColor([String type = _COLOR_HEX, String color]) {
     colors.add({
-      'id' : colors.length,
-      'type' : type,
-      'hex' : type == _COLOR_HEX ? color : '',
-      'hue' : '',
-      'saturation' : '',
-      'luminance' : '',
-      'red' : '',
-      'green' : '',
+      'id': colors.length,
+      'type': type,
+      'hex': type == _COLOR_HEX ? color : '',
+      'hue': '',
+      'saturation': '',
+      'luminance': '',
+      'red': '',
+      'green': '',
       'blue': '',
       'name': ''
     });
   }
 }
 
-@Decorator(
-    selector: '[preview-controller]'
-)
+@Decorator(selector: '[preview-controller]')
 class PreviewCtrl {
   PreviewCtrl(FormCtrl form) {
     form.preview = this;
@@ -122,7 +126,7 @@ class PreviewCtrl {
 
   List expandList(items, limit) {
     _collection.clear();
-    if(items != null && items.length > 0) {
+    if (items != null && items.length > 0) {
       for (var i = 0; i < limit; i++) {
         var x = i % items.length;
         _collection.add(items[x]);
@@ -134,8 +138,8 @@ class PreviewCtrl {
 
 main() {
   applicationFactory()
-      ..addModule(new Module()
-          ..bind(FormCtrl)
-          ..bind(PreviewCtrl))
-      ..run();
+    ..addModule(new Module()
+      ..bind(FormCtrl)
+      ..bind(PreviewCtrl))
+    ..run();
 }

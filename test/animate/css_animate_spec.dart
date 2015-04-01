@@ -14,8 +14,8 @@ _run({bool animationsAllowed}) {
     beforeEach((TestBed tb, Expando expand) {
       _ = tb;
       runner = new MockAnimationLoop(animationsAllowed);
-      animate = new CssAnimate(runner,
-          new CssAnimationMap(), new AnimationOptimizer(expand));
+      animate = new CssAnimate(
+          runner, new CssAnimationMap(), new AnimationOptimizer(expand));
       animate.animationsAllowed = animationsAllowed;
     });
 
@@ -79,7 +79,6 @@ _run({bool animationsAllowed}) {
       expect(_.rootElement.text).toEqual("BbAa");
     }));
 
-
     it('should animate multiple elements', async(() {
       _.compile('<div></div>');
       List<Node> nodes = es('<span>A</span>a<span>B</span>b');
@@ -121,11 +120,11 @@ class MockAnimationLoop implements AnimationLoop {
   }
 
   void frame() {
-    for(var animation in animations) {
+    for (var animation in animations) {
       animation.read(time);
     }
 
-    for(var animation in animations) {
+    for (var animation in animations) {
       animation.update(time);
     }
 
@@ -138,7 +137,8 @@ class MockAnimationLoop implements AnimationLoop {
 main() {
   describe('CssAnimate', () {
     _run(animationsAllowed: true);
-    if (!identical(1, 1.0) && js.context['DART_VERSION'].toString().contains("version: 1.5.")) {
+    if (!identical(1, 1.0) &&
+        js.context['DART_VERSION'].toString().contains("version: 1.5.")) {
       // Remove this block when issue #1219 is fixed.
       // In Dart 1.5's Dartium, running both describes in any order causes
       // ng_model_spec to fails.  This is not the case in Dart 1.4 or Dart 1.6.

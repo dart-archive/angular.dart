@@ -1,7 +1,6 @@
 import 'package:angular/angular.dart';
 import 'package:angular/application_factory.dart';
 
-
 main() {
   var injector = applicationFactory().run();
   var scope = injector.get(Scope);

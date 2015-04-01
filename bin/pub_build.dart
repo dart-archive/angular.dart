@@ -1,4 +1,3 @@
-
 import 'dart:io';
 import 'dart:convert';
 import 'package:args/args.dart';
@@ -26,8 +25,7 @@ main(args) {
       .where((entry) => entry['level'] != 'Fine' && entry['level'] != 'Info')
       .map((entry) =>
           '${entry['assetId']['path']} from ${entry['transformer']['name']} :'
-          '${entry['level']}: ${entry['message']}')
-      .toList();
+          '${entry['level']}: ${entry['message']}').toList();
 
   entries.sort();
 
@@ -38,8 +36,7 @@ main(args) {
   }
 
   var expected = JSON.decode(cmds.expectations.readAsStringSync());
-  var unexpected = entries.toSet()
-    ..removeAll(expected);
+  var unexpected = entries.toSet()..removeAll(expected);
 
   if (unexpected.isNotEmpty) {
     print('Encountered unexpected pub build messages:');
@@ -59,15 +56,18 @@ class Commands {
 
   static Commands parse(List<String> args) {
     var parser = new ArgParser()
-    ..addOption('package_home', abbr: 'p',
-        help: 'The root directory of the package to be built.',
-        defaultsTo: '.')
-    ..addOption('expectations', abbr: 'e',
-        help: 'A JSON file containing the expected warning and error messages.')
-    ..addFlag('reset', negatable: false,
-        help: 'Regenerate the expectations with the results of the build.')
-    ..addFlag('help', abbr: 'h',
-        negatable: false, help: 'Displays this help and exit.');
+      ..addOption('package_home',
+          abbr: 'p',
+          help: 'The root directory of the package to be built.',
+          defaultsTo: '.')
+      ..addOption('expectations',
+          abbr: 'e',
+          help: 'A JSON file containing the expected warning and error messages.')
+      ..addFlag('reset',
+          negatable: false,
+          help: 'Regenerate the expectations with the results of the build.')
+      ..addFlag('help',
+          abbr: 'h', negatable: false, help: 'Displays this help and exit.');
 
     showUsage() {
       print('Usage: dart pub_build.dart [options]');

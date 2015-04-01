@@ -18,9 +18,8 @@ main() {
     var cssContent2 = '#id2 {color: blue}';
 
     it('should cache templateURL', () {
-      return generates(setupPhases(),
-          inputs: {
-            'a|web/main.dart': '''
+      return generates(setupPhases(), inputs: {
+        'a|web/main.dart': '''
                 import 'package:angular/angular.dart';
                 import 'dir/foo.dart';
 
@@ -29,26 +28,25 @@ main() {
 
                 main() {}
             ''',
-            'a|web/dir/foo.dart': '''
+        'a|web/dir/foo.dart': '''
                 import 'package:angular/angular.dart';
 
                 @Component(templateUrl: "test2.html")
                 class B {}
             ''',
-            'a|web/test1.html': htmlContent1,
-            'a|web/dir/test2.html': htmlContent2,
-            'angular|lib/angular.dart': libAngular,
-          },
+        'a|web/test1.html': htmlContent1,
+        'a|web/dir/test2.html': htmlContent2,
+        'angular|lib/angular.dart': libAngular,
+      },
           cacheContent: {
-            'test1.html': htmlContent1,
-            'dir/test2.html': htmlContent2,
-          });
+        'test1.html': htmlContent1,
+        'dir/test2.html': htmlContent2,
+      });
     });
 
     it('should cache cssURLs', () {
-      return generates(setupPhases(),
-      inputs: {
-          'a|web/main.dart': '''
+      return generates(setupPhases(), inputs: {
+        'a|web/main.dart': '''
                 import 'package:angular/angular.dart';
                 import 'dir/foo.dart';
 
@@ -57,19 +55,19 @@ main() {
 
                 main() {}
                 ''',
-          'a|web/dir/foo.dart': '''
+        'a|web/dir/foo.dart': '''
                 import 'package:angular/angular.dart';
 
                 @Component(cssUrl: ["test2.css"])
                 class B {}
             ''',
-          'a|web/test1.css': cssContent1,
-          'a|web/dir/test2.css': cssContent2,
-          'angular|lib/angular.dart': libAngular,
+        'a|web/test1.css': cssContent1,
+        'a|web/dir/test2.css': cssContent2,
+        'angular|lib/angular.dart': libAngular,
       },
-      cacheContent: {
-          'test1.css': cssContent1,
-          'dir/test2.css': cssContent2,
+          cacheContent: {
+        'test1.css': cssContent1,
+        'dir/test2.css': cssContent2,
       });
     });
 
@@ -82,9 +80,8 @@ main() {
           color: red;
         }
       """''';
-      return generates(setupPhases(),
-          inputs: {
-            'a|web/main.dart': '''
+      return generates(setupPhases(), inputs: {
+        'a|web/main.dart': '''
                 import 'package:angular/angular.dart';
 
                 @Component(
@@ -93,20 +90,19 @@ main() {
 
                  main() {}
                  ''',
-            'a|web/multiline1.html': multiLineContent1,
-            'a|web/multiline2.css': multiLineContent2,
-            'angular|lib/angular.dart': libAngular,
-          },
+        'a|web/multiline1.html': multiLineContent1,
+        'a|web/multiline2.css': multiLineContent2,
+        'angular|lib/angular.dart': libAngular,
+      },
           cacheContent: {
-            'multiline1.html': multiLineContent1,
-            'multiline2.css': multiLineContent2,
-          });
+        'multiline1.html': multiLineContent1,
+        'multiline2.css': multiLineContent2,
+      });
     });
 
     it('should cache annotation', () {
-      return generates(setupPhases(),
-          inputs: {
-            'a|web/main.dart': '''
+      return generates(setupPhases(), inputs: {
+        'a|web/main.dart': '''
                 import 'package:angular/angular.dart';
                 import 'package:angular/angular_cache.dart';
                 import 'dir/foo.dart';
@@ -116,57 +112,53 @@ main() {
 
                 main() {}
             ''',
-            'a|web/dir/foo.dart': '''
+        'a|web/dir/foo.dart': '''
                 import 'package:angular/angular.dart';
                 import 'package:angular/angular_cache.dart';
 
                 @NgTemplateCache(preCacheUrls: ["test2.html"])
                 class B {}
             ''',
-            'a|web/test1.html': htmlContent1,
-            'a|web/dir/test2.html': htmlContent2,
-            'angular|lib/angular.dart': libAngular,
-            'angular|lib/angular_cache.dart': libCacheAnnotation,
-          },
+        'a|web/test1.html': htmlContent1,
+        'a|web/dir/test2.html': htmlContent2,
+        'angular|lib/angular.dart': libAngular,
+        'angular|lib/angular_cache.dart': libCacheAnnotation,
+      },
           cacheContent: {
-            'test1.html': htmlContent1,
-            'dir/test2.html': htmlContent2,
-          });
+        'test1.html': htmlContent1,
+        'dir/test2.html': htmlContent2,
+      });
     });
 
     it('should handle no cached values', () {
-      return generates(setupPhases(),
-          inputs: {
-              'a|web/main.dart': '''
+      return generates(setupPhases(), inputs: {
+        'a|web/main.dart': '''
                     import 'package:angular/angular.dart';
                     import 'package:angular/template_cache.dart';
 
                     main() {}
                     ''',
-              'angular|lib/angular.dart': libAngular,
-              'angular|lib/template_cache.dart': libCacheAnnotation,
-          });
+        'angular|lib/angular.dart': libAngular,
+        'angular|lib/template_cache.dart': libCacheAnnotation,
+      });
     });
 
     it('should warn on no angular imports', () {
-      return generates(setupPhases(),
-          inputs: {
-              'a|web/main.dart': '''
+      return generates(setupPhases(), inputs: {
+        'a|web/main.dart': '''
                     main() {}
                     ''',
-              'angular|lib/angular.dart': libAngular,
-          },
-          messages: [
-              'warning: Unable to resolve '
-              'angular.core.annotation_src.Component.'
-          ]);
-      });
+        'angular|lib/angular.dart': libAngular,
+      }, messages: [
+        'warning: Unable to resolve '
+            'angular.core.annotation_src.Component.'
+      ]);
+    });
 
     it('should not generate template cache', () {
       return generates(setupPhases(generateTemplateCache: false),
-          cacheGenerated: false,
-          inputs: {
-            'a|web/main.dart': '''
+          cacheGenerated: false, inputs: {
+        'a|web/main.dart': '''
                 import 'package:angular/angular.dart';
                 import 'dir/foo.dart';
 
@@ -175,21 +167,20 @@ main() {
 
                 main() {}
             ''',
-            'a|web/dir/foo.dart': '''
+        'a|web/dir/foo.dart': '''
                 import 'package:angular/angular.dart';
 
                 @NgTemplateCache(preCacheUrls: ["test2.html"])
                 class B {}
             ''',
-            'angular|lib/angular.dart': libAngular,
-            'angular|lib/template_cache.dart': libCacheAnnotation,
+        'angular|lib/angular.dart': libAngular,
+        'angular|lib/template_cache.dart': libCacheAnnotation,
       });
     });
 
     it('should cache complicated URLs', () {
-      return generates(setupPhases(),
-          inputs: {
-              'a|web/main.dart': '''
+      return generates(setupPhases(), inputs: {
+        'a|web/main.dart': '''
                     import 'package:angular/angular.dart';
                     import 'dir/foo.dart';
 
@@ -200,7 +191,7 @@ main() {
 
                     main() {}
               ''',
-              'a|web/dir/foo.dart': '''
+        'a|web/dir/foo.dart': '''
                     import 'package:angular/angular.dart';
 
                     // Packages may show up multiple times. Only the last value
@@ -210,28 +201,25 @@ main() {
                         cssUrl: "/packages/y/dir/dir2/dir3/test2.css")
                     class B {}
               ''',
-              'a.b.c|lib/test1.html': htmlContent1,
-              'a|lib/dir/test2.html': htmlContent2,
-              'angular|lib/angular.dart': libAngular,
-              'b|lib/test1.css': cssContent1,
-              'y|lib/dir/dir2/dir3/test2.css': cssContent2,
-          },
+        'a.b.c|lib/test1.html': htmlContent1,
+        'a|lib/dir/test2.html': htmlContent2,
+        'angular|lib/angular.dart': libAngular,
+        'b|lib/test1.css': cssContent1,
+        'y|lib/dir/dir2/dir3/test2.css': cssContent2,
+      },
           cacheContent: {
-              '/x/y/z/packages/a.b.c/test1.html': htmlContent1,
-              '/packages/b/test1.css': cssContent1,
-              '/a/packages/z/packages/a/dir/test2.html': htmlContent2,
-              '/packages/y/dir/dir2/dir3/test2.css': cssContent2,
+        '/x/y/z/packages/a.b.c/test1.html': htmlContent1,
+        '/packages/b/test1.css': cssContent1,
+        '/a/packages/z/packages/a/dir/test2.html': htmlContent2,
+        '/packages/y/dir/dir2/dir3/test2.css': cssContent2,
       });
     });
   });
 }
 
-Future generates(List<List<Transformer>> phases,
-                 { Map<String, String> inputs,
-                 Map<String, String> cacheContent: const {},
-                 Iterable<String> messages: const [],
-                 bool cacheGenerated: true}) {
-
+Future generates(List<List<Transformer>> phases, {Map<String, String> inputs,
+    Map<String, String> cacheContent: const {},
+    Iterable<String> messages: const [], bool cacheGenerated: true}) {
   var buffer = new StringBuffer();
   buffer.write(header);
   cacheContent.forEach((uri, contents) {
@@ -239,13 +227,12 @@ Future generates(List<List<Transformer>> phases,
     buffer.write("  r'$uri' : r'''\n$contents''',\n");
   });
   buffer.write('};\n');
-  var results = !cacheGenerated ? {} :
-      {'a|web/main_generated_template_cache.dart': buffer.toString()};
+  var results = !cacheGenerated
+      ? {}
+      : {'a|web/main_generated_template_cache.dart': buffer.toString()};
 
   return tests.applyTransformers(phases,
-    inputs: inputs,
-    results: results,
-    messages: messages);
+      inputs: inputs, results: results, messages: messages);
 }
 
 const String header = '''
@@ -288,7 +275,5 @@ List<List> setupPhases({generateTemplateCache: true}) {
       generateTemplateCache: generateTemplateCache);
   var resolvers = new Resolvers(dartSdkDirectory);
 
-  return [
-      [new TemplateCacheGenerator(options, resolvers)]
-  ];
+  return [[new TemplateCacheGenerator(options, resolvers)]];
 }

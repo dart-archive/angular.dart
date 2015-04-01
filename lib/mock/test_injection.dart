@@ -50,7 +50,8 @@ class _SpecInjector {
     try {
       if (injector == null) {
         injectorCreateLocation = declarationStack;
-        injector = new ModuleInjector(modules); // Implicit injection is disabled.
+        injector =
+            new ModuleInjector(modules); // Implicit injection is disabled.
         initFns.forEach((fn) {
           _invoke(injector, fn);
         });
@@ -71,8 +72,7 @@ class _SpecInjector {
     MethodMirror mm = cm.function;
     List args = mm.parameters.map((ParameterMirror parameter) {
       var metadata = parameter.metadata;
-      Key key = new Key(
-          (parameter.type as ClassMirror).reflectedType,
+      Key key = new Key((parameter.type as ClassMirror).reflectedType,
           metadata.isEmpty ? null : metadata.first.type.reflectedType);
       return injector.getByKey(key);
     }).toList();
@@ -136,7 +136,7 @@ inject(Function fn) {
 module(fnOrModule) {
   try {
     throw '';
-  } catch(e, stack) {
+  } catch (e, stack) {
     return _currentSpecInjector == null
         ? () => _currentSpecInjector.module(fnOrModule, stack)
         : _currentSpecInjector.module(fnOrModule, stack);

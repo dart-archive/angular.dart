@@ -177,6 +177,6 @@ class RoutingModule extends Module {
 @Injectable()
 class NgRoutingUsePushState {
   final bool usePushState;
-  NgRoutingUsePushState(): usePushState = true;
+  NgRoutingUsePushState() : usePushState = true;
   NgRoutingUsePushState.value(this.usePushState);
 }

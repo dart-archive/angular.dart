@@ -31,7 +31,6 @@ abstract class _NgUnlessIfAttrDirectiveBase {
   }
 }
 
-
 /**
  * Removes or inserts a subtree from the DOM based on whether a provided
  * expression is true or false. `Selector: [ng-if]`
@@ -73,7 +72,7 @@ abstract class _NgUnlessIfAttrDirectiveBase {
  */
 @Decorator(
     children: Directive.TRANSCLUDE_CHILDREN,
-    selector:'[ng-if]',
+    selector: '[ng-if]',
     map: const {'.': '=>condition'})
 class NgIf extends _NgUnlessIfAttrDirectiveBase {
   NgIf(ViewFactory viewFactory, ViewPort viewPort, Scope scope)
@@ -87,7 +86,6 @@ class NgIf extends _NgUnlessIfAttrDirectiveBase {
     }
   }
 }
-
 
 /**
  * Recreates or destroys the DOM subtree containing a directive based on whether a provided
@@ -131,10 +129,9 @@ class NgIf extends _NgUnlessIfAttrDirectiveBase {
  */
 @Decorator(
     children: Directive.TRANSCLUDE_CHILDREN,
-    selector:'[ng-unless]',
+    selector: '[ng-unless]',
     map: const {'.': '=>condition'})
 class NgUnless extends _NgUnlessIfAttrDirectiveBase {
-
   NgUnless(ViewFactory viewFactory, ViewPort viewPort, Scope scope)
       : super(viewFactory, viewPort, scope);
 

@@ -1,8 +1,6 @@
 part of animation;
 
-@Component(
-    selector: 'visibility-demo',
-    template: '''
+@Component(selector: 'visibility-demo', template: '''
       <div class="visibility-demo">
       <button ng-click="visible = !visible">Toggle Visibility</button>
       <div class="visible-if" ng-if="visible">
@@ -15,8 +13,7 @@ part of animation;
           hide this view of text.</p>
       </div>
       </div>
-    ''',
-    useShadowDom: false)
+    ''', useShadowDom: false)
 class VisibilityDemo {
   bool visible = false;
 }

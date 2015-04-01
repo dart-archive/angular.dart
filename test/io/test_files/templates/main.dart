@@ -5,5 +5,4 @@ import 'package:angular/tools/template_cache_annotation.dart';
 
 part 'partial.dart';
 
-class MainClass {
-}
+class MainClass {}

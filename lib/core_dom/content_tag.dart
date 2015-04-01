@@ -12,9 +12,9 @@ abstract class _ContentStrategy {
  * The distribution is handled by the browser, so Angular does nothing.
  */
 class _ShadowDomContent implements _ContentStrategy {
-  void attach(){}
-  void detach(){}
-  void insert(Iterable<dom.Node> nodes){}
+  void attach() {}
+  void detach() {}
+  void insert(Iterable<dom.Node> nodes) {}
   Iterable<dom.Node> get nodes => null;
 }
 
@@ -27,11 +27,11 @@ class _RenderedTranscludingContent implements _ContentStrategy {
   final SourceLightDom _sourceLightDom;
   final Content _content;
 
-  static final dom.ScriptElement _beginScriptTemplate =
-      new dom.ScriptElement()..type = "ng/content";
+  static final dom.ScriptElement _beginScriptTemplate = new dom.ScriptElement()
+    ..type = "ng/content";
 
-  static final dom.ScriptElement _endScriptTemplate =
-      new dom.ScriptElement()..type = "ng/content";
+  static final dom.ScriptElement _endScriptTemplate = new dom.ScriptElement()
+    ..type = "ng/content";
 
   dom.ScriptElement _beginScript;
   dom.ScriptElement _endScript;
@@ -41,17 +41,17 @@ class _RenderedTranscludingContent implements _ContentStrategy {
 
   _RenderedTranscludingContent(this._content, this._sourceLightDom);
 
-  void attach(){
+  void attach() {
     _replaceContentElementWithScriptTags();
     _sourceLightDom.redistribute();
   }
 
-  void detach(){
+  void detach() {
     _removeScriptTags();
     _sourceLightDom.redistribute();
   }
 
-  void insert(Iterable<dom.Node> nodes){
+  void insert(Iterable<dom.Node> nodes) {
     final p = _endScript.parent;
     if (p != null && !_equalToCurrNodes(nodes)) {
       _removeNodesBetweenScriptTags();
@@ -82,7 +82,8 @@ class _RenderedTranscludingContent implements _ContentStrategy {
   void _removeNodesBetweenScriptTags() {
     final p = _beginScript.parent;
     for (var next = _beginScript.nextNode;
-        next.nodeType != dom.Node.ELEMENT_NODE || next.attributes["type"] != "ng/content";
+        next.nodeType != dom.Node.ELEMENT_NODE ||
+            next.attributes["type"] != "ng/content";
         next = _beginScript.nextNode) {
       p.nodes.remove(next);
     }
@@ -101,18 +102,19 @@ class _IntermediateTranscludingContent implements _ContentStrategy {
   Iterable<dom.Node> _currNodes;
   Iterable<dom.Node> get nodes => _currNodes;
 
-  _IntermediateTranscludingContent(this._content, this._sourceLightDom, this._destinationLightDom);
+  _IntermediateTranscludingContent(
+      this._content, this._sourceLightDom, this._destinationLightDom);
 
-  void attach(){
+  void attach() {
     _sourceLightDom.redistribute();
     _destinationLightDom.addContentTag(_content);
   }
 
-  void detach(){
+  void detach() {
     _sourceLightDom.redistribute();
   }
 
-  void insert(Iterable<dom.Node> nodes){
+  void insert(Iterable<dom.Node> nodes) {
     _currNodes = nodes.toList();
     _destinationLightDom.redistribute();
   }
@@ -129,7 +131,8 @@ class Content implements AttachAware, DetachAware {
   final DestinationLightDom _destinationLightDom;
   var _strategy;
 
-  Content(this.element, this._sourceLightDom, this._destinationLightDom, View view) {
+  Content(this.element, this._sourceLightDom, this._destinationLightDom,
+      View view) {
     view.addContent(this);
   }
 
@@ -146,8 +149,10 @@ class Content implements AttachAware, DetachAware {
   _ContentStrategy _createContentStrategy() {
     if (_sourceLightDom == null) {
       return new _ShadowDomContent();
-    } else if (_destinationLightDom != null && _destinationLightDom.hasRoot(element)) {
-      return new _IntermediateTranscludingContent(this, _sourceLightDom, _destinationLightDom);
+    } else if (_destinationLightDom != null &&
+        _destinationLightDom.hasRoot(element)) {
+      return new _IntermediateTranscludingContent(
+          this, _sourceLightDom, _destinationLightDom);
     } else {
       return new _RenderedTranscludingContent(this, _sourceLightDom);
     }

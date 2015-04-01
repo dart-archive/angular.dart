@@ -36,16 +36,19 @@ class Interpolate implements Function {
    * - [endSymbol]: The symbol to end interpolation. '}}' by default.
    */
   Interpolation call(String template, [bool mustHaveExpression = false,
-                            String startSymbol = '{{', String endSymbol = '}}']) {
-    if (mustHaveExpression == false && startSymbol == '{{' && endSymbol == '}}') {
+      String startSymbol = '{{', String endSymbol = '}}']) {
+    if (mustHaveExpression == false &&
+        startSymbol == '{{' &&
+        endSymbol == '}}') {
       // cachable
-      return _cache.putIfAbsent(template, () => _call(template, mustHaveExpression, startSymbol, endSymbol));
+      return _cache.putIfAbsent(template,
+          () => _call(template, mustHaveExpression, startSymbol, endSymbol));
     }
     return _call(template, mustHaveExpression, startSymbol, endSymbol);
   }
 
-  Interpolation _call(String template, [bool mustHaveExpression = false,
-                      String startSymbol, String endSymbol]) {
+  Interpolation _call(String template,
+      [bool mustHaveExpression = false, String startSymbol, String endSymbol]) {
     if (template == null || template.isEmpty) return EMPTY_INTERPOLATION;
 
     final startLen = startSymbol.length;
@@ -84,11 +87,12 @@ class Interpolate implements Function {
       }
     }
 
-    return !mustHaveExpression || hasInterpolation ?
-        new Interpolation(expParts.join('+'), bindings) : null;
+    return !mustHaveExpression || hasInterpolation
+        ? new Interpolation(expParts.join('+'), bindings)
+        : null;
   }
 
-  String _wrapInQuotes(String s){
+  String _wrapInQuotes(String s) {
     final escaped = s.replaceAll(r'\', r'\\').replaceAll(r'"', r'\"');
     return '"$escaped"';
   }

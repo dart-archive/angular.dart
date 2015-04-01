@@ -81,12 +81,8 @@ part of angular.directive;
  * for example, you must provide explicit number rules for `0`, `1`, `2` and `3`. You
  * must also provide plural strings for at least the `other` plural category.
  */
-@Decorator(
-    selector: 'ng-pluralize',
-    map: const { 'count': '=>count' })
-@Decorator(
-    selector: '[ng-pluralize]',
-    map: const { 'count': '=>count' })
+@Decorator(selector: 'ng-pluralize', map: const {'count': '=>count'})
+@Decorator(selector: '[ng-pluralize]', map: const {'count': '=>count'})
 class NgPluralize {
   final dom.Element _element;
   final Scope _scope;
@@ -102,19 +98,18 @@ class NgPluralize {
   static final RegExp IS_WHEN = new RegExp(r'^when-(minus-)?.');
 
   static const Map<String, Symbol> SYMBOLS = const {
-      'zero'  : #zero,
-      'one'   : #one,
-      'two'   : #two,
-      'few'   : #few,
-      'many'  : #many,
-      'other' : #other,
+    'zero': #zero,
+    'one': #one,
+    'two': #two,
+    'few': #few,
+    'many': #many,
+    'other': #other,
   };
 
   NgPluralize(this._scope, this._element, this._interpolate, this._formatters) {
     var attrs = _element.attributes;
-    final whens = attrs['when'] == null
-        ? <String, String>{}
-        : _scope.eval(attrs['when']);
+    final whens =
+        attrs['when'] == null ? <String, String>{} : _scope.eval(attrs['when']);
     _offset = attrs['offset'] == null ? 0 : int.parse(attrs['offset']);
 
     _element.attributes.keys.where((k) => IS_WHEN.hasMatch(k)).forEach((k) {
@@ -126,7 +121,7 @@ class NgPluralize {
 
     if (whens['other'] == null) {
       throw "ngPluralize error! The 'other' plural category must always be "
-            "specified";
+          "specified";
     }
 
     whens.forEach((k, v) {
@@ -143,7 +138,7 @@ class NgPluralize {
     if (value is! num) {
       try {
         value = num.parse(value);
-      } catch(e) {
+      } catch (e) {
         _element.text = '';
         return;
       }
@@ -166,8 +161,8 @@ class NgPluralize {
 
   void _setAndWatch(template) {
     if (_watch != null) _watch.remove();
-    var expression = _expressionCache.putIfAbsent(template, () =>
-        _interpolate(template, false, r'${', '}').expression);
+    var expression = _expressionCache.putIfAbsent(
+        template, () => _interpolate(template, false, r'${', '}').expression);
     _watch = _scope.watch(expression, _updateMarkup, formatters: _formatters);
   }
 

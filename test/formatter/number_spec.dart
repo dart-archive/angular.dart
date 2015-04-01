@@ -11,7 +11,6 @@ void main() {
       number = injector.get(map['number']);
     });
 
-
     it('should do basic formatter', () {
       expect(number(0, 0)).toEqual('0');
       expect(number(-999)).toEqual('-999');
@@ -21,17 +20,17 @@ void main() {
       expect(number(1234.5678)).toEqual('1,234.568');
       expect(number(double.NAN)).toEqual('');
       expect(number("1234.5678")).toEqual('1,234.568');
-      expect(number(1/0)).toEqual("∞");
-      expect(number(1,        2)).toEqual("1.00");
-      expect(number(.1,       2)).toEqual("0.10");
-      expect(number(.01,      2)).toEqual("0.01");
-      expect(number(.001,     3)).toEqual("0.001");
-      expect(number(.0001,    3)).toEqual("0.000");
-      expect(number(9,        2)).toEqual("9.00");
-      expect(number(.9,       2)).toEqual("0.90");
-      expect(number(.99,      2)).toEqual("0.99");
-      expect(number(.999,     3)).toEqual("0.999");
-      expect(number(.9999,    3)).toEqual("1.000");
+      expect(number(1 / 0)).toEqual("∞");
+      expect(number(1, 2)).toEqual("1.00");
+      expect(number(.1, 2)).toEqual("0.10");
+      expect(number(.01, 2)).toEqual("0.01");
+      expect(number(.001, 3)).toEqual("0.001");
+      expect(number(.0001, 3)).toEqual("0.000");
+      expect(number(9, 2)).toEqual("9.00");
+      expect(number(.9, 2)).toEqual("0.90");
+      expect(number(.99, 2)).toEqual("0.99");
+      expect(number(.999, 3)).toEqual("0.999");
+      expect(number(.9999, 3)).toEqual("1.000");
       expect(number(1234.567, 0)).toEqual("1,235");
       expect(number(1234.567, 1)).toEqual("1,234.6");
       expect(number(1234.567, 2)).toEqual("1,234.57");
@@ -48,7 +47,8 @@ void main() {
     });
 
     it('should accept various locales', () {
-      expect(Intl.withLocale('de', () => number(1234.567, 2))).toEqual('1.234,57');
+      expect(Intl.withLocale('de', () => number(1234.567, 2)))
+          .toEqual('1.234,57');
     });
   });
 }

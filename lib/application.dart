@@ -144,12 +144,15 @@ abstract class Application {
    */
   dom.Element selector(String selector) => element = _find(selector);
 
-  Application(): element = _find('[ng-app]', dom.window.document.documentElement) {
+  Application()
+      : element = _find('[ng-app]', dom.window.document.documentElement) {
     traceDetectWTF(context);
     modules.add(ngModule);
-    ngModule..bind(VmTurnZone, toValue: zone)
-            ..bind(Application, toValue: this)
-            ..bind(dom.Node, toFactory: (Application app) => app.element, inject: [Application]);
+    ngModule
+      ..bind(VmTurnZone, toValue: zone)
+      ..bind(Application, toValue: this)
+      ..bind(dom.Node,
+          toFactory: (Application app) => app.element, inject: [Application]);
   }
 
   /**
@@ -174,7 +177,8 @@ abstract class Application {
       return zone.run(() {
         var rootElements = [element];
         injector = createInjector();
-        ExceptionHandler exceptionHandler = injector.getByKey(EXCEPTION_HANDLER_KEY);
+        ExceptionHandler exceptionHandler =
+            injector.getByKey(EXCEPTION_HANDLER_KEY);
         // Publish cache register interface
         injector.getByKey(JS_CACHE_REGISTER_KEY);
         initializeDateFormatting(null, null).then((_) {

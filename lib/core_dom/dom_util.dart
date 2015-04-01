@@ -21,12 +21,12 @@ void domRemove(List<dom.Node> nodes) {
 }
 
 void domInsert(Iterable<dom.Node> nodes, dom.Node parent,
-                { dom.Node insertBefore }) {
+    {dom.Node insertBefore}) {
   parent.insertAllBefore(nodes, insertBefore);
 }
 
 void domMove(Iterable<dom.Node> nodes, dom.Node parent,
-              { dom.Node insertBefore }) {
+    {dom.Node insertBefore}) {
   nodes.forEach((n) {
     if (n.parentNode == null) n.remove();
     parent.insertBefore(n, insertBefore);
@@ -60,10 +60,10 @@ num computeLongestTransition(style) {
 
   if (style.transitionDuration.length > 0) {
     // Parse transitions
-    List<num> durations = _parseDurationList(style.transitionDuration)
-        .toList(growable: false);
-    List<num> delays = _parseDurationList(style.transitionDelay)
-        .toList(growable: false);
+    List<num> durations =
+        _parseDurationList(style.transitionDuration).toList(growable: false);
+    List<num> delays =
+        _parseDurationList(style.transitionDelay).toList(growable: false);
 
     assert(durations.length == delays.length);
 
@@ -104,17 +104,15 @@ Iterable<num> _parseIterationCounts(String iterationCounts) => iterationCounts
 
 /// This expects a string in the form "0s, 3.234s, 10s" and will return a list
 /// of doubles of (0, 3.234, 10).
-Iterable<num> _parseDurationList(String durations) => durations
-    .split(", ")
-    .map((x) => _parseCssDuration(x));
+Iterable<num> _parseDurationList(String durations) =>
+    durations.split(", ").map((x) => _parseCssDuration(x));
 
 /// This expects a string in the form of '0.234s' or '4s' and will return
 /// a parsed double.
 num _parseCssDuration(String cssDuration) =>
     double.parse(cssDuration.substring(0, cssDuration.length - 1));
 
-num _computeTotalDurationSeconds(num delay, num duration,
-                                 {num iterations: 1}) {
+num _computeTotalDurationSeconds(num delay, num duration, {num iterations: 1}) {
   if (iterations == 0) return 0.0;
   if (iterations < 0) iterations = 1; // infinite
 

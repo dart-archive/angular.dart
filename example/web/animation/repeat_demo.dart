@@ -1,9 +1,6 @@
 part of animation;
 
-@Component(
-    selector: 'repeat-demo',
-    useShadowDom: false,
-    template: '''
+@Component(selector: 'repeat-demo', useShadowDom: false, template: '''
       <div class="repeat-demo">
       <button ng-click="addItem()">Add Thing</button>
       <button ng-click="removeItem()">Remove Thing</button>

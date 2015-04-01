@@ -40,7 +40,7 @@ class Animate {
    * property on [Animation].
    */
   Animation insert(Iterable<dom.Node> nodes, dom.Node parent,
-                         { dom.Node insertBefore }) {
+      {dom.Node insertBefore}) {
     util.domInsert(nodes, parent, insertBefore: insertBefore);
     return new NoOpAnimation();
   }
@@ -67,12 +67,11 @@ class Animate {
    * property on [Animation].
    */
   Animation move(Iterable<dom.Node> nodes, dom.Node parent,
-                       { dom.Node insertBefore }) {
+      {dom.Node insertBefore}) {
     util.domMove(nodes, parent, insertBefore: insertBefore);
     return new NoOpAnimation();
   }
 }
-
 
 /**
  * Animation handle for controlling and listening to animation completion.
@@ -119,8 +118,8 @@ class NoOpAnimation extends Animation {
     return _future;
   }
 
-  complete() { }
-  cancel() { }
+  complete() {}
+  cancel() {}
 }
 
 /**

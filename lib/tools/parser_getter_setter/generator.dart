@@ -42,13 +42,12 @@ class ParserGetterSetter {
     });
 
     DartGetterSetterGen backend = this.backend;
-    sink.write(generateClosureMap(backend.properties, backend.calls,
-                                  backend.symbols));
+    sink.write(
+        generateClosureMap(backend.properties, backend.calls, backend.symbols));
   }
 
-  generateClosureMap(Set<String> properties,
-                     Set<String> calls,
-                     Set<String> symbols) {
+  generateClosureMap(
+      Set<String> properties, Set<String> calls, Set<String> symbols) {
     var getters = new Set.from(properties)..addAll(calls);
     return '''
 StaticClosureMap closureMap = new StaticClosureMap(

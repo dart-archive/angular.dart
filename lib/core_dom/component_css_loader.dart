@@ -10,17 +10,18 @@ class ComponentCssLoader {
   final Map<_ComponentAssetKey, async.Future<dom.StyleElement>> _styleElementCache;
 
   ComponentCssLoader(this._http, this._templateCache, this._platformShim,
-                      this._componentCssRewriter, this._treeSanitizer,
-                      this._styleElementCache, this._resourceResolver);
+      this._componentCssRewriter, this._treeSanitizer, this._styleElementCache,
+      this._resourceResolver);
 
-  async.Future<List<dom.StyleElement>> call(String tag, List<String> cssUrls, {Type type}) =>
+  async.Future<List<dom.StyleElement>> call(String tag, List<String> cssUrls,
+          {Type type}) =>
       async.Future.wait(cssUrls.map((url) => _styleElement(tag, url, type)));
 
-  async.Future<dom.StyleElement> _styleElement(String tag, String cssUrl, Type type) {
+  async.Future<dom.StyleElement> _styleElement(
+      String tag, String cssUrl, Type type) {
     if (type != null) cssUrl = _resourceResolver.combineWithType(type, cssUrl);
     final element = _styleElementCache.putIfAbsent(
-        new _ComponentAssetKey(tag, cssUrl),
-        () => _loadNewCss(tag, cssUrl));
+        new _ComponentAssetKey(tag, cssUrl), () => _loadNewCss(tag, cssUrl));
     return element;
   }
 
@@ -32,8 +33,8 @@ class ComponentCssLoader {
   }
 
   async.Future<String> _fetch(String cssUrl) {
-    return _http.get(cssUrl, cache: _templateCache)
-        .then((resp) => resp.responseText, onError: (e) => '/* $e */');
+    return _http.get(cssUrl, cache: _templateCache).then(
+        (resp) => resp.responseText, onError: (e) => '/* $e */');
   }
 
   String _shim(String css, String tag, String cssUrl) {
@@ -55,7 +56,9 @@ class _ComponentAssetKey {
   final String _key;
 
   _ComponentAssetKey(String tag, String assetUrl)
-      : _key = "$tag|$assetUrl", tag = tag, assetUrl = assetUrl;
+      : _key = "$tag|$assetUrl",
+        tag = tag,
+        assetUrl = assetUrl;
 
   @override
   String toString() => _key;

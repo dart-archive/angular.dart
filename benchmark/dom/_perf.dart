@@ -7,7 +7,7 @@ export 'package:angular/mock/module.dart';
 
 _noop() => null;
 
-time(name, body, {verify:_noop, cleanUp:_noop}) {
+time(name, body, {verify: _noop, cleanUp: _noop}) {
   body();
   verify();
   cleanUp();

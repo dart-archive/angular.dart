@@ -1,7 +1,8 @@
 library scope2_spec;
 
 import '../_specs.dart';
-import 'package:angular/change_detection/change_detection.dart' hide ExceptionHandler;
+import 'package:angular/change_detection/change_detection.dart'
+    hide ExceptionHandler;
 import 'package:angular/change_detection/dirty_checking_change_detector.dart';
 import 'dart:async';
 import 'dart:math';
@@ -11,17 +12,17 @@ void main() {
     beforeEachModule((Module module) {
       Map context = {};
       module
-          ..bind(ChangeDetector, toImplementation: DirtyCheckingChangeDetector)
-          ..bind(Object, toValue: context)
-          ..bind(Map, toValue: context)
-          ..bind(RootScope)
-          ..bind(_MultiplyFormatter)
-          ..bind(_ListHeadFormatter)
-          ..bind(_ListTailFormatter)
-          ..bind(_SortFormatter)
-          ..bind(_IdentityFormatter)
-          ..bind(_MapKeys)
-          ..bind(ScopeStatsEmitter, toImplementation: MockScopeStatsEmitter);
+        ..bind(ChangeDetector, toImplementation: DirtyCheckingChangeDetector)
+        ..bind(Object, toValue: context)
+        ..bind(Map, toValue: context)
+        ..bind(RootScope)
+        ..bind(_MultiplyFormatter)
+        ..bind(_ListHeadFormatter)
+        ..bind(_ListTailFormatter)
+        ..bind(_SortFormatter)
+        ..bind(_IdentityFormatter)
+        ..bind(_MapKeys)
+        ..bind(ScopeStatsEmitter, toImplementation: MockScopeStatsEmitter);
     });
 
     describe('Root context', () {
@@ -37,9 +38,11 @@ void main() {
     });
 
     describe('AST Bridge', () {
-      it('should watch field', (Logger logger, Map context, RootScope rootScope) {
+      it('should watch field',
+          (Logger logger, Map context, RootScope rootScope) {
         context['field'] = 'Worked!';
-        rootScope.watch('field', (value, previous) => logger([value, previous]));
+        rootScope.watch(
+            'field', (value, previous) => logger([value, previous]));
         expect(logger).toEqual([]);
         rootScope.digest();
         expect(logger).toEqual([['Worked!', null]]);
@@ -47,7 +50,8 @@ void main() {
         expect(logger).toEqual([['Worked!', null]]);
       });
 
-      it('should watch field path', (Logger logger, Map context, RootScope rootScope) {
+      it('should watch field path',
+          (Logger logger, Map context, RootScope rootScope) {
         context['a'] = {'b': 'AB'};
         rootScope.watch('a.b', (value, previous) => logger(value));
         rootScope.digest();
@@ -60,7 +64,8 @@ void main() {
         expect(logger).toEqual(['AB', '123', 'XYZ']);
       });
 
-      it('should watch math operations', (Logger logger, Map context, RootScope rootScope) {
+      it('should watch math operations',
+          (Logger logger, Map context, RootScope rootScope) {
         context['a'] = 1;
         context['b'] = 2;
         rootScope.watch('a + b + 1', (value, previous) => logger(value));
@@ -74,17 +79,17 @@ void main() {
         expect(logger).toEqual([4, 6, 9]);
       });
 
-
-      it('should watch literals', (Logger logger, Map context, RootScope rootScope) {
+      it('should watch literals',
+          (Logger logger, Map context, RootScope rootScope) {
         context['a'] = 1;
         rootScope
-            ..watch('', (value, previous) => logger(value))
-            ..watch('""', (value, previous) => logger(value))
-            ..watch('1', (value, previous) => logger(value))
-            ..watch('"str"', (value, previous) => logger(value))
-            ..watch('[a, 2, 3]', (value, previous) => logger(value))
-            ..watch('{a:a, b:2}', (value, previous) => logger(value))
-            ..digest();
+          ..watch('', (value, previous) => logger(value))
+          ..watch('""', (value, previous) => logger(value))
+          ..watch('1', (value, previous) => logger(value))
+          ..watch('"str"', (value, previous) => logger(value))
+          ..watch('[a, 2, 3]', (value, previous) => logger(value))
+          ..watch('{a:a, b:2}', (value, previous) => logger(value))
+          ..digest();
         expect(logger).toEqual(['', '', 1, 'str', [1, 2, 3], {'a': 1, 'b': 2}]);
         logger.clear();
         context['a'] = 3;
@@ -92,43 +97,54 @@ void main() {
         expect(logger).toEqual([[3, 2, 3], {'a': 3, 'b': 2}]);
       });
 
-      it('should watch nulls', (Logger logger, Map context, RootScope rootScope) {
+      it('should watch nulls',
+          (Logger logger, Map context, RootScope rootScope) {
         var r = (value, _) => logger(value);
         rootScope
-            ..watch('null < 0',r)
-            ..watch('null * 3', r)
-            ..watch('null + 6', r)
-            ..watch('5 + null', r)
-            ..watch('null - 4', r)
-            ..watch('3 - null', r)
-            ..watch('null + null', r)
-            ..watch('null - null', r)
-            ..watch('null == null', r)
-            ..watch('null != null', r)
-            ..digest();
+          ..watch('null < 0', r)
+          ..watch('null * 3', r)
+          ..watch('null + 6', r)
+          ..watch('5 + null', r)
+          ..watch('null - 4', r)
+          ..watch('3 - null', r)
+          ..watch('null + null', r)
+          ..watch('null - null', r)
+          ..watch('null == null', r)
+          ..watch('null != null', r)
+          ..digest();
         expect(logger).toEqual([null, null, 6, 5, -4, 3, 0, 0, true, false]);
       });
 
-      it('should invoke closures', (Logger logger, Map context, RootScope rootScope) {
+      it('should invoke closures',
+          (Logger logger, Map context, RootScope rootScope) {
         context['fn'] = () {
           logger('fn');
           return 1;
         };
-        context['a'] = {'fn': () {
-          logger('a.fn');
-          return 2;
-        }};
+        context['a'] = {
+          'fn': () {
+            logger('a.fn');
+            return 2;
+          }
+        };
         rootScope.watch('fn()', (value, previous) => logger('=> $value'));
         rootScope.watch('a.fn()', (value, previous) => logger('-> $value'));
         rootScope.digest();
-        expect(logger).toEqual(['fn', 'a.fn', '=> 1', '-> 2',
-        /* second loop*/ 'fn', 'a.fn']);
+        expect(logger).toEqual([
+          'fn',
+          'a.fn',
+          '=> 1',
+          '-> 2',
+          /* second loop*/ 'fn',
+          'a.fn'
+        ]);
         logger.clear();
         rootScope.digest();
         expect(logger).toEqual(['fn', 'a.fn']);
       });
 
-      it('should perform conditionals', (Logger logger, Map context, RootScope rootScope) {
+      it('should perform conditionals',
+          (Logger logger, Map context, RootScope rootScope) {
         context['a'] = 1;
         context['b'] = 2;
         context['c'] = 3;
@@ -141,10 +157,12 @@ void main() {
         expect(logger).toEqual([3]);
       });
 
-
-      xit('should call function', (Logger logger, Map context, RootScope rootScope) {
+      xit('should call function',
+          (Logger logger, Map context, RootScope rootScope) {
         context['a'] = () {
-          return () { return 123; };
+          return () {
+            return 123;
+          };
         };
         rootScope.watch('a()()', (value, previous) => logger(value));
         rootScope.digest();
@@ -154,7 +172,8 @@ void main() {
         expect(logger).toEqual([]);
       });
 
-      it('should access bracket', (Logger logger, Map context, RootScope rootScope) {
+      it('should access bracket',
+          (Logger logger, Map context, RootScope rootScope) {
         context['a'] = {'b': 123};
         rootScope.watch('a["b"]', (value, previous) => logger(value));
         rootScope.digest();
@@ -168,7 +187,6 @@ void main() {
         rootScope.digest();
         expect(logger).toEqual([234]);
       });
-
 
       it('should prefix', (Logger logger, Map context, RootScope rootScope) {
         context['a'] = true;
@@ -210,7 +228,8 @@ void main() {
 
         context['a'].add(2);
         rootScope.digest();
-        expect(logger).toEqual(['sort', 'listHead', 'listTail', ['A', 1, 2, 'B']]);
+        expect(logger)
+            .toEqual(['sort', 'listHead', 'listTail', ['A', 1, 2, 'B']]);
         logger.clear();
 
         // We change the order, but sort should change it to same one and it should not
@@ -224,8 +243,9 @@ void main() {
       it('should support maps in formatters', (Logger logger, Map context,
           RootScope rootScope, FormatterMap formatters) {
         context['a'] = {'foo': 'bar'};
-        rootScope.watch('a | identity | keys',
-            (value, previous) => logger(value), formatters: formatters);
+        rootScope.watch(
+            'a | identity | keys', (value, previous) => logger(value),
+            formatters: formatters);
         rootScope.digest();
         expect(logger).toEqual(['identity', 'keys', ['foo']]);
         logger.clear();
@@ -239,9 +259,7 @@ void main() {
         expect(logger).toEqual(['identity', 'keys', ['foo', 'bar']]);
         logger.clear();
       });
-
     });
-
 
     describe('properties', () {
       describe('root', () {
@@ -256,13 +274,11 @@ void main() {
         });
       });
 
-
       describe('parent', () {
         it('should not have parent', (RootScope rootScope) {
           expect(rootScope.parentScope).toEqual(null);
           expect(rootScope.id).toEqual('');
         });
-
 
         it('should point to parent', (RootScope rootScope) {
           var child = rootScope.createProtoChild();
@@ -274,19 +290,17 @@ void main() {
       });
     });
 
-
     describe(r'events', () {
-
       describe('on', () {
         it('should allow emit/broadcast when no listeners', (RootScope scope) {
           scope.emit('foo');
           scope.broadcast('foo');
         });
 
-
-        it(r'should add listener for both emit and broadcast events', (RootScope rootScope) {
+        it(r'should add listener for both emit and broadcast events',
+            (RootScope rootScope) {
           var log = '',
-          child = rootScope.createProtoChild();
+              child = rootScope.createProtoChild();
 
           eventFn(event) {
             expect(event).not.toEqual(null);
@@ -303,8 +317,8 @@ void main() {
           expect(log).toEqual('XX');
         });
 
-
-        it(r'should return a function that deregisters the listener', (RootScope rootScope) {
+        it(r'should return a function that deregisters the listener',
+            (RootScope rootScope) {
           var log = '';
           var child = rootScope.createProtoChild();
           var subscription;
@@ -349,38 +363,50 @@ void main() {
           var d = c.createChild({});
           var e = d.createChild({});
 
-          getStreamState() => [root.hasOwnStreams, a.hasOwnStreams, a2.hasOwnStreams,
-          b.hasOwnStreams, c.hasOwnStreams, d.hasOwnStreams,
-          e.hasOwnStreams];
+          getStreamState() => [
+            root.hasOwnStreams,
+            a.hasOwnStreams,
+            a2.hasOwnStreams,
+            b.hasOwnStreams,
+            c.hasOwnStreams,
+            d.hasOwnStreams,
+            e.hasOwnStreams
+          ];
 
-          expect(getStreamState()).toEqual([false, false, false, false, false, false, false]);
+          expect(getStreamState())
+              .toEqual([false, false, false, false, false, false, false]);
           expect(root.apply).not.toThrow();
 
           e.on(ScopeEvent.DESTROY).listen((_) => null);
-          expect(getStreamState()).toEqual([false, false, false, false, false, false, true]);
+          expect(getStreamState())
+              .toEqual([false, false, false, false, false, false, true]);
           expect(root.apply).not.toThrow();
 
           d.on(ScopeEvent.DESTROY).listen((_) => null);
-          expect(getStreamState()).toEqual([false, false, false, false, false, true, true]);
+          expect(getStreamState())
+              .toEqual([false, false, false, false, false, true, true]);
           expect(root.apply).not.toThrow();
 
           b.on(ScopeEvent.DESTROY).listen((_) => null);
-          expect(getStreamState()).toEqual([false, false, false, true, false, true, true]);
+          expect(getStreamState())
+              .toEqual([false, false, false, true, false, true, true]);
           expect(root.apply).not.toThrow();
 
           c.on(ScopeEvent.DESTROY).listen((_) => null);
-          expect(getStreamState()).toEqual([false, false, false, true, true, true, true]);
+          expect(getStreamState())
+              .toEqual([false, false, false, true, true, true, true]);
           expect(root.apply).not.toThrow();
 
           a.on(ScopeEvent.DESTROY).listen((_) => null);
-          expect(getStreamState()).toEqual([false, true, false, true, true, true, true]);
+          expect(getStreamState())
+              .toEqual([false, true, false, true, true, true, true]);
           expect(root.apply).not.toThrow();
 
           a2.on(ScopeEvent.DESTROY).listen((_) => null);
-          expect(getStreamState()).toEqual([true, true, true, true, true, true, true]);
+          expect(getStreamState())
+              .toEqual([true, true, true, true, true, true, true]);
           expect(root.apply).not.toThrow();
         });
-
 
         it('should not properly merge streams', (RootScope root) {
           var a = root.createChild({});
@@ -390,22 +416,30 @@ void main() {
           var d = c.createChild({});
           var e = d.createChild({});
 
-          getStreamState() => [root.hasOwnStreams, a.hasOwnStreams, a2.hasOwnStreams,
-          b.hasOwnStreams, c.hasOwnStreams, d.hasOwnStreams,
-          e.hasOwnStreams];
+          getStreamState() => [
+            root.hasOwnStreams,
+            a.hasOwnStreams,
+            a2.hasOwnStreams,
+            b.hasOwnStreams,
+            c.hasOwnStreams,
+            d.hasOwnStreams,
+            e.hasOwnStreams
+          ];
 
-          expect(getStreamState()).toEqual([false, false, false, false, false, false, false]);
+          expect(getStreamState())
+              .toEqual([false, false, false, false, false, false, false]);
           expect(root.apply).not.toThrow();
 
           a2.on(ScopeEvent.DESTROY).listen((_) => null);
-          expect(getStreamState()).toEqual([false, false, true, false, false, false, false]);
+          expect(getStreamState())
+              .toEqual([false, false, true, false, false, false, false]);
           expect(root.apply).not.toThrow();
 
           e.on(ScopeEvent.DESTROY).listen((_) => null);
-          expect(getStreamState()).toEqual([true, false, true, false, false, false, true]);
+          expect(getStreamState())
+              .toEqual([true, false, true, false, false, false, true]);
           expect(root.apply).not.toThrow();
         });
-
 
         it('should clean up on cancel', (RootScope root) {
           var child = root.createChild(null);
@@ -414,7 +448,6 @@ void main() {
           rl.cancel();
           expect(root.apply).not.toThrow();
         });
-
 
         it('should find random bugs', (RootScope root) {
           List scopes;
@@ -427,7 +460,7 @@ void main() {
               listeners = [];
               steps = [];
             }
-            switch(random.nextInt(4)) {
+            switch (random.nextInt(4)) {
               case 0:
                 if (scopes.length > 10) break;
                 var index = random.nextInt(scopes.length);
@@ -468,7 +501,6 @@ void main() {
         });
       });
 
-
       describe('emit', () {
         var log, child, grandChild, greatGrandChild;
 
@@ -497,30 +529,32 @@ void main() {
           expect(log.join('>')).toEqual('2>1>0');
         });
 
-
         describe('exceptions', () {
           beforeEachModule((Module module) {
-            module.bind(ExceptionHandler, toImplementation: LoggingExceptionHandler);
+            module.bind(ExceptionHandler,
+                toImplementation: LoggingExceptionHandler);
           });
 
-
-          it(r'should dispatch exceptions to the exceptionHandler', (ExceptionHandler e) {
+          it(r'should dispatch exceptions to the exceptionHandler',
+              (ExceptionHandler e) {
             LoggingExceptionHandler exceptionHandler = e;
-            child.on('myEvent').listen((e) { throw 'bubbleException'; });
+            child.on('myEvent').listen((e) {
+              throw 'bubbleException';
+            });
             grandChild.emit(r'myEvent');
             expect(log.join('>')).toEqual('2>1>0');
             expect(exceptionHandler.errors[0].error).toEqual('bubbleException');
           });
 
-
-          it('should throw "model unstable" error when observer is present', (RootScope rootScope, VmTurnZone zone, ExceptionHandler e) {
+          it('should throw "model unstable" error when observer is present',
+              (RootScope rootScope, VmTurnZone zone, ExceptionHandler e) {
             // Generates a different, equal, list on each evaluation.
             rootScope.context['list'] = new UnstableList();
 
             rootScope.watch('list.list', (n, v) => null, canChangeModel: true);
             try {
               zone.run(() => null);
-            } catch(_) {}
+            } catch (_) {}
 
             var errors = (e as LoggingExceptionHandler).errors;
             expect(errors.length).toEqual(1);
@@ -529,11 +563,12 @@ void main() {
         });
 
         it(r'should allow stopping event propagation', (RootScope rootScope) {
-          child.on('myEvent').listen((event) { event.stopPropagation(); });
+          child.on('myEvent').listen((event) {
+            event.stopPropagation();
+          });
           grandChild.emit(r'myEvent');
           expect(log.join('>')).toEqual('2>1');
         });
-
 
         it(r'should forward method arguments', (RootScope rootScope) {
           var eventName;
@@ -546,7 +581,6 @@ void main() {
           expect(eventName).toEqual('abc');
           expect(eventData).toEqual(['arg1', 'arg2']);
         });
-
 
         describe(r'event object', () {
           it(r'should have methods/properties', (RootScope rootScope) {
@@ -561,8 +595,8 @@ void main() {
             expect(event).toBeDefined();
           });
 
-
-          it(r'should have preventDefault method and defaultPrevented property', (RootScope rootScope) {
+          it(r'should have preventDefault method and defaultPrevented property',
+              (RootScope rootScope) {
             var event = grandChild.emit(r'myEvent');
             expect(event.defaultPrevented).toBe(false);
 
@@ -575,11 +609,17 @@ void main() {
         });
       });
 
-
       describe('broadcast', () {
         describe(r'event propagation', () {
-          var log, child1, child2, child3, grandChild11, grandChild21, grandChild22, grandChild23,
-          greatGrandChild211;
+          var log,
+              child1,
+              child2,
+              child3,
+              grandChild11,
+              grandChild21,
+              grandChild22,
+              grandChild23,
+              greatGrandChild211;
 
           logger(event) {
             log.add(event.currentScope.context['id']);
@@ -625,36 +665,35 @@ void main() {
             //      211
           });
 
-
-          it(r'should broadcast an event from the root scope', (RootScope rootScope) {
+          it(r'should broadcast an event from the root scope',
+              (RootScope rootScope) {
             rootScope.broadcast('myEvent');
             expect(log.join('>')).toEqual('0>1>11>2>21>211>22>23>3');
           });
 
-
-          it(r'should broadcast an event from a child scope', (RootScope rootScope) {
+          it(r'should broadcast an event from a child scope',
+              (RootScope rootScope) {
             child2.broadcast('myEvent');
             expect(log.join('>')).toEqual('2>21>211>22>23');
           });
 
-
-          it(r'should broadcast an event from a leaf scope with a sibling', (RootScope rootScope) {
+          it(r'should broadcast an event from a leaf scope with a sibling',
+              (RootScope rootScope) {
             grandChild22.broadcast('myEvent');
             expect(log.join('>')).toEqual('22');
           });
 
-
-          it(r'should broadcast an event from a leaf scope without a sibling', (RootScope rootScope) {
+          it(r'should broadcast an event from a leaf scope without a sibling',
+              (RootScope rootScope) {
             grandChild23.broadcast('myEvent');
             expect(log.join('>')).toEqual('23');
           });
 
-
-          it(r'should not not fire any listeners for other events', (RootScope rootScope) {
+          it(r'should not not fire any listeners for other events',
+              (RootScope rootScope) {
             rootScope.broadcast('fooEvent');
             expect(log.join('>')).toEqual('');
           });
-
 
           it(r'should return event object', (RootScope rootScope) {
             var result = child1.broadcast('some');
@@ -664,9 +703,8 @@ void main() {
             expect(result.targetScope).toBe(child1);
           });
 
-
           it('should skip scopes which dont have given event',
-          (RootScope rootScope, Logger log) {
+              (RootScope rootScope, Logger log) {
             var child1 = rootScope.createChild('A');
             rootScope.createChild('A1');
             rootScope.createChild('A2');
@@ -678,12 +716,11 @@ void main() {
           });
         });
 
-
         describe(r'listener', () {
           it(r'should receive event object', (RootScope rootScope) {
             var scope = rootScope,
-            child = scope.createChild({}),
-            event;
+                child = scope.createChild({}),
+                event;
 
             child.on('fooEvent').listen((e) {
               event = e;
@@ -695,10 +732,11 @@ void main() {
             expect(event.currentScope).toBe(child);
           });
 
-          it(r'should support passing messages as varargs', (RootScope rootScope) {
+          it(r'should support passing messages as varargs',
+              (RootScope rootScope) {
             var scope = rootScope,
-            child = scope.createChild({}),
-            args;
+                child = scope.createChild({}),
+                args;
 
             child.on('fooEvent').listen((e) {
               args = e.data;
@@ -709,7 +747,8 @@ void main() {
             expect(args).toEqual(['do', 're', 'me', 'fa']);
           });
 
-          it('should allow removing/adding listener during an event', (RootScope rootScope, Logger log) {
+          it('should allow removing/adding listener during an event',
+              (RootScope rootScope, Logger log) {
             StreamSubscription subscription;
             subscription = rootScope.on('foo').listen((_) {
               subscription.cancel();
@@ -727,27 +766,45 @@ void main() {
       });
     });
 
-
     describe(r'destroy', () {
-      var first = null, middle = null, last = null, log = null;
+      var first = null,
+          middle = null,
+          last = null,
+          log = null;
 
       beforeEach((RootScope rootScope) {
         log = '';
 
-        first  = rootScope.createChild({"check": (n) { log+= '$n'; return n;}});
-        middle = rootScope.createChild({"check": (n) { log+= '$n'; return n;}});
-        last   = rootScope.createChild({"check": (n) { log+= '$n'; return n;}});
+        first = rootScope.createChild({
+          "check": (n) {
+            log += '$n';
+            return n;
+          }
+        });
+        middle = rootScope.createChild({
+          "check": (n) {
+            log += '$n';
+            return n;
+          }
+        });
+        last = rootScope.createChild({
+          "check": (n) {
+            log += '$n';
+            return n;
+          }
+        });
 
         first.watch('check(1)', (v, l) {});
         middle.watch('check(2)', (v, l) {});
         last.watch('check(3)', (v, l) {});
 
-        first.on(ScopeEvent.DESTROY).listen((e) { log += 'destroy:first;'; });
+        first.on(ScopeEvent.DESTROY).listen((e) {
+          log += 'destroy:first;';
+        });
 
         rootScope.digest();
         log = '';
       });
-
 
       it(r'should ignore remove on root', (RootScope rootScope) {
         rootScope.destroy();
@@ -755,13 +812,11 @@ void main() {
         expect(log).toEqual('123');
       });
 
-
       it(r'should remove first', (RootScope rootScope) {
         first.destroy();
         rootScope.digest();
         expect(log).toEqual('destroy:first;23');
       });
-
 
       it(r'should remove middle', (RootScope rootScope) {
         middle.destroy();
@@ -769,13 +824,11 @@ void main() {
         expect(log).toEqual('13');
       });
 
-
       it(r'should remove last', (RootScope rootScope) {
         last.destroy();
         rootScope.digest();
         expect(log).toEqual('12');
       });
-
 
       it(r'should broadcast the destroy event', (RootScope rootScope) {
         var log = [];
@@ -787,8 +840,8 @@ void main() {
         expect(log).toEqual(['first', 'first-child']);
       });
 
-
-      it('should not call reaction function on destroyed scope', (RootScope rootScope, Logger log) {
+      it('should not call reaction function on destroyed scope',
+          (RootScope rootScope, Logger log) {
         rootScope.context['name'] = 'misko';
         var child = rootScope.createChild(rootScope.context);
         rootScope.watch('name', (v, _) {
@@ -808,7 +861,6 @@ void main() {
         expect(log).toEqual(['root destroy', 'root2 destroy']);
       });
 
-
       it('should not call reaction fn when destroyed', (RootScope scope) {
         var testScope = scope.createChild({});
         bool called = false;
@@ -821,12 +873,13 @@ void main() {
       });
     });
 
-
     describe('digest lifecycle', () {
       it(r'should apply expression with full lifecycle', (RootScope rootScope) {
         var log = '';
         var child = rootScope.createChild({"parent": rootScope.context});
-        rootScope.watch('a', (a, _) { log += '1'; });
+        rootScope.watch('a', (a, _) {
+          log += '1';
+        });
         child.apply('parent.a = 0');
         expect(log).toEqual('1');
       });
@@ -834,30 +887,36 @@ void main() {
       describe(r'exceptions', () {
         var log;
         beforeEachModule((Module module) {
-          return module.bind(ExceptionHandler, toImplementation: LoggingExceptionHandler);
+          return module.bind(ExceptionHandler,
+              toImplementation: LoggingExceptionHandler);
         });
 
         beforeEach((RootScope rootScope) {
-          rootScope.context['log'] = () { log += 'digest;'; return null; };
+          rootScope.context['log'] = () {
+            log += 'digest;';
+            return null;
+          };
           log = '';
           rootScope.watch('log()', (v, o) => null);
           rootScope.digest();
           log = '';
         });
 
-        it(r'should catch exceptions', (RootScope rootScope, ExceptionHandler e) {
+        it(r'should catch exceptions',
+            (RootScope rootScope, ExceptionHandler e) {
           LoggingExceptionHandler exceptionHandler = e;
           var log = [];
           var child = rootScope.createChild({});
           rootScope.watch('a', (a, _) => log.add('1'));
           rootScope.context['a'] = 0;
-          child.apply(() { throw 'MyError'; });
+          child.apply(() {
+            throw 'MyError';
+          });
           expect(log.join(',')).toEqual('1');
           expect(exceptionHandler.errors[0].error).toEqual('MyError');
           exceptionHandler.errors.removeAt(0);
           exceptionHandler.assertEmpty();
         });
-
 
         it(r'should execute and return value and update',
             (RootScope rootScope, ExceptionHandler e) {
@@ -868,17 +927,19 @@ void main() {
           exceptionHandler.assertEmpty();
         });
 
-
-        it(r'should execute and return value and update', (RootScope rootScope) {
+        it(r'should execute and return value and update',
+            (RootScope rootScope) {
           rootScope.context['name'] = 'abc';
           expect(rootScope.apply('name', {'name': 123})).toEqual(123);
         });
 
-
-        it(r'should catch exception and update', (RootScope rootScope, ExceptionHandler e) {
+        it(r'should catch exception and update',
+            (RootScope rootScope, ExceptionHandler e) {
           LoggingExceptionHandler exceptionHandler = e;
           var error = 'MyError';
-          rootScope.apply(() { throw error; });
+          rootScope.apply(() {
+            throw error;
+          });
           expect(log).toEqual('digest;digest;');
           expect(exceptionHandler.errors[0].error).toEqual(error);
         });
@@ -886,26 +947,32 @@ void main() {
 
       it(r'should properly reset phase on exception', (RootScope rootScope) {
         var error = 'MyError';
-        expect(() => rootScope.apply(() { throw error; })).toThrowWith(message: error);
-        expect(() => rootScope.apply(() { throw error; })).toThrowWith(message: error);
+        expect(() => rootScope.apply(() {
+          throw error;
+        })).toThrowWith(message: error);
+        expect(() => rootScope.apply(() {
+          throw error;
+        })).toThrowWith(message: error);
       });
     });
-
 
     describe('flush lifecycle', () {
       it(r'should apply expression with full lifecycle', (RootScope rootScope) {
         var log = '';
         var child = rootScope.createChild({"parent": rootScope.context});
-        rootScope.watch('a', (a, _) { log += '1'; }, canChangeModel: false);
+        rootScope.watch('a', (a, _) {
+          log += '1';
+        }, canChangeModel: false);
         child.apply('parent.a = 0');
         expect(log).toEqual('1');
       });
 
-
       it(r'should schedule domWrites and domReads', (RootScope rootScope) {
         var log = '';
         var child = rootScope.createChild({"parent": rootScope.context});
-        rootScope.watch('a', (a, _) { log += '1'; }, canChangeModel: false);
+        rootScope.watch('a', (a, _) {
+          log += '1';
+        }, canChangeModel: false);
         child.apply('parent.a = 0');
         expect(log).toEqual('1');
       });
@@ -913,23 +980,30 @@ void main() {
       describe(r'exceptions', () {
         var log;
         beforeEachModule((Module module) {
-          return module.bind(ExceptionHandler, toImplementation: LoggingExceptionHandler);
+          return module.bind(ExceptionHandler,
+              toImplementation: LoggingExceptionHandler);
         });
         beforeEach((RootScope rootScope) {
-          rootScope.context['log'] = () { log += 'digest;'; return null; };
+          rootScope.context['log'] = () {
+            log += 'digest;';
+            return null;
+          };
           log = '';
           rootScope.watch('log()', (v, o) => null, canChangeModel: false);
           rootScope.digest();
           log = '';
         });
 
-        it(r'should catch exceptions', (RootScope rootScope, ExceptionHandler e) {
+        it(r'should catch exceptions',
+            (RootScope rootScope, ExceptionHandler e) {
           LoggingExceptionHandler exceptionHandler = e;
           var log = [];
           var child = rootScope.createChild({});
           rootScope.watch('a', (a, _) => log.add('1'), canChangeModel: false);
           rootScope.context['a'] = 0;
-          child.apply(() { throw 'MyError'; });
+          child.apply(() {
+            throw 'MyError';
+          });
           expect(log.join(',')).toEqual('1');
           expect(exceptionHandler.errors[0].error).toEqual('MyError');
           exceptionHandler.errors.removeAt(0);
@@ -945,22 +1019,30 @@ void main() {
           exceptionHandler.assertEmpty();
         });
 
-        it(r'should execute and return value and update', (RootScope rootScope) {
+        it(r'should execute and return value and update',
+            (RootScope rootScope) {
           rootScope.context['name'] = 'abc';
           expect(rootScope.apply('name', {'name': 123})).toEqual(123);
         });
 
-        it(r'should catch exception and update', (RootScope rootScope, ExceptionHandler e) {
+        it(r'should catch exception and update',
+            (RootScope rootScope, ExceptionHandler e) {
           LoggingExceptionHandler exceptionHandler = e;
           var error = 'MyError';
-          rootScope.apply(() { throw error; });
+          rootScope.apply(() {
+            throw error;
+          });
           expect(log).toEqual('digest;digest;');
           expect(exceptionHandler.errors[0].error).toEqual(error);
         });
 
-        it(r'should throw assertion when model changes in flush', (RootScope rootScope, Logger log) {
+        it(r'should throw assertion when model changes in flush',
+            (RootScope rootScope, Logger log) {
           var retValue = 1;
-          rootScope.context['logger'] = (name) { log(name); return retValue; };
+          rootScope.context['logger'] = (name) {
+            log(name);
+            return retValue;
+          };
 
           rootScope.watch('logger("watch")', (n, v) => null);
           rootScope.watch('logger("flush")', (n, v) => null,
@@ -974,17 +1056,17 @@ void main() {
           expect(log).toEqual(['flush', /*assertion*/ 'watch', 'flush']);
 
           retValue = 2;
-          expect(rootScope.flush).
-          toThrowWith(message: 'Observer reaction functions should not change model. \n'
-          'These watch changes were detected: logger("watch"): 2 <= 1\n'
-          'These observe changes were detected: ');
+          expect(rootScope.flush).toThrowWith(
+              message: 'Observer reaction functions should not change model. \n'
+              'These watch changes were detected: logger("watch"): 2 <= 1\n'
+              'These observe changes were detected: ');
         });
       });
-
     });
 
     describe(r'watch/digest', () {
-      it(r'should watch and fire on simple property change', (RootScope rootScope) {
+      it(r'should watch and fire on simple property change',
+          (RootScope rootScope) {
         var log;
 
         rootScope.watch('name', (a, b) {
@@ -1001,8 +1083,8 @@ void main() {
         expect(log).toEqual(['misko', null]);
       });
 
-
-      it('should watch/observe on objects other then context (DEPRECATED)', (RootScope rootScope) {
+      it('should watch/observe on objects other then context (DEPRECATED)',
+          (RootScope rootScope) {
         var log = '';
         var map = {'a': 'A', 'b': 'B'};
         rootScope.watch('a', (a, b) => log += a, context: map);
@@ -1010,7 +1092,6 @@ void main() {
         rootScope.apply();
         expect(log).toEqual('AB');
       });
-
 
       it(r'should watch and fire on expression change', (RootScope rootScope) {
         var log;
@@ -1028,14 +1109,17 @@ void main() {
         expect(log).toEqual(['misko', null]);
       });
 
-
       describe('exceptions', () {
         beforeEachModule((Module module) {
-          module.bind(ExceptionHandler, toImplementation: LoggingExceptionHandler);
+          module.bind(ExceptionHandler,
+              toImplementation: LoggingExceptionHandler);
         });
-        it(r'should delegate exceptions', (RootScope rootScope, ExceptionHandler e) {
+        it(r'should delegate exceptions',
+            (RootScope rootScope, ExceptionHandler e) {
           LoggingExceptionHandler exceptionHandler = e;
-          rootScope.watch('a', (n, o) {throw 'abc';});
+          rootScope.watch('a', (n, o) {
+            throw 'abc';
+          });
           rootScope.context['a'] = 1;
           rootScope.digest();
           expect(exceptionHandler.errors.length).toEqual(1);
@@ -1043,35 +1127,44 @@ void main() {
         });
       });
 
-
-
       it(r'should fire watches in order of addition', (RootScope rootScope) {
         // this is not an external guarantee, just our own sanity
         var log = '';
         rootScope
-            ..watch('a', (a, b) { log += 'a'; })
-            ..watch('b', (a, b) { log += 'b'; })
-            ..watch('c', (a, b) { log += 'c'; })
-            ..context['a'] = rootScope.context['b'] = rootScope.context['c'] = 1
-            ..digest();
+          ..watch('a', (a, b) {
+            log += 'a';
+          })
+          ..watch('b', (a, b) {
+            log += 'b';
+          })
+          ..watch('c', (a, b) {
+            log += 'c';
+          })
+          ..context['a'] = rootScope.context['b'] = rootScope.context['c'] = 1
+          ..digest();
         expect(log).toEqual('abc');
       });
 
-
-      it(r'should call child watchers in addition order', (RootScope rootScope) {
+      it(r'should call child watchers in addition order',
+          (RootScope rootScope) {
         // this is not an external guarantee, just our own sanity
         var log = '';
         var childA = rootScope.createChild({});
         var childB = rootScope.createChild({});
         var childC = rootScope.createChild({});
-        childA.watch('a', (a, b) { log += 'a'; });
-        childB.watch('b', (a, b) { log += 'b'; });
-        childC.watch('c', (a, b) { log += 'c'; });
+        childA.watch('a', (a, b) {
+          log += 'a';
+        });
+        childB.watch('b', (a, b) {
+          log += 'b';
+        });
+        childC.watch('c', (a, b) {
+          log += 'c';
+        });
         childA.context['a'] = childB.context['b'] = childC.context['c'] = 1;
         rootScope.digest();
         expect(log).toEqual('abc');
       });
-
 
       it(r'should run digest multiple times', (RootScope rootScope) {
         // tests a traversal edge case which we originally missed
@@ -1090,14 +1183,23 @@ void main() {
         expect(log.join('')).toEqual('rabrab');
       });
 
-
-      it(r'should repeat watch cycle while model changes are identified', (RootScope rootScope) {
+      it(r'should repeat watch cycle while model changes are identified',
+          (RootScope rootScope) {
         var log = '';
         rootScope
-            ..watch('c', (v, b) {rootScope.context['d'] = v; log+='c'; })
-            ..watch('b', (v, b) {rootScope.context['c'] = v; log+='b'; })
-            ..watch('a', (v, b) {rootScope.context['b'] = v; log+='a'; })
-            ..digest();
+          ..watch('c', (v, b) {
+            rootScope.context['d'] = v;
+            log += 'c';
+          })
+          ..watch('b', (v, b) {
+            rootScope.context['c'] = v;
+            log += 'b';
+          })
+          ..watch('a', (v, b) {
+            rootScope.context['b'] = v;
+            log += 'a';
+          })
+          ..digest();
         log = '';
         rootScope.context['a'] = 1;
         rootScope.digest();
@@ -1107,29 +1209,32 @@ void main() {
         expect(log).toEqual('abc');
       });
 
-
-      it(r'should repeat watch cycle from the root element', (RootScope rootScope) {
+      it(r'should repeat watch cycle from the root element',
+          (RootScope rootScope) {
         var log = [];
         rootScope.context['log'] = log;
-        var child = rootScope.createChild({'log':log});
+        var child = rootScope.createChild({'log': log});
         rootScope.watch("log.add('a')", (_, __) => null);
         child.watch("log.add('b')", (_, __) => null);
         rootScope.digest();
         expect(log.join('')).toEqual('abab');
       });
 
-
-      it(r'should not fire upon watch registration on initial digest', (RootScope rootScope) {
+      it(r'should not fire upon watch registration on initial digest',
+          (RootScope rootScope) {
         var log = '';
         rootScope.context['a'] = 1;
-        rootScope.watch('a', (a, b) { log += 'a'; });
-        rootScope.watch('b', (a, b) { log += 'b'; });
+        rootScope.watch('a', (a, b) {
+          log += 'a';
+        });
+        rootScope.watch('b', (a, b) {
+          log += 'b';
+        });
         rootScope.digest();
         log = '';
         rootScope.digest();
         expect(log).toEqual('');
       });
-
 
       it(r'should prevent digest recursion', (RootScope rootScope) {
         var callCount = 0;
@@ -1143,7 +1248,6 @@ void main() {
         rootScope.digest();
         expect(callCount).toEqual(1);
       });
-
 
       it(r'should return a function that allows listeners to be unregistered',
           (RootScope rootScope) {
@@ -1167,21 +1271,20 @@ void main() {
         expect(listener).not.toHaveBeenCalled();
       });
 
-
       it(r'should be possible to remove every watch',
           (RootScope rootScope, FormatterMap formatters) {
         rootScope.context['foo'] = 'bar';
         var watch1 = rootScope.watch('(foo|json)+"bar"', (v, p) => null,
-        formatters: formatters);
+            formatters: formatters);
         var watch2 = rootScope.watch('(foo|json)+"bar"', (v, p) => null,
-        formatters: formatters);
+            formatters: formatters);
 
         expect(() => watch1.remove()).not.toThrow();
         expect(() => watch2.remove()).not.toThrow();
       });
 
-
-      it(r'should not infinitely digest when current value is NaN', (RootScope rootScope) {
+      it(r'should not infinitely digest when current value is NaN',
+          (RootScope rootScope) {
         rootScope.context['nan'] = double.NAN;
         rootScope.watch('nan', (_, __) => null);
 
@@ -1190,8 +1293,8 @@ void main() {
         }).not.toThrow();
       });
 
-
-      it(r'should prevent infinite digest and should log firing expressions', (RootScope rootScope) {
+      it(r'should prevent infinite digest and should log firing expressions',
+          (RootScope rootScope) {
         rootScope.context['a'] = 0;
         rootScope.context['b'] = 0;
         rootScope.watch('a', (a, __) => rootScope.context['a'] = a + 1);
@@ -1200,55 +1303,59 @@ void main() {
         expect(() {
           rootScope.digest();
         }).toThrowWith(message: 'Model did not stabilize in 10 digests. '
-                   'Last 3 iterations:\n'
-                   'a: 7 <= 6, b: 7 <= 6\n'
-                   'a: 8 <= 7, b: 8 <= 7\n'
-                   'a: 9 <= 8, b: 9 <= 8');
+            'Last 3 iterations:\n'
+            'a: 7 <= 6, b: 7 <= 6\n'
+            'a: 8 <= 7, b: 8 <= 7\n'
+            'a: 9 <= 8, b: 9 <= 8');
       });
 
-
-      it(r'should detect infinite digest through runAsync', (RootScope rootScope) {
-        rootScope.context['value'] = () { rootScope.runAsync(() {}); return 'a'; };
+      it(r'should detect infinite digest through runAsync',
+          (RootScope rootScope) {
+        rootScope.context['value'] = () {
+          rootScope.runAsync(() {});
+          return 'a';
+        };
         rootScope.watch('value()', (_, __) {});
 
         expect(() {
           rootScope.digest();
         }).toThrowWith(message: 'Model did not stabilize in 10 digests. '
-        'Last 3 iterations:\n'
-        'async:1\n'
-        'async:1\n'
-        'async:1');
+            'Last 3 iterations:\n'
+            'async:1\n'
+            'async:1\n'
+            'async:1');
       });
-
 
       it(r'should always call the watchr with newVal and oldVal equal on the first run',
           (RootScope rootScope) {
         var log = [];
         var logger = (newVal, oldVal) {
-          var val = (newVal == oldVal || (newVal != oldVal && oldVal != newVal)) ? newVal : 'xxx';
+          var val = (newVal == oldVal || (newVal != oldVal && oldVal != newVal))
+              ? newVal
+              : 'xxx';
           log.add(val);
         };
 
         rootScope
-            ..context['nanValue'] = double.NAN
-            ..context['nullValue'] = null
-            ..context['emptyString'] = ''
-            ..context['falseValue'] = false
-            ..context['numberValue'] = 23
-            ..watch('nanValue', logger)
-            ..watch('nullValue', logger)
-            ..watch('emptyString', logger)
-            ..watch('falseValue', logger)
-            ..watch('numberValue', logger)
-            ..digest();
+          ..context['nanValue'] = double.NAN
+          ..context['nullValue'] = null
+          ..context['emptyString'] = ''
+          ..context['falseValue'] = false
+          ..context['numberValue'] = 23
+          ..watch('nanValue', logger)
+          ..watch('nullValue', logger)
+          ..watch('emptyString', logger)
+          ..watch('falseValue', logger)
+          ..watch('numberValue', logger)
+          ..digest();
 
-        expect(log.removeAt(0).isNaN).toEqual(true); //guinness's toBe and toEqual don't work well with NaNs
+        expect(log.removeAt(0).isNaN).toEqual(
+            true); //guinness's toBe and toEqual don't work well with NaNs
         expect(log).toEqual([null, '', false, 23]);
         log = [];
         rootScope.digest();
         expect(log).toEqual([]);
       });
-
 
       it('should properly watch constants', (RootScope rootScope, Logger log) {
         rootScope.watch('[1, 2]', (v, o) => log([v, o]));
@@ -1257,8 +1364,8 @@ void main() {
         expect(log).toEqual([[[1, 2], null]]);
       });
 
-
-      it('should properly watch array of fields 1', (RootScope rootScope, Logger log) {
+      it('should properly watch array of fields 1',
+          (RootScope rootScope, Logger log) {
         rootScope.context['foo'] = 12;
         rootScope.context['bar'] = 34;
         rootScope.watch('[foo, bar]', (v, o) => log([v, o]));
@@ -1273,8 +1380,8 @@ void main() {
         expect(log).toEqual([[[56, 78], [12, 34]]]);
       });
 
-
-      it('should properly watch array of fields 2', (RootScope rootScope, Logger log) {
+      it('should properly watch array of fields 2',
+          (RootScope rootScope, Logger log) {
         rootScope.context['foo'] = () => 12;
         rootScope.watch('foo()', (v, o) => log(v));
         expect(log).toEqual([]);
@@ -1282,8 +1389,8 @@ void main() {
         expect(log).toEqual([12]);
       });
 
-
-      it('should properly watch array of fields 3', (RootScope rootScope, Logger log) {
+      it('should properly watch array of fields 3',
+          (RootScope rootScope, Logger log) {
         rootScope.context['foo'] = 'abc';
         rootScope.watch('foo.contains("b")', (v, o) => log([v, o]));
         expect(log).toEqual([]);
@@ -1292,10 +1399,12 @@ void main() {
         log.clear();
       });
 
-      it('should watch closures both as a leaf and as method call', (RootScope rootScope, Logger log) {
+      it('should watch closures both as a leaf and as method call',
+          (RootScope rootScope, Logger log) {
         rootScope.context['foo'] = new Foo();
         rootScope.context['increment'] = null;
-        rootScope.watch('foo.increment', (v, _) => rootScope.context['increment'] = v);
+        rootScope.watch(
+            'foo.increment', (v, _) => rootScope.context['increment'] = v);
         rootScope.watch('increment(1)', (v, o) => log([v, o]));
         expect(log).toEqual([]);
         rootScope.apply();
@@ -1303,8 +1412,9 @@ void main() {
         log.clear();
       });
 
-      it('should not trigger new watcher in the flush where it was added', (Scope scope) {
-        var log = [] ;
+      it('should not trigger new watcher in the flush where it was added',
+          (Scope scope) {
+        var log = [];
         scope.context['foo'] = () => 'foo';
         scope.context['name'] = 'misko';
         scope.context['list'] = [2, 3];
@@ -1313,14 +1423,15 @@ void main() {
           expect(value).toEqual(1);
           scope.watch('foo()', (value, __) => log.add(value));
           scope.watch('name', (value, __) => log.add(value));
-          scope.watch('(foo() + "-" + name).toUpperCase()', (value, __) => log.add(value));
+          scope.watch('(foo() + "-" + name).toUpperCase()',
+              (value, __) => log.add(value));
           scope.watch('list', (value, __) => log.add(value));
           scope.watch('map', (value, __) => log.add(value));
         });
         scope.apply();
-        expect(log).toEqual(['foo', 'misko', 'FOO-MISKO', [2, 3], {'bar': 'chocolate'}]);
+        expect(log).toEqual(
+            ['foo', 'misko', 'FOO-MISKO', [2, 3], {'bar': 'chocolate'}]);
       });
-
 
       it('should allow multiple nested watches', (RootScope scope) {
         scope.watch('1', (_, __) {
@@ -1359,8 +1470,8 @@ void main() {
         expect(scope.apply).not.toThrow();
       });
 
-
-      it('should properly watch array of fields 4', (RootScope rootScope, Logger log) {
+      it('should properly watch array of fields 4',
+          (RootScope rootScope, Logger log) {
         rootScope.watch('[ctrl.foo, ctrl.bar]', (v, o) => log([v, o]));
         expect(log).toEqual([]);
         rootScope.apply();
@@ -1372,7 +1483,6 @@ void main() {
         expect(log).toEqual([[[56, 78], [null, null]]]);
       });
     });
-
 
     describe('special binding modes', () {
       it('should bind one time', (RootScope rootScope, Logger log) {
@@ -1401,12 +1511,15 @@ void main() {
       });
     });
 
-
     describe('runAsync', () {
       it(r'should run callback before watch', (RootScope rootScope) {
         var log = '';
-        rootScope.runAsync(() { log += 'parent.async;'; });
-        rootScope.watch('value', (_, __) { log += 'parent.digest;'; });
+        rootScope.runAsync(() {
+          log += 'parent.async;';
+        });
+        rootScope.watch('value', (_, __) {
+          log += 'parent.digest;';
+        });
         rootScope.digest();
         expect(log).toEqual('parent.async;parent.digest;');
       });
@@ -1416,9 +1529,12 @@ void main() {
         rootScope.context['value'] = 0;
         // NOTE(deboer): watch listener string functions not yet supported
         //rootScope.watch('value', 'log = log + ".";');
-        rootScope.watch('value', (_, __) { rootScope.context['log'] += "."; });
+        rootScope.watch('value', (_, __) {
+          rootScope.context['log'] += ".";
+        });
         rootScope.watch('init', (_, __) {
-          rootScope.runAsync(() => rootScope.eval('value = 123; log = log + "=" '));
+          rootScope
+              .runAsync(() => rootScope.eval('value = 123; log = log + "=" '));
           expect(rootScope.context['value']).toEqual(0);
         });
         rootScope.digest();
@@ -1455,91 +1571,108 @@ void main() {
       });
 
       it('should schedule apply after future resolution',
-        async((Logger log, VmTurnZone zone, RootScope scope) {
-          Completer completer;
-          zone.run(() {
+          async((Logger log, VmTurnZone zone, RootScope scope) {
+        Completer completer;
+        zone.run(() {
+          completer = new Completer();
+          completer.future.then((value) {
+            log('then($value)');
+          });
+        });
+
+        scope.runAsync(() => log('before'));
+        log.clear();
+        completer
+            .complete('OK'); // this one causes APPLY which processe 'before'
+        // This one schedules work but apply already run so it does not execute.
+        scope.runAsync(() => log('NOT_EXECUTED'));
+
+        expect(log).toEqual(['(', ')', '[', 'before', 'then(OK)', ']']);
+      }));
+
+      it('should schedule microtask to runAsync queue during digest',
+          async((Logger log, VmTurnZone zone, RootScope scope) {
+        Completer completer;
+        zone.run(() {
+          completer = new Completer();
+          completer.future.then((value) {
+            scope.runAsync(() => log('in(${scope.state})'));
+            return new Future.value(value);
+          }).then((value) {
+            log('then($value)');
+          });
+        });
+        log.clear();
+        completer.complete('OK');
+        expect(log)
+            .toEqual(['(', ')', '[', '(', ')', 'in(digest)', 'then(OK)', ']']);
+      }));
+
+      it('should allow microtasks in flush phase and process them immediatly',
+          async((Logger log, VmTurnZone zone, RootScope scope) {
+        scope.watch('g()', (_, __) {});
+        scope.context['g'] = () {
+          log('!');
+          return 0;
+        };
+
+        zone.run(() {
+          scope.domWrite(() {
+            log('domWriteA');
+            return new Future.value(null)
+                .then((_) => scope.domWrite(() => log('domWriteB')));
+          });
+        });
+        expect(log).toEqual([
+          '[',
+          '!',
+          '!',
+          'domWriteA',
+          '(',
+          ')',
+          'domWriteB', /* assert */ '!',
+          ']'
+        ]);
+      }));
+
+      it('should allow creation of Completers in flush phase',
+          async((Logger log, VmTurnZone zone, RootScope scope) {
+        Completer completer;
+        zone.run(() {
+          scope.domWrite(() {
+            log('new Completer');
             completer = new Completer();
             completer.future.then((value) {
               log('then($value)');
             });
           });
-
-          scope.runAsync(() => log('before'));
-          log.clear();
-          completer.complete('OK'); // this one causes APPLY which processe 'before'
-          // This one schedules work but apply already run so it does not execute.
-          scope.runAsync(() => log('NOT_EXECUTED'));
-
-          expect(log).toEqual(['(', ')', '[', 'before', 'then(OK)', ']']);
-        })
-      );
-
-      it('should schedule microtask to runAsync queue during digest',
-        async((Logger log, VmTurnZone zone, RootScope scope) {
-          Completer completer;
-          zone.run(() {
-            completer = new Completer();
-            completer.future.
-              then((value) {
-                scope.runAsync(() => log('in(${scope.state})'));
-                return new Future.value(value);
-              }).
-              then((value) {
-                log('then($value)');
-              });
-          });
-          log.clear();
-          completer.complete('OK');
-          expect(log).toEqual(['(', ')', '[', '(', ')', 'in(digest)', 'then(OK)', ']']);
-        })
-      );
-
-      it('should allow microtasks in flush phase and process them immediatly',
-        async((Logger log, VmTurnZone zone, RootScope scope) {
-          scope.watch('g()', (_, __) {});
-          scope.context['g'] = () {
-            log('!');
-            return 0;
-          };
-
-          zone.run(() {
-            scope.domWrite(() {
-              log('domWriteA');
-              return new Future.value(null).then((_) => scope.domWrite(() => log('domWriteB')));
-            });
-          });
-          expect(log).toEqual(
-              ['[', '!', '!', 'domWriteA', '(', ')', 'domWriteB', /* assert */'!', ']']);
-        })
-      );
-
-      it('should allow creation of Completers in flush phase',
-        async((Logger log, VmTurnZone zone, RootScope scope) {
-          Completer completer;
-          zone.run(() {
-            scope.domWrite(() {
-              log('new Completer');
-              completer = new Completer();
-              completer.future.then((value) {
-                log('then($value)');
-              });
-            });
-          });
-          log('=');
-          completer.complete('OK');
-          log(';');
-          expect(log).toEqual(
-              ['[', 'new Completer', ']', '=', '(', ')', '[', 'then(OK)', ']', ';']);
-        })
-      );
+        });
+        log('=');
+        completer.complete('OK');
+        log(';');
+        expect(log).toEqual([
+          '[',
+          'new Completer',
+          ']',
+          '=',
+          '(',
+          ')',
+          '[',
+          'then(OK)',
+          ']',
+          ';'
+        ]);
+      }));
     });
 
     describe('domRead/domWrite', () {
       beforeEachModule((Module module) {
-        module.bind(ExceptionHandler, toImplementation: LoggingExceptionHandler);
+        module.bind(ExceptionHandler,
+            toImplementation: LoggingExceptionHandler);
       });
 
-      it('should run writes before reads', (RootScope rootScope, Logger logger, ExceptionHandler e) {
+      it('should run writes before reads',
+          (RootScope rootScope, Logger logger, ExceptionHandler e) {
         LoggingExceptionHandler exceptionHandler = e as LoggingExceptionHandler;
         rootScope.domWrite(() {
           logger('write1');
@@ -1555,13 +1688,15 @@ void main() {
         rootScope.watch('value', (_, __) => logger('observe'),
             canChangeModel: false);
         rootScope.flush();
-        expect(logger).toEqual(['write1', 'write2', 'observe', 'read1', 'read2', 'write3']);
+        expect(logger).toEqual(
+            ['write1', 'write2', 'observe', 'read1', 'read2', 'write3']);
         expect(exceptionHandler.errors.length).toEqual(2);
         expect(exceptionHandler.errors[0].error).toEqual('write1');
         expect(exceptionHandler.errors[1].error).toEqual('read1');
       });
 
-      it("should run writes of child scopes first", (RootScope rootScope, Logger logger) {
+      it("should run writes of child scopes first",
+          (RootScope rootScope, Logger logger) {
         final childScope = rootScope.createChild({});
         childScope.domWrite(() {
           logger("child1");
@@ -1578,7 +1713,8 @@ void main() {
         expect(logger).toEqual(['child1', 'child2', 'root']);
       });
 
-      it("should run reads of child scopes first", (RootScope rootScope, Logger logger) {
+      it("should run reads of child scopes first",
+          (RootScope rootScope, Logger logger) {
         final childScope = rootScope.createChild({});
         childScope.domRead(() {
           logger("child1");
@@ -1598,7 +1734,8 @@ void main() {
 
     describe('exceptionHander', () {
       beforeEachModule((Module module) {
-        module.bind(ExceptionHandler, toImplementation: LoggingExceptionHandler);
+        module.bind(ExceptionHandler,
+            toImplementation: LoggingExceptionHandler);
       });
 
       it('should call ExceptionHandler on zone errors',
@@ -1612,13 +1749,13 @@ void main() {
       }));
 
       it('should call ExceptionHandler on digest errors',
-        async((RootScope rootScope, VmTurnZone zone, ExceptionHandler e) {
+          async((RootScope rootScope, VmTurnZone zone, ExceptionHandler e) {
         rootScope.context['badOne'] = () => new Map();
         rootScope.watch('badOne()', (_, __) => null);
 
         try {
           zone.run(() => null);
-        } catch(_) {}
+        } catch (_) {}
 
         var errors = (e as LoggingExceptionHandler).errors;
         expect(errors.length).toEqual(1);
@@ -1627,47 +1764,54 @@ void main() {
     });
 
     describe('logging', () {
-      it('should log a message on digest if reporting is enabled', (RootScope rootScope,
-          Injector injector) {
+      it('should log a message on digest if reporting is enabled',
+          (RootScope rootScope, Injector injector) {
         ScopeStatsConfig config = injector.get(ScopeStatsConfig);
         config.emit = true;
         rootScope.digest();
-        expect((injector.get(ScopeStatsEmitter) as MockScopeStatsEmitter).invoked)
-          .toEqual(true);
+        expect((injector
+                .get(ScopeStatsEmitter) as MockScopeStatsEmitter).invoked)
+            .toEqual(true);
       });
 
-      it('should log a message on flush if reporting is enabled', (RootScope rootScope,
-          Injector injector) {
+      it('should log a message on flush if reporting is enabled',
+          (RootScope rootScope, Injector injector) {
         ScopeStatsConfig config = injector.get(ScopeStatsConfig);
         config.emit = true;
         rootScope.flush();
-        expect((injector.get(ScopeStatsEmitter) as MockScopeStatsEmitter).invoked)
-          .toEqual(true);
+        expect((injector
+                .get(ScopeStatsEmitter) as MockScopeStatsEmitter).invoked)
+            .toEqual(true);
       });
 
-      it('should not log a message on digest if reporting is disabled', (RootScope rootScope,
-          Injector injector) {
+      it('should not log a message on digest if reporting is disabled',
+          (RootScope rootScope, Injector injector) {
         rootScope.digest();
-        expect((injector.get(ScopeStatsEmitter) as MockScopeStatsEmitter).invoked)
-          .toEqual(false);
+        expect((injector
+                .get(ScopeStatsEmitter) as MockScopeStatsEmitter).invoked)
+            .toEqual(false);
       });
 
-      it('should not log a message on flush if reporting is disabled', (RootScope rootScope,
-          Injector injector) {
+      it('should not log a message on flush if reporting is disabled',
+          (RootScope rootScope, Injector injector) {
         rootScope.flush();
-        expect((injector.get(ScopeStatsEmitter) as MockScopeStatsEmitter).invoked)
-          .toEqual(false);
+        expect((injector
+                .get(ScopeStatsEmitter) as MockScopeStatsEmitter).invoked)
+            .toEqual(false);
       });
 
-      it('can be turned on at runtime', (RootScope rootScope, Injector injector) {
+      it('can be turned on at runtime',
+          (RootScope rootScope, Injector injector) {
         rootScope.digest();
-        expect((injector.get(ScopeStatsEmitter) as MockScopeStatsEmitter).invoked)
-          .toEqual(false);
+        expect((injector
+                .get(ScopeStatsEmitter) as MockScopeStatsEmitter).invoked)
+            .toEqual(false);
         ScopeStatsConfig config = injector.get(ScopeStatsConfig);
         config.emit = true;
         rootScope.digest();
-        expect((injector.get(ScopeStatsEmitter) as MockScopeStatsEmitter).invoked)
-          .toEqual(true);
+        expect((injector
+                .get(ScopeStatsEmitter) as MockScopeStatsEmitter).invoked)
+            .toEqual(true);
       });
     });
   });
@@ -1728,14 +1872,14 @@ class _SortFormatter {
   }
 }
 
-@Formatter(name:'newFormatter')
+@Formatter(name: 'newFormatter')
 class FormatterOne {
   call(String str) {
     return '$str 1';
   }
 }
 
-@Formatter(name:'newFormatter')
+@Formatter(name: 'newFormatter')
 class FormatterTwo {
   call(String str) {
     return '$str 2';
@@ -1748,10 +1892,10 @@ class MockScopeStatsEmitter implements ScopeStatsEmitter {
   void emitMessage(String message) {}
 
   void emitSummary(List<int> digestTimes, int flushPhaseDuration,
-                   int assertFlushPhaseDuration) {}
+      int assertFlushPhaseDuration) {}
 
   void emit(String phaseOrLoopNo, AvgStopwatch fieldStopwatch,
-            AvgStopwatch evalStopwatch, AvgStopwatch processStopwatch) {
+      AvgStopwatch evalStopwatch, AvgStopwatch processStopwatch) {
     invoked = true;
   }
 }
@@ -1761,7 +1905,7 @@ class UnstableList {
 }
 
 class Foo {
-  increment(x) => x+1;
+  increment(x) => x + 1;
 }
 
 class _RootContext implements ScopeAware {

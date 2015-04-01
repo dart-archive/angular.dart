@@ -5,22 +5,16 @@ part of angular.directive;
  * prevents the default browser form submission action from occurring. `Selector: [ng-form]` or
  * `.ng-form` or `form` or `fieldset`
  */
-@Decorator(
-    selector: 'form',
-    module: NgForm.module)
-@Decorator(
-    selector: 'fieldset',
-    module: NgForm.module)
-@Decorator(
-    selector: '.ng-form',
-    module: NgForm.module)
+@Decorator(selector: 'form', module: NgForm.module)
+@Decorator(selector: 'fieldset', module: NgForm.module)
+@Decorator(selector: '.ng-form', module: NgForm.module)
 @Decorator(
     selector: '[ng-form]',
     module: NgForm.module,
-    map: const { 'ng-form': '&name' })
+    map: const {'ng-form': '&name'})
 class NgForm extends NgControl {
-  static module(DirectiveBinder binder) =>
-      binder.bind(NgControl, toInstanceOf: NG_FORM_KEY, visibility: Visibility.CHILDREN);
+  static module(DirectiveBinder binder) => binder.bind(NgControl,
+      toInstanceOf: NG_FORM_KEY, visibility: Visibility.CHILDREN);
 
   final Scope _scope;
 
@@ -34,9 +28,9 @@ class NgForm extends NgControl {
    * * [element] - The form DOM element.
    * * [injector] - An instance of Injector.
    */
-  NgForm(this._scope, NgElement element, DirectiveInjector injector, Animate animate) :
-    super(element, injector, animate) {
-
+  NgForm(this._scope, NgElement element, DirectiveInjector injector,
+      Animate animate)
+      : super(element, injector, animate) {
     if (!element.node.attributes.containsKey('action')) {
       element.node.onSubmit.listen((event) {
         event.preventDefault();
@@ -65,8 +59,8 @@ class NgForm extends NgControl {
       } catch (e) {
         throw 'There must be a "$name" field on your component to store the form instance.';
       }
-     }
-   }
+    }
+  }
 
   /**
     * The list of associated child controls.
@@ -77,7 +71,7 @@ class NgForm extends NgControl {
     * Returns the child control that is associated with the given name. If multiple
     * child controls contain the same name then the first instance will be returned.
     */
-  NgControl operator[](String name) =>
+  NgControl operator [](String name) =>
       controls.containsKey(name) ? controls[name][0] : null;
 }
 /**
@@ -88,7 +82,7 @@ class NgNullForm extends NgNullControl implements NgForm {
 
   NgNullForm() {}
   operator []=(String key, value) {}
-  operator[](name) {}
+  operator [](name) {}
 
   get controls => null;
 }

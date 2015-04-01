@@ -10,7 +10,6 @@ class CacheStats {
       "[CacheStats: capacity: $capacity, size: $size, hits: $hits, misses: $misses]";
 }
 
-
 /**
  * The Cache interface.
  */
@@ -43,7 +42,6 @@ abstract class Cache<K, V> {
   int get length => size;
 }
 
-
 /**
  * An unbounded cache.
  */
@@ -68,11 +66,11 @@ class UnboundedCache<K, V> extends Cache<K, V> {
   int get size => _entries.length;
   CacheStats stats() => new CacheStats(capacity, size, _hits, _misses);
   // Debugging helper.
-  String toString() => "[$runtimeType: size=${_entries.length}, items=$_entries]";
+  String toString() =>
+      "[$runtimeType: size=${_entries.length}, items=$_entries]";
   int get length => -1;
   void clear() {}
 }
-
 
 /**
  * Simple LRU cache.
@@ -123,5 +121,6 @@ class LruCache<K, V> extends Cache<K, V> {
   int get size => _entries.length;
   CacheStats stats() => new CacheStats(capacity, size, _hits, _misses);
   // Debugging helper.
-  String toString() => "[$runtimeType: capacity=$capacity, size=$size, items=$_entries]";
+  String toString() =>
+      "[$runtimeType: capacity=$capacity, size=$size, items=$_entries]";
 }

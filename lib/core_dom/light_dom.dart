@@ -69,12 +69,10 @@ class LightDom implements SourceLightDom, DestinationLightDom {
   void _collectAllContentTags(item, List<Content> acc) {
     if (item is Content) {
       acc.add(item);
-
     } else if (item is View) {
       for (final i in item.insertionPoints) {
         _collectAllContentTags(i, acc);
       }
-
     } else if (item is ViewPort) {
       for (final i in item.views) {
         _collectAllContentTags(i, acc);
@@ -84,12 +82,12 @@ class LightDom implements SourceLightDom, DestinationLightDom {
 
   List<dom.Node> get _expandedLightDomRootNodes {
     final list = [];
-    for(final root in _lightDomRootNodes) {
+    for (final root in _lightDomRootNodes) {
       if (_ports.containsKey(root)) {
         list.addAll(_ports[root].nodes);
       } else if (root is dom.ContentElement) {
-        if (!_contentTags.containsKey(root))
-          throw new Exception('Unmatched content tag encountered during redistibution.');
+        if (!_contentTags.containsKey(root)) throw new Exception(
+            'Unmatched content tag encountered during redistibution.');
         list.addAll(_contentTags[root].nodes);
       } else {
         list.add(root);
@@ -102,7 +100,8 @@ class LightDom implements SourceLightDom, DestinationLightDom {
 void redistributeNodes(Iterable<Content> contents, List<dom.Node> nodes) {
   for (final content in contents) {
     final select = content.select;
-    matchSelector(n) => n.nodeType == dom.Node.ELEMENT_NODE && n.matches(select);
+    matchSelector(n) =>
+        n.nodeType == dom.Node.ELEMENT_NODE && n.matches(select);
 
     if (select == null) {
       content.insert(nodes);

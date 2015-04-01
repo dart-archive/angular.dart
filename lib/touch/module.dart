@@ -24,4 +24,3 @@ class TouchModule extends Module {
     bind(NgSwipeRight, toValue: null);
   }
 }
- 

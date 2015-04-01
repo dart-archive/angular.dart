@@ -1,6 +1,5 @@
 library angular.example.animation_spec;
 
-import 'dart:html';
 import 'package:protractor/protractor_api.dart';
 
 part 'animation_ng_repeat_spec.dart';
@@ -12,7 +11,6 @@ class AppState {
 
   var heading = element(by.css(".demo h2"));
 }
-
 
 main() {
   describe('animation example', () {

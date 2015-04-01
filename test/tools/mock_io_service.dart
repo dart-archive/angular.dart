@@ -3,7 +3,6 @@ library angular.mock_io;
 import 'package:angular/tools/io.dart';
 
 class MockIoService implements IoService {
-
   Map<String, String> mockData;
 
   MockIoService(this.mockData);

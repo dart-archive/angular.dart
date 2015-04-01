@@ -20,14 +20,16 @@ import 'package:angular/core/parser/parser.dart';
 import 'package:angular/core_dom/dom_util.dart' as util;
 import 'package:angular/core_dom/static_keys.dart';
 import 'package:angular/core_dom/directive_injector.dart';
-export 'package:angular/core_dom/directive_injector.dart' show DirectiveInjector;
+export 'package:angular/core_dom/directive_injector.dart'
+    show DirectiveInjector;
 
 import 'package:angular/core_dom/type_to_uri_mapper.dart';
 import 'package:angular/core_dom/resource_url_resolver.dart';
 export 'package:angular/core_dom/resource_url_resolver.dart'
     show ResourceUrlResolver, ResourceResolverConfig;
 
-import 'package:angular/change_detection/watch_group.dart' show Watch, ContextLocals;
+import 'package:angular/change_detection/watch_group.dart'
+    show Watch, ContextLocals;
 import 'package:angular/change_detection/ast_parser.dart';
 import 'package:angular/core/registry.dart';
 import 'package:angular/ng_tracing.dart';
@@ -75,7 +77,8 @@ class CoreDomModule extends Module {
     bind(TemplateCache, toFactory: (CacheRegister register) {
       var templateCache = new TemplateCache();
       register.registerCache("TemplateCache", templateCache);
-      return templateCache; }, inject: [CACHE_REGISTER_KEY]);
+      return templateCache;
+    }, inject: [CACHE_REGISTER_KEY]);
     bind(dom.NodeTreeSanitizer, toImplementation: NullTreeSanitizer);
 
     bind(TextMustache);

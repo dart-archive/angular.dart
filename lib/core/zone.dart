@@ -14,14 +14,14 @@ typedef void ZoneOnTurnStart();
 
 typedef void ZoneScheduleMicrotask(fn());
 
-typedef async.Timer ZoneCreateTimer(async.ZoneDelegate delegate,
-    async.Zone zone, Duration duration, fn());
+typedef async.Timer ZoneCreateTimer(
+    async.ZoneDelegate delegate, async.Zone zone, Duration duration, fn());
 
 /**
  * Handles a [VmTurnZone] onError event.
  */
-typedef void ZoneOnError(dynamic error, dynamic stacktrace,
-                         LongStackTrace longStacktrace);
+typedef void ZoneOnError(
+    dynamic error, dynamic stacktrace, LongStackTrace longStacktrace);
 
 /**
  * Contains the locations of async calls across VM turns.
@@ -34,16 +34,18 @@ class LongStackTrace {
   LongStackTrace(this.reason, this.stacktrace, this.parent);
 
   toString() {
-    List<String> frames = '${this.stacktrace}'.split('\n')
-        .where((frame) =>
-            frame.indexOf('(dart:') == -1 && // skip dart runtime libs
-            frame.indexOf('(package:angular/zone.dart') == -1 // skip angular zone
-        ).toList()..insert(0, reason);
+    List<String> frames = '${this.stacktrace}'
+        .split('\n')
+        .where((frame) => frame.indexOf('(dart:') ==
+                    -1 && // skip dart runtime libs
+                frame.indexOf('(package:angular/zone.dart') ==
+                    -1 // skip angular zone
+            )
+        .toList()..insert(0, reason);
     var parent = this.parent == null ? '' : this.parent;
     return '${frames.join("\n    ")}\n$parent';
   }
 }
-
 
 /**
  * A [Zone] wrapper that lets you schedule tasks after its private microtask
@@ -77,13 +79,13 @@ class VmTurnZone {
    */
   VmTurnZone() {
     _outerZone = async.Zone.current;
-    _innerZone = _outerZone.fork(specification: new async.ZoneSpecification(
-        run: _onRun,
-        runUnary: _onRunUnary,
-        scheduleMicrotask: _onScheduleMicrotask,
-        createTimer: _onCreateTimer,
-        handleUncaughtError: _uncaughtError
-    ));
+    _innerZone = _outerZone.fork(
+        specification: new async.ZoneSpecification(
+            run: _onRun,
+            runUnary: _onRunUnary,
+            scheduleMicrotask: _onScheduleMicrotask,
+            createTimer: _onCreateTimer,
+            handleUncaughtError: _uncaughtError));
     onError = _defaultOnError;
     onTurnDone = _defaultOnTurnDone;
     onTurnStart = _defaultOnTurnStart;
@@ -97,7 +99,8 @@ class VmTurnZone {
 
   var _currentlyInTurn = false;
 
-  dynamic _onRunBase(async.Zone self, async.ZoneDelegate delegate, async.Zone zone, fn()) {
+  dynamic _onRunBase(
+      async.Zone self, async.ZoneDelegate delegate, async.Zone zone, fn()) {
     var scope = traceEnter(VmTurnZone_run);
     _runningInTurn++;
     try {
@@ -118,24 +121,26 @@ class VmTurnZone {
   }
 
   // Called from the parent zone.
-  dynamic _onRun(async.Zone self, async.ZoneDelegate delegate, async.Zone zone, fn()) =>
-      _onRunBase(self, delegate, zone, () => delegate.run(zone, fn));
+  dynamic _onRun(async.Zone self, async.ZoneDelegate delegate, async.Zone zone,
+      fn()) => _onRunBase(self, delegate, zone, () => delegate.run(zone, fn));
 
-  dynamic _onRunUnary(async.Zone self, async.ZoneDelegate delegate, async.Zone zone,
-                      fn(args), args) =>
+  dynamic _onRunUnary(async.Zone self, async.ZoneDelegate delegate,
+          async.Zone zone, fn(args), args) =>
       _onRunBase(self, delegate, zone, () => delegate.runUnary(zone, fn, args));
 
-  void _onScheduleMicrotask(async.Zone self, async.ZoneDelegate delegate, async.Zone zone, fn()) {
+  void _onScheduleMicrotask(
+      async.Zone self, async.ZoneDelegate delegate, async.Zone zone, fn()) {
     var s = traceEnter(VmTurnZone_scheduleMicrotask);
     try {
       onScheduleMicrotask(() => delegate.run(zone, fn));
-      if (_runningInTurn == 0 && !_inFinishTurn)  _finishTurn(zone, delegate);
+      if (_runningInTurn == 0 && !_inFinishTurn) _finishTurn(zone, delegate);
     } finally {
       traceLeave(s);
     }
   }
 
-  async.Timer _onCreateTimer(async.Zone self, async.ZoneDelegate delegate, async.Zone zone, Duration duration, fn()) {
+  async.Timer _onCreateTimer(async.Zone self, async.ZoneDelegate delegate,
+      async.Zone zone, Duration duration, fn()) {
     var s = traceEnter(VmTurnZone_createTimer);
     try {
       return onCreateTimer(delegate, zone, duration, fn);
@@ -144,8 +149,8 @@ class VmTurnZone {
     }
   }
 
-  void _uncaughtError(async.Zone self, async.ZoneDelegate delegate, async.Zone zone,
-                      e, StackTrace s) {
+  void _uncaughtError(async.Zone self, async.ZoneDelegate delegate,
+      async.Zone zone, e, StackTrace s) {
     if (!_errorThrownFromOnRun) onError(e, s, _longStacktrace);
     _errorThrownFromOnRun = false;
   }
@@ -234,8 +239,8 @@ class VmTurnZone {
    */
   ZoneCreateTimer onCreateTimer;
   async.Timer _defaultOnCreateTimer(async.ZoneDelegate delegate,
-      async.Zone zone, Duration duration, fn())
-      => new _WrappedTimer(this, delegate, zone, duration, fn);
+          async.Zone zone, Duration duration, fn()) =>
+      new _WrappedTimer(this, delegate, zone, duration, fn);
 
   LongStackTrace _longStacktrace = null;
 
@@ -306,14 +311,14 @@ class VmTurnZone {
   }
 }
 
-
 // Automatically adjusts the pending async task count when the timer is
 // scheduled, canceled or fired.
 class _WrappedTimer implements async.Timer {
   async.Timer _realTimer;
   VmTurnZone _vmTurnZone;
 
-  _WrappedTimer(this._vmTurnZone, async.ZoneDelegate delegate, async.Zone zone, Duration duration, Function fn()) {
+  _WrappedTimer(this._vmTurnZone, async.ZoneDelegate delegate, async.Zone zone,
+      Duration duration, Function fn()) {
     _vmTurnZone.countPendingAsync(1);
     _realTimer = delegate.createTimer(zone, duration, () {
       fn();

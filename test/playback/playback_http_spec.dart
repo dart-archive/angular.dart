@@ -25,7 +25,6 @@ void main() {
         m.bind(HttpBackend, toImplementation: RecordingHttpBackend);
       });
 
-
       it('should record a request', async((Http http) {
         var responseData;
 
@@ -36,18 +35,17 @@ void main() {
         backend.flushGET('request').respond(200, 'response');
         microLeap();
         backend
-        .flushPOST('/record',
-            r'{"key":"{\"url\":\"request\",\"method\":\"GET\",\"requestHeaders\":'
-            r'{\"Accept\":\"application/json, text/plain, */*\",\"X-XSRF-TOKEN\":\"secret\"},\"data\":null}",'
-            r'"data":"{\"status\":200,\"headers\":\"\",\"data\":\"response\"}"}')
-        .respond(200);
+            .flushPOST('/record',
+                r'{"key":"{\"url\":\"request\",\"method\":\"GET\",\"requestHeaders\":'
+                r'{\"Accept\":\"application/json, text/plain, */*\",\"X-XSRF-TOKEN\":\"secret\"},\"data\":null}",'
+                r'"data":"{\"status\":200,\"headers\":\"\",\"data\":\"response\"}"}')
+            .respond(200);
 
         microLeap();
 
         expect(responseData).toEqual('response');
       }));
     });
-
 
     describe('PlaybackHttpBackend', () {
       beforeEachModule((Module m) {
@@ -56,8 +54,8 @@ void main() {
 
       it('should replay a request', async((Http http, HttpBackend hb) {
         (hb as PlaybackHttpBackend).data = {
-            r'{"url":"request","method":"GET","requestHeaders":{"Accept":"application/json, text/plain, */*","X-XSRF-TOKEN":"secret"},"data":null}':
-            {'status': 200, 'headers': '', 'data': 'playback data'}
+          r'{"url":"request","method":"GET","requestHeaders":{"Accept":"application/json, text/plain, */*","X-XSRF-TOKEN":"secret"},"data":null}':
+              {'status': 200, 'headers': '', 'data': 'playback data'}
         };
 
         var responseData;
@@ -70,7 +68,6 @@ void main() {
 
         expect(responseData).toEqual('playback data');
       }));
-
     });
   });
 }

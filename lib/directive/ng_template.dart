@@ -22,12 +22,12 @@ part of angular.directive;
  * Refer to [TemplateCache] for a **full example** as well as more information.
  */
 @Decorator(
-  selector: 'template[type=text/ng-template]',
-  map: const {'id': '@templateUrl'})
+    selector: 'template[type=text/ng-template]',
+    map: const {'id': '@templateUrl'})
 @Decorator(
-  selector: 'script[type=text/ng-template]',
-  children: Directive.IGNORE_CHILDREN,
-  map: const {'id': '@templateUrl'})
+    selector: 'script[type=text/ng-template]',
+    children: Directive.IGNORE_CHILDREN,
+    map: const {'id': '@templateUrl'})
 class NgTemplate {
   final dom.Element element;
   final TemplateCache templateCache;
@@ -38,5 +38,3 @@ class NgTemplate {
           ? (element as dom.TemplateElement).content.innerHtml
           : element.innerHtml));
 }
-
-

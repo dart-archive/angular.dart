@@ -6,23 +6,14 @@ import 'package:angular/change_detection/ast_parser.dart';
 
 import 'dart:js' as js;
 
-@Component(
-    selector: 'classy',
-    templateUrl: 'classy.html')
-class Classy {
-}
+@Component(selector: 'classy', templateUrl: 'classy.html')
+class Classy {}
 
-@Component(
-    selector: 'baseline',
-    templateUrl: 'baseline.html')
-class Baseline {
-}
+@Component(selector: 'baseline', templateUrl: 'baseline.html')
+class Baseline {}
 
-@Decorator(
-    selector: '[silly-class]'
-)
+@Decorator(selector: '[silly-class]')
 class SillyClass {
-
   final NgElement element;
 
   SillyClass(this.element);
@@ -38,10 +29,11 @@ main() {
   var cleanup, createDom;
 
   var module = new Module()
-      ..bind(Classy)
-      ..bind(Baseline)
-      ..bind(SillyClass)
-      ..bind(CompilerConfig, toValue: new CompilerConfig.withOptions(elementProbeEnabled: false));
+    ..bind(Classy)
+    ..bind(Baseline)
+    ..bind(SillyClass)
+    ..bind(CompilerConfig,
+        toValue: new CompilerConfig.withOptions(elementProbeEnabled: false));
 
   var injector = applicationFactory().addModule(module).run();
   assert(injector != null);
@@ -52,22 +44,17 @@ main() {
   Scope scope = injector.get(Scope);
 
   scope.context['initData'] = {
-      "value": "top",
-      "right": {
-          "value": "right"
-      },
-      "left": {
-          "value": "left"
-      }
+    "value": "top",
+    "right": {"value": "right"},
+    "left": {"value": "left"}
   };
 
   buildTree(maxDepth, values, curDepth) {
     if (maxDepth == curDepth) return {};
     return {
-        "value": values[curDepth],
-        "right": buildTree(maxDepth, values, curDepth+1),
-        "left": buildTree(maxDepth, values, curDepth+1)
-
+      "value": values[curDepth],
+      "right": buildTree(maxDepth, values, curDepth + 1),
+      "left": buildTree(maxDepth, values, curDepth + 1)
     };
   }
   cleanup = (_) => zone.run(() {
@@ -79,10 +66,8 @@ main() {
     scope.context['running'] = true;
   });
 
-  js.context['benchmarkSteps'].add(new js.JsObject.jsify({
-      "name": "cleanup", "fn": new js.JsFunction.withThis(cleanup)
-  }));
-  js.context['benchmarkSteps'].add(new js.JsObject.jsify({
-      "name": "createDom", "fn": new js.JsFunction.withThis(createDom)
-  }));
+  js.context['benchmarkSteps'].add(new js.JsObject.jsify(
+      {"name": "cleanup", "fn": new js.JsFunction.withThis(cleanup)}));
+  js.context['benchmarkSteps'].add(new js.JsObject.jsify(
+      {"name": "createDom", "fn": new js.JsFunction.withThis(createDom)}));
 }

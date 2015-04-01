@@ -24,7 +24,6 @@ void main() {
       zone.onError = (e, s, ls) => eh(e, s);
     });
 
-
     describe('exceptions', () {
       it('should rethrow exceptions from the body and call onError', () {
         var error;
@@ -37,7 +36,6 @@ void main() {
         expect(error).toEqual(['hello']);
       });
 
-
       it('should call onError for errors from scheduleMicrotask', async(() {
         zone.run(() {
           scheduleMicrotask(() {
@@ -48,7 +46,6 @@ void main() {
         expect(exceptionHandler.errors.length).toEqual(1);
         expect(exceptionHandler.errors[0].error).toEqual(["async exception"]);
       }));
-
 
       it('should allow executing code outside the zone', () {
         var zone = new VmTurnZone();
@@ -66,22 +63,22 @@ void main() {
         expect(ngZone.parent).toEqual((outerZone));
       });
 
-
-      it('should rethrow exceptions from the onTurnDone and call onError when the zone is sync', () {
+      it('should rethrow exceptions from the onTurnDone and call onError when the zone is sync',
+          () {
         zone.onTurnDone = () {
           throw ["fromOnTurnDone"];
         };
 
         expect(() {
-          zone.run(() { });
+          zone.run(() {});
         }).toThrowWith(message: 'fromOnTurnDone');
 
         expect(exceptionHandler.errors.length).toEqual(1);
         expect(exceptionHandler.errors[0].error).toEqual(["fromOnTurnDone"]);
       });
 
-
-      it('should rethrow exceptions from the onTurnDone and call onError when the zone is async', () {
+      it('should rethrow exceptions from the onTurnDone and call onError when the zone is async',
+          () {
         var asyncRan = false;
 
         zone.onTurnDone = () {
@@ -103,7 +100,8 @@ void main() {
     });
 
     xdescribe('long stack traces', () {
-      it('should have nice error when crossing scheduleMicrotask boundries', async(() {
+      it('should have nice error when crossing scheduleMicrotask boundries',
+          async(() {
         var error;
         var stack;
         var longStacktrace;
@@ -115,8 +113,16 @@ void main() {
         };
         var FRAME = new RegExp(r'.*\(.*\:(\d+):\d+\)');
 
-        var line = ((){ try {throw [];} catch(e, s) { return int.parse(FRAME.firstMatch('$s')[1]);}})();
-        var throwFn = () { throw ['double zonned']; };
+        var line = (() {
+          try {
+            throw [];
+          } catch (e, s) {
+            return int.parse(FRAME.firstMatch('$s')[1]);
+          }
+        })();
+        var throwFn = () {
+          throw ['double zonned'];
+        };
         var inner = () => zone.run(throwFn);
         var middle = () => scheduleMicrotask(inner);
         var outer = () => scheduleMicrotask(middle);
@@ -145,11 +151,11 @@ void main() {
       expect(log.result()).toEqual('onTurnStart; run; onTurnDone');
     });
 
-
     it('should return the body return value from run', () {
-      expect(zone.run(() { return 6; })).toEqual(6);
+      expect(zone.run(() {
+        return 6;
+      })).toEqual(6);
     });
-
 
     it('should call onTurnStart before executing a microtask scheduled in onTurnDone as well as '
         'onTurnDone after executing the task', async((Logger log) {
@@ -157,7 +163,10 @@ void main() {
       zone.onTurnDone = () {
         log('onTurnDone(begin)');
         if (!ran) {
-          scheduleMicrotask(() { ran = true; log('executedMicrotask'); });
+          scheduleMicrotask(() {
+            ran = true;
+            log('executedMicrotask');
+          });
         }
         log('onTurnDone(end)');
       };
@@ -166,11 +175,12 @@ void main() {
       });
       microLeap();
 
-      expect(log.result()).toEqual('onTurnStart; run; onTurnDone(begin); onTurnDone(end); onTurnStart; executedMicrotask; onTurnDone(begin); onTurnDone(end)');
+      expect(log.result()).toEqual(
+          'onTurnStart; run; onTurnDone(begin); onTurnDone(end); onTurnStart; executedMicrotask; onTurnDone(begin); onTurnDone(end)');
     }));
 
-
-    it('should call onTurnStart and onTurnDone for a scheduleMicrotask in onTurnDone triggered by a scheduleMicrotask in run', async((Logger log) {
+    it('should call onTurnStart and onTurnDone for a scheduleMicrotask in onTurnDone triggered by a scheduleMicrotask in run',
+        async((Logger log) {
       var ran = false;
       zone.onTurnDone = () {
         log('onTurnDone(begin)');
@@ -191,12 +201,12 @@ void main() {
       });
       microLeap();
 
-      expect(log.result()).toEqual('onTurnStart; scheduleMicrotask; run(executeMicrotask); onTurnDone(begin); onTurnDone(scheduleMicrotask); onTurnDone(end); onTurnStart; onTurnDone(executeMicrotask); onTurnDone(begin); onTurnDone(end)');
+      expect(log.result()).toEqual(
+          'onTurnStart; scheduleMicrotask; run(executeMicrotask); onTurnDone(begin); onTurnDone(scheduleMicrotask); onTurnDone(end); onTurnStart; onTurnDone(executeMicrotask); onTurnDone(begin); onTurnDone(end)');
     }));
 
-
-
-    it('should call onTurnStart once before a turn and onTurnDone once after the turn', async((Logger log) {
+    it('should call onTurnStart once before a turn and onTurnDone once after the turn',
+        async((Logger log) {
       zone.run(() {
         log('run start');
         scheduleMicrotask(() {
@@ -206,9 +216,9 @@ void main() {
       });
       microLeap();
 
-      expect(log.result()).toEqual('onTurnStart; run start; run end; async; onTurnDone');
+      expect(log.result())
+          .toEqual('onTurnStart; run start; run end; async; onTurnDone');
     }));
-
 
     it('should work for Future.value as well', async((Logger log) {
       var futureRan = false;
@@ -216,7 +226,9 @@ void main() {
         log('onTurnDone(begin)');
         if (!futureRan) {
           log('onTurnDone(scheduleFuture)');
-          new Future.value(null).then((_) { log('onTurnDone(executeFuture)'); });
+          new Future.value(null).then((_) {
+            log('onTurnDone(executeFuture)');
+          });
           futureRan = true;
         }
         log('onTurnDone(end)');
@@ -224,31 +236,34 @@ void main() {
 
       zone.run(() {
         log('run start');
-        new Future.value(null)
-        .then((_) {
+        new Future.value(null).then((_) {
           log('future then');
-          new Future.value(null)
-          .then((_) { log('future foo'); });
+          new Future.value(null).then((_) {
+            log('future foo');
+          });
           return new Future.value(null);
-        })
-        .then((_) {
+        }).then((_) {
           log('future bar');
         });
         log('run end');
       });
       microLeap();
 
-      expect(log.result()).toEqual('onTurnStart; run start; run end; future then; future foo; future bar; onTurnDone(begin); onTurnDone(scheduleFuture); onTurnDone(end); onTurnStart; onTurnDone(executeFuture); onTurnDone(begin); onTurnDone(end)');
+      expect(log.result()).toEqual(
+          'onTurnStart; run start; run end; future then; future foo; future bar; onTurnDone(begin); onTurnDone(scheduleFuture); onTurnDone(end); onTurnStart; onTurnDone(executeFuture); onTurnDone(begin); onTurnDone(end)');
     }));
 
-    it('should execute futures scheduled in onTurnStart before Futures scheduled in run', async((Logger log) {
+    it('should execute futures scheduled in onTurnStart before Futures scheduled in run',
+        async((Logger log) {
       var doneFutureRan = false;
       var startFutureRan = false;
       zone.onTurnStart = () {
         log('onTurnStart(begin)');
         if (!startFutureRan) {
           log('onTurnStart(scheduleFuture)');
-          new Future.value(null).then((_) { log('onTurnStart(executeFuture)'); });
+          new Future.value(null).then((_) {
+            log('onTurnStart(executeFuture)');
+          });
           startFutureRan = true;
         }
         log('onTurnStart(end)');
@@ -257,7 +272,9 @@ void main() {
         log('onTurnDone(begin)');
         if (!doneFutureRan) {
           log('onTurnDone(scheduleFuture)');
-          new Future.value(null).then((_) { log('onTurnDone(executeFuture)'); });
+          new Future.value(null).then((_) {
+            log('onTurnDone(executeFuture)');
+          });
           doneFutureRan = true;
         }
         log('onTurnDone(end)');
@@ -265,25 +282,25 @@ void main() {
 
       zone.run(() {
         log('run start');
-        new Future.value(null)
-        .then((_) {
+        new Future.value(null).then((_) {
           log('future then');
-          new Future.value(null)
-          .then((_) { log('future foo'); });
+          new Future.value(null).then((_) {
+            log('future foo');
+          });
           return new Future.value(null);
-        })
-        .then((_) {
+        }).then((_) {
           log('future bar');
         });
         log('run end');
       });
       microLeap();
 
-      expect(log.result()).toEqual('onTurnStart(begin); onTurnStart(scheduleFuture); onTurnStart(end); run start; run end; onTurnStart(executeFuture); future then; future foo; future bar; onTurnDone(begin); onTurnDone(scheduleFuture); onTurnDone(end); onTurnStart(begin); onTurnStart(end); onTurnDone(executeFuture); onTurnDone(begin); onTurnDone(end)');
+      expect(log.result()).toEqual(
+          'onTurnStart(begin); onTurnStart(scheduleFuture); onTurnStart(end); run start; run end; onTurnStart(executeFuture); future then; future foo; future bar; onTurnDone(begin); onTurnDone(scheduleFuture); onTurnDone(end); onTurnStart(begin); onTurnStart(end); onTurnDone(executeFuture); onTurnDone(begin); onTurnDone(end)');
     }));
 
-
-    it('should call onTurnStart and onTurnDone  before and after each turn, respectively', async((Logger log) {
+    it('should call onTurnStart and onTurnDone  before and after each turn, respectively',
+        async((Logger log) {
       Completer a, b;
       zone.run(() {
         a = new Completer();
@@ -302,11 +319,12 @@ void main() {
       });
       microLeap();
 
-      expect(log.result()).toEqual('onTurnStart; run start; onTurnDone; onTurnStart; a then; onTurnDone; onTurnStart; b then; onTurnDone');
+      expect(log.result()).toEqual(
+          'onTurnStart; run start; onTurnDone; onTurnStart; a then; onTurnDone; onTurnStart; b then; onTurnDone');
     }));
 
-
-    it('should call onTurnStart and onTurnDone before and after (respectively) all turns in a chain', async((Logger log) {
+    it('should call onTurnStart and onTurnDone before and after (respectively) all turns in a chain',
+        async((Logger log) {
       zone.run(() {
         log('run start');
         scheduleMicrotask(() {
@@ -319,10 +337,12 @@ void main() {
       });
       microLeap();
 
-      expect(log.result()).toEqual('onTurnStart; run start; run end; async1; async2; onTurnDone');
+      expect(log.result()).toEqual(
+          'onTurnStart; run start; run end; async1; async2; onTurnDone');
     }));
 
-    it('should call onTurnStart and onTurnDone for futures created outside of run body', async((Logger log) {
+    it('should call onTurnStart and onTurnDone for futures created outside of run body',
+        async((Logger log) {
       var future = new Future.value(4).then((x) => new Future.value(x));
       zone.run(() {
         future.then((_) => log('future then'));
@@ -330,23 +350,26 @@ void main() {
       });
       microLeap();
 
-      expect(log.result()).toEqual('onTurnStart; zone run; onTurnDone; onTurnStart; future then; onTurnDone');
+      expect(log.result()).toEqual(
+          'onTurnStart; zone run; onTurnDone; onTurnStart; future then; onTurnDone');
     }));
 
-
-    it('should call onTurnDone even if there was an exception in body', async((Logger log) {
+    it('should call onTurnDone even if there was an exception in body',
+        async((Logger log) {
       zone.onError = (e, s, l) => log('onError');
       expect(() => zone.run(() {
         log('zone run');
         throw 'zoneError';
       })).toThrowWith(message: 'zoneError');
       expect(() => zone.assertInTurn()).toThrow();
-      expect(log.result()).toEqual('onTurnStart; zone run; onError; onTurnDone');
+      expect(log.result())
+          .toEqual('onTurnStart; zone run; onError; onTurnDone');
     }));
 
-    it('should call onTurnDone even if there was an exception in onTurnStart', async((Logger log) {
+    it('should call onTurnDone even if there was an exception in onTurnStart',
+        async((Logger log) {
       zone.onError = (e, s, l) => log('onError');
-      zone.onTurnStart = (){
+      zone.onTurnStart = () {
         log('onTurnStart');
         throw 'zoneError';
       };
@@ -357,8 +380,8 @@ void main() {
       expect(log.result()).toEqual('onTurnStart; onError; onTurnDone');
     }));
 
-
-    it('should call onTurnDone even if there was an exception in scheduleMicrotask', async((Logger log) {
+    it('should call onTurnDone even if there was an exception in scheduleMicrotask',
+        async((Logger log) {
       zone.onError = (e, s, l) => log('onError');
       zone.run(() {
         log('zone run');
@@ -371,7 +394,8 @@ void main() {
       microLeap();
 
       expect(() => zone.assertInTurn()).toThrow();
-      expect(log.result()).toEqual('onTurnStart; zone run; scheduleMicrotask; onError; onTurnDone');
+      expect(log.result()).toEqual(
+          'onTurnStart; zone run; scheduleMicrotask; onError; onTurnDone');
     }));
 
     it('should support assertInZone', async(() {
@@ -404,7 +428,6 @@ void main() {
       })).toThrow();
     });
 
-
     it('should support assertInTurn', async(() {
       var calls = '';
       zone.onTurnStart = () {
@@ -428,16 +451,15 @@ void main() {
       expect(calls).toEqual('start;sync;async;done;');
     }));
 
-
     it('should assertInTurn outside of the zone', () {
       expect(async(() {
         zone.assertInTurn();
         microLeap();
-      })).toThrowWith(message: 'ssertion');  // Support both dart2js and the VM with half a word.
+      })).toThrowWith(
+          message: 'ssertion'); // Support both dart2js and the VM with half a word.
     });
 
     group('microtask scheduler', () {
-
       it('should execute microtask scheduled in onTurnDone before onTurnDone is complete',
           async((Logger log) {
         var microtaskResult = false;
@@ -462,8 +484,7 @@ void main() {
         });
 
         expect(log.result()).toEqual('onTurnStart; run; onTurnDone(begin); '
-          'onScheduleMicrotask(begin); executeMicrotask; onScheduleMicrotask(end); onTurnDone(end)'
-        );
+            'onScheduleMicrotask(begin); executeMicrotask; onScheduleMicrotask(end); onTurnDone(end)');
         expect(microtaskResult).toBeTruthy();
       }));
 
@@ -488,12 +509,12 @@ void main() {
         });
 
         expect(log.result()).toEqual('onTurnStart; run; onTurnDone(begin); '
-          'onScheduleMicrotask(begin); onScheduleMicrotask(end); onScheduleMicrotask(begin);'
-          ' executed async; onScheduleMicrotask(end); onTurnDone(end)');
+            'onScheduleMicrotask(begin); onScheduleMicrotask(end); onScheduleMicrotask(begin);'
+            ' executed async; onScheduleMicrotask(end); onTurnDone(end)');
       }));
 
       it('should execute microtask scheduled in run before onTurnDone starts',
-        async((Logger log) {
+          async((Logger log) {
         zone.onTurnStart = () {
           log('onTurnStart');
         };
@@ -513,12 +534,13 @@ void main() {
           });
         });
 
-        expect(log.result()).toEqual('onTurnStart; run; onScheduleMicrotask(begin);'
-          ' executeMicrotask; onScheduleMicrotask(end); onTurnDone');
+        expect(log.result()).toEqual(
+            'onTurnStart; run; onScheduleMicrotask(begin);'
+            ' executeMicrotask; onScheduleMicrotask(end); onTurnDone');
       }));
 
       it('should execute microtask scheduled in onTurnStart before run',
-        async((Logger log) {
+          async((Logger log) {
         zone.onTurnStart = () {
           log('onTurnStart');
           scheduleMicrotask(() {
@@ -537,8 +559,9 @@ void main() {
           log('run');
         });
 
-        expect(log.result()).toEqual('onTurnStart; onScheduleMicrotask(begin); executeMicrotask;'
-          ' onScheduleMicrotask(end); run; onTurnDone');
+        expect(log.result()).toEqual(
+            'onTurnStart; onScheduleMicrotask(begin); executeMicrotask;'
+            ' onScheduleMicrotask(end); run; onTurnDone');
       }));
 
       it('should execute microtask scheduled outside the turn', (Logger log) {
@@ -566,11 +589,13 @@ void main() {
         completer.complete();
 
         expect(log).toEqual([
-            'first', 'onTurnDone',
-            'onScheduleMicrotask', 'future', 'onTurnDone'
+          'first',
+          'onTurnDone',
+          'onScheduleMicrotask',
+          'future',
+          'onTurnDone'
         ]);
       });
-
     });
   });
 }

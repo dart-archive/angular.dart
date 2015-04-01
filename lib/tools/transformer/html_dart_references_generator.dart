@@ -34,15 +34,14 @@ class HtmlDartReferencesGenerator extends Transformer {
         var dartAssetId = uriToAssetId(asset.id, src, logger, tag.sourceSpan);
         if (dartAssetId == null) continue;
 
-        var htmlRefId = new AssetId(dartAssetId.package,
-              dartAssetId.path + '.html_reference');
+        var htmlRefId = new AssetId(
+            dartAssetId.package, dartAssetId.path + '.html_reference');
 
         return transform.readInputAsString(htmlRefId).then((contents) {
           logger.error('Expected $dartAssetId to be referenced by a single '
               'HTML file, was referenced by $contents and ${asset.id}.');
         }, onError: (e) {
-          transform.addOutput(
-              new Asset.fromString(htmlRefId, asset.id.path));
+          transform.addOutput(new Asset.fromString(htmlRefId, asset.id.path));
         });
       }
     });

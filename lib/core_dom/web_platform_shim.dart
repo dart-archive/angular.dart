@@ -8,7 +8,7 @@ final Logger _log = new Logger('WebPlatformShim');
  * without polyfills.
  */
 abstract class WebPlatformShim {
-  String shimCss(String css, { String selector, String cssUrl });
+  String shimCss(String css, {String selector, String cssUrl});
 
   void shimShadowDom(dom.Element root, String selector);
 
@@ -37,10 +37,10 @@ class PlatformJsBasedShim implements WebPlatformShim {
     }
   }
 
-  String shimCss(String css, { String selector, String cssUrl }) {
-    if (! shimRequired) return css;
+  String shimCss(String css, {String selector, String cssUrl}) {
+    if (!shimRequired) return css;
 
-    var shimmedCss =  _shadowCss.callMethod('shimCssText', [css, selector]);
+    var shimmedCss = _shadowCss.callMethod('shimCssText', [css, selector]);
     return "/* Shimmed css for <$selector> from $cssUrl */\n$shimmedCss";
   }
 
@@ -51,7 +51,7 @@ class PlatformJsBasedShim implements WebPlatformShim {
    * See http://www.polymer-project.org/docs/polymer/styling.html#strictstyling
    */
   void shimShadowDom(dom.Element root, String selector) {
-    if (! shimRequired) return;
+    if (!shimRequired) return;
 
     _addAttributeToAllElements(root, selector);
   }
@@ -61,7 +61,7 @@ class PlatformJsBasedShim implements WebPlatformShim {
 class DefaultPlatformShim implements WebPlatformShim {
   bool get shimRequired => true;
 
-  String shimCss(String css, { String selector, String cssUrl }) {
+  String shimCss(String css, {String selector, String cssUrl}) {
     final shimmedCss = cssShim.shimCssText(css, selector);
     return "/* Shimmed css for <$selector> from $cssUrl */\n$shimmedCss";
   }
@@ -79,7 +79,8 @@ void _addAttributeToAllElements(dom.Element root, String attr) {
   try {
     root.querySelectorAll("*").forEach((n) => n.attributes[attr] = "");
   } catch (e, s) {
-    _log.warning("WARNING: Failed to set up Shadow DOM shim for $attr.\n$e\n$s");
+    _log.warning(
+        "WARNING: Failed to set up Shadow DOM shim for $attr.\n$e\n$s");
   }
 }
 
@@ -99,7 +100,8 @@ class ShimmingViewFactoryCache implements ViewFactoryCache {
   ShimmingViewFactoryCache(this.cache, this.selector, this.platformShim);
 
   ViewFactory fromHtml(String html, DirectiveMap directives, [Uri baseUri]) {
-    if (!platformShim.shimRequired) return cache.fromHtml(html, directives, baseUri);
+    if (!platformShim.shimRequired) return cache.fromHtml(
+        html, directives, baseUri);
 
     ViewFactory viewFactory = viewFactoryCache.get(_cacheKey(html));
     if (viewFactory != null) {
@@ -108,19 +110,22 @@ class ShimmingViewFactoryCache implements ViewFactoryCache {
       // This MUST happen before the compiler is called so that every dom
       // element gets touched before the compiler removes them for
       // transcluding directives like ng-if.
-      return viewFactoryCache.put(_cacheKey(html), _createViewFactory(html, directives));
+      return viewFactoryCache.put(
+          _cacheKey(html), _createViewFactory(html, directives));
     }
   }
 
-  async.Future<ViewFactory> fromUrl(String url, DirectiveMap directives, [Uri baseUri]) {
-    if (!platformShim.shimRequired) return cache.fromUrl(url, directives, baseUri);
+  async.Future<ViewFactory> fromUrl(String url, DirectiveMap directives,
+      [Uri baseUri]) {
+    if (!platformShim.shimRequired) return cache.fromUrl(
+        url, directives, baseUri);
 
     ViewFactory viewFactory = viewFactoryCache.get(url);
     if (viewFactory != null) {
       return new async.Future.value(viewFactory);
     } else {
-      return http.get(url, cache: templateCache).then((resp) =>
-          viewFactoryCache.put(_cacheKey(url), fromHtml(resp.responseText, directives)));
+      return http.get(url, cache: templateCache).then((resp) => viewFactoryCache
+          .put(_cacheKey(url), fromHtml(resp.responseText, directives)));
     }
   }
 

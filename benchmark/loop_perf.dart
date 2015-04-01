@@ -33,7 +33,7 @@ class ForIn extends IterationBenchmark {
   ForIn() : super('for in');
   run() {
     var count = 0;
-    for(int item in list) {
+    for (int item in list) {
       count = count + item;
     }
     return count;
@@ -44,7 +44,7 @@ class ForInMap extends IterationBenchmark {
   ForInMap() : super('for in Map');
   run() {
     var count = 0;
-    for(int key in map.keys) {
+    for (int key in map.keys) {
       count = count + key + map[key];
     }
     return count;
@@ -55,7 +55,7 @@ class ForLoop extends IterationBenchmark {
   ForLoop() : super('for loop');
   run() {
     int count = 0;
-    for(int i = 0; i < list.length; i++) {
+    for (int i = 0; i < list.length; i++) {
       count += list[i];
     }
     return count;

@@ -4,11 +4,9 @@ import '../_specs.dart';
 import 'dart:js' as js;
 
 registerElement(String name, prototype) {
-  js.context['angularTestsRegisterElement'].apply(
-          [name, new js.JsObject.jsify(prototype)]);
+  js.context['angularTestsRegisterElement']
+      .apply([name, new js.JsObject.jsify(prototype)]);
 }
-
-
 
 main() {
   describe('WebComponent support', () {
@@ -36,7 +34,8 @@ main() {
       _.compile(html);
       var CustomElements = js.context['CustomElements'];
       if (CustomElements != null) {
-        CustomElements['upgradeAll'].apply([new js.JsObject.fromBrowserObject(_.rootElement)]);
+        CustomElements['upgradeAll']
+            .apply([new js.JsObject.fromBrowserObject(_.rootElement)]);
       }
     }
 
@@ -47,15 +46,14 @@ main() {
     beforeEachModule((Module m) {
       m.bind(TestsTwoWayCustom);
     });
-    
+
     it('should create custom elements', () {
       registerElement('tests-basic', {'prop-x': 6});
-      
+
       // Create a web component
       compileAndUpgrade('<tests-basic></tests-basic>');
       expect(customProp('prop-x')).toEqual(6);
     });
-
 
     it('should bind to Custom Element properties', () {
       registerElement('tests-bound', {'propY': 10});
@@ -67,7 +65,6 @@ main() {
       _.rootScope.apply();
       expect(customProp('propY')).toEqual(27);
     });
-
 
     it('should bind to a non-existent property', () {
       registerElement('tests-empty', {});
@@ -82,16 +79,18 @@ main() {
       _.rootScope.apply();
       expect(customProp('newProp')).toEqual(27);
     });
-    
+
     it('should bind to both directives and properties', () {
       registerElement('tests-double', {});
-      compileAndUpgrade('<tests-double ng-bind bind-ng-bind="\'hello\'"></tests-double>');
+      compileAndUpgrade(
+          '<tests-double ng-bind bind-ng-bind="\'hello\'"></tests-double>');
       _.rootScope.apply();
       expect(customProp('ngBind')).toEqual("hello");
       expect(_.rootElement).toHaveText('hello');
     });
 
-    it('should support two-way bindings for components that trigger a change event', () {
+    it('should support two-way bindings for components that trigger a change event',
+        () {
       registerElement('tests-twoway', {});
       compileAndUpgrade('<tests-twoway bind-prop="x"></tests-twoway>');
 
@@ -101,12 +100,15 @@ main() {
       expect(_.rootScope.context['x']).toEqual(6);
     });
 
-    it('should support two-way bindings for components that trigger a defined event', () {
+    it('should support two-way bindings for components that trigger a defined event',
+        () {
       registerElement('tests-twoway-custom', {});
-      compileAndUpgrade('<tests-twoway-custom bind-prop="x"></tests-twoway-custom>');
+      compileAndUpgrade(
+          '<tests-twoway-custom bind-prop="x"></tests-twoway-custom>');
 
       setCustomProp('prop', 6);
-      _.rootElement.dispatchEvent(new Event.eventType('CustomEvent', 'x-change'));
+      _.rootElement
+          .dispatchEvent(new Event.eventType('CustomEvent', 'x-change'));
 
       expect(_.rootScope.context['x']).toEqual(6);
 
@@ -119,7 +121,6 @@ main() {
 }
 
 @Decorator(
-  selector: 'tests-twoway-custom',
-  updateBoundElementPropertiesOnEvents: const ['x-change']
-)
+    selector: 'tests-twoway-custom',
+    updateBoundElementPropertiesOnEvents: const ['x-change'])
 class TestsTwoWayCustom {}

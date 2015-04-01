@@ -20,13 +20,14 @@ main() {
           final s2 = new dom.StyleElement()..text = ".style2{}";
           final s3 = new dom.StyleElement()..text = ".style3{}";
 
-          boundary.insertStyleElements([s1,s2]);
+          boundary.insertStyleElements([s1, s2]);
           boundary.insertStyleElements([s3]);
 
           expect(root).toHaveText(".style1{}.style2{}.style3{}");
         });
 
-        it("should prepend style elements before other style elements (prepend, then append)", () {
+        it("should prepend style elements before other style elements (prepend, then append)",
+            () {
           final s1 = new dom.StyleElement()..text = ".style1{}";
           final s2 = new dom.StyleElement()..text = ".style2{}";
           final s3 = new dom.StyleElement()..text = ".style3{}";
@@ -37,12 +38,13 @@ main() {
           expect(root).toHaveText(".style1{}.style2{}.style3{}");
         });
 
-        it("should prepend style elements before other style elements (append, then prepend)", () {
+        it("should prepend style elements before other style elements (append, then prepend)",
+            () {
           final s1 = new dom.StyleElement()..text = ".style1{}";
           final s2 = new dom.StyleElement()..text = ".style2{}";
           final s3 = new dom.StyleElement()..text = ".style3{}";
 
-          boundary.insertStyleElements([s1,s2]);
+          boundary.insertStyleElements([s1, s2]);
           boundary.insertStyleElements([s3], prepend: true);
 
           expect(root).toHaveText(".style3{}.style1{}.style2{}");
@@ -70,12 +72,10 @@ main() {
 
     forShadowBoundary("ShadowRootBoundary",
         rootFactory: () => new dom.DivElement().createShadowRoot(),
-        boundaryFactory: (root) => new ShadowRootBoundary(root)
-    );
+        boundaryFactory: (root) => new ShadowRootBoundary(root));
 
     forShadowBoundary("DefaultShadowBounary",
         rootFactory: () => new dom.DivElement(),
-        boundaryFactory: (root) => new DefaultShadowBoundary.custom(root)
-    );
+        boundaryFactory: (root) => new DefaultShadowBoundary.custom(root));
   });
 }

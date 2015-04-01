@@ -4,7 +4,7 @@ class NgRepeatAppState extends AppState {
   var addBtn = element(by.buttonText("Add Thing"));
   var removeBtn = element(by.buttonText("Remove Thing"));
   var rows = element.all(by.repeater("outer in items"));
-  var thingId = 0;  // monotonically increasing.
+  var thingId = 0; // monotonically increasing.
   var things = [];
 
   addThing() {
@@ -19,7 +19,9 @@ class NgRepeatAppState extends AppState {
     removeBtn.click();
   }
 
-  cell(x, y) => rows.get(x).findElements(by.tagName("li"))
+  cell(x, y) => rows
+      .get(x)
+      .findElements(by.tagName("li"))
       .then((e) => toDartArray(e)[y].getText());
 
   assertState() {
@@ -81,8 +83,12 @@ animation_ng_repeat_spec() {
     // TODO(chirayu): Disabled because this times out on Travis + SauceLabs.
     xit('should add things with monotonically increasing numbers', () {
       S.addThing();
-      S.addThing(); S.removeThing(); S.addThing();
-      S.addThing(); S.removeThing(); S.addThing();
+      S.addThing();
+      S.removeThing();
+      S.addThing();
+      S.addThing();
+      S.removeThing();
+      S.addThing();
       S.addThing();
       expect(S.things).toEqual([0, 2, 4, 5]);
       S.assertState();

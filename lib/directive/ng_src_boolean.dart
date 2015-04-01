@@ -17,10 +17,10 @@ part of angular.directive;
  *
  *     <button ng-disabled="isDisabled">Button</button>
  */
-@Decorator(selector: '[ng-checked]',  map: const {'ng-checked':  '=>checked'})
+@Decorator(selector: '[ng-checked]', map: const {'ng-checked': '=>checked'})
 @Decorator(selector: '[ng-disabled]', map: const {'ng-disabled': '=>disabled'})
 @Decorator(selector: '[ng-multiple]', map: const {'ng-multiple': '=>multiple'})
-@Decorator(selector: '[ng-open]',     map: const {'ng-open':     '=>open'})
+@Decorator(selector: '[ng-open]', map: const {'ng-open': '=>open'})
 @Decorator(selector: '[ng-readonly]', map: const {'ng-readonly': '=>readonly'})
 @Decorator(selector: '[ng-required]', map: const {'ng-required': '=>required'})
 @Decorator(selector: '[ng-selected]', map: const {'ng-selected': '=>selected'})
@@ -29,10 +29,10 @@ class NgBooleanAttribute {
 
   NgBooleanAttribute(this._ngElement);
 
-  void set checked(on)  => _toggleAttribute('checked',  on);
+  void set checked(on) => _toggleAttribute('checked', on);
   void set disabled(on) => _toggleAttribute('disabled', on);
   void set multiple(on) => _toggleAttribute('multiple', on);
-  void set open(on)     => _toggleAttribute('open', on);
+  void set open(on) => _toggleAttribute('open', on);
   void set readonly(on) => _toggleAttribute('readonly', on);
   void set required(on) => _toggleAttribute('required', on);
   void set selected(on) => _toggleAttribute('selected', on);
@@ -64,17 +64,16 @@ class NgBooleanAttribute {
  * - [ng-src]
  * - [ng-srcset]
  */
-@Decorator(selector: '[ng-href]',   map: const {'ng-href':   '@href'})
-@Decorator(selector: '[ng-src]',    map: const {'ng-src':    '@src'})
+@Decorator(selector: '[ng-href]', map: const {'ng-href': '@href'})
+@Decorator(selector: '[ng-src]', map: const {'ng-src': '@src'})
 @Decorator(selector: '[ng-srcset]', map: const {'ng-srcset': '@srcset'})
 class NgSource {
   final NgElement _ngElement;
   NgSource(this._ngElement);
 
-  void set href(value)   => _ngElement.setAttribute('href', value);
-  void set src(value)    => _ngElement.setAttribute('src', value);
+  void set href(value) => _ngElement.setAttribute('href', value);
+  void set src(value) => _ngElement.setAttribute('src', value);
   void set srcset(value) => _ngElement.setAttribute('srcset', value);
-
 }
 
 /**
@@ -103,7 +102,7 @@ class NgAttribute implements AttachAware {
       if (key.startsWith(ngAttrPrefix)) {
         var newKey = key.substring(ngAttrPrefix.length);
         _attrs[newKey] = value;
-        _attrs.observe(key, (newValue) => _attrs[newKey] = newValue );
+        _attrs.observe(key, (newValue) => _attrs[newKey] = newValue);
       }
     });
   }

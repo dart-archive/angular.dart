@@ -11,7 +11,7 @@ main() {
   guinness.initSpecs();
 }
 
-_printWarnings () {
+_printWarnings() {
   final info = guinness.suiteInfo();
 
   if (info.activeIts.any((it) => it.exclusive)) {
@@ -22,4 +22,3 @@ _printWarnings () {
     print("WARN: ddescribe caused some tests to be excluded");
   }
 }
-

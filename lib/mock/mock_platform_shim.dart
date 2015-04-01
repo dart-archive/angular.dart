@@ -11,7 +11,7 @@ class MockWebPlatformShim implements PlatformJsBasedShim, DefaultPlatformShim {
   Function cssCompiler = (css, {String selector}) => css;
   Function shimDom = (root, String selector) {};
 
-  String shimCss(String css, { String selector, String cssUrl }) =>
+  String shimCss(String css, {String selector, String cssUrl}) =>
       cssCompiler(css, selector: selector);
 
   void shimShadowDom(Element root, String selector) {

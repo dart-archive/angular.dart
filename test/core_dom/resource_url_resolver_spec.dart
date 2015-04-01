@@ -6,7 +6,8 @@ import 'package:angular/core_dom/type_to_uri_mapper.dart';
 import 'package:angular/core_dom/type_to_uri_mapper_dynamic.dart';
 import '../_specs.dart';
 
-final bool isBrowserInternetExplorer = window.navigator.userAgent.indexOf(" MSIE ") > 0;
+final bool isBrowserInternetExplorer =
+    window.navigator.userAgent.indexOf(" MSIE ") > 0;
 
 _run_resolver({useRelativeUrls}) {
   describe("resolveUrls=$useRelativeUrls", () {
@@ -27,9 +28,10 @@ _run_resolver({useRelativeUrls}) {
 
     beforeEachModule((Module module) {
       module
-       ..bind(ResourceResolverConfig, toValue:
-            new ResourceResolverConfig.resolveRelativeUrls(useRelativeUrls))
-       ..bind(TypeToUriMapper, toImplementation: DynamicTypeToUriMapper);
+        ..bind(ResourceResolverConfig,
+            toValue: new ResourceResolverConfig.resolveRelativeUrls(
+                useRelativeUrls))
+        ..bind(TypeToUriMapper, toImplementation: DynamicTypeToUriMapper);
     });
 
     // Our tests depend on this to test http:// URL resolution (e.g. when the
@@ -45,65 +47,82 @@ _run_resolver({useRelativeUrls}) {
       }
     }
 
-    String urlInImport(cssEscapedUrl) => '<style>@import $cssEscapedUrl</style>';
-    String urlInBackgroundImg(cssEscapedUrl) => '<style>body { background-image: $cssEscapedUrl }</style>';
-    String urlInTemplateImgSrc(htmlEscapedUrl) => '<template><img src=\"$htmlEscapedUrl\"></template>';
-    String urlInTemplateHref(htmlEscapedUrl) => '<template><a href=\"$htmlEscapedUrl\"></a></template>';
-    String urlInTemplateAction(htmlEscapedUrl) => '<template><form action=\"$htmlEscapedUrl\"></form></template>';
-    String urlInImgSrc(htmlEscapedUrl) => '<div><img src=\"$htmlEscapedUrl\"></div>';
-    String urlInHref(htmlEscapedUrl) => '<div><a href=\"$htmlEscapedUrl\"></a></div>';
-    String urlInAction(htmlEscapedUrl) => '<div><form action=\"$htmlEscapedUrl\"></form></div>';
+    String urlInImport(cssEscapedUrl) =>
+        '<style>@import $cssEscapedUrl</style>';
+    String urlInBackgroundImg(cssEscapedUrl) =>
+        '<style>body { background-image: $cssEscapedUrl }</style>';
+    String urlInTemplateImgSrc(htmlEscapedUrl) =>
+        '<template><img src=\"$htmlEscapedUrl\"></template>';
+    String urlInTemplateHref(htmlEscapedUrl) =>
+        '<template><a href=\"$htmlEscapedUrl\"></a></template>';
+    String urlInTemplateAction(htmlEscapedUrl) =>
+        '<template><form action=\"$htmlEscapedUrl\"></form></template>';
+    String urlInImgSrc(htmlEscapedUrl) =>
+        '<div><img src=\"$htmlEscapedUrl\"></div>';
+    String urlInHref(htmlEscapedUrl) =>
+        '<div><a href=\"$htmlEscapedUrl\"></a></div>';
+    String urlInAction(htmlEscapedUrl) =>
+        '<div><form action=\"$htmlEscapedUrl\"></form></div>';
 
     escapeUrlForCss(String unEscapedUrl) {
-      return unEscapedUrl..replaceAll("\\", "\\\\")
-                         ..replaceAll("'", "\'")
-                         ..replaceAll("\"", "\\\"");
+      return unEscapedUrl
+        ..replaceAll("\\", "\\\\")
+        ..replaceAll("'", "\'")
+        ..replaceAll("\"", "\\\"");
     }
 
     testOnCssTemplates(cssEscapedUrl, cssEscapedExpected, typeOrIncludeUri) {
       it('within an @import', () {
-        var html = resourceResolver.resolveHtml(urlInImport(cssEscapedUrl), typeOrIncludeUri);
+        var html = resourceResolver.resolveHtml(
+            urlInImport(cssEscapedUrl), typeOrIncludeUri);
         expect(html).toEqual(urlInImport(cssEscapedExpected));
       });
 
       it('within a background-image: attribute', () {
-        var html = resourceResolver.resolveHtml(urlInBackgroundImg(cssEscapedUrl), typeOrIncludeUri);
+        var html = resourceResolver.resolveHtml(
+            urlInBackgroundImg(cssEscapedUrl), typeOrIncludeUri);
         expect(html).toEqual(urlInBackgroundImg(cssEscapedExpected));
       });
     }
 
     testOnHtmlTemplate(htmlEscapedUrl, htmlEscapedExpected, typeOrIncludeUri) {
-     it('should rewrite img[src]', () {
-       var html = resourceResolver.resolveHtml(urlInImgSrc(htmlEscapedUrl), typeOrIncludeUri);
-       expect(html).toEqual(urlInImgSrc(htmlEscapedExpected));
-     });
+      it('should rewrite img[src]', () {
+        var html = resourceResolver.resolveHtml(
+            urlInImgSrc(htmlEscapedUrl), typeOrIncludeUri);
+        expect(html).toEqual(urlInImgSrc(htmlEscapedExpected));
+      });
 
-     it('should rewrite a[href]', () {
-       var html = resourceResolver.resolveHtml(urlInHref(htmlEscapedUrl), typeOrIncludeUri);
-       expect(html).toEqual(urlInHref(htmlEscapedExpected));
-     });
+      it('should rewrite a[href]', () {
+        var html = resourceResolver.resolveHtml(
+            urlInHref(htmlEscapedUrl), typeOrIncludeUri);
+        expect(html).toEqual(urlInHref(htmlEscapedExpected));
+      });
 
-     it('should rewrite form[action]', () {
-       var html = resourceResolver.resolveHtml(urlInAction(htmlEscapedUrl), typeOrIncludeUri);
-       expect(html).toEqual(urlInAction(htmlEscapedExpected));
-     });
+      it('should rewrite form[action]', () {
+        var html = resourceResolver.resolveHtml(
+            urlInAction(htmlEscapedUrl), typeOrIncludeUri);
+        expect(html).toEqual(urlInAction(htmlEscapedExpected));
+      });
 
-     // IE does not support the template tag.
-     if (!isBrowserInternetExplorer) {
-       it('should rewrite img[src] in template tag', () {
-         var html = resourceResolver.resolveHtml(urlInTemplateImgSrc(htmlEscapedUrl), typeOrIncludeUri);
-         expect(html).toEqual(urlInTemplateImgSrc(htmlEscapedExpected));
-       });
+      // IE does not support the template tag.
+      if (!isBrowserInternetExplorer) {
+        it('should rewrite img[src] in template tag', () {
+          var html = resourceResolver.resolveHtml(
+              urlInTemplateImgSrc(htmlEscapedUrl), typeOrIncludeUri);
+          expect(html).toEqual(urlInTemplateImgSrc(htmlEscapedExpected));
+        });
 
-       it('should rewrite a[href] in template tag', () {
-         var html = resourceResolver.resolveHtml(urlInTemplateHref(htmlEscapedUrl), typeOrIncludeUri);
-         expect(html).toEqual(urlInTemplateHref(htmlEscapedExpected));
-       });
+        it('should rewrite a[href] in template tag', () {
+          var html = resourceResolver.resolveHtml(
+              urlInTemplateHref(htmlEscapedUrl), typeOrIncludeUri);
+          expect(html).toEqual(urlInTemplateHref(htmlEscapedExpected));
+        });
 
-       it('should rewrite form[action] in template tag', () {
-         var html = resourceResolver.resolveHtml(urlInTemplateAction(htmlEscapedUrl), typeOrIncludeUri);
-         expect(html).toEqual(urlInTemplateAction(htmlEscapedExpected));
-       });
+        it('should rewrite form[action] in template tag', () {
+          var html = resourceResolver.resolveHtml(
+              urlInTemplateAction(htmlEscapedUrl), typeOrIncludeUri);
+          expect(html).toEqual(urlInTemplateAction(htmlEscapedExpected));
+        });
       }
     }
 
@@ -114,27 +133,20 @@ _run_resolver({useRelativeUrls}) {
       var urlCssEscaped = escapeUrlForCss(url);
       var expectedCssEscaped = escapeUrlForCss(expected);
 
-      testOnCssTemplates("url($urlCssEscaped)",
-                         "url($expectedCssEscaped)",
-                         typeOrIncludeUri);
-      testOnCssTemplates("url('$urlCssEscaped')",
-                         "url('$expectedCssEscaped')",
-                         typeOrIncludeUri);
+      testOnCssTemplates(
+          "url($urlCssEscaped)", "url($expectedCssEscaped)", typeOrIncludeUri);
+      testOnCssTemplates("url('$urlCssEscaped')", "url('$expectedCssEscaped')",
+          typeOrIncludeUri);
       testOnCssTemplates("url(\"$urlCssEscaped\")",
-                         "url(\"$expectedCssEscaped\")",
-                         typeOrIncludeUri);
-      testOnCssTemplates("url(  $urlCssEscaped  )",
-                         "url($expectedCssEscaped)",
-                         typeOrIncludeUri);
+          "url(\"$expectedCssEscaped\")", typeOrIncludeUri);
+      testOnCssTemplates("url(  $urlCssEscaped  )", "url($expectedCssEscaped)",
+          typeOrIncludeUri);
       testOnCssTemplates("url(  '$urlCssEscaped'  )",
-                         "url('$expectedCssEscaped')",
-                         typeOrIncludeUri);
+          "url('$expectedCssEscaped')", typeOrIncludeUri);
       testOnCssTemplates("url(  \"$urlCssEscaped\"  )",
-                         "url(\"$expectedCssEscaped\")",
-                         typeOrIncludeUri);
-      testOnHtmlTemplate(Uri.encodeFull(url),
-                         Uri.encodeFull(expected),
-                         typeOrIncludeUri);
+          "url(\"$expectedCssEscaped\")", typeOrIncludeUri);
+      testOnHtmlTemplate(
+          Uri.encodeFull(url), Uri.encodeFull(expected), typeOrIncludeUri);
     }
 
     testResolution(typeOrIncludeUri, urlToResolve, expected) {
@@ -142,7 +154,7 @@ _run_resolver({useRelativeUrls}) {
         // Generic test that we are properly resolving the url
         it('using generic resolution', () {
           expect(resourceResolver.combine(typeOrIncludeUri, urlToResolve))
-          .toEqual(expected);
+              .toEqual(expected);
         });
         // More rigorous tests to check that we find the url within various html and css
         // templates, and properly resolve it
@@ -150,8 +162,11 @@ _run_resolver({useRelativeUrls}) {
       });
     }
 
-    testBothSchemes({urlToResolve, expectedForPackageScheme, expectedForHttpScheme}) {
-      assert(urlToResolve != null && expectedForPackageScheme != null && expectedForHttpScheme != null);
+    testBothSchemes(
+        {urlToResolve, expectedForPackageScheme, expectedForHttpScheme}) {
+      assert(urlToResolve != null &&
+          expectedForPackageScheme != null &&
+          expectedForHttpScheme != null);
 
       urlToResolve = toAppUrl(urlToResolve);
 
@@ -165,8 +180,10 @@ _run_resolver({useRelativeUrls}) {
         // test the cases where we're resolving URLs for a component/decorator whose
         // type URI looks like
         // package:angular/test/core_dom/uri_resolver_spec.dart.
-        var typeOrIncludeUri = Uri.parse('package:angular/test/core_dom/uri_resolver_spec.dart');
-        testResolution(typeOrIncludeUri, urlToResolve, expectedForPackageScheme);
+        var typeOrIncludeUri =
+            Uri.parse('package:angular/test/core_dom/uri_resolver_spec.dart');
+        testResolution(
+            typeOrIncludeUri, urlToResolve, expectedForPackageScheme);
       });
 
       describe('scheme=http', () {
@@ -176,7 +193,8 @@ _run_resolver({useRelativeUrls}) {
         // • we are ng-include'ing a file, say, "a/b/foo.html", and we are trying to
         //   resolve paths inside foo.html.  Those should be resolved relative to
         //   something like http://localhost:8765/a/b/foo.html.
-        var typeOrIncludeUri = Uri.parse(toAppUrl('HTTP://LOCALHOST/a/b/included_template.html'));
+        var typeOrIncludeUri =
+            Uri.parse(toAppUrl('HTTP://LOCALHOST/a/b/included_template.html'));
         testResolution(typeOrIncludeUri, urlToResolve, expectedForHttpScheme);
       });
     }
@@ -189,50 +207,49 @@ _run_resolver({useRelativeUrls}) {
 
     // "packages/" paths, though relative, should never be resolved.
     testBothSchemes(
-        urlToResolve:             'packages/angular/test/core_dom/foo.html',
+        urlToResolve: 'packages/angular/test/core_dom/foo.html',
         expectedForPackageScheme: 'packages/angular/test/core_dom/foo.html',
-        expectedForHttpScheme:    'packages/angular/test/core_dom/foo.html');
+        expectedForHttpScheme: 'packages/angular/test/core_dom/foo.html');
 
     testBothSchemes(
-        urlToResolve:             'package:a.b/c/d/foo2.html',
+        urlToResolve: 'package:a.b/c/d/foo2.html',
         expectedForPackageScheme: '/packages/a.b/c/d/foo2.html',
-        expectedForHttpScheme:    '/packages/a.b/c/d/foo2.html');
+        expectedForHttpScheme: '/packages/a.b/c/d/foo2.html');
 
     testBothSchemes(
-        urlToResolve:             'image.png',
+        urlToResolve: 'image.png',
         expectedForPackageScheme: '/packages/angular/test/core_dom/image.png',
-        expectedForHttpScheme:    '/a/b/image.png');
+        expectedForHttpScheme: '/a/b/image.png');
 
     testBothSchemes(
-        urlToResolve:             './image2.png',
+        urlToResolve: './image2.png',
         expectedForPackageScheme: '/packages/angular/test/core_dom/image2.png',
-        expectedForHttpScheme:    '/a/b/image2.png');
+        expectedForHttpScheme: '/a/b/image2.png');
 
     testBothSchemes(
-        urlToResolve:             '/image3.png',
+        urlToResolve: '/image3.png',
         expectedForPackageScheme: '/image3.png',
-        expectedForHttpScheme:    '/image3.png');
+        expectedForHttpScheme: '/image3.png');
 
     testBothSchemes(
-        urlToResolve:             'http://www.google.com/something',
+        urlToResolve: 'http://www.google.com/something',
         expectedForPackageScheme: 'http://www.google.com/something',
-        expectedForHttpScheme:    'http://www.google.com/something');
+        expectedForHttpScheme: 'http://www.google.com/something');
 
     testBothSchemes(
-        urlToResolve:             '''http://www.google.com/something/foo('bar%29''',
+        urlToResolve: '''http://www.google.com/something/foo('bar%29''',
         expectedForPackageScheme: '''http://www.google.com/something/foo('bar%29''',
-        expectedForHttpScheme:    '''http://www.google.com/something/foo('bar%29''');
+        expectedForHttpScheme: '''http://www.google.com/something/foo('bar%29''');
 
     testBothSchemes(
-        urlToResolve:             'HTTP://LOCALHOST/a/b/image4.png',
+        urlToResolve: 'HTTP://LOCALHOST/a/b/image4.png',
         expectedForPackageScheme: '/a/b/image4.png',
-        expectedForHttpScheme:    '/a/b/image4.png');
+        expectedForHttpScheme: '/a/b/image4.png');
 
     testBothSchemes(
-        urlToResolve:             'HTTP://LOCALHOST/packages/angular/test/core_dom/foo3.html',
+        urlToResolve: 'HTTP://LOCALHOST/packages/angular/test/core_dom/foo3.html',
         expectedForPackageScheme: '/packages/angular/test/core_dom/foo3.html',
-        expectedForHttpScheme:    '/packages/angular/test/core_dom/foo3.html');
-
+        expectedForHttpScheme: '/packages/angular/test/core_dom/foo3.html');
   });
 }
 
@@ -245,11 +262,11 @@ void main() {
   describe('url_resolver', () {
     ResourceUrlResolver resolver;
 
-    beforeEach((){
+    beforeEach(() {
       var config = new ResourceResolverConfig.resolveRelativeUrls(true);
       var typeMapper = new DynamicTypeToUriMapper();
-      resolver = new ResourceUrlResolver
-          .forTests(typeMapper, config, 'http://localhost');
+      resolver = new ResourceUrlResolver.forTests(
+          typeMapper, config, 'http://localhost');
     });
 
     describe('uri rewrite', () {
@@ -261,47 +278,46 @@ void main() {
         expect(resolver.combine(baseUri, "#abc")).toEqual("#abc");
         expect(resolver.combine(baseUri, "")).toEqual("");
         expect(resolver.combine(baseUri, "javascript:void()"))
-        .toEqual("javascript:void()");
+            .toEqual("javascript:void()");
         expect(resolver.combine(baseUri, "data:uriloijoi"))
-        .toEqual("data:uriloijoi");
+            .toEqual("data:uriloijoi");
       });
 
       it('should rewrite package relative base uris', () {
         Uri baseUri = Uri.parse("/packages/a.b.c/comp.dart");
         expect(resolver.combine(baseUri, "test.jpg"))
-        .toEqual("/packages/a.b.c/test.jpg");
+            .toEqual("/packages/a.b.c/test.jpg");
         expect(resolver.combine(baseUri, "test/test.jpg"))
-        .toEqual("/packages/a.b.c/test/test.jpg");
+            .toEqual("/packages/a.b.c/test/test.jpg");
       });
 
       it('should rewrite current base uri to absolute without scheme', () {
         Uri baseUri = Uri.parse("http://localhost/test/test2/test.jgp");
         expect(resolver.combine(baseUri, 'test4.jpg'))
-        .toEqual('/test/test2/test4.jpg');
+            .toEqual('/test/test2/test4.jpg');
       });
 
       it('should rewrite external URIs to contain full scheme', () {
         Uri baseUri = Uri.parse("http://foo.com/test/test.jgp");
         expect(resolver.combine(baseUri, 'test4.jpg'))
-        .toEqual('http://foo.com/test/test4.jpg');
+            .toEqual('http://foo.com/test/test4.jpg');
       });
 
       it('should not remove hash from URI', () {
         Uri baseUri = Uri.parse("/packages/a.b.c/comp.dart");
         expect(resolver.combine(baseUri, "test.jpg#1234"))
-        .toEqual("/packages/a.b.c/test.jpg#1234");
+            .toEqual("/packages/a.b.c/test.jpg#1234");
 
         Uri externalUri = Uri.parse("http://foo.com/test/test.jgp");
         expect(resolver.combine(externalUri, 'test4.jpg#1234'))
-        .toEqual('http://foo.com/test/test4.jpg#1234');
+            .toEqual('http://foo.com/test/test4.jpg#1234');
       });
     });
 
     describe('css rewrite', () {
       it('should not rewrite two urls at once', () {
         Uri baseUri = Uri.parse('/test/');
-        var result = resolver.resolveCssText(
-            ".a{image:url('a.png')}"
+        var result = resolver.resolveCssText(".a{image:url('a.png')}"
             ".b{image:url('b.png')}", baseUri);
         expect(result).toEqual(".a{image:url('/test/a.png')}"
             ".b{image:url('/test/b.png')}");

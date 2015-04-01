@@ -11,7 +11,7 @@ import '../_specs.dart';
 void main() {
   describe('ng-swipe-right', () {
     NgSwipeRight swipe = new NgSwipeRight(new DivElement());
-    
+
     it('should not fire when distance is not enough', () {
       swipe.handleTouchStart(10, 10, 0);
       swipe.handleTouchEnd(15, 15, 1);
@@ -29,20 +29,18 @@ void main() {
       swipe.handleTouchEnd(10, 15, 1);
       expect(swipe.shouldFire).toBeFalse();
     });
-    
+
     it('should not fire on slow swipe', () {
       swipe.handleTouchStart(10, 10, 0);
       // 2 seconds later
       swipe.handleTouchEnd(130, 15, 2000);
       expect(swipe.shouldFire).toBeFalse();
     });
-
-
   });
-  
+
   describe('ng-swipe-left', () {
     NgSwipeLeft swipe = new NgSwipeLeft(new DivElement());
-    
+
     it('should not fire when distance is not enough', () {
       swipe.handleTouchStart(10, 10, 0);
       swipe.handleTouchEnd(15, 15, 1);

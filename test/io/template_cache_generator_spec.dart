@@ -9,18 +9,18 @@ import 'package:guinness/guinness.dart';
 
 void main() {
   describe('template_cache_generator', () {
-
     it('should correctly generate the templates cache file (template)', () {
       var tmpDir = Directory.systemTemp.createTempSync();
       Future flush;
       try {
         flush = generator.main([
-            '--out=${tmpDir.path}/generated.dart',
-            '--url-rewrites=/test/io/test_files,rewritten',
-            '--skip-classes=MyComponent3',
-            'test/io/test_files/templates/main.dart',
-            'generated']);
-      } catch(_) {
+          '--out=${tmpDir.path}/generated.dart',
+          '--url-rewrites=/test/io/test_files,rewritten',
+          '--skip-classes=MyComponent3',
+          'test/io/test_files/templates/main.dart',
+          'generated'
+        ]);
+      } catch (_) {
         tmpDir.deleteSync(recursive: true);
         rethrow;
       }
@@ -44,12 +44,13 @@ void main() {
       Future flush;
       try {
         flush = generator.main([
-            '--out=${tmpDir.path}/generated.dart',
-            '--url-rewrites=/test/io/test_files,rewritten',
-            '--skip-classes=MyComponent3',
-            'test/io/test_files/cssUrls/main.dart',
-            'generated']);
-      } catch(_) {
+          '--out=${tmpDir.path}/generated.dart',
+          '--url-rewrites=/test/io/test_files,rewritten',
+          '--skip-classes=MyComponent3',
+          'test/io/test_files/cssUrls/main.dart',
+          'generated'
+        ]);
+      } catch (_) {
         tmpDir.deleteSync(recursive: true);
         rethrow;
       }
@@ -76,18 +77,19 @@ void main() {
         Future flush;
         try {
           flush = generator.main([
-              '--out=${tmpDir.path}/generated.dart',
-              '--url-rewrites=/test/io/test_files,rewritten',
-              '--css-rewriter=test/io/test_files/rewritter.sh',
-              'test/io/test_files/cssUrls/main.dart',
-              'generated']);
-        } catch(_) {
+            '--out=${tmpDir.path}/generated.dart',
+            '--url-rewrites=/test/io/test_files,rewritten',
+            '--css-rewriter=test/io/test_files/rewritter.sh',
+            'test/io/test_files/cssUrls/main.dart',
+            'generated'
+          ]);
+        } catch (_) {
           tmpDir.deleteSync(recursive: true);
           rethrow;
         }
         return flush.then((_) {
           expect(new File('${tmpDir.path}/generated.dart').readAsStringSync(),
-'''// GENERATED, DO NOT EDIT!
+              '''// GENERATED, DO NOT EDIT!
 library generated;
 
 import 'package:angular/angular.dart';

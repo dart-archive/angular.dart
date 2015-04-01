@@ -12,7 +12,8 @@ abstract class ShadowBoundary {
 
   ShadowBoundary(this.root);
 
-  void insertStyleElements(List<dom.StyleElement> elements, {bool prepend: false}) {
+  void insertStyleElements(List<dom.StyleElement> elements,
+      {bool prepend: false}) {
     if (elements.isEmpty) return;
 
     final newStyles = _newStyles(elements);
@@ -64,15 +65,12 @@ abstract class ShadowBoundary {
 
 @Injectable()
 class DefaultShadowBoundary extends ShadowBoundary {
-  DefaultShadowBoundary()
-      : super(dom.document.head);
+  DefaultShadowBoundary() : super(dom.document.head);
 
-  DefaultShadowBoundary.custom(dom.Node node)
-      : super(node);
+  DefaultShadowBoundary.custom(dom.Node node) : super(node);
 }
 
 @Injectable()
 class ShadowRootBoundary extends ShadowBoundary {
-  ShadowRootBoundary(dom.ShadowRoot shadowRoot)
-      : super(shadowRoot);
+  ShadowRootBoundary(dom.ShadowRoot shadowRoot) : super(shadowRoot);
 }

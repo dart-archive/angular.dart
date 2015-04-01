@@ -45,7 +45,7 @@ class ScopeEvent {
   ScopeEvent(this.name, this.targetScope, this.data);
 
   /// Prevents the intercepted event from propagating further
-  void stopPropagation () {
+  void stopPropagation() {
     _propagationStopped = true;
   }
 
@@ -65,7 +65,7 @@ class ScopeEvent {
 @Injectable()
 class ScopeDigestTTL {
   final int ttl;
-  ScopeDigestTTL(): ttl = 10;
+  ScopeDigestTTL() : ttl = 10;
   ScopeDigestTTL.value(this.ttl);
 }
 
@@ -182,11 +182,10 @@ class Scope {
   _Streams _streams;
 
   /// Do not use. Exposes internal state for testing.
-  bool get hasOwnStreams => _streams != null  && _streams._scope == this;
+  bool get hasOwnStreams => _streams != null && _streams._scope == this;
 
   Scope(Object this.context, this.rootScope, this._parentScope,
-        this._readWriteGroup, this._readOnlyGroup, this.id,
-        this._stats);
+      this._readWriteGroup, this._readOnlyGroup, this.id, this._stats);
 
   /**
    * Use [watch] to set up change detection on an expression.
@@ -210,8 +209,9 @@ class Scope {
    *   by reference. When watching a collection, the reaction function receives a
    *   [CollectionChangeItem] that lists all the changes.
    */
-  Watch watch(String expression, ReactionFn reactionFn,  {context,
-      FormatterMap formatters, bool canChangeModel: true, bool collection: false}) {
+  Watch watch(String expression, ReactionFn reactionFn, {context,
+      FormatterMap formatters, bool canChangeModel: true,
+      bool collection: false}) {
     assert(isAttached);
     assert(expression is String);
     assert(canChangeModel is bool);
@@ -219,11 +219,10 @@ class Scope {
     // TODO(deboer): Temporary shim until all uses are fixed.
     if (context != null) {
       // Create a child scope instead.
-      return createChild(context)
-          .watch(expression, reactionFn,
-                 formatters: formatters,
-                 canChangeModel: canChangeModel,
-                 collection: collection);
+      return createChild(context).watch(expression, reactionFn,
+          formatters: formatters,
+          canChangeModel: canChangeModel,
+          collection: collection);
     }
 
     Watch watch;
@@ -251,9 +250,8 @@ class Scope {
         "${collection ? "C" : "."}${formatters == null ? "." : formatters.hashCode}$expression";
     AST ast = rootScope.astCache[astKey];
     if (ast == null) {
-      ast = rootScope.astCache[astKey] =
-          rootScope._astParser(expression,
-              formatters: formatters, collection: collection);
+      ast = rootScope.astCache[astKey] = rootScope._astParser(expression,
+          formatters: formatters, collection: collection);
     }
 
     return watch = watchAST(ast, fn, canChangeModel: canChangeModel);
@@ -284,9 +282,8 @@ class Scope {
    */
   dynamic eval(expression, [Map locals]) {
     assert(isAttached);
-    assert(expression == null ||
-           expression is String ||
-           expression is Function);
+    assert(
+        expression == null || expression is String || expression is Function);
     if (expression is String && expression.isNotEmpty) {
       var ctx = locals == null ? context : new ContextLocals(context, locals);
       return rootScope._parser(expression).eval(ctx);
@@ -312,9 +309,10 @@ class Scope {
     } catch (e, s) {
       rootScope._exceptionHandler(e, s);
     } finally {
-      rootScope.._transitionState(RootScope.STATE_APPLY, null)
-               ..digest()
-               ..flush();
+      rootScope
+        .._transitionState(RootScope.STATE_APPLY, null)
+        ..digest()
+        ..flush();
     }
   }
 
@@ -358,14 +356,14 @@ class Scope {
     var s = traceEnter(Scope_createChild);
     assert(isAttached);
     var child = new Scope(childContext, rootScope, this,
-                          _readWriteGroup.newGroup(childContext),
-                          _readOnlyGroup.newGroup(childContext),
-                          '$id:${_childScopeNextId++}',
-                          _stats);
+        _readWriteGroup.newGroup(childContext),
+        _readOnlyGroup.newGroup(childContext), '$id:${_childScopeNextId++}',
+        _stats);
 
     var prev = _childTail;
     child._prev = prev;
-    if (prev == null) _childHead = child; else prev._next = child;
+    if (prev == null) _childHead = child;
+    else prev._next = child;
     _childTail = child;
     traceLeave(s);
     return child;
@@ -417,15 +415,19 @@ class Scope {
     })());
   }
 
-  Map<bool,int> _verifyStreams(parentScope, prefix, log) {
+  Map<bool, int> _verifyStreams(parentScope, prefix, log) {
     assert(_parentScope == parentScope);
     var counts = new HashMap();
     var typeCounts = _streams == null ? new HashMap() : _streams._typeCounts;
     var connection = _streams != null && _streams._scope == this ? '=' : '-';
-    log..add(prefix)..add(hashCode)..add(connection)..add(typeCounts)..add('\n');
-    if (_streams == null) {
-    } else if (_streams._scope == this) {
-      _streams._streams.forEach((k, ScopeStream stream){
+    log
+      ..add(prefix)
+      ..add(hashCode)
+      ..add(connection)
+      ..add(typeCounts)
+      ..add('\n');
+    if (_streams == null) {} else if (_streams._scope == this) {
+      _streams._streams.forEach((k, ScopeStream stream) {
         if (stream.subscriptions.isNotEmpty) {
           counts[k] = 1 + (counts.containsKey(k) ? counts[k] : 0);
         }
@@ -440,8 +442,8 @@ class Scope {
     }
     if (!_mapEqual(counts, typeCounts)) {
       throw 'Streams actual: $counts != bookkeeping: $typeCounts\n'
-            'Offending scope: [scope: ${this.hashCode}]\n'
-            '${log.join('')}';
+          'Offending scope: [scope: ${this.hashCode}]\n'
+          '${log.join('')}';
     }
     return counts;
   }
@@ -456,7 +458,7 @@ class Scope {
     } else {
       _domWriteTail = _domWriteTail._next = chain;
     }
-    rootScope._domWriteCounter ++;
+    rootScope._domWriteCounter++;
   }
 
   /**
@@ -469,7 +471,7 @@ class Scope {
     } else {
       _domReadTail = _domReadTail._next = chain;
     }
-    rootScope._domReadCounter ++;
+    rootScope._domReadCounter++;
   }
 
   void _runDomWrites() {
@@ -485,7 +487,7 @@ class Scope {
       } catch (e, s) {
         _exceptionHandler(e, s);
       }
-      rootScope._domWriteCounter --;
+      rootScope._domWriteCounter--;
       _domWriteHead = _domWriteHead._next;
     }
     _domWriteTail = null;
@@ -504,12 +506,11 @@ class Scope {
       } catch (e, s) {
         _exceptionHandler(e, s);
       }
-      rootScope._domReadCounter --;
+      rootScope._domReadCounter--;
       _domReadHead = _domReadHead._next;
     }
     _domReadTail = null;
   }
-
 
   ExceptionHandler get _exceptionHandler => rootScope._exceptionHandler;
 }
@@ -531,7 +532,7 @@ class ScopeStats {
   final processStopwatch = new AvgStopwatch();
 
   List<int> _digestLoopTimes = [];
-  int _flushPhaseDuration = 0 ;
+  int _flushPhaseDuration = 0;
   int _assertFlushPhaseDuration = 0;
 
   int _loopNo = 0;
@@ -551,8 +552,8 @@ class ScopeStats {
 
   int _allStagesDuration() {
     return fieldStopwatch.elapsedMicroseconds +
-      evalStopwatch.elapsedMicroseconds +
-      processStopwatch.elapsedMicroseconds;
+        evalStopwatch.elapsedMicroseconds +
+        processStopwatch.elapsedMicroseconds;
   }
 
   _stopwatchReset() {
@@ -564,15 +565,14 @@ class ScopeStats {
   void digestLoop(int changeCount) {
     _loopNo++;
     if (_config.emit && _emitter != null) {
-      _emitter.emit(_loopNo.toString(), fieldStopwatch, evalStopwatch,
-        processStopwatch);
+      _emitter.emit(
+          _loopNo.toString(), fieldStopwatch, evalStopwatch, processStopwatch);
     }
-    _digestLoopTimes.add( _allStagesDuration() );
+    _digestLoopTimes.add(_allStagesDuration());
     _stopwatchReset();
   }
 
-  void digestEnd() {
-  }
+  void digestEnd() {}
 
   void domWriteStart() {}
   void domWriteEnd() {}
@@ -584,7 +584,7 @@ class ScopeStats {
   void flushEnd() {
     if (_config.emit && _emitter != null) {
       _emitter.emit(RootScope.STATE_FLUSH, fieldStopwatch, evalStopwatch,
-        processStopwatch);
+          processStopwatch);
     }
     _flushPhaseDuration = _allStagesDuration();
   }
@@ -594,28 +594,33 @@ class ScopeStats {
   void flushAssertEnd() {
     if (_config.emit && _emitter != null) {
       _emitter.emit(RootScope.STATE_FLUSH_ASSERT, fieldStopwatch, evalStopwatch,
-        processStopwatch);
+          processStopwatch);
     }
     _assertFlushPhaseDuration = _allStagesDuration();
   }
 
-  void cycleEnd() {
-  }
+  void cycleEnd() {}
 }
 
 /// ScopeStatsEmitter is in charge of formatting the [ScopeStats] and outputting a message.
 @Injectable()
 class ScopeStatsEmitter {
   static String _PAD_ = '                       ';
-  static String _HEADER_ = pad('APPLY', 7) + ':'+
-        pad('FIELD',    19) + pad('|', 20) +
-        pad('EVAL',     19) + pad('|', 20) +
-        pad('REACTION', 19) + pad('|', 20) +
-        pad('TOTAL',    10) + '\n';
+  static String _HEADER_ = pad('APPLY', 7) +
+      ':' +
+      pad('FIELD', 19) +
+      pad('|', 20) +
+      pad('EVAL', 19) +
+      pad('|', 20) +
+      pad('REACTION', 19) +
+      pad('|', 20) +
+      pad('TOTAL', 10) +
+      '\n';
   final _nfDec = new NumberFormat("0.00", "en_US");
   final _nfInt = new NumberFormat("0", "en_US");
 
-  static pad(String str, int size) => _PAD_.substring(0, max(size - str.length, 0)) + str;
+  static pad(String str, int size) =>
+      _PAD_.substring(0, max(size - str.length, 0)) + str;
 
   String _ms(num value) => '${pad(_nfDec.format(value), 9)} ms';
   String _us(num value) => _ms(value / 1000);
@@ -625,22 +630,22 @@ class ScopeStatsEmitter {
    * Emit a message based on the phase and state of stopwatches.
    */
   void emit(String phaseOrLoopNo, AvgStopwatch fieldStopwatch,
-            AvgStopwatch evalStopwatch, AvgStopwatch processStopwatch) {
+      AvgStopwatch evalStopwatch, AvgStopwatch processStopwatch) {
     var total = fieldStopwatch.elapsedMicroseconds +
-                evalStopwatch.elapsedMicroseconds +
-                processStopwatch.elapsedMicroseconds;
+        evalStopwatch.elapsedMicroseconds +
+        processStopwatch.elapsedMicroseconds;
     print('${_formatPrefix(phaseOrLoopNo)} '
-          '${_stat(fieldStopwatch)} | '
-          '${_stat(evalStopwatch)} | '
-          '${_stat(processStopwatch)} | '
-          '${_ms(total/1000)}');
+        '${_stat(fieldStopwatch)} | '
+        '${_stat(evalStopwatch)} | '
+        '${_stat(processStopwatch)} | '
+        '${_ms(total/1000)}');
   }
 
   String _formatPrefix(String prefix) {
     if (prefix == RootScope.STATE_FLUSH) return '  flush:';
     if (prefix == RootScope.STATE_FLUSH_ASSERT) return ' assert:';
 
-    return (prefix == '1' ? _HEADER_ : '')  + '     #$prefix:';
+    return (prefix == '1' ? _HEADER_ : '') + '     #$prefix:';
   }
 
   String _stat(AvgStopwatch s) {
@@ -657,7 +662,7 @@ class ScopeStatsConfig {
   var emit = false;
 
   ScopeStatsConfig();
-  ScopeStatsConfig.enabled(): emit = true;
+  ScopeStatsConfig.enabled() : emit = true;
 }
 /**
  * Every Angular application has exactly one RootScope. RootScope extends Scope, adding
@@ -743,20 +748,18 @@ class RootScope extends Scope {
 
   PendingAsync _pendingAsync;
 
-  RootScope(Object context, Parser parser, ASTParser astParser, FieldGetterFactory fieldGetterFactory,
-            FormatterMap formatters, this._exceptionHandler, this._ttl, this._zone,
-            ScopeStats _scopeStats, CacheRegister cacheRegister, this._pendingAsync)
+  RootScope(Object context, Parser parser, ASTParser astParser,
+      FieldGetterFactory fieldGetterFactory, FormatterMap formatters,
+      this._exceptionHandler, this._ttl, this._zone, ScopeStats _scopeStats,
+      CacheRegister cacheRegister, this._pendingAsync)
       : _scopeStats = _scopeStats,
         _parser = parser,
         _astParser = astParser,
-        super(context, null, null,
-            new RootWatchGroup(fieldGetterFactory,
+        super(context, null, null, new RootWatchGroup(fieldGetterFactory,
                 new DirtyCheckingChangeDetector(fieldGetterFactory), context),
             new RootWatchGroup(fieldGetterFactory,
                 new DirtyCheckingChangeDetector(fieldGetterFactory), context),
-            '',
-            _scopeStats)
-  {
+            '', _scopeStats) {
     _zone.countPendingAsync = _pendingAsync.increaseCount;
     _zone.onTurnDone = () {
       // NOTE: Ideally, we would just set _zone.onTurnStart = _pendingAsync.increaseCount.
@@ -767,7 +770,7 @@ class RootScope extends Scope {
       _pendingAsync.increaseCount();
       apply();
       _pendingAsync.decreaseCount();
-      _runAsyncFns();  // if any were scheduled by _pendingAsync.whenStable callbacks.
+      _runAsyncFns(); // if any were scheduled by _pendingAsync.whenStable callbacks.
     };
 
     _zone.onError = (e, s, ls) => _exceptionHandler(e, s);
@@ -809,7 +812,6 @@ class RootScope extends Scope {
       ChangeLog changeLog;
       _scopeStats.digestStart();
       do {
-
         int asyncCount = _runAsyncFns();
 
         digestTTL--;
@@ -826,13 +828,14 @@ class RootScope extends Scope {
             digestLog = [];
             changeLog = (e, c, p) => digestLog.add('$e: $c <= $p');
           } else {
-            log.add("${asyncCount > 0 ? 'async:$asyncCount' : ''}${digestLog.join(', ')}");
+            log.add(
+                "${asyncCount > 0 ? 'async:$asyncCount' : ''}${digestLog.join(', ')}");
             digestLog.clear();
           }
         }
         if (digestTTL == 0) {
           throw 'Model did not stabilize in ${_ttl.ttl} digests. '
-                'Last $LOG_COUNT iterations:\n${log.join('\n')}';
+              'Last $LOG_COUNT iterations:\n${log.join('\n')}';
         }
         _scopeStats.digestLoop(count);
       } while (count > 0 || _runAsyncHead != null);
@@ -858,7 +861,8 @@ class RootScope extends Scope {
         }
         if (runObservers) {
           runObservers = false;
-          readOnlyGroup.detectChanges(exceptionHandler:_exceptionHandler,
+          readOnlyGroup.detectChanges(
+              exceptionHandler: _exceptionHandler,
               fieldStopwatch: _scopeStats.fieldStopwatch,
               evalStopwatch: _scopeStats.evalStopwatch,
               processStopwatch: _scopeStats.processStopwatch);
@@ -871,7 +875,8 @@ class RootScope extends Scope {
           _stats.domReadEnd();
         }
         _runAsyncFns();
-      } while (_domWriteCounter > 0 || _domReadCounter > 0 || _runAsyncHead != null);
+      } while (
+          _domWriteCounter > 0 || _domReadCounter > 0 || _runAsyncHead != null);
       _stats.flushEnd();
       assert((() {
         _stats.flushAssertStart();
@@ -889,8 +894,8 @@ class RootScope extends Scope {
             processStopwatch: _scopeStats.processStopwatch);
         if (digestLog.isNotEmpty || flushLog.isNotEmpty) {
           throw 'Observer reaction functions should not change model. \n'
-                'These watch changes were detected: ${digestLog.join('; ')}\n'
-                'These observe changes were detected: ${flushLog.join('; ')}';
+              'These watch changes were detected: ${digestLog.join('; ')}\n'
+              'These observe changes were detected: ${flushLog.join('; ')}';
         }
         _stats.flushAssertEnd();
         return true;
@@ -1028,9 +1033,8 @@ class _Streams {
     return event;
   }
 
-  static async.Stream<ScopeEvent> on(Scope scope,
-                                     ExceptionHandler _exceptionHandler,
-                                     String name) {
+  static async.Stream<ScopeEvent> on(
+      Scope scope, ExceptionHandler _exceptionHandler, String name) {
     _forceNewScopeStream(scope, _exceptionHandler);
     return scope._streams._get(scope, name);
   }
@@ -1059,7 +1063,8 @@ class _Streams {
   static void destroy(Scope scope) {
     var toBeDeletedStreams = scope._streams;
     if (toBeDeletedStreams == null) return; // no streams to clean up
-    var parentScope = scope._parentScope; // skip current scope as not to delete listeners
+    var parentScope =
+        scope._parentScope; // skip current scope as not to delete listeners
     // find the parent-most scope which still has our stream to be deleted.
     while (parentScope != null && parentScope._streams == toBeDeletedStreams) {
       parentScope._streams = null;
@@ -1071,16 +1076,16 @@ class _Streams {
     assert(parentStreams != toBeDeletedStreams);
     // remove typeCounts from the scope to be destroyed from the parent
     // typeCounts
-    toBeDeletedStreams._typeCounts.forEach(
-        (name, count) => parentStreams._addCount(name, -count));
+    toBeDeletedStreams._typeCounts
+        .forEach((name, count) => parentStreams._addCount(name, -count));
   }
 
   async.Stream _get(Scope scope, String name) {
     assert(scope._streams == this);
     assert(scope._streams._scope == scope);
     assert(_exceptionHandler != null);
-    return _streams.putIfAbsent(name, () =>
-        new ScopeStream(this, _exceptionHandler, name));
+    return _streams.putIfAbsent(
+        name, () => new ScopeStream(this, _exceptionHandler, name));
   }
 
   void _addCount(String name, int amount) {
@@ -1114,13 +1119,10 @@ class ScopeStream extends async.Stream<ScopeEvent> {
   final List<Function> _work = <Function>[];
   bool _firing = false;
 
-
   ScopeStream(this._streams, this._exceptionHandler, this._name);
 
   ScopeStreamSubscription listen(void onData(ScopeEvent event),
-                                 { Function onError,
-                                   void onDone(),
-                                   bool cancelOnError }) {
+      {Function onError, void onDone(), bool cancelOnError}) {
     var subscription = new ScopeStreamSubscription(this, onData);
     _concurrentSafeWork(() {
       if (subscriptions.isEmpty) _streams._addCount(_name, 1);
@@ -1131,7 +1133,7 @@ class ScopeStream extends async.Stream<ScopeEvent> {
 
   void _concurrentSafeWork([fn]) {
     if (fn != null) _work.add(fn);
-    while(!_firing && _work.isNotEmpty) {
+    while (!_firing && _work.isNotEmpty) {
       _work.removeLast()();
     }
   }
@@ -1191,7 +1193,7 @@ class _FunctionChain {
   final Function fn;
   _FunctionChain _next;
 
-  _FunctionChain(fn()): fn = fn {
+  _FunctionChain(fn()) : fn = fn {
     assert(fn != null);
   }
 }

@@ -8,8 +8,10 @@ void main() {
     ComponentCssLoader loader;
 
     beforeEach((Http http, TemplateCache tc, MockWebPlatformShim shim,
-        ComponentCssRewriter ccr, dom.NodeTreeSanitizer ts, ResourceUrlResolver resourceResolver) {
-      loader = new ComponentCssLoader(http, tc, shim, ccr, ts, {}, resourceResolver);
+        ComponentCssRewriter ccr, dom.NodeTreeSanitizer ts,
+        ResourceUrlResolver resourceResolver) {
+      loader =
+          new ComponentCssLoader(http, tc, shim, ccr, ts, {}, resourceResolver);
     });
 
     afterEach((MockHttpBackend backend) {
@@ -45,8 +47,8 @@ void main() {
       });
     }));
 
-    it('should use same style for the same tag', async((
-        MockHttpBackend backend, MockWebPlatformShim shim) {
+    it('should use same style for the same tag',
+        async((MockHttpBackend backend, MockWebPlatformShim shim) {
       backend..expectGET('simple.css').respond(200, '.hello{}');
       shim.cssCompiler = (css, {selector}) => "$selector - $css";
 
@@ -67,8 +69,8 @@ void main() {
       });
     }));
 
-    it('should create new style for every tag', async((
-        MockHttpBackend backend, MockWebPlatformShim shim) {
+    it('should create new style for every tag',
+        async((MockHttpBackend backend, MockWebPlatformShim shim) {
       backend..expectGET('simple.css').respond(200, '.hello{}');
       shim.cssCompiler = (css, {selector}) => "$selector - $css";
 

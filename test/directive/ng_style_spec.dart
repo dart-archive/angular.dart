@@ -10,18 +10,17 @@ void main() {
     beforeEach((TestBed tb) => _ = tb);
 
     it('should set', () {
-      dom.Element element = _.compile('<div ng-style="{height: \'40px\'}"></div>');
+      dom.Element element =
+          _.compile('<div ng-style="{height: \'40px\'}"></div>');
       _.rootScope.apply();
       expect(element.style.height).toEqual('40px');
     });
-
 
     it('should silently ignore undefined style', () {
       dom.Element element = _.compile('<div ng-style="myStyle"></div>');
       _.rootScope.apply();
       expect(element).not.toHaveClass('ng-exception');
     });
-
 
     describe('preserving styles set before and after compilation', () {
       var scope, preCompStyle, widthVal, postCompStyle, heightVal;
@@ -58,8 +57,8 @@ void main() {
         expect(element.style.paddingTop).toEqual('33px');
       });
 
-
-      it(r'should not mess up stuff after $apply with non-colliding model changes', () {
+      it(r'should not mess up stuff after $apply with non-colliding model changes',
+          () {
         scope.context['styleObj'] = {'padding-top': '99px'};
         scope.apply();
         expect(element.style.width).toEqual(widthVal);
@@ -68,8 +67,8 @@ void main() {
         expect(element.style.height).toEqual(heightVal);
       });
 
-
-      it(r'should overwrite original styles after a colliding model change', () {
+      it(r'should overwrite original styles after a colliding model change',
+          () {
         scope.context['styleObj'] = {'height': '99px', 'width': '88px'};
         scope.apply();
         expect(element.style.width).toEqual('88px');

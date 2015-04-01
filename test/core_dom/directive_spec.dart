@@ -10,7 +10,8 @@ main() {
 
     beforeEach((TestBed tb) {
       _ = tb;
-      element = _.compile('<div foo="bar" foo-bar="baz" foo-bar-baz="foo"></div>');
+      element =
+          _.compile('<div foo="bar" foo-bar="baz" foo-bar-baz="foo"></div>');
       nodeAttrs = new NodeAttrs(element);
     });
 
@@ -27,7 +28,8 @@ main() {
     it('should provide a forEach function to iterate over attributes', () {
       Map<String, String> attrMap = new Map();
       nodeAttrs.forEach((k, v) => attrMap[k] = v);
-      expect(attrMap).toEqual({'foo': 'bar', 'foo-bar': 'baz', 'foo-bar-baz': 'foo'});
+      expect(attrMap)
+          .toEqual({'foo': 'bar', 'foo-bar': 'baz', 'foo-bar-baz': 'foo'});
     });
 
     it('should provide a contains method', () {
@@ -38,7 +40,8 @@ main() {
     });
 
     it('should return the attribute names', () {
-      expect(nodeAttrs.keys.toList()..sort()).toEqual(['foo', 'foo-bar', 'foo-bar-baz']);
+      expect(nodeAttrs.keys.toList()..sort())
+          .toEqual(['foo', 'foo-bar', 'foo-bar-baz']);
     });
   });
 }

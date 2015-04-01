@@ -33,22 +33,21 @@ import 'package:angular/core/registry_static.dart';
 import 'package:angular/change_detection/change_detection.dart';
 import 'package:angular/change_detection/dirty_checking_change_detector_static.dart';
 
-export 'package:angular/change_detection/change_detection.dart' show
-    FieldGetter,
-    FieldSetter;
+export 'package:angular/change_detection/change_detection.dart'
+    show FieldGetter, FieldSetter;
 
 class _StaticApplication extends Application {
-  _StaticApplication(
-               Map<Type, Object> metadata,
-               Map<String, FieldGetter> fieldGetters,
-               Map<String, FieldSetter> fieldSetters,
-               Map<String, Symbol> symbols,
-               TypeToUriMapper uriMapper) {
+  _StaticApplication(Map<Type, Object> metadata,
+      Map<String, FieldGetter> fieldGetters,
+      Map<String, FieldSetter> fieldSetters, Map<String, Symbol> symbols,
+      TypeToUriMapper uriMapper) {
     ngModule
-        ..bind(TypeToUriMapper, toValue: uriMapper)
-        ..bind(MetadataExtractor, toValue: new StaticMetadataExtractor(metadata))
-        ..bind(FieldGetterFactory, toValue: new StaticFieldGetterFactory(fieldGetters))
-        ..bind(ClosureMap, toValue: new StaticClosureMap(fieldGetters, fieldSetters, symbols));
+      ..bind(TypeToUriMapper, toValue: uriMapper)
+      ..bind(MetadataExtractor, toValue: new StaticMetadataExtractor(metadata))
+      ..bind(FieldGetterFactory,
+          toValue: new StaticFieldGetterFactory(fieldGetters))
+      ..bind(ClosureMap,
+          toValue: new StaticClosureMap(fieldGetters, fieldSetters, symbols));
   }
 }
 
@@ -83,21 +82,19 @@ class _StaticApplication extends Application {
 class _NullUriMapper extends TypeToUriMapper {
   Uri uriForType(Type type) {
     throw "You did not pass in a TypeToUriMapper to your StaticApplicationFactory."
-    "(This would have been automatic if you used Dart transformers.) You must pass "
-    "in a valid TypeTpUriMapper when constructing your Static Application";
+        "(This would have been automatic if you used Dart transformers.) You must pass "
+        "in a valid TypeTpUriMapper when constructing your Static Application";
   }
 }
-Application staticApplicationFactory(
-    Map<Type, Object> metadata,
+Application staticApplicationFactory(Map<Type, Object> metadata,
     Map<String, FieldGetter> fieldGetters,
-    Map<String, FieldSetter> fieldSetters,
-    Map<String, Symbol> symbols,
+    Map<String, FieldSetter> fieldSetters, Map<String, Symbol> symbols,
     [TypeToUriMapper uriMapper]) {
   // TODO(chirayu): uriMapper is optional for backwards compatibility.  Make it
   // a required parameter by the next release.
   if (uriMapper == null) {
     uriMapper = new _NullUriMapper();
   }
-  return new _StaticApplication(metadata, fieldGetters, fieldSetters,
-      symbols, uriMapper);
+  return new _StaticApplication(
+      metadata, fieldGetters, fieldSetters, symbols, uriMapper);
 }

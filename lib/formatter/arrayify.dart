@@ -9,7 +9,7 @@ part of angular.formatter_internal;
  *       {{item.key}}: {{item.value}}
  *     </div>
  */
-@Formatter(name:'arrayify')
+@Formatter(name: 'arrayify')
 class Arrayify implements Function {
   List<_KeyValue> call(Map inputMap) {
     if (inputMap == null) return null;

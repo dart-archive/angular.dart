@@ -10,8 +10,7 @@ part of angular.directive;
  * Unlike [ngBind], the `ng-bind-template` attribute can contain multiple `{{ }}` expressions.
  */
 @Decorator(
-    selector: '[ng-bind-template]',
-    map: const {'ng-bind-template': '@bind'})
+    selector: '[ng-bind-template]', map: const {'ng-bind-template': '@bind'})
 class NgBindTemplate {
   final dom.Element element;
 

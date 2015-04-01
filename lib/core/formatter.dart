@@ -17,8 +17,8 @@ class FormatterMap {
   FormatterMap(this._injector, MetadataExtractor extractMetadata) {
     (_injector as ModuleInjector).types.forEach((type) {
       extractMetadata(type)
-      .where((annotation) => annotation is Formatter)
-      .forEach((Formatter formatter) {
+          .where((annotation) => annotation is Formatter)
+          .forEach((Formatter formatter) {
         _map[formatter.name] = type;
       });
     });
@@ -26,7 +26,7 @@ class FormatterMap {
 
   Function call(String name) => _injector.get(this[name]);
 
-  Type operator[](String name) {
+  Type operator [](String name) {
     Type formatterType = _map[name];
     if (formatterType == null) throw "No formatter '$name' found!";
     return formatterType;
@@ -36,4 +36,3 @@ class FormatterMap {
     _map.forEach(fn);
   }
 }
-

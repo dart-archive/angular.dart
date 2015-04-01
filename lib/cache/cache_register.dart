@@ -24,7 +24,6 @@ class CacheRegister {
 
     // The stats object needs to be updated.
     _stats = null;
-
   }
 
   /**

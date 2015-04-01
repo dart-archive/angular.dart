@@ -166,14 +166,14 @@ abstract class _NgClassBase {
   bool _first = true;
 
   _NgClassBase(this._ngElement, this._scope, NodeAttrs nodeAttrs,
-               [this._mode = null])
-  {
+      [this._mode = null]) {
     var prevCls;
 
     nodeAttrs.observe('class', (String cls) {
       if (prevCls != cls) {
         prevCls = cls;
-        var index = _hasLocal(_scope, r'$index') ? _getLocal(_scope, r'$index') : null;
+        var index =
+            _hasLocal(_scope, r'$index') ? _getLocal(_scope, r'$index') : null;
         _applyChanges(index);
       }
     });
@@ -182,12 +182,11 @@ abstract class _NgClassBase {
   set valueExpression(expression) {
     if (_watchExpression != null) _watchExpression.remove();
     _watchExpression = _scope.watch(expression, (v, _) {
-        _computeChanges(v);
-        var index = _hasLocal(_scope, r'$index') ? _getLocal(_scope, r'$index') : null;
-        _applyChanges(index);
-      },
-      canChangeModel: false,
-      collection: true);
+      _computeChanges(v);
+      var index =
+          _hasLocal(_scope, r'$index') ? _getLocal(_scope, r'$index') : null;
+      _applyChanges(index);
+    }, canChangeModel: false, collection: true);
 
     if (_mode != null) {
       if (_watchPosition != null) _watchPosition.remove();
@@ -211,12 +210,14 @@ abstract class _NgClassBase {
       _computeMapChanges(value, _first);
     } else {
       if (value is String) {
-        _currentSet..clear()..addAll(value.split(' '));
+        _currentSet
+          ..clear()
+          ..addAll(value.split(' '));
       } else if (value == null) {
         _currentSet.clear();
       } else {
         throw 'ng-class expects expression value to be List, Map or String, '
-              'got $value';
+            'got $value';
       }
     }
 

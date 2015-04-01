@@ -52,10 +52,7 @@ part of angular.directive;
  */
 @Decorator(
     selector: '[ng-switch]',
-    map: const {
-      'ng-switch': '=>value',
-      'change': '&onChange'
-    },
+    map: const {'ng-switch': '=>value', 'change': '&onChange'},
     visibility: Visibility.DIRECT_CHILD)
 class NgSwitch {
   final _cases = <String, List<_Case>>{'?': <_Case>[]};
@@ -66,25 +63,25 @@ class NgSwitch {
   NgSwitch(this._scope);
 
   void addCase(String value, ViewPort anchor, BoundViewFactory viewFactory) {
-    _cases.putIfAbsent(value, () => <_Case>[]).add(new _Case(anchor, viewFactory));
+    _cases
+        .putIfAbsent(value, () => <_Case>[])
+        .add(new _Case(anchor, viewFactory));
   }
 
   set value(val) {
     _currentViews
-        ..forEach((_ViewScopePair pair) {
-          pair.port.remove(pair.view);
-        })
-        ..clear();
+      ..forEach((_ViewScopePair pair) {
+        pair.port.remove(pair.view);
+      })
+      ..clear();
 
     val = '!$val';
-    (_cases.containsKey(val) ? _cases[val] : _cases['?'])
-        .forEach((_Case caze) {
-          Scope childScope = _scope.createProtoChild();
-          var view = caze.viewFactory(childScope);
-          caze.anchor.insert(view);
-          _currentViews.add(new _ViewScopePair(view, caze.anchor,
-            childScope));
-        });
+    (_cases.containsKey(val) ? _cases[val] : _cases['?']).forEach((_Case caze) {
+      Scope childScope = _scope.createProtoChild();
+      var view = caze.viewFactory(childScope);
+      caze.anchor.insert(view);
+      _currentViews.add(new _ViewScopePair(view, caze.anchor, childScope));
+    });
     if (onChange != null) {
       onChange();
     }
@@ -138,7 +135,8 @@ class NgSwitchWhen {
 
   NgSwitchWhen(this._ngSwitch, this._port, this._viewFactory);
 
-  void set value(String value) => _ngSwitch.addCase('!$value', _port, _viewFactory);
+  void set value(String value) =>
+      _ngSwitch.addCase('!$value', _port, _viewFactory);
 }
 /**
  * Specifies a default case to use when no other case statement matches as part of an `ng-switch`
@@ -162,10 +160,10 @@ class NgSwitchWhen {
  *     </div>
  */
 @Decorator(
-    children: Directive.TRANSCLUDE_CHILDREN,
-    selector: '[ng-switch-default]')
+    children: Directive.TRANSCLUDE_CHILDREN, selector: '[ng-switch-default]')
 class NgSwitchDefault {
-  NgSwitchDefault(NgSwitch ngSwitch, ViewPort port, BoundViewFactory viewFactory) {
+  NgSwitchDefault(
+      NgSwitch ngSwitch, ViewPort port, BoundViewFactory viewFactory) {
     ngSwitch.addCase('?', port, viewFactory);
   }
 }

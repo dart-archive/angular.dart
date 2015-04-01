@@ -15,11 +15,8 @@ part of angular.directive;
  * [NgInclude] won't work for cross-domain requests on all browsers and
  * for `file://` access on some browsers.
  */
-@Decorator(
-    selector: '[ng-include]',
-    map: const {'ng-include': '@url'})
+@Decorator(selector: '[ng-include]', map: const {'ng-include': '@url'})
 class NgInclude {
-
   final dom.Element element;
   final Scope scope;
   final ViewFactoryCache viewFactoryCache;
@@ -30,7 +27,7 @@ class NgInclude {
   Scope _childScope;
 
   NgInclude(this.element, this.scope, this.viewFactoryCache,
-            this.directiveInjector, this.directives);
+      this.directiveInjector, this.directives);
 
   _cleanUp() {
     if (_view == null) return;
@@ -51,7 +48,9 @@ class NgInclude {
   set url(value) {
     _cleanUp();
     if (value != null && value != '') {
-      viewFactoryCache.fromUrl(value, directives, Uri.base).then(_updateContent);
+      viewFactoryCache
+          .fromUrl(value, directives, Uri.base)
+          .then(_updateContent);
     }
   }
 }

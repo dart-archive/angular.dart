@@ -20,8 +20,10 @@ class _NullTreeSanitizer implements NodeTreeSanitizer {
 
 @Injectable()
 class ResourceUrlResolver {
-  static final RegExp cssUrlRegexp = new RegExp(r'''(\burl\((?:[\s]+)?)(['"]?)([\S]*?)(\2(?:[\s]+)?\))''');
-  static final RegExp cssImportRegexp = new RegExp(r'(@import[\s]+(?!url\())([^;]*)(;)');
+  static final RegExp cssUrlRegexp =
+      new RegExp(r'''(\burl\((?:[\s]+)?)(['"]?)([\S]*?)(\2(?:[\s]+)?\))''');
+  static final RegExp cssImportRegexp =
+      new RegExp(r'(@import[\s]+(?!url\())([^;]*)(;)');
   static const List<String> urlAttrs = const ['href', 'src', 'action'];
   static final String urlAttrsSelector = '[${urlAttrs.join('],[')}]';
   static final RegExp urlTemplateSearch = new RegExp('{{.*}}');
@@ -33,7 +35,7 @@ class ResourceUrlResolver {
   final TypeToUriMapper _uriMapper;
   final ResourceResolverConfig _config;
 
-  ResourceUrlResolver(this._uriMapper, this._config): _baseUri = _getBaseUri();
+  ResourceUrlResolver(this._uriMapper, this._config) : _baseUri = _getBaseUri();
 
   ResourceUrlResolver.forTests(this._uriMapper, this._config, this._baseUri);
 
@@ -142,7 +144,7 @@ class ResourceUrlResolver {
   /// package-relative URIs.
   String combine(Uri baseUri, String path) {
     if (!_config.useRelativeUrls) {
-       return path;
+      return path;
     }
 
     Uri resolved;
@@ -174,7 +176,7 @@ class ResourceUrlResolver {
       return '${_config.packageRoot}${uri.path}';
     } else if (uri.isAbsolute && uri.toString().startsWith(_baseUri)) {
       return uri.path;
-    }  else {
+    } else {
       return uri.toString();
     }
   }
@@ -194,8 +196,9 @@ class ResourceResolverConfig {
   bool useRelativeUrls;
   String packageRoot;
 
-  ResourceResolverConfig(): useRelativeUrls = true,
-      packageRoot = DEFAULT_PACKAGE_ROOT;
+  ResourceResolverConfig()
+      : useRelativeUrls = true,
+        packageRoot = DEFAULT_PACKAGE_ROOT;
 
   ResourceResolverConfig.resolveRelativeUrls(this.useRelativeUrls,
       {this.packageRoot: DEFAULT_PACKAGE_ROOT});

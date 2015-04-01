@@ -19,7 +19,7 @@ import 'package:angular/tools/parser_getter_setter/generator.dart';
 main(args) {
   if (args.length < 5) {
     print('Usage: expression_extractor file_to_scan html_root header_file '
-          'footer_file output [package_roots+]');
+        'footer_file output [package_roots+]');
     exit(0);
   }
   IoService ioService = new IoServiceImpl();
@@ -53,22 +53,21 @@ main(args) {
 
   printer.write('// Found ${expressions.length} expressions\n');
   Module module = new Module()
-      ..bind(ParserGetterSetter)
-      ..bind(Lexer)
-      ..bind(DartGetterSetterGen)
-      ..bind(CacheRegister)
-      ..bind(Parser)
-      ..bind(ParserBackend, inject: [DartGetterSetterGen]);
+    ..bind(ParserGetterSetter)
+    ..bind(Lexer)
+    ..bind(DartGetterSetterGen)
+    ..bind(CacheRegister)
+    ..bind(Parser)
+    ..bind(ParserBackend, inject: [DartGetterSetterGen]);
   Injector injector = new ModuleInjector([module]);
 
   runZoned(() {
     // Run the generator.
-    injector.get(ParserGetterSetter).generateParser(htmlExtractor.expressions,
-        printer);
+    injector.get(ParserGetterSetter).generateParser(
+        htmlExtractor.expressions, printer);
   }, zoneSpecification: new ZoneSpecification(print: (_, __, ___, String line) {
     printer.write(line);
   }));
-
 
   // Output footer last.
   if (footerFile != '') {

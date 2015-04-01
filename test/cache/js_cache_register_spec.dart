@@ -2,7 +2,6 @@ library js_cache_register_spec;
 
 import '../_specs.dart';
 import 'dart:js' as js;
-import 'package:angular/application_factory.dart';
 
 main() => describe('JsCacheRegister', () {
   beforeEachModule((Module m) {
@@ -12,7 +11,7 @@ main() => describe('JsCacheRegister', () {
   s() => js.context['ngCaches']['sizes'].apply([]);
 
   // Create some caches in the system
-  beforeEach((JsCacheRegister js, Parser dp, ViewFactoryCache vc) { });
+  beforeEach((JsCacheRegister js, Parser dp, ViewFactoryCache vc) {});
 
   it('should publish a JS interface', () {
     expect(js.context['ngCaches']).toBeDefined();

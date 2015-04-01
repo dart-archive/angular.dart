@@ -1,6 +1,6 @@
 part of angular.watch_group;
 
-class PrototypeMap<K, V> implements Map<K,V> {
+class PrototypeMap<K, V> implements Map<K, V> {
   final Map<K, V> prototype;
   final Map<K, V> self = new HashMap();
 

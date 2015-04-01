@@ -2,7 +2,6 @@ library view_spec;
 
 import '../_specs.dart';
 import 'package:angular/application_factory.dart';
-import 'package:angular/core_dom/static_keys.dart';
 
 class Log {
   List<String> log = <String>[];
@@ -38,7 +37,7 @@ class BDirective {
   }
 }
 
-@Formatter(name:'formatterA')
+@Formatter(name: 'formatterA')
 class AFormatter {
   Log log;
 
@@ -49,7 +48,7 @@ class AFormatter {
   call(value) => value;
 }
 
-@Formatter(name:'formatterB')
+@Formatter(name: 'formatterB')
 class BFormatter {
   Log log;
 
@@ -76,8 +75,10 @@ main() {
     ViewPort createViewPort({Injector injector, DestinationLightDom lightDom}) {
       final scope = injector.get(Scope);
       final view = new View([], scope);
-      final di = new DirectiveInjector(null, injector, null, null, null, null, null, view);
-      return new ViewPort(di, scope, rootElement.childNodes[0], injector.get(Animate), lightDom);
+      final di = new DirectiveInjector(
+          null, injector, null, null, null, null, null, view);
+      return new ViewPort(di, scope, rootElement.childNodes[0],
+          injector.get(Animate), lightDom);
     }
 
     View createView(Injector injector, String html) {
@@ -101,7 +102,6 @@ main() {
         viewPort = createViewPort(injector: injector);
       });
 
-
       describe('insertAfter', () {
         it('should insert block after anchor view', (RootScope scope) {
           viewPort.insert(a);
@@ -110,25 +110,26 @@ main() {
           expect(rootElement).toHaveHtml('<!-- anchor --><span>A</span>a');
         });
 
-
-        it('should insert multi element view after another multi element view', (RootScope scope) {
+        it('should insert multi element view after another multi element view',
+            (RootScope scope) {
           viewPort.insert(a);
           viewPort.insert(b, insertAfter: a);
           scope.flush();
 
-          expect(rootElement).toHaveHtml('<!-- anchor --><span>A</span>a<span>B</span>b');
+          expect(rootElement)
+              .toHaveHtml('<!-- anchor --><span>A</span>a<span>B</span>b');
         });
 
-
-        it('should insert multi element view before another multi element view', (RootScope scope) {
+        it('should insert multi element view before another multi element view',
+            (RootScope scope) {
           viewPort.insert(b);
           viewPort.insert(a);
           scope.flush();
 
-          expect(rootElement).toHaveHtml('<!-- anchor --><span>A</span>a<span>B</span>b');
+          expect(rootElement)
+              .toHaveHtml('<!-- anchor --><span>A</span>a<span>B</span>b');
         });
       });
-
 
       describe('remove', () {
         it("should remove newly added view", (RootScope scope) {
@@ -149,7 +150,8 @@ main() {
           expect(rootElement).toHaveHtml('<!-- anchor --><span>A</span>a');
         });
 
-        it('should remove child views from parent pseudo black', (RootScope scope) {
+        it('should remove child views from parent pseudo black',
+            (RootScope scope) {
           viewPort.insert(a);
           viewPort.insert(b, insertAfter: a);
           scope.flush();
@@ -206,7 +208,6 @@ main() {
         */
       });
 
-
       describe('moveAfter', () {
         beforeEach((RootScope scope) {
           viewPort.insert(a);
@@ -216,14 +217,13 @@ main() {
           expect(rootElement.text).toEqual('AaBb');
         });
 
-
         it('should move last to middle', (RootScope scope) {
           viewPort.move(a, moveAfter: b);
           scope.flush();
-          expect(rootElement).toHaveHtml('<!-- anchor --><span>B</span>b<span>A</span>a');
+          expect(rootElement)
+              .toHaveHtml('<!-- anchor --><span>B</span>b<span>A</span>a');
         });
       });
-
 
       describe("light dom notification", () {
         ViewPort viewPort;
@@ -289,10 +289,9 @@ main() {
       });
     });
 
-
     describe('deferred', () {
-
-      it('should load directives/formatters from the child injector', (RootScope scope) {
+      it('should load directives/formatters from the child injector',
+          (RootScope scope) {
         Module rootModule = new Module()
           ..bind(Probe)
           ..bind(Log)
@@ -300,35 +299,41 @@ main() {
           ..bind(ADirective)
           ..bind(Node, toFactory: () => document.body, inject: []);
 
-        Injector rootInjector = applicationFactory()
-            .addModule(rootModule)
-            .createInjector();
+        Injector rootInjector =
+            applicationFactory().addModule(rootModule).createInjector();
         Log log = rootInjector.get(Log);
         Scope rootScope = rootInjector.get(Scope);
 
         Compiler compiler = rootInjector.get(Compiler);
         DirectiveMap directives = rootInjector.get(DirectiveMap);
-        compiler(es('<dir-a>{{\'a\' | formatterA}}</dir-a><dir-b></dir-b>'), directives)(rootScope, null);
+        compiler(es('<dir-a>{{\'a\' | formatterA}}</dir-a><dir-b></dir-b>'),
+            directives)(rootScope, null);
         rootScope.apply();
 
         expect(log.log, equals(['AFormatter', 'ADirective']));
-
 
         Module childModule = new Module()
           ..bind(BFormatter)
           ..bind(BDirective);
 
-        var childInjector = NgView.createChildInjectorWithReload(rootInjector, [childModule]);
+        var childInjector =
+            NgView.createChildInjectorWithReload(rootInjector, [childModule]);
 
         DirectiveMap newDirectives = childInjector.get(DirectiveMap);
         var scope = childInjector.get(Scope);
         compiler(es('<dir-a probe="dirA"></dir-a>{{\'a\' | formatterA}}'
-            '<dir-b probe="dirB"></dir-b>{{\'b\' | formatterB}}'), newDirectives)(scope, null);
+                '<dir-b probe="dirB"></dir-b>{{\'b\' | formatterB}}'),
+            newDirectives)(scope, null);
         rootScope.apply();
 
-        expect(log.log, equals(['AFormatter', 'ADirective', 'BFormatter', 'ADirective', 'BDirective']));
+        expect(log.log, equals([
+          'AFormatter',
+          'ADirective',
+          'BFormatter',
+          'ADirective',
+          'BDirective'
+        ]));
       });
-
     });
 
     //TODO: tests for attach/detach

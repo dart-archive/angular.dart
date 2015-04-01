@@ -69,8 +69,10 @@ part of angular.directive;
     selector: '[ng-repeat]',
     map: const {'.': '@expression'})
 class NgRepeat {
-  static RegExp _SYNTAX = new RegExp(r'^\s*(.+)\s+in\s+(.*?)\s*(?:track\s+by\s+(.+)\s*)?(\s+lazily\s*)?$');
-  static RegExp _LHS_SYNTAX = new RegExp(r'^(?:([$\w]+)|\(([$\w]+)\s*,\s*([$\w]+)\))$');
+  static RegExp _SYNTAX = new RegExp(
+      r'^\s*(.+)\s+in\s+(.*?)\s*(?:track\s+by\s+(.+)\s*)?(\s+lazily\s*)?$');
+  static RegExp _LHS_SYNTAX =
+      new RegExp(r'^(?:([$\w]+)|\(([$\w]+)\s*,\s*([$\w]+)\))$');
 
   final ViewPort _viewPort;
   final BoundViewFactory _boundViewFactory;
@@ -86,7 +88,8 @@ class NgRepeat {
   Function _generateId = (key, value, index) => value;
   Watch _watch;
 
-  NgRepeat(this._viewPort, this._boundViewFactory, this._scope, this._parser, this.formatters);
+  NgRepeat(this._viewPort, this._boundViewFactory, this._scope, this._parser,
+      this.formatters);
 
   set expression(value) {
     assert(value != null);
@@ -106,11 +109,12 @@ class NgRepeat {
       Expression trackBy = _parser(trackByExpr);
       _generateId = ((key, value, index) {
         final context = new HashMap<String, Object>()
-            ..[_valueIdentifier] = value
-            ..[r'$index'] = index
-            ..[r'$id'] = (obj) => obj;
+          ..[_valueIdentifier] = value
+          ..[r'$index'] = index
+          ..[r'$id'] = (obj) => obj;
         if (_keyIdentifier != null) context[_keyIdentifier] = key;
-        return relaxFnArgs(trackBy.eval)(new ContextLocals(_scope.context, context));
+        return relaxFnArgs(trackBy.eval)(
+            new ContextLocals(_scope.context, context));
       });
     }
 
@@ -126,19 +130,14 @@ class NgRepeat {
     if (_valueIdentifier == null) _valueIdentifier = match.group(1);
     _keyIdentifier = match.group(2);
 
-    _watch = _scope.watch(
-        _listExpr,
-        (changes, _) {
-          if (changes is CollectionChangeRecord && changes != null) {
-            _onCollectionChange(changes);
-          } else if (_views != null) {
-            _views.forEach(_viewPort.remove);
-            _views = null;
-          }
-        },
-        collection: true,
-        formatters: formatters
-    );
+    _watch = _scope.watch(_listExpr, (changes, _) {
+      if (changes is CollectionChangeRecord && changes != null) {
+        _onCollectionChange(changes);
+      } else if (_views != null) {
+        _views.forEach(_viewPort.remove);
+        _views = null;
+      }
+    }, collection: true, formatters: formatters);
   }
 
   void _onCollectionChange(CollectionChangeRecord changes) {
@@ -173,8 +172,8 @@ class NgRepeat {
       changeFunctions[addition.currentIndex] = (index, previousView) {
         var childScope = _scope.createProtoChild();
         var childContext = _updateContext(childScope.context, index, length)
-            ..[_valueIdentifier] = value
-            ..[r'$parent'] = _scope.context;
+          ..[_valueIdentifier] = value
+          ..[r'$parent'] = _scope.context;
         var view = views[index] = _boundViewFactory(childScope);
         _viewPort.insert(view, insertAfter: previousView);
       };
@@ -202,7 +201,7 @@ class NgRepeat {
 
     var previousView = null;
     domIndex = leftInDom.length - 1;
-    for(var targetIndex = 0; targetIndex < length; targetIndex++) {
+    for (var targetIndex = 0; targetIndex < length; targetIndex++) {
       var changeFn = changeFunctions[targetIndex];
       if (changeFn == null) {
         views[targetIndex] = _views[targetIndex];
@@ -227,11 +226,11 @@ class NgRepeat {
     var last = index == len - 1;
 
     return context
-        ..[r'$index'] = index
-        ..[r'$first'] = first
-        ..[r'$last'] = last
-        ..[r'$middle'] = !(first || last)
-        ..[r'$odd'] = index.isOdd
-        ..[r'$even'] = index.isEven;
+      ..[r'$index'] = index
+      ..[r'$first'] = first
+      ..[r'$last'] = last
+      ..[r'$middle'] = !(first || last)
+      ..[r'$odd'] = index.isOdd
+      ..[r'$even'] = index.isEven;
   }
 }

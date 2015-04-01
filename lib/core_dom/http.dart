@@ -19,14 +19,17 @@ class HttpBackend {
   /**
    * Wrapper around dart:html's [HttpRequest.request]
    */
-  async.Future request(String url,
-      {String method, bool withCredentials, String responseType,
-      String mimeType, Map<String, String> requestHeaders, sendData,
-      void onProgress(dom.ProgressEvent e)}) =>
-      dom.HttpRequest.request(url, method: method,
-        withCredentials: withCredentials, responseType: responseType,
-        mimeType: mimeType, requestHeaders: requestHeaders,
-        sendData: sendData, onProgress: onProgress);
+  async.Future request(String url, {String method, bool withCredentials,
+      String responseType, String mimeType, Map<String, String> requestHeaders,
+      sendData, void onProgress(dom.ProgressEvent e)}) => dom.HttpRequest
+      .request(url,
+          method: method,
+          withCredentials: withCredentials,
+          responseType: responseType,
+          mimeType: mimeType,
+          requestHeaders: requestHeaders,
+          sendData: sendData,
+          onProgress: onProgress);
 }
 
 @Injectable()
@@ -57,10 +60,9 @@ class HttpInterceptor {
   /**
    * All parameters are optional.
    */
-  HttpInterceptor({this.request, this.response, this.requestError,
-                  this.responseError});
+  HttpInterceptor(
+      {this.request, this.response, this.requestError, this.responseError});
 }
-
 
 /**
 * The default transform data interceptor.abstract
@@ -73,7 +75,8 @@ class HttpInterceptor {
 */
 class DefaultTransformDataHttpInterceptor implements HttpInterceptor {
   Function request = (HttpResponseConfig config) {
-    if (config.data != null && config.data is! String &&
+    if (config.data != null &&
+        config.data is! String &&
         config.data is! dom.File) {
       config.data = JSON.encode(config.data);
     }
@@ -115,16 +118,12 @@ class HttpInterceptors {
     _interceptors.reversed.forEach((HttpInterceptor i) {
       // AngularJS has an optimization of not including null interceptors.
       chain
-          ..insert(0, [
-              i.request == null ? (x) => x : i.request,
-              i.requestError])
-          ..add([
-              i.response == null ? (x) => x : i.response,
-              i.responseError]);
+        ..insert(0, [i.request == null ? (x) => x : i.request, i.requestError])
+        ..add([i.response == null ? (x) => x : i.response, i.responseError]);
     });
   }
 
- /**
+  /**
    * Default constructor.
    */
   HttpInterceptors() {
@@ -170,7 +169,7 @@ class HttpResponseConfig {
   header([String name]) {
     if (_headersObj == null) {
       _headersObj = {};
-      headers.forEach((k,v) => _headersObj[k.toLowerCase()] = v);
+      headers.forEach((k, v) => _headersObj[k.toLowerCase()] = v);
     }
 
     return name != null ? _headersObj[name.toLowerCase()] : _headersObj;
@@ -244,9 +243,9 @@ class HttpDefaultHeaders {
   static var _defaultContentType = 'application/json;charset=utf-8';
   var _headers = {
     'COMMON': {'Accept': 'application/json, text/plain, */*'},
-    'POST' : {'Content-Type': _defaultContentType},
-    'PUT' : {'Content-Type': _defaultContentType },
-    'PATCH' : {'Content-Type': _defaultContentType}
+    'POST': {'Content-Type': _defaultContentType},
+    'PUT': {'Content-Type': _defaultContentType},
+    'PATCH': {'Content-Type': _defaultContentType}
   };
 
   _applyHeaders(method, ucHeaders, headers) {
@@ -275,7 +274,7 @@ class HttpDefaultHeaders {
    * Passing 'common' as [method] will return a Map that contains headers
    * common to all operations.
    */
-  operator[](method) => _headers[method.toUpperCase()];
+  operator [](method) => _headers[method.toUpperCase()];
 }
 
 /**
@@ -396,8 +395,9 @@ class Http {
   /**
    * Constructor, useful for DI.
    */
-  Http(this._cookies, this._location, this._rewriter, this._backend, this.defaults,
-       this._interceptors, this._rootScope, this._httpConfig, this._zone, this._pendingAsync);
+  Http(this._cookies, this._location, this._rewriter, this._backend,
+      this.defaults, this._interceptors, this._rootScope, this._httpConfig,
+      this._zone, this._pendingAsync);
 
   /**
    * Parse a [requestUrl] and determine whether this is a same-origin request as
@@ -433,19 +433,10 @@ class Http {
    *      will be used as cache.
    * - timeout: deprecated
   */
-  async.Future<HttpResponse> call({
-    String url,
-    String method,
-    dynamic data,
-    Map<String, dynamic> params,
-    Map<String, dynamic> headers,
-    bool withCredentials: false,
-    String xsrfHeaderName,
-    String xsrfCookieName,
-    interceptors,
-    cache,
-    timeout
-  }) {
+  async.Future<HttpResponse> call({String url, String method, dynamic data,
+      Map<String, dynamic> params, Map<String, dynamic> headers,
+      bool withCredentials: false, String xsrfHeaderName, String xsrfCookieName,
+      interceptors, cache, timeout}) {
     var range = traceEnabled ? traceAsyncStart('http:$method', url) : null;
     if (timeout != null) {
       throw ['timeout not implemented'];
@@ -457,12 +448,14 @@ class Http {
     if (headers == null) headers = {};
     defaults.headers.setHeaders(headers, method);
 
-    var xsrfValue = _urlIsSameOrigin(url) ?
-        _cookies[xsrfCookieName != null ? xsrfCookieName : defaults.xsrfCookieName] :
-        null;
+    var xsrfValue = _urlIsSameOrigin(url)
+        ? _cookies[
+            xsrfCookieName != null ? xsrfCookieName : defaults.xsrfCookieName]
+        : null;
     if (xsrfValue != null) {
-      headers[xsrfHeaderName != null ? xsrfHeaderName : defaults.xsrfHeaderName]
-          = xsrfValue;
+      headers[xsrfHeaderName != null
+          ? xsrfHeaderName
+          : defaults.xsrfHeaderName] = xsrfValue;
     }
 
     // Check for functions in headers
@@ -490,29 +483,26 @@ class Http {
       if (cache != null && _pendingRequests.containsKey(url)) {
         return _pendingRequests[url];
       }
-      var cachedResponse = (cache != null && method == 'GET') ? cache.get(url) : null;
+      var cachedResponse =
+          (cache != null && method == 'GET') ? cache.get(url) : null;
       if (cachedResponse != null) {
         return new async.Future.value(new HttpResponse.copy(cachedResponse));
       }
 
       requestFromBackend(runCoalesced, onComplete, onError) {
-        var request = _backend.request(
-          url,
-          method: method,
-          requestHeaders: config.headers,
-          sendData: config.data,
-          withCredentials: withCredentials
-        );
+        var request = _backend.request(url,
+            method: method,
+            requestHeaders: config.headers,
+            sendData: config.data,
+            withCredentials: withCredentials);
         _pendingAsync.increaseCount();
         return request.then((dom.HttpRequest req) {
-                       _pendingAsync.decreaseCount();
-                       return _onResponse(req, runCoalesced, onComplete, config, cache, url);
-                     },
-                     onError: (e) {
-                       _pendingAsync.decreaseCount();
-                       return _onError(e, runCoalesced, onError, config, url);
-                     });
-        return request;
+          _pendingAsync.decreaseCount();
+          return _onResponse(req, runCoalesced, onComplete, config, cache, url);
+        }, onError: (e) {
+          _pendingAsync.decreaseCount();
+          return _onError(e, runCoalesced, onError, config, url);
+        });
       }
 
       async.Future responseFuture;
@@ -525,15 +515,13 @@ class Http {
         responseFuture = requestFromBackend(_runNow, _identity, _identity);
       }
       return _pendingRequests[url] = responseFuture;
-    };
+    }
+    ;
 
     var chain = [[serverRequest, null]];
 
     var initialInput = new HttpResponseConfig(
-        url: url,
-        params: params,
-        headers: headers,
-        data: data);
+        url: url, params: params, headers: headers, data: data);
 
     _interceptors.constructChain(chain);
 
@@ -548,9 +536,10 @@ class Http {
     // Try to run interceptors synchronously until one of them returns a Future. This
     // makes sure that in common cases the HTTP backend sends the HTTP request immediately
     // saving dozens of millis of RPC latency.
-    var chainResult = chain.fold(initialInput, (prev, chainFns) => prev is async.Future
-        ? prev.then(chainFns[0], onError: chainFns[1])
-        : chainFns[0](prev));
+    var chainResult = chain.fold(initialInput,
+        (prev, chainFns) => prev is async.Future
+            ? prev.then(chainFns[0], onError: chainFns[1])
+            : chainFns[0](prev));
 
     // Depending on the implementation of HttpBackend (e.g. with a local cache) the entire
     // chain could finish synchronously with a non-Future result.
@@ -571,115 +560,124 @@ class Http {
    * Shortcut method for GET requests.  See [call] for a complete description
    * of parameters.
    */
-  async.Future<HttpResponse> get(String url, {
-    Map<String, dynamic> params,
-    Map<String, String> headers,
-    bool withCredentials: false,
-    xsrfHeaderName,
-    xsrfCookieName,
-    interceptors,
-    cache,
-    timeout
-  }) => call(method: 'GET', url: url, data: null, params: params, headers: headers,
-             withCredentials: withCredentials, xsrfHeaderName: xsrfHeaderName,
-             xsrfCookieName: xsrfCookieName, interceptors: interceptors, cache: cache,
-             timeout: timeout);
+  async.Future<HttpResponse> get(String url, {Map<String, dynamic> params,
+      Map<String, String> headers, bool withCredentials: false, xsrfHeaderName,
+      xsrfCookieName, interceptors, cache, timeout}) => call(
+          method: 'GET',
+          url: url,
+          data: null,
+          params: params,
+          headers: headers,
+          withCredentials: withCredentials,
+          xsrfHeaderName: xsrfHeaderName,
+          xsrfCookieName: xsrfCookieName,
+          interceptors: interceptors,
+          cache: cache,
+          timeout: timeout);
 
   /**
    * Shortcut method for DELETE requests.  See [call] for a complete description
    * of parameters.
    */
-  async.Future<HttpResponse> delete(String url, {
-    dynamic data,
-    Map<String, dynamic> params,
-    Map<String, String> headers,
-    bool withCredentials: false,
-    xsrfHeaderName,
-    xsrfCookieName,
-    interceptors,
-    cache,
-    timeout
-  }) => call(method: 'DELETE', url: url, data: data, params: params, headers: headers,
-             withCredentials: withCredentials, xsrfHeaderName: xsrfHeaderName,
-             xsrfCookieName: xsrfCookieName, interceptors: interceptors, cache: cache,
-             timeout: timeout);
+  async.Future<HttpResponse> delete(String url, {dynamic data,
+      Map<String, dynamic> params, Map<String, String> headers,
+      bool withCredentials: false, xsrfHeaderName, xsrfCookieName, interceptors,
+      cache, timeout}) => call(
+          method: 'DELETE',
+          url: url,
+          data: data,
+          params: params,
+          headers: headers,
+          withCredentials: withCredentials,
+          xsrfHeaderName: xsrfHeaderName,
+          xsrfCookieName: xsrfCookieName,
+          interceptors: interceptors,
+          cache: cache,
+          timeout: timeout);
 
   /**
    * Shortcut method for HEAD requests.  See [call] for a complete description
    * of parameters.
    */
-  async.Future<HttpResponse> head(String url, {
-    dynamic data,
-    Map<String, dynamic> params,
-    Map<String, String> headers,
-    bool withCredentials: false,
-    xsrfHeaderName,
-    xsrfCookieName,
-    interceptors,
-    cache,
-    timeout
-  }) => call(method: 'HEAD', url: url, data: data, params: params, headers: headers,
-             withCredentials: withCredentials, xsrfHeaderName: xsrfHeaderName,
-             xsrfCookieName: xsrfCookieName, interceptors: interceptors, cache: cache,
-             timeout: timeout);
+  async.Future<HttpResponse> head(String url, {dynamic data,
+      Map<String, dynamic> params, Map<String, String> headers,
+      bool withCredentials: false, xsrfHeaderName, xsrfCookieName, interceptors,
+      cache, timeout}) => call(
+          method: 'HEAD',
+          url: url,
+          data: data,
+          params: params,
+          headers: headers,
+          withCredentials: withCredentials,
+          xsrfHeaderName: xsrfHeaderName,
+          xsrfCookieName: xsrfCookieName,
+          interceptors: interceptors,
+          cache: cache,
+          timeout: timeout);
 
   /**
    * Shortcut method for PUT requests.  See [call] for a complete description
    * of parameters.
    */
-  async.Future<HttpResponse> put(String url, dynamic data, {
-    Map<String, dynamic> params,
-    Map<String, String> headers,
-    bool withCredentials: false,
-    xsrfHeaderName,
-    xsrfCookieName,
-    interceptors,
-    cache,
-    timeout
-  }) => call(method: 'PUT', url: url, data: data, params: params, headers: headers,
-             withCredentials: withCredentials, xsrfHeaderName: xsrfHeaderName,
-             xsrfCookieName: xsrfCookieName, interceptors: interceptors, cache: cache,
-             timeout: timeout);
+  async.Future<HttpResponse> put(String url, dynamic data,
+      {Map<String, dynamic> params, Map<String, String> headers,
+      bool withCredentials: false, xsrfHeaderName, xsrfCookieName, interceptors,
+      cache, timeout}) => call(
+          method: 'PUT',
+          url: url,
+          data: data,
+          params: params,
+          headers: headers,
+          withCredentials: withCredentials,
+          xsrfHeaderName: xsrfHeaderName,
+          xsrfCookieName: xsrfCookieName,
+          interceptors: interceptors,
+          cache: cache,
+          timeout: timeout);
 
   /**
    * Shortcut method for POST requests.  See [call] for a complete description
    * of parameters.
    */
-  async.Future<HttpResponse> post(String url, dynamic data, {
-    Map<String, dynamic> params,
-    Map<String, String> headers,
-    bool withCredentials: false,
-    xsrfHeaderName,
-    xsrfCookieName,
-    interceptors,
-    cache,
-    timeout
-  }) => call(method: 'POST', url: url, data: data, params: params, headers: headers,
-             withCredentials: withCredentials, xsrfHeaderName: xsrfHeaderName,
-             xsrfCookieName: xsrfCookieName, interceptors: interceptors, cache: cache,
-             timeout: timeout);
+  async.Future<HttpResponse> post(String url, dynamic data,
+      {Map<String, dynamic> params, Map<String, String> headers,
+      bool withCredentials: false, xsrfHeaderName, xsrfCookieName, interceptors,
+      cache, timeout}) => call(
+          method: 'POST',
+          url: url,
+          data: data,
+          params: params,
+          headers: headers,
+          withCredentials: withCredentials,
+          xsrfHeaderName: xsrfHeaderName,
+          xsrfCookieName: xsrfCookieName,
+          interceptors: interceptors,
+          cache: cache,
+          timeout: timeout);
 
   /**
    * Shortcut method for JSONP requests.  See [call] for a complete description
    * of parameters.
    */
-  async.Future<HttpResponse> jsonp(String url, {
-    dynamic data,
-    Map<String, dynamic> params,
-    Map<String, String> headers,
-    bool withCredentials: false,
-    xsrfHeaderName,
-    xsrfCookieName,
-    interceptors,
-    cache,
-    timeout
-  }) => call(method: 'JSONP', url: url, data: data, params: params, headers: headers,
-             withCredentials: withCredentials, xsrfHeaderName: xsrfHeaderName,
-             xsrfCookieName: xsrfCookieName, interceptors: interceptors, cache: cache,
-             timeout: timeout);
+  async.Future<HttpResponse> jsonp(String url, {dynamic data,
+      Map<String, dynamic> params, Map<String, String> headers,
+      bool withCredentials: false, xsrfHeaderName, xsrfCookieName, interceptors,
+      cache, timeout}) => call(
+          method: 'JSONP',
+          url: url,
+          data: data,
+          params: params,
+          headers: headers,
+          withCredentials: withCredentials,
+          xsrfHeaderName: xsrfHeaderName,
+          xsrfCookieName: xsrfCookieName,
+          interceptors: interceptors,
+          cache: cache,
+          timeout: timeout);
 
-  _onResponse(dom.HttpRequest request, _RunCoaleced runCoalesced, _CompleteResponse onComplete,
-              HttpResponseConfig config, cache, String url) {
+  _onResponse(dom.HttpRequest request, _RunCoaleced runCoalesced,
+      _CompleteResponse onComplete, HttpResponseConfig config, cache,
+      String url) {
     // TODO: Uncomment after apps migrate off of this class.
     // assert(request.status >= 200 && request.status < 300);
 
@@ -692,7 +690,7 @@ class Http {
   }
 
   _onError(error, _RunCoaleced runCoalesced, _CompleteResponse onError,
-           HttpResponseConfig config, String url) {
+      HttpResponseConfig config, String url) {
     if (error is! dom.ProgressEvent) throw error;
     dom.ProgressEvent event = error;
     _pendingRequests.remove(url);
@@ -705,7 +703,8 @@ class Http {
   _coalesce(fn()) {
     _responseQueue.add(fn);
     if (_responseQueueTimer == null) {
-      _responseQueueTimer = new async.Timer(_httpConfig.coalesceDuration, _flushResponseQueue);
+      _responseQueueTimer =
+          new async.Timer(_httpConfig.coalesceDuration, _flushResponseQueue);
     }
   }
 
@@ -743,39 +742,41 @@ class Http {
    * Returns an [Iterable] of [Future] [HttpResponse]s for the requests
    * that the [Http] service is currently waiting for.
    */
-  Iterable<async.Future<HttpResponse> > get pendingRequests =>
+  Iterable<async.Future<HttpResponse>> get pendingRequests =>
       _pendingRequests.values;
 
   _buildUrl(String url, Map<String, dynamic> params) {
     if (params == null) return url;
     var parts = [];
 
-    new List.from(params.keys)..sort()..forEach((String key) {
-      var value = params[key];
-      if (value == null) return;
-      if (value is! List) value = [value];
+    new List.from(params.keys)
+      ..sort()
+      ..forEach((String key) {
+        var value = params[key];
+        if (value == null) return;
+        if (value is! List) value = [value];
 
-      value.forEach((v) {
-        if (v is Map) v = JSON.encode(v);
-        parts.add(_encodeUriQuery(key) + '=' + _encodeUriQuery("$v"));
+        value.forEach((v) {
+          if (v is Map) v = JSON.encode(v);
+          parts.add(_encodeUriQuery(key) + '=' + _encodeUriQuery("$v"));
+        });
       });
-    });
     return url + ((url.indexOf('?') == -1) ? '?' : '&') + parts.join('&');
   }
 
-  _encodeUriQuery(val, {bool pctEncodeSpaces: false}) =>
-      Uri.encodeComponent(val)
-          .replaceAll('%40', '@')
-          .replaceAll('%3A', ':')
-          .replaceAll('%24', r'$')
-          .replaceAll('%2C', ',')
-          .replaceAll('%20', pctEncodeSpaces ? '%20' : '+');
+  _encodeUriQuery(val, {bool pctEncodeSpaces: false}) => Uri
+      .encodeComponent(val)
+      .replaceAll('%40', '@')
+      .replaceAll('%3A', ':')
+      .replaceAll('%24', r'$')
+      .replaceAll('%2C', ',')
+      .replaceAll('%20', pctEncodeSpaces ? '%20' : '+');
 }
 
 @Injectable()
 class HttpConfig {
   final Duration coalesceDuration;
 
-  HttpConfig(): coalesceDuration = null;
+  HttpConfig() : coalesceDuration = null;
   HttpConfig.withOptions({this.coalesceDuration});
 }

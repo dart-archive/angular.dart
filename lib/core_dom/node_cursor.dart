@@ -2,7 +2,7 @@ part of angular.core.dom_internal;
 
 class NodeCursor {
   final stack = [];
-  List<dom.Node> elements;  // may be a fixed length list.
+  List<dom.Node> elements; // may be a fixed length list.
   int index = 0;
 
   NodeCursor(this.elements);
@@ -16,7 +16,9 @@ class NodeCursor {
     var hasChildren = childNodes.isNotEmpty;
 
     if (hasChildren) {
-      stack..add(index)..add(elements);
+      stack
+        ..add(index)
+        ..add(elements);
       elements = childNodes;
       index = 0;
     }

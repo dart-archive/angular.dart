@@ -65,13 +65,13 @@ part 'ng_model_options.dart';
  */
 class DirectiveModule extends Module {
   DirectiveModule() {
-
     bind(AHref, toValue: null);
-    bind(NgBaseCss);  // The root injector should have an empty NgBaseCss
+    bind(NgBaseCss); // The root injector should have an empty NgBaseCss
     bind(NgBind, toValue: null);
     bind(NgBindTemplate, toValue: null);
     bind(NgBindHtml, toValue: null);
-    bind(dom.NodeValidator, toFactory: () => new dom.NodeValidatorBuilder.common());
+    bind(dom.NodeValidator,
+        toFactory: () => new dom.NodeValidatorBuilder.common());
     bind(NgClass, toValue: null);
     bind(NgClassOdd, toValue: null);
     bind(NgClassEven, toValue: null);

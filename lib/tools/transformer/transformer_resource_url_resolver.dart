@@ -14,8 +14,7 @@ class TransformerResourceUrlResolver {
 
   Uri findUriOfElement(Element type) {
     var uri = _resolver.getImportUri(type.library, from: _primaryAsset);
-    var acceptable = (
-        (uri.isAbsolute && uri.scheme == 'package') ||
+    var acceptable = ((uri.isAbsolute && uri.scheme == 'package') ||
         (uri.toString() == uri.path));
     if (!acceptable) {
       var errMsg = 'ERROR: Type "$type" has unsupported URI $uri';

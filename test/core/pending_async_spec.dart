@@ -2,13 +2,13 @@ library pending_async_spec;
 
 import '../_specs.dart';
 
-import 'dart:async';
-
 void main() {
   describe('pending_async', () {
     PendingAsync pendingAsync;
     Logger log;
-    callbackLog(msg) => () { log(msg); };
+    callbackLog(msg) => () {
+      log(msg);
+    };
 
     beforeEachModule((Module module) {
       module.bind(ExceptionHandler, toValue: new LoggingExceptionHandler());
@@ -45,7 +45,8 @@ void main() {
         expect(log.result()).toEqual('cb 1');
       }));
 
-      it('should NOT fire callbacks when there are pending operations', async(() {
+      it('should NOT fire callbacks when there are pending operations',
+          async(() {
         pendingAsync.increaseCount(2);
         pendingAsync.whenStable(callbackLog('cb 2'));
         expect(log.result()).toEqual('');
@@ -53,7 +54,8 @@ void main() {
         expect(log.result()).toEqual('');
       }));
 
-      it('should complete the future when there no pending operations left', async(() {
+      it('should complete the future when there no pending operations left',
+          async(() {
         pendingAsync.increaseCount(2);
         pendingAsync.whenStable(callbackLog('cb 3'));
         expect(log.result()).toEqual('');
@@ -61,7 +63,8 @@ void main() {
         expect(log.result()).toEqual('cb 3');
       }));
 
-      it('should complete the future if already completed and still in a stable state', async(() {
+      it('should complete the future if already completed and still in a stable state',
+          async(() {
         pendingAsync.increaseCount(1);
         pendingAsync.whenStable(callbackLog('cb 4'));
         pendingAsync.decreaseCount(1);
@@ -70,6 +73,5 @@ void main() {
         expect(log.result()).toEqual('cb 4; cb 5');
       }));
     });
-
   });
 }

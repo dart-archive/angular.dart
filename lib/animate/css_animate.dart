@@ -54,11 +54,12 @@ class CssAnimate implements Animate {
   }
 
   Animation insert(Iterable<dom.Node> nodes, dom.Node parent,
-                         { dom.Node insertBefore }) {
+      {dom.Node insertBefore}) {
     util.domInsert(nodes, parent, insertBefore: insertBefore);
 
-    var animations = util.getElements(nodes)
-        .where((el) =>_optimizer.shouldAnimate(el))
+    var animations = util
+        .getElements(nodes)
+        .where((el) => _optimizer.shouldAnimate(el))
         .map((el) => animate(el, NG_INSERT));
 
     return _animationFromList(animations);
@@ -73,18 +74,20 @@ class CssAnimate implements Animate {
       return _noOp;
     });
 
-    var result = _animationFromList(animations)..onCompleted.then((result) {
-      if (result.isCompleted) nodes.toList().forEach((n) => n.remove());
-    });
+    var result = _animationFromList(animations)
+      ..onCompleted.then((result) {
+        if (result.isCompleted) nodes.toList().forEach((n) => n.remove());
+      });
 
     return result;
   }
 
   Animation move(Iterable<dom.Node> nodes, dom.Node parent,
-                       { dom.Node insertBefore }) {
+      {dom.Node insertBefore}) {
     util.domMove(nodes, parent, insertBefore: insertBefore);
 
-    var animations = util.getElements(nodes)
+    var animations = util
+        .getElements(nodes)
         .where((el) => _optimizer.shouldAnimate(el))
         .map((el) => animate(el, NG_MOVE));
 
@@ -96,21 +99,12 @@ class CssAnimate implements Animate {
    * animation already exists, the method will attempt to return the existing
    * instance.
    */
-  CssAnimation animate(
-      dom.Element element,
-      String event,
-      { String addAtStart,
-        String addAtEnd,
-        String removeAtStart,
-        String removeAtEnd }) {
-
+  CssAnimation animate(dom.Element element, String event, {String addAtStart,
+      String addAtEnd, String removeAtStart, String removeAtEnd}) {
     var _existing = _animationMap.findExisting(element, event);
     if (_existing != null) return _existing;
 
-    var animation = new CssAnimation(
-        element,
-        event,
-        "$event$NG_ACTIVE_POSTFIX",
+    var animation = new CssAnimation(element, event, "$event$NG_ACTIVE_POSTFIX",
         addAtStart: addAtStart,
         addAtEnd: addAtEnd,
         removeAtStart: removeAtStart,
@@ -138,12 +132,12 @@ class CssAnimate implements Animate {
  */
 @Injectable()
 class CssAnimationMap {
-  final Map<dom.Element, Map<String, CssAnimation>> cssAnimations
-      = new HashMap<dom.Element, Map<String, CssAnimation>>();
+  final Map<dom.Element, Map<String, CssAnimation>> cssAnimations =
+      new HashMap<dom.Element, Map<String, CssAnimation>>();
 
   void track(CssAnimation animation) {
-    var animations = cssAnimations.putIfAbsent(animation.element,
-        () => new HashMap<String, CssAnimation>());
+    var animations = cssAnimations.putIfAbsent(
+        animation.element, () => new HashMap<String, CssAnimation>());
     animations[animation.eventClass] = animation;
   }
 
