@@ -1,3 +1,69 @@
+<a name="v1.1.1"></a>
+# v1.1.1 pathological-lemur (2015-03-31)
+
+## Highlights
+
+This is primarily a bug fix release. Relative URL support
+has been improved with a configurable package root. The
+expression generator transformer also parses HTML files from
+`@NgTemplateCache` annotations. A couple of minor bugs were
+fixed in the change detector.
+
+## Bug Fixes
+
+- **cd:** inline _looseIdentical() where it should be
+  ([3db2752a](https://github.com/angular/angular.dart/commit/3db2752af0a647982c8d98ce5ead810adc1de398))
+- **change_detector:** add null check in _revertToPreviousState
+  ([06435792](https://github.com/angular/angular.dart/commit/06435792a340aa2aac9b926002421e2d9ecaa05f),
+   [#1691](https://github.com/angular/angular.dart/issues/1691))
+- **content_tag:** removes elements no longer selected by the content tag from DOM
+  ([011d65f0](https://github.com/angular/angular.dart/commit/011d65f00d7a7d5f825b4337cf594baf20e6625f))
+- **orderBy:** ensure the orderBy formatter can handle null values in collections
+  ([497c487b](https://github.com/angular/angular.dart/commit/497c487be5337ffe7333b3d624d2ab9c5501693c))
+- **relative_url_resolver:**
+  - fix match of CSS urls to match only first url
+  ([c7a3021e](https://github.com/angular/angular.dart/commit/c7a3021e456d113bbfb24e817c1b35c1b6972dd8),
+   [#1697](https://github.com/angular/angular.dart/issues/1697))
+  - Fix relative URI resolution for html.
+  ([73b4153f](https://github.com/angular/angular.dart/commit/73b4153fad623a01eac25bd6f9a6b3489f2f5cd6))
+- **resource_url_resolver:** Makes resolved URLs absolute
+  ([f55b6bcc](https://github.com/angular/angular.dart/commit/f55b6bcc72995b6d6c289a1b89a84f2966af71fc),
+   [#1599](https://github.com/angular/angular.dart/issues/1599))
+- **shadowdom:** fixes bug with nested content tags.
+  ([f9406a4a](https://github.com/angular/angular.dart/commit/f9406a4a08671307d051172953e164f1c6cd52ac))
+- **transformers:**
+  - Fix expression_spec test and dart2js tests.
+  ([eee5b5ec](https://github.com/angular/angular.dart/commit/eee5b5ecf34ecb14d76f7df42c7d9b95c44578f8))
+  - Fix relative URL lookup for transformers, and web
+  ([8d36167c](https://github.com/angular/angular.dart/commit/8d36167cb6cedd9f6565c32be6ce3602ab64f00a),
+   [#1649](https://github.com/angular/angular.dart/issues/1649))
+
+
+## Features
+
+- **expression_transformer:** Parse NgTemplateCache values
+  ([6c4d52b6](https://github.com/angular/angular.dart/commit/6c4d52b68f78675993ad843963c7c6c4be1d19f4),
+   [#1644](https://github.com/angular/angular.dart/issues/1644))
+- **referenced_uris:** allow rewriting of relative URLs
+  ([0385717e](https://github.com/angular/angular.dart/commit/0385717e62f4335cc81ff632b107e469d82ce6f9),
+   [#1698](https://github.com/angular/angular.dart/issues/1698))
+- **relative_url_resolver:** Allow configurable package root.
+  ([62c51a3c](https://github.com/angular/angular.dart/commit/62c51a3c2d9f46f41bb6f40e794a7f0055946444))
+- **template_cache_transformer:** Implement template cache as a transformer
+  ([ec7de205](https://github.com/angular/angular.dart/commit/ec7de205b5042d2a1ba5e58164a24c1bdd63cffa),
+   [#1646](https://github.com/angular/angular.dart/issues/1646))
+- **transformers:** Allow more complicated package uris
+  ([161cf82c](https://github.com/angular/angular.dart/commit/161cf82c13ef903941acdfc699852e445c277497))
+- **zone:** adds onCreateTimer overriding interface
+  ([43e00e5a](https://github.com/angular/angular.dart/commit/43e00e5a613a54c8ef3894dfd4d9a2ddafdc3786))
+
+
+## Performance Improvements
+
+- **AngularTransformerGroup:** creates only one Resolvers object
+  ([15452ab7](https://github.com/angular/angular.dart/commit/15452ab7bc298dafc246913b7de1128c6ed17516))
+
+
 <a name="v1.1"></a>
 # v1.1.0 isomorphic-panda (2015-01-15)
 
