@@ -8,7 +8,6 @@ import 'package:guinness/guinness.dart';
 
 void main() {
   describe('selector', () {
-
     it('should match directive on element', () {
       var node = new Element.html('<b></b>');
       expect(matchesNode(node, 'b'), isTrue);
@@ -21,7 +20,6 @@ void main() {
       expect(matchesNode(node, '.c'), isFalse);
     });
 
-
     it('should match directive on [attribute]', () {
       var node = new Element.html('<div directive></div>');
       expect(matchesNode(node, '[directive]'), isTrue);
@@ -32,19 +30,16 @@ void main() {
       expect(matchesNode(node, '[directive=bcd]'), isFalse);
     });
 
-
     it('should match directive on element[attribute]', () {
       var node = new Element.html('<b directive=abc></b>');
       expect(matchesNode(node, 'b[directive]'), isTrue);
       expect(matchesNode(node, 'c[directive]'), isFalse);
     });
 
-
     it('should match directive on [attribute=value]', () {
       var node = new Element.html('<div directive=value></div>');
       expect(matchesNode(node, '[directive=value]'), isTrue);
     });
-
 
     it('should match directive on element[attribute=value]', () {
       var node = new Element.html('<b directive=value></b>');
@@ -79,6 +74,5 @@ void main() {
       expect(matchesNode(node, '[directive=d][foo=f]'), isTrue);
       expect(matchesNode(node, '[directive=d][bar=baz]'), isFalse);
     });
-
   });
 }

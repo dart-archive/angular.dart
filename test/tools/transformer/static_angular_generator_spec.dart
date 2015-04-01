@@ -10,14 +10,12 @@ import 'package:guinness/guinness.dart';
 
 main() {
   describe('StaticAngularGenerator', () {
-
     it('should modify applicationFactory', () {
-      return tests.applyTransformers(
-          setupPhases(generateTemplateCache:false),
+      return tests.applyTransformers(setupPhases(generateTemplateCache: false),
           inputs: {
-            'angular|lib/application_factory.dart': libAngularDynamic,
-            'di|lib/di.dart': libDI,
-            'a|web/main.dart': '''
+        'angular|lib/application_factory.dart': libAngularDynamic,
+        'di|lib/di.dart': libDI,
+        'a|web/main.dart': '''
 import 'package:angular/application_factory.dart';
 import 'package:di/di.dart' show Module;
 
@@ -29,9 +27,8 @@ main() {
     .run();
 }
 '''
-          },
-          results: {
-            'a|web/main.dart': '''
+      }, results: {
+        'a|web/main.dart': '''
 import 'package:angular/application_factory_static.dart';
 import 'package:di/di.dart' show Module;
 import 'main_static_expressions.dart' as generated_static_expressions;
@@ -46,15 +43,14 @@ main() {
     .run();
 }
 '''
-          });
+      });
     });
 
     it('should modify applicationFactory with template cache', () {
-      return tests.applyTransformers(setupPhases(),
-          inputs: {
-            'angular|lib/application_factory.dart': libAngularDynamic,
-            'di|lib/di.dart': libDI,
-            'a|web/main.dart': '''
+      return tests.applyTransformers(setupPhases(), inputs: {
+        'angular|lib/application_factory.dart': libAngularDynamic,
+        'di|lib/di.dart': libDI,
+        'a|web/main.dart': '''
 import 'package:angular/application_factory.dart';
 import 'package:di/di.dart' show Module;
 
@@ -66,9 +62,8 @@ main() {
     .run();
 }
 '''
-          },
-          results: {
-            'a|web/main.dart': '''
+      }, results: {
+        'a|web/main.dart': '''
 import 'package:angular/application_factory_static.dart';
 import 'package:di/di.dart' show Module;
 import 'main_static_expressions.dart' as generated_static_expressions;
@@ -84,15 +79,14 @@ main() {
     .run();
 }
 '''
-          });
+      });
     });
 
     it('handles prefixed app imports', () {
-      return tests.applyTransformers(setupPhases(),
-          inputs: {
-            'angular|lib/application_factory.dart': libAngularDynamic,
-            'di|lib/di.dart': libDI,
-            'a|web/main.dart': '''
+      return tests.applyTransformers(setupPhases(), inputs: {
+        'angular|lib/application_factory.dart': libAngularDynamic,
+        'di|lib/di.dart': libDI,
+        'a|web/main.dart': '''
 import 'package:angular/application_factory.dart' as ng;
 import 'package:di/di.dart' show Module;
 
@@ -104,9 +98,8 @@ main() {
     .run();
 }
 '''
-          },
-          results: {
-            'a|web/main.dart': '''
+      }, results: {
+        'a|web/main.dart': '''
 import 'package:angular/application_factory_static.dart' as ng;
 import 'package:di/di.dart' show Module;
 import 'main_static_expressions.dart' as generated_static_expressions;
@@ -122,7 +115,7 @@ main() {
     .run();
 }
 '''
-          });
+      });
     });
   });
 }
@@ -139,12 +132,11 @@ class Module {}
 ''';
 
 List<List<Transformer>> setupPhases({bool generateTemplateCache: true}) {
-  var options = new TransformOptions(sdkDirectory: dartSdkDirectory,
-  generateTemplateCache: generateTemplateCache);
+  var options = new TransformOptions(
+      sdkDirectory: dartSdkDirectory,
+      generateTemplateCache: generateTemplateCache);
 
   var resolvers = new Resolvers(dartSdkDirectory);
 
-  return [
-      [new StaticAngularGenerator(options, resolvers)]
-  ];
+  return [[new StaticAngularGenerator(options, resolvers)]];
 }

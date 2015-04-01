@@ -3,19 +3,17 @@ library angular.dom.element_binder_spec;
 import '../_specs.dart';
 import 'dart:mirrors';
 
-@Component(selector:'component')            class _Component{}
-@Decorator(selector:'[ignore-children]',
-             children: Directive.IGNORE_CHILDREN)
-                                              class _IgnoreChildren{}
-@Decorator(selector:'[structural]',
-             children: Directive.TRANSCLUDE_CHILDREN)
-                                              class _Structural{}
-@Decorator(selector:'[directive]')          class _DirectiveAttr{}
-
+@Component(selector: 'component')
+class _Component {}
+@Decorator(selector: '[ignore-children]', children: Directive.IGNORE_CHILDREN)
+class _IgnoreChildren {}
+@Decorator(selector: '[structural]', children: Directive.TRANSCLUDE_CHILDREN)
+class _Structural {}
+@Decorator(selector: '[directive]')
+class _DirectiveAttr {}
 
 directiveFor(i) {
   ClassMirror cm = reflectType(i);
-
 }
 main() => describe('ElementBinderBuilder', () {
   var b;
@@ -37,8 +35,8 @@ main() => describe('ElementBinderBuilder', () {
 
   addDirective(selector) {
     directives.forEach((Directive annotation, Type type) {
-      if (annotation.selector == selector)
-        b.addDirective(new DirectiveRef(node, type, annotation, new Key(type), null));
+      if (annotation.selector == selector) b.addDirective(
+          new DirectiveRef(node, type, annotation, new Key(type), null));
     });
     b = b.binder;
   }
@@ -51,7 +49,6 @@ main() => describe('ElementBinderBuilder', () {
     expect(b.decorators.length).toEqual(1);
     expect(b.componentData).toBeNull();
     expect(b.childMode).toEqual(Directive.COMPILE_CHILDREN);
-
   });
 
   it('should add a component', async(() {

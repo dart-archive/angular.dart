@@ -5,12 +5,12 @@ import 'package:angular/application_factory.dart';
 
 void main() {
   describe('DirectiveMap', () {
-
     beforeEachModule((Module module) {
       module..bind(AnnotatedIoComponent);
     });
 
-    it('should extract attr map from annotated component', (DirectiveMap directives) {
+    it('should extract attr map from annotated component',
+        (DirectiveMap directives) {
       var tuples = directives['annotated-io'];
       expect(tuples.length).toEqual(1);
       expect(tuples[0].directive is Component).toBeTruthy();
@@ -24,14 +24,14 @@ void main() {
       expect(annotation.templateUrl).toEqual('templateUrl');
       expect(annotation.cssUrls).toEqual(['cssUrls']);
       expect(annotation.map).toEqual({
-          'foo': '=>foo',
-          'attr': '@attr',
-          'expr': '<=>expr',
-          'expr-one-way': '=>exprOneWay',
-          'expr-one-way-one-shot': '=>!exprOneWayOneShot',
-          'callback': '&callback',
-          'expr-one-way2': '=>exprOneWay2',
-          'expr-two-way': '<=>exprTwoWay'
+        'foo': '=>foo',
+        'attr': '@attr',
+        'expr': '<=>expr',
+        'expr-one-way': '=>exprOneWay',
+        'expr-one-way-one-shot': '=>!exprOneWayOneShot',
+        'callback': '&callback',
+        'expr-one-way2': '=>exprOneWay2',
+        'expr-two-way': '<=>exprTwoWay'
       });
     });
 
@@ -45,25 +45,25 @@ void main() {
       });
 
       it('should throw when annotation is for existing mapping', () {
-        var module = new Module()
-            ..bind(Bad1Component);
+        var module = new Module()..bind(Bad1Component);
 
         var injector = applicationFactory().addModule(module).createInjector();
         expect(() {
           injector.get(DirectiveMap);
-        }).toThrowWith(message: 'Mapping for attribute foo is already defined (while '
-        'processing annottation for field foo of Bad1Component)');
+        }).toThrowWith(
+            message: 'Mapping for attribute foo is already defined (while '
+            'processing annottation for field foo of Bad1Component)');
       });
 
       it('should throw when annotated both getter and setter', () {
-        var module = new Module()
-            ..bind(Bad2Component);
+        var module = new Module()..bind(Bad2Component);
 
         var injector = applicationFactory().addModule(module).createInjector();
         expect(() {
           injector.get(DirectiveMap);
-        }).toThrowWith(message: 'Attribute annotation for foo is defined more than once '
-        'in Bad2Component');
+        }).toThrowWith(
+            message: 'Attribute annotation for foo is defined more than once '
+            'in Bad2Component');
       });
     });
 
@@ -72,21 +72,21 @@ void main() {
       var nodeAttrs;
 
       beforeEachModule((Module module) {
-        module..bind(Sub)..bind(Base);
+        module
+          ..bind(Sub)
+          ..bind(Base);
       });
 
-      it("should extract attr map from annotated component which inherits other component", (DirectiveMap directives) {
+      it("should extract attr map from annotated component which inherits other component",
+          (DirectiveMap directives) {
         var tupls = directives['[sub]'];
         expect(tupls.length).toEqual(1);
         expect(tupls[0].directive is Directive).toBeTruthy();
 
         Directive annotation = tupls[0].directive;
         expect(annotation.selector).toEqual('[sub]');
-        expect(annotation.map).toEqual({
-          "foo": "=>foo",
-          "bar": "=>bar",
-          "baz": "=>baz"
-        });
+        expect(annotation.map)
+            .toEqual({"foo": "=>foo", "bar": "=>bar", "baz": "=>baz"});
       });
     });
   });
@@ -106,13 +106,11 @@ class NullParser implements Parser {
     module: AnnotatedIoComponent.module,
     visibility: Visibility.LOCAL,
     exportExpressions: const ['exportExpressions'],
-    map: const {
-      'foo': '=>foo'
-    })
+    map: const {'foo': '=>foo'})
 class AnnotatedIoComponent {
   static module(i) => i.bind(String,
-                             toFactory: (i) => i.get(AnnotatedIoComponent),
-                             visibility: Visibility.LOCAL);
+      toFactory: (i) => i.get(AnnotatedIoComponent),
+      visibility: Visibility.LOCAL);
 
   AnnotatedIoComponent(Scope scope) {
     scope.rootScope.context['ioComponent'] = this;
@@ -144,17 +142,13 @@ class AnnotatedIoComponent {
 @Component(
     selector: 'bad1',
     template: r'<content></content>',
-    map: const {
-      'foo': '=>foo'
-    })
+    map: const {'foo': '=>foo'})
 class Bad1Component {
   @NgOneWay('foo')
   String foo;
 }
 
-@Component(
-    selector: 'bad2',
-    template: r'<content></content>')
+@Component(selector: 'bad2', template: r'<content></content>')
 class Bad2Component {
   @NgOneWay('foo')
   get foo => null;
@@ -176,4 +170,3 @@ class Base {
   @NgOneWay('foo')
   String foo;
 }
-

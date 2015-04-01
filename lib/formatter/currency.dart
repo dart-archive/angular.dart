@@ -19,9 +19,8 @@ part of angular.formatter_internal;
  *
  *
  */
-@Formatter(name:'currency')
+@Formatter(name: 'currency')
 class Currency implements Function {
-
   var _nfs = new Map<String, NumberFormat>();
 
   /**
@@ -36,7 +35,8 @@ class Currency implements Function {
     if (value is String) value = double.parse(value);
     if (value is! num) return value;
     if (value.isNaN) return '';
-    var verifiedLocale = Intl.verifiedLocale(Intl.getCurrentLocale(), NumberFormat.localeExists);
+    var verifiedLocale =
+        Intl.verifiedLocale(Intl.getCurrentLocale(), NumberFormat.localeExists);
     var nf = _nfs[verifiedLocale];
     if (nf == null) {
       nf = new NumberFormat();
@@ -48,8 +48,8 @@ class Currency implements Function {
     if (neg) value = -value;
     var before = neg ? '(' : '';
     var after = neg ? ')' : '';
-    return leading ?
-        '$before$symbol${nf.format(value)}$after' :
-        '$before${nf.format(value)}$symbol$after';
+    return leading
+        ? '$before$symbol${nf.format(value)}$after'
+        : '$before${nf.format(value)}$symbol$after';
   }
 }

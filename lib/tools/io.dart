@@ -7,7 +7,6 @@ typedef FsVisitor(String file);
  * direct dependencies on dart:io.
  */
 abstract class IoService {
-
   String readAsStringSync(String filePath);
 
   void visitFs(String rootDir, FsVisitor visitor);

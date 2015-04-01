@@ -40,10 +40,9 @@ class NgModel extends NgControl implements AttachAware {
   Watch _watch;
   bool _watchCollection;
 
-  NgModel(this._scope, NgElement element, DirectiveInjector injector, NodeAttrs attrs,
-          Animate animate, ElementProbe probe)
-      : super(element, injector, animate)
-  {
+  NgModel(this._scope, NgElement element, DirectiveInjector injector,
+      NodeAttrs attrs, Animate animate, ElementProbe probe)
+      : super(element, injector, animate) {
     _expression = attrs["ng-model"];
     if (probe != null) {
       probe.modelExpressions.add(_expression);
@@ -142,14 +141,13 @@ class NgModel extends NgControl implements AttachAware {
     };
 
     _watchCollection = value;
-    if (_watch!=null) _watch.remove();
+    if (_watch != null) _watch.remove();
     if (_watchCollection) {
       _watch = _scope.watch(_expression, (changeRecord, _) {
-            onChange(changeRecord is CollectionChangeRecord
-                        ? changeRecord.iterable
-                        : changeRecord);
-          },
-          collection: true);
+        onChange(changeRecord is CollectionChangeRecord
+            ? changeRecord.iterable
+            : changeRecord);
+      }, collection: true);
     } else if (_expression != null) {
       _watch = _scope.watch(_expression, onChange);
     }
@@ -204,7 +202,7 @@ class NgModel extends NgControl implements AttachAware {
   void set modelValue(value) {
     try {
       value = converter.parse(value);
-    } catch(e) {
+    } catch (e) {
       value = null;
     }
     _modelValue = value;
@@ -306,25 +304,23 @@ class InputCheckbox {
   final NgModelOptions ngModelOptions;
   final Scope scope;
 
-  InputCheckbox(dom.Element this.inputElement, this.ngModel,
-                this.scope, this.ngTrueValue, this.ngFalseValue, this.ngModelOptions) {
+  InputCheckbox(dom.Element this.inputElement, this.ngModel, this.scope,
+      this.ngTrueValue, this.ngFalseValue, this.ngModelOptions) {
     ngModel.render = (value) {
       scope.rootScope.domWrite(() {
         inputElement.checked = ngTrueValue.isValue(value);
       });
     };
     inputElement
-        ..onChange.listen((_) => ngModelOptions.executeChangeFunc(() {
-          ngModel.viewValue = inputElement.checked ? ngTrueValue.value : ngFalseValue.value;
-        }))
-        ..onBlur.listen((_) => ngModelOptions.executeBlurFunc(() {
-          ngModel.markAsTouched();
-        }));
+      ..onChange.listen((_) => ngModelOptions.executeChangeFunc(() {
+        ngModel.viewValue =
+            inputElement.checked ? ngTrueValue.value : ngFalseValue.value;
+      }))
+      ..onBlur.listen((_) => ngModelOptions.executeBlurFunc(() {
+        ngModel.markAsTouched();
+      }));
   }
 }
-
-
-
 
 /**
  * Creates a two-way databinding between the `ng-model` expression
@@ -357,13 +353,13 @@ class InputTextLike {
   final Scope scope;
   String _inputType;
 
-
   get typedValue => (inputElement as dynamic).value;
   void set typedValue(value) {
     (inputElement as dynamic).value = (value == null) ? '' : value.toString();
   }
 
-  InputTextLike(this.inputElement, this.ngModel, this.scope, this.ngModelOptions) {
+  InputTextLike(
+      this.inputElement, this.ngModel, this.scope, this.ngModelOptions) {
     ngModel.render = (value) {
       scope.rootScope.domWrite(() {
         if (value == null) value = '';
@@ -373,11 +369,13 @@ class InputTextLike {
     };
 
     inputElement
-        ..onChange.listen((event) => ngModelOptions.executeChangeFunc(() => processValue(event)))
-        ..onInput.listen((event) => ngModelOptions.executeInputFunc(() => processValue(event)))
-        ..onBlur.listen((_) => ngModelOptions.executeBlurFunc(() {
-          ngModel.markAsTouched();
-        }));
+      ..onChange.listen((event) =>
+          ngModelOptions.executeChangeFunc(() => processValue(event)))
+      ..onInput.listen(
+          (event) => ngModelOptions.executeInputFunc(() => processValue(event)))
+      ..onBlur.listen((_) => ngModelOptions.executeBlurFunc(() {
+        ngModel.markAsTouched();
+      }));
   }
 
   void processValue([_]) {
@@ -418,7 +416,6 @@ class InputNumberLike {
   final NgModelOptions ngModelOptions;
   final Scope scope;
 
-
   // We can't use [inputElement.valueAsNumber] due to http://dartbug.com/15788
   num get typedValue => num.parse(inputElement.value, (v) => double.NAN);
 
@@ -436,21 +433,24 @@ class InputNumberLike {
     }
   }
 
-  InputNumberLike(dom.Element this.inputElement, this.ngModel, this.scope, this.ngModelOptions) {
+  InputNumberLike(dom.Element this.inputElement, this.ngModel, this.scope,
+      this.ngModelOptions) {
     ngModel.render = (value) {
       scope.rootScope.domWrite(() {
-        if (value != typedValue
-            && (value == null || value is num && !value.isNaN)) {
+        if (value != typedValue &&
+            (value == null || value is num && !value.isNaN)) {
           typedValue = value;
         }
       });
     };
     inputElement
-        ..onChange.listen((event) => ngModelOptions.executeChangeFunc(() => processValue()))
-        ..onInput.listen((event) => ngModelOptions.executeInputFunc(() => processValue()))
-        ..onBlur.listen((_) => ngModelOptions.executeBlurFunc(() {
-          ngModel.markAsTouched();
-        }));
+      ..onChange.listen(
+          (event) => ngModelOptions.executeChangeFunc(() => processValue()))
+      ..onInput.listen(
+          (event) => ngModelOptions.executeInputFunc(() => processValue()))
+      ..onBlur.listen((_) => ngModelOptions.executeBlurFunc(() {
+        ngModel.markAsTouched();
+      }));
   }
 
   void processValue() {
@@ -475,12 +475,24 @@ class InputNumberLike {
  * - [NUMBER]: `dom.InputElement.valueAsNumber` is read.
  * - [STRING]: `dom.InputElement.value` is read.
  */
-@Decorator(selector: 'input[type=date][ng-model][ng-bind-type]', visibility: Visibility.LOCAL)
-@Decorator(selector: 'input[type=time][ng-model][ng-bind-type]', visibility: Visibility.LOCAL)
-@Decorator(selector: 'input[type=datetime][ng-model][ng-bind-type]', visibility: Visibility.LOCAL)
-@Decorator(selector: 'input[type=datetime-local][ng-model][ng-bind-type]', visibility: Visibility.LOCAL)
-@Decorator(selector: 'input[type=month][ng-model][ng-bind-type]', visibility: Visibility.LOCAL)
-@Decorator(selector: 'input[type=week][ng-model][ng-bind-type]', visibility: Visibility.LOCAL)
+@Decorator(
+    selector: 'input[type=date][ng-model][ng-bind-type]',
+    visibility: Visibility.LOCAL)
+@Decorator(
+    selector: 'input[type=time][ng-model][ng-bind-type]',
+    visibility: Visibility.LOCAL)
+@Decorator(
+    selector: 'input[type=datetime][ng-model][ng-bind-type]',
+    visibility: Visibility.LOCAL)
+@Decorator(
+    selector: 'input[type=datetime-local][ng-model][ng-bind-type]',
+    visibility: Visibility.LOCAL)
+@Decorator(
+    selector: 'input[type=month][ng-model][ng-bind-type]',
+    visibility: Visibility.LOCAL)
+@Decorator(
+    selector: 'input[type=week][ng-model][ng-bind-type]',
+    visibility: Visibility.LOCAL)
 class NgBindTypeForDateLike {
   static const String DATE = 'date';
   static const String NUMBER = 'number';
@@ -496,9 +508,9 @@ class NgBindTypeForDateLike {
   @NgAttr('ng-bind-type')
   void set idlAttrKind(final String _kind) {
     String kind = _kind == null ? DEFAULT : _kind.toLowerCase();
-    if (!VALID_VALUES.contains(kind))
-      throw "Unsupported ng-bind-type attribute value '$_kind'; "
-            "it should be one of $VALID_VALUES";
+    if (!VALID_VALUES.contains(
+            kind)) throw "Unsupported ng-bind-type attribute value '$_kind'; "
+        "it should be one of $VALID_VALUES";
     _idlAttrKind = kind;
   }
 
@@ -506,9 +518,12 @@ class NgBindTypeForDateLike {
 
   dynamic get inputTypedValue {
     switch (idlAttrKind) {
-      case DATE:   return inputValueAsDate;
-      case NUMBER: return inputElement.valueAsNumber;
-      default:     return inputElement.value;
+      case DATE:
+        return inputValueAsDate;
+      case NUMBER:
+        return inputElement.valueAsNumber;
+      default:
+        return inputElement.value;
     }
   }
 
@@ -588,22 +603,26 @@ class NgBindTypeForDateLike {
  *   dropped.
  */
 
-@Decorator(selector: 'input[type=date][ng-model]',
+@Decorator(
+    selector: 'input[type=date][ng-model]', module: InputDateLike.moduleFactory)
+@Decorator(
+    selector: 'input[type=time][ng-model]', module: InputDateLike.moduleFactory)
+@Decorator(
+    selector: 'input[type=datetime][ng-model]',
     module: InputDateLike.moduleFactory)
-@Decorator(selector: 'input[type=time][ng-model]',
+@Decorator(
+    selector: 'input[type=datetime-local][ng-model]',
     module: InputDateLike.moduleFactory)
-@Decorator(selector: 'input[type=datetime][ng-model]',
+@Decorator(
+    selector: 'input[type=month][ng-model]',
     module: InputDateLike.moduleFactory)
-@Decorator(selector: 'input[type=datetime-local][ng-model]',
-    module: InputDateLike.moduleFactory)
-@Decorator(selector: 'input[type=month][ng-model]',
-    module: InputDateLike.moduleFactory)
-@Decorator(selector: 'input[type=week][ng-model]',
-    module: InputDateLike.moduleFactory)
+@Decorator(
+    selector: 'input[type=week][ng-model]', module: InputDateLike.moduleFactory)
 class InputDateLike {
-  static void moduleFactory(DirectiveBinder binder)
-        => binder.bind(NgBindTypeForDateLike,
-            toFactory: (dom.Element e) => new NgBindTypeForDateLike(e), inject: [ELEMENT_KEY]);
+  static void moduleFactory(DirectiveBinder binder) => binder.bind(
+      NgBindTypeForDateLike,
+      toFactory: (dom.Element e) => new NgBindTypeForDateLike(e),
+      inject: [ELEMENT_KEY]);
   final dom.InputElement inputElement;
   final NgModel ngModel;
   final NgModelOptions ngModelOptions;
@@ -621,11 +640,13 @@ class InputDateLike {
       });
     };
     inputElement
-        ..onChange.listen((event) => ngModelOptions.executeChangeFunc(() => processValue()))
-        ..onInput.listen((event) => ngModelOptions.executeInputFunc(() => processValue()))
-        ..onBlur.listen((_) => ngModelOptions.executeBlurFunc(() {
-          ngModel.markAsTouched();
-        }));
+      ..onChange.listen(
+          (event) => ngModelOptions.executeChangeFunc(() => processValue()))
+      ..onInput.listen(
+          (event) => ngModelOptions.executeInputFunc(() => processValue()))
+      ..onBlur.listen((_) => ngModelOptions.executeBlurFunc(() {
+        ngModel.markAsTouched();
+      }));
   }
 
   dynamic get typedValue => ngBindType.inputTypedValue;
@@ -695,10 +716,13 @@ final _uidCounter = new _UidCounter();
  * the `ng-model` property when the corresponding radio element or option is
  * selected.
  */
-@Decorator(selector: 'input[type=radio][ng-model][ng-value]', visibility: Visibility.LOCAL)
+@Decorator(
+    selector: 'input[type=radio][ng-model][ng-value]',
+    visibility: Visibility.LOCAL)
 @Decorator(selector: 'option[ng-value]', visibility: Visibility.LOCAL)
 class NgValue {
-  static module(DirectiveBinder binder) => binder.bind(NgValue, visibility: Visibility.LOCAL);
+  static module(DirectiveBinder binder) =>
+      binder.bind(NgValue, visibility: Visibility.LOCAL);
 
   final dom.Element element;
   var _value;
@@ -778,17 +802,15 @@ class NgFalseValue {
  * goes from `001`,  `001`, ..., `009`, `00A`, `00Z`, `010`, and so on using more than 3
  * characters for the name when the counter overflows.
  */
-@Decorator(
-    selector: 'input[type=radio][ng-model]',
-    module: NgValue.module)
+@Decorator(selector: 'input[type=radio][ng-model]', module: NgValue.module)
 class InputRadio {
   final dom.RadioButtonInputElement radioButtonElement;
   final NgModel ngModel;
   final NgValue ngValue;
   final Scope scope;
 
-  InputRadio(dom.Element this.radioButtonElement, this.ngModel,
-             this.scope, this.ngValue, NodeAttrs attrs) {
+  InputRadio(dom.Element this.radioButtonElement, this.ngModel, this.scope,
+      this.ngValue, NodeAttrs attrs) {
     // If there's no "name" set, we'll set a unique name.  This ensures
     // less surprising behavior about which radio buttons are grouped together.
     if (attrs['name'] == '' || attrs['name'] == null) {
@@ -800,12 +822,12 @@ class InputRadio {
       });
     };
     radioButtonElement
-        ..onClick.listen((_) {
-          if (radioButtonElement.checked) ngModel.viewValue = ngValue.value;
-        })
-        ..onBlur.listen((event) {
-          ngModel.markAsTouched();
-        });
+      ..onClick.listen((_) {
+        if (radioButtonElement.checked) ngModel.viewValue = ngValue.value;
+      })
+      ..onBlur.listen((event) {
+        ngModel.markAsTouched();
+      });
   }
 }
 
@@ -823,7 +845,8 @@ class InputRadio {
  */
 @Decorator(selector: '[contenteditable][ng-model]')
 class ContentEditable extends InputTextLike {
-  ContentEditable(dom.Element inputElement, NgModel ngModel, Scope scope, NgModelOptions modelOptions)
+  ContentEditable(dom.Element inputElement, NgModel ngModel, Scope scope,
+      NgModelOptions modelOptions)
       : super(inputElement, ngModel, scope, modelOptions);
 
   // The implementation is identical to InputTextLike but use innerHtml instead of value

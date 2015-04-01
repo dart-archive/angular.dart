@@ -2,7 +2,6 @@ library ng_show_hide_spec;
 
 import '../_specs.dart';
 
-
 main() {
   describe('NgHide', () {
     TestBed _;
@@ -24,7 +23,7 @@ main() {
       expect(_.rootElement).not.toHaveClass('ng-hide');
     });
   });
-  
+
   describe('NgShow', () {
     TestBed _;
     beforeEach((TestBed tb) => _ = tb);

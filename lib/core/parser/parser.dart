@@ -6,9 +6,8 @@ import 'package:angular/core/parser/syntax.dart'
 import 'package:angular/core/parser/eval.dart';
 import 'package:angular/core/parser/utils.dart' show EvalError;
 import 'package:angular/cache/module.dart';
-import 'package:angular/core/module_internal.dart' show
-    FormatterMap,
-    ContextLocals;
+import 'package:angular/core/module_internal.dart'
+    show FormatterMap, ContextLocals;
 
 import 'package:angular/core/parser/parser.dart';
 import 'package:angular/core/parser/lexer.dart';
@@ -103,7 +102,7 @@ class Parser {
 
 class _UnwrapExceptionDecorator extends Expression {
   final Expression _expression;
-  _UnwrapExceptionDecorator (this._expression);
+  _UnwrapExceptionDecorator(this._expression);
 
   bool get isAssignable => _expression.isAssignable;
   bool get isChain => _expression.isChain;
@@ -131,7 +130,8 @@ class _UnwrapExceptionDecorator extends Expression {
 @Injectable()
 class RuntimeParserBackend extends ParserBackend {
   final ClosureMap _closures;
-  RuntimeParserBackend(ClosureMap _closures): _closures = new ClosureMapLocalsAware(_closures);
+  RuntimeParserBackend(ClosureMap _closures)
+      : _closures = new ClosureMapLocalsAware(_closures);
 
   bool isAssignable(Expression expression) => expression.isAssignable;
 
@@ -256,5 +256,3 @@ class ClosureMapLocalsAware implements ClosureMap {
 
   Symbol lookupSymbol(String name) => wrappedClsMap.lookupSymbol(name);
 }
-
-

@@ -7,7 +7,9 @@ export 'package:angular/utils.dart' show relaxFnApply, relaxFnArgs, toBool;
 
 /// Marker for an uninitialized value.
 const UNINITIALIZED = const _Uninitialized();
-class _Uninitialized { const _Uninitialized(); }
+class _Uninitialized {
+  const _Uninitialized();
+}
 
 class EvalError {
   final String message;
@@ -32,7 +34,14 @@ List evalList(scope, List<Expression> list, [FormatterMap formatters]) {
   }
   return result;
 }
-final List _evalListCache = [[],[0],[0,0],[0,0,0],[0,0,0,0],[0,0,0,0,0]];
+final List _evalListCache = [
+  [],
+  [0],
+  [0, 0],
+  [0, 0, 0],
+  [0, 0, 0, 0],
+  [0, 0, 0, 0, 0]
+];
 
 /// Add the two arguments with automatic type conversion.
 autoConvertAdd(a, b) {

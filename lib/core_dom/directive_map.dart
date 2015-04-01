@@ -9,31 +9,33 @@ class DirectiveTypeTuple {
 
 @Injectable()
 class DirectiveMap {
-  final Map<String, List<DirectiveTypeTuple>> map = new HashMap<String, List<DirectiveTypeTuple>>();
+  final Map<String, List<DirectiveTypeTuple>> map =
+      new HashMap<String, List<DirectiveTypeTuple>>();
   final DirectiveSelectorFactory _directiveSelectorFactory;
   FormatterMap _formatters;
   DirectiveSelector _selector;
   Injector _injector;
 
-  DirectiveMap(Injector this._injector,
-               this._formatters,
-               MetadataExtractor metadataExtractor,
-               this._directiveSelectorFactory) {
+  DirectiveMap(Injector this._injector, this._formatters,
+      MetadataExtractor metadataExtractor, this._directiveSelectorFactory) {
     (_injector as ModuleInjector).types.forEach((type) {
       metadataExtractor(type)
           .where((annotation) => annotation is Directive)
           .forEach((Directive dir) {
-            map.putIfAbsent(dir.selector, () => []).add(new DirectiveTypeTuple(dir, type));
-          });
+        map
+            .putIfAbsent(dir.selector, () => [])
+            .add(new DirectiveTypeTuple(dir, type));
+      });
     });
   }
 
   DirectiveSelector get selector {
     if (_selector != null) return _selector;
-    return _selector = _directiveSelectorFactory.selector(this, _injector, _formatters);
+    return _selector =
+        _directiveSelectorFactory.selector(this, _injector, _formatters);
   }
 
-  List<DirectiveTypeTuple> operator[](String key) {
+  List<DirectiveTypeTuple> operator [](String key) {
     var value = map[key];
     if (value == null) throw 'No Directive selector $key found!';
     return value;

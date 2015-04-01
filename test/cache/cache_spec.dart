@@ -4,7 +4,6 @@ import '../_specs.dart';
 
 void main() {
   describe('CacheFactory', () {
-
     describe('cache', () {
       Cache<String, Object> cache;
 
@@ -12,17 +11,15 @@ void main() {
         cache = new LruCache<String, Object>();
       });
 
-
       describe('put, get & remove', () {
         it('should add cache entries via add and retrieve them via get', () {
-          var obj = {'bar':'baz'};
+          var obj = {'bar': 'baz'};
           cache.put('key1', 'bar');
           cache.put('key2', obj);
 
           expect(cache.get('key2')).toBe(obj);
           expect(cache.get('key1')).toBe('bar');
         });
-
 
         it('should remove entries via remove', () {
           cache.put('k1', 'foo');
@@ -39,11 +36,9 @@ void main() {
           expect(cache.get('k2')).toBeNull();
         });
 
-
         it('should return null when entry does not exist', () {
           expect(cache.remove('non-existent')).toBeNull();
         });
-
 
         // TODO(chirayu): to implement
         // it('should stringify keys', () {
@@ -57,25 +52,21 @@ void main() {
         //   expect(cache.info().size).toBe(0);
         // });
 
-
         it("should return value from put", () {
           var obj = {};
           expect(cache.put('k1', obj)).toBe(obj);
         });
       });
 
-
       describe('put, get & remove', () {
-
         it('should add cache entries via add and retrieve them via get', () {
-          var obj = {'bar':'baz'};
+          var obj = {'bar': 'baz'};
           cache.put('key1', 'bar');
           cache.put('key2', obj);
 
           expect(cache.get('key2')).toBe(obj);
           expect(cache.get('key1')).toBe('bar');
         });
-
 
         it('should remove entries via remove', () {
           cache.put('k1', 'foo');
@@ -92,7 +83,6 @@ void main() {
           expect(cache.get('k2')).toBeNull();
         });
 
-
         it('should return null when entry does not exist', () {
           expect(cache.remove('non-existent')).toBeNull();
         });
@@ -102,7 +92,6 @@ void main() {
           expect(cache.put('k1', obj)).toBe(obj);
         });
       });
-
 
       describe('removeAll', () {
         it('should blow away all data', () {
@@ -139,7 +128,8 @@ void main() {
         expect("$cache").toEqual(
             r"[LruCache<int, int>: capacity=4, size=4, items={6: 60, 5: 50, 7: 70, 8: 80}]");
         cache.removeAll();
-        expect("$cache").toEqual(r"[LruCache<int, int>: capacity=4, size=0, items={}]");
+        expect("$cache")
+            .toEqual(r"[LruCache<int, int>: capacity=4, size=0, items={}]");
 
         var stats = cache.stats();
         expect(stats.capacity).toEqual(4);

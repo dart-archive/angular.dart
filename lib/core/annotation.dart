@@ -5,27 +5,24 @@ library angular.core.annotation;
 
 import "dart:html" show ShadowRoot;
 
-export "package:angular/core/annotation_src.dart" show
-    AttachAware,
-    DetachAware,
-    ShadowRootAware,
-
-    Formatter,
-    DirectiveBinder,
-    DirectiveBinderFn,
-
-    Directive,
-    Component,
-    Decorator,
-    Visibility,
-
-    DirectiveAnnotation,
-    NgAttr,
-    NgCallback,
-    NgOneWay,
-    NgOneWayOneTime,
-    NgTwoWay;
-
+export "package:angular/core/annotation_src.dart"
+    show
+        AttachAware,
+        DetachAware,
+        ShadowRootAware,
+        Formatter,
+        DirectiveBinder,
+        DirectiveBinderFn,
+        Directive,
+        Component,
+        Decorator,
+        Visibility,
+        DirectiveAnnotation,
+        NgAttr,
+        NgCallback,
+        NgOneWay,
+        NgOneWayOneTime,
+        NgTwoWay;
 
 /**
  * Implementing components' [onShadowRoot] method will be called when
@@ -36,4 +33,3 @@ export "package:angular/core/annotation_src.dart" show
 abstract class ShadowRootAware {
   void onShadowRoot(ShadowRoot shadowRoot);
 }
-

@@ -8,10 +8,10 @@ part of angular.animate;
  */
 @Injectable()
 class AnimationOptimizer {
-  final Map<dom.Element, Set<Animation>> _elements = new Map<dom.Element,
-      Set<Animation>>();
-  final Map<Animation, dom.Element> _animations = new Map<Animation,
-      dom.Element>();
+  final Map<dom.Element, Set<Animation>> _elements =
+      new Map<dom.Element, Set<Animation>>();
+  final Map<Animation, dom.Element> _animations =
+      new Map<Animation, dom.Element>();
 
   /**
    * Toggle to disable all animations through this optimizer.
@@ -30,8 +30,8 @@ class AnimationOptimizer {
    */
   void track(Animation animation, dom.Element forElement) {
     if (forElement != null) {
-      var animations = _elements.putIfAbsent(forElement, () =>
-          new Set<Animation>());
+      var animations =
+          _elements.putIfAbsent(forElement, () => new Set<Animation>());
       animations.add(animation);
       _animations[animation] = forElement;
     }
@@ -131,9 +131,9 @@ class AnimationOptimizer {
       // If we hit a running parent animation, we still need to continue up
       // the dom tree to see if there is or is not an 'alwaysAnimateChildren'
       // decision somewhere.
-      if (autoDecision
-          && node.nodeType == dom.Node.ELEMENT_NODE
-          && _isAnimating(node)) {
+      if (autoDecision &&
+          node.nodeType == dom.Node.ELEMENT_NODE &&
+          _isAnimating(node)) {
         // If there is an already running animation, don't animate.
         autoDecision = false;
       }

@@ -20,11 +20,9 @@ void main() {
     beforeEach((TestBed tb) => _ = tb);
 
     it("should redistribute nodes between two content tags", () {
-      var nodes = es(
-          '<div class="a">a1</div>'
+      var nodes = es('<div class="a">a1</div>'
           '<div class="b">b</div>'
-          '<div class="a">a2</div>'
-      );
+          '<div class="a">a2</div>');
       final contentClassA = new DummyContent('.a');
       final contentClassB = new DummyContent('.b');
 
@@ -44,12 +42,10 @@ void main() {
     });
 
     it("should support wildcards", () {
-      var nodes = es(
-          '<div class="a">a1</div>'
+      var nodes = es('<div class="a">a1</div>'
           '<div class="b">b</div>'
           'text'
-          '<div class="a">a2</div>'
-      );
+          '<div class="a">a2</div>');
       final contentClassA = new DummyContent('.a');
       final contentWildcard = new DummyContent(null);
 

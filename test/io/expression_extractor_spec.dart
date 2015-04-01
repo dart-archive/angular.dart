@@ -13,7 +13,6 @@ import 'package:guinness/guinness.dart';
 
 void main() {
   describe('expression_extractor', () {
-
     Iterable<String> _extractExpressions(file) {
       Module module = new Module();
       Injector injector = new ModuleInjector([module]);
@@ -33,15 +32,15 @@ void main() {
       var expressions = _extractExpressions('test/io/test_files/main.dart');
 
       expect(expressions, unorderedEquals([
-          'attr',
-          'expr',
-          'anotherExpression',
-          'callback',
-          'twoWayStuff',
-          'exported + expression',
-          'inline.template.expression',
-          'ngIfCondition',
-          'if'
+        'attr',
+        'expr',
+        'anotherExpression',
+        'callback',
+        'twoWayStuff',
+        'exported + expression',
+        'inline.template.expression',
+        'ngIfCondition',
+        'if'
       ]));
     });
 

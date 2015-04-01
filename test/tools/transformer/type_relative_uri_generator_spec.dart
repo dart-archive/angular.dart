@@ -15,14 +15,11 @@ main() {
     var options = new TransformOptions(sdkDirectory: dartSdkDirectory);
     var resolvers = new Resolvers(dartSdkDirectory);
 
-    var phases = [
-      [new TypeRelativeUriGenerator(options, resolvers)]
-    ];
+    var phases = [[new TypeRelativeUriGenerator(options, resolvers)]];
 
     it('should map types in web directory', () {
-      return generates(phases,
-          inputs: {
-            'a|web/main.dart': '''
+      return generates(phases, inputs: {
+        'a|web/main.dart': '''
                 import 'package:angular/angular.dart';
                 import 'dir/foo.dart';
 
@@ -31,82 +28,68 @@ main() {
 
                 main() {}
                 ''',
-            'a|web/dir/foo.dart': '''
+        'a|web/dir/foo.dart': '''
                 import 'package:angular/angular.dart';
 
                 @Component()
                 class B {}
             ''',
-            'angular|lib/angular.dart': libAngular,
-          },
+        'angular|lib/angular.dart': libAngular,
+      },
           imports: [
-            'import \'main.dart\' as import_0',
-            'import \'dir/foo.dart\' as import_1',
-          ],
-          types: {
-            'import_0.A': 'main.dart',
-            'import_1.B': 'dir/foo.dart',
-          });
+        'import \'main.dart\' as import_0',
+        'import \'dir/foo.dart\' as import_1',
+      ],
+          types: {'import_0.A': 'main.dart', 'import_1.B': 'dir/foo.dart',});
     });
 
     it('should map package imports', () {
-      return generates(phases,
-          inputs: {
-            'a|web/main.dart': '''
+      return generates(phases, inputs: {
+        'a|web/main.dart': '''
                 import 'package:b/foo.dart';
 
                 main() {}
                 ''',
-            'b|lib/foo.dart': '''
+        'b|lib/foo.dart': '''
                 import 'package:angular/angular.dart';
 
                 @Component()
                 class B {}
             ''',
-            'angular|lib/angular.dart': libAngular,
-          },
-          imports: [
-            'import \'package:b/foo.dart\' as import_0',
-          ],
-          types: {
-            'import_0.B': 'package:b/foo.dart',
-          });
+        'angular|lib/angular.dart': libAngular,
+      },
+          imports: ['import \'package:b/foo.dart\' as import_0',],
+          types: {'import_0.B': 'package:b/foo.dart',});
     });
 
     it('should handle no mapped types', () {
-      return generates(phases,
-          inputs: {
-            'a|web/main.dart': '''
+      return generates(phases, inputs: {
+        'a|web/main.dart': '''
                 import 'package:angular/angular.dart';
 
                 main() {}
                 ''',
-            'angular|lib/angular.dart': libAngular,
-          });
+        'angular|lib/angular.dart': libAngular,
+      });
     });
 
     it('should warn on no angular imports', () {
-      return generates(phases,
-          inputs: {
-            'a|web/main.dart': '''
+      return generates(phases, inputs: {
+        'a|web/main.dart': '''
                 main() {}
                 ''',
-            'angular|lib/angular.dart': libAngular,
-          },
-          messages: [
-            'warning: Unable to resolve '
-                'angular.core.annotation_src.Component.'
-          ]);
+        'angular|lib/angular.dart': libAngular,
+      }, messages: [
+        'warning: Unable to resolve '
+            'angular.core.annotation_src.Component.'
+      ]);
     });
   });
 }
 
-Future generates(List<List<Transformer>> phases,
-    { Map<String, String> inputs,
-      List<String> imports: const [],
-      Map<String, String> types: const {},
-      Iterable<String> messages: const []}) {
-
+Future generates(List<List<Transformer>> phases, {Map<String, String> inputs,
+    List<String> imports: const [], Map<String, String> types: const {},
+    Iterable<String> messages: const []}) {
   var buffer = new StringBuffer();
   buffer.write(header);
   for (var i in imports) {
@@ -120,9 +103,7 @@ Future generates(List<List<Transformer>> phases,
 
   return tests.applyTransformers(phases,
       inputs: inputs,
-      results: {
-        'a|web/main_static_type_to_uri_mapper.dart': buffer.toString()
-      },
+      results: {'a|web/main_static_type_to_uri_mapper.dart': buffer.toString()},
       messages: messages);
 }
 

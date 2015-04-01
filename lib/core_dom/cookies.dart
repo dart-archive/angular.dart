@@ -32,7 +32,8 @@ class BrowserCookies {
   // NOTE(deboer): This is sub-optimal, see dartbug.com/14281
   String _unescape(s) => Uri.decodeFull(s);
 
-  String _escape(s) => Uri.encodeFull(s).replaceAll('=', '%3D').replaceAll(';', '%3B');
+  String _escape(s) =>
+      Uri.encodeFull(s).replaceAll('=', '%3D').replaceAll(';', '%3B');
 
   Map<String, String> _updateLastCookies() {
     if (_document.cookie != _lastCookieString) {
@@ -45,7 +46,8 @@ class BrowserCookies {
       // Hence we reverse the array.
       cookieArray.reversed.forEach((cookie) {
         var index = cookie.indexOf('=');
-        if (index > 0) { //ignore nameless cookies
+        if (index > 0) {
+          //ignore nameless cookies
           var name = _unescape(cookie.substring(0, index));
           _lastCookies[name] = _unescape(cookie.substring(index + 1));
         }
@@ -55,12 +57,13 @@ class BrowserCookies {
   }
 
   /// Return a cookie by name
-  String operator[](key) => _updateLastCookies()[key];
+  String operator [](key) => _updateLastCookies()[key];
 
   /// Sets a cookie.  Setting a cookie to [null] deletes the cookie.
-  void operator[]=(name, value) {
+  void operator []=(name, value) {
     if (value == null) {
-      _document.cookie = "${_escape(name)}=;path=$cookiePath;expires=Thu, 01 Jan 1970 00:00:00 GMT";
+      _document.cookie =
+          "${_escape(name)}=;path=$cookiePath;expires=Thu, 01 Jan 1970 00:00:00 GMT";
     } else {
       if (value is String) {
         var cookie = "${_escape(name)}=${_escape(value)};path=$cookiePath";
@@ -72,8 +75,9 @@ class BrowserCookies {
         // - 20 cookies per unique domain
         // - 4096 bytes per cookie
         if (cookieLength > 4096) {
-          _exceptionHandler("Cookie '$name' possibly not set or overflowed because it was " +
-                            "too large ($cookieLength > 4096 bytes)!", null);
+          _exceptionHandler(
+              "Cookie '$name' possibly not set or overflowed because it was " +
+                  "too large ($cookieLength > 4096 bytes)!", null);
         }
       }
     }
@@ -90,10 +94,10 @@ class Cookies {
   Cookies(this._browserCookies);
 
   /// Returns the value of given cookie key
-  String operator[](name) => _browserCookies[name];
+  String operator [](name) => _browserCookies[name];
 
   /// Sets a value for given cookie key
-  void operator[]=(name, value) {
+  void operator []=(name, value) {
     _browserCookies[name] = value;
   }
 
@@ -102,4 +106,3 @@ class Cookies {
     _browserCookies[name] = null;
   }
 }
-

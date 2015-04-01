@@ -1,6 +1,5 @@
 part of angular.core.dom_internal;
 
-
 /**
  * BoundViewFactory is a [ViewFactory] which does not need Injector because
  * it is pre-bound to an injector from the parent. This means that this
@@ -26,10 +25,9 @@ class ViewFactory implements Function {
   final Profiler _perf;
   String _debugHtml;
 
-  ViewFactory(templateNodes, this.elementBinders, this._perf) :
-      nodeLinkingInfos = computeNodeLinkingInfos(templateNodes),
-      templateNodes = templateNodes
-  {
+  ViewFactory(templateNodes, this.elementBinders, this._perf)
+      : nodeLinkingInfos = computeNodeLinkingInfos(templateNodes),
+        templateNodes = templateNodes {
     if (traceEnabled) {
       _debugHtml = templateNodes.map((dom.Node e) {
         if (e is dom.Element) {
@@ -48,7 +46,7 @@ class ViewFactory implements Function {
       new BoundViewFactory(this, directiveInjector);
 
   View call(Scope scope, DirectiveInjector directiveInjector,
-            [List<dom.Node> nodes /* TODO: document fragment */]) {
+      [List<dom.Node> nodes /* TODO: document fragment */]) {
     var s = traceEnter1(View_create, _debugHtml);
     assert(scope != null);
     if (nodes == null) {
@@ -62,11 +60,12 @@ class ViewFactory implements Function {
   }
 
   void _bindTagged(TaggedElementBinder tagged, int elementBinderIndex,
-                   DirectiveInjector rootInjector,
-                   List<DirectiveInjector> elementInjectors, View view, boundNode, Scope scope) {
+      DirectiveInjector rootInjector, List<DirectiveInjector> elementInjectors,
+      View view, boundNode, Scope scope) {
     var binder = tagged.binder;
-    DirectiveInjector parentInjector =
-        tagged.parentBinderOffset == -1 ? rootInjector : elementInjectors[tagged.parentBinderOffset];
+    DirectiveInjector parentInjector = tagged.parentBinderOffset == -1
+        ? rootInjector
+        : elementInjectors[tagged.parentBinderOffset];
 
     var elementInjector;
     if (binder == null) {
@@ -95,7 +94,8 @@ class ViewFactory implements Function {
     }
   }
 
-  View _link(View view, Scope scope, List<dom.Node> nodeList, DirectiveInjector rootInjector) {
+  View _link(View view, Scope scope, List<dom.Node> nodeList,
+      DirectiveInjector rootInjector) {
     var elementInjectors = new List<DirectiveInjector>(elementBinders.length);
     var directiveDefsByName = {};
 
@@ -116,8 +116,8 @@ class ViewFactory implements Function {
           var elts = (node as dom.Element).querySelectorAll('.ng-binding');
           for (int j = 0; j < elts.length; j++, elementBinderIndex++) {
             TaggedElementBinder tagged = elementBinders[elementBinderIndex];
-            _bindTagged(tagged, elementBinderIndex, rootInjector, elementInjectors,
-                        view, elts[j], scope);
+            _bindTagged(tagged, elementBinderIndex, rootInjector,
+                elementInjectors, view, elts[j], scope);
           }
         }
       } else {
@@ -133,7 +133,6 @@ class ViewFactory implements Function {
     return view;
   }
 }
-
 
 class NodeLinkingInfo {
   /**
@@ -153,7 +152,8 @@ class NodeLinkingInfo {
    */
   final bool ngBindingChildren;
 
-  NodeLinkingInfo(this.containsNgBinding, this.isElement, this.ngBindingChildren);
+  NodeLinkingInfo(
+      this.containsNgBinding, this.isElement, this.ngBindingChildren);
 }
 
 computeNodeLinkingInfos(List<dom.Node> nodeList) {
@@ -163,19 +163,18 @@ computeNodeLinkingInfos(List<dom.Node> nodeList) {
     dom.Node node = nodeList[i];
 
     assert(node.nodeType == dom.Node.ELEMENT_NODE ||
-    node.nodeType == dom.Node.TEXT_NODE ||
-    node.nodeType == dom.Node.COMMENT_NODE);
+        node.nodeType == dom.Node.TEXT_NODE ||
+        node.nodeType == dom.Node.COMMENT_NODE);
 
     bool isElement = node.nodeType == dom.Node.ELEMENT_NODE;
 
     list[i] = new NodeLinkingInfo(
         isElement && (node as dom.Element).classes.contains('ng-binding'),
-        isElement,
-        isElement && (node as dom.Element).querySelectorAll('.ng-binding').length > 0);
+        isElement, isElement &&
+            (node as dom.Element).querySelectorAll('.ng-binding').length > 0);
   }
   return list;
 }
-
 
 /**
  * [ViewFactoryCache] is used to cache the compilation of templates into [ViewFactory]s.
@@ -196,8 +195,8 @@ class ViewFactoryCache {
       dom.document.implementation.createHtmlDocument('');
   final ResourceUrlResolver resourceResolver;
 
-  ViewFactoryCache(this.http, this.templateCache, this.compiler, this.treeSanitizer,
-                   this.resourceResolver, CacheRegister cacheRegister) {
+  ViewFactoryCache(this.http, this.templateCache, this.compiler,
+      this.treeSanitizer, this.resourceResolver, CacheRegister cacheRegister) {
     cacheRegister.registerCache('viewCache', viewFactoryCache);
   }
 
@@ -215,12 +214,14 @@ class ViewFactoryCache {
     return viewFactory;
   }
 
-  async.Future<ViewFactory> fromUrl(String url, DirectiveMap directives, [Uri baseUri]) {
+  async.Future<ViewFactory> fromUrl(String url, DirectiveMap directives,
+      [Uri baseUri]) {
     ViewFactory viewFactory = viewFactoryCache.get(url);
     if (viewFactory == null) {
       return http.get(url, cache: templateCache).then((resp) {
-        var viewFactoryFromHttp = fromHtml(resourceResolver.resolveHtml(
-                                           resp.responseText, baseUri), directives);
+        var viewFactoryFromHttp = fromHtml(
+            resourceResolver.resolveHtml(resp.responseText, baseUri),
+            directives);
         viewFactoryCache.put(url, viewFactoryFromHttp);
         return viewFactoryFromHttp;
       });
@@ -234,7 +235,7 @@ class _AnchorAttrs extends NodeAttrs {
 
   _AnchorAttrs(DirectiveRef directiveRef)
       : super(directiveRef.element),
-      _directiveRef = directiveRef;
+        _directiveRef = directiveRef;
 
   String operator [](name) => name == '.' ? _directiveRef.value : super[name];
 

@@ -11,11 +11,7 @@ part of angular.mock;
  *
  *     expect(logger).toEqual(['foo']);
  */
-@Decorator(
-    selector: '[log]',
-    map: const {
-        'log': '@logMessage'
-    })
+@Decorator(selector: '[log]', map: const {'log': '@logMessage'})
 class LogAttrDirective implements AttachAware {
   final Logger log;
   String logMessage;
@@ -50,7 +46,6 @@ class Logger extends ListBase {
    * Return a `;` separated list of recorded tokens.
    */
   String result() => tokens.join('; ');
-
 
   int get length => tokens.length;
 

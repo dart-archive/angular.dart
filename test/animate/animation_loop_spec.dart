@@ -13,14 +13,15 @@ main() {
       frame = new MockAnimationFrame();
       runner = new AnimationLoop(frame, new Profiler(), zone);
     }));
-    
+
     it('should play animations with window animation frames', async(() {
       var animation = new MockAnimation();
       animation.when(callsTo('read', anything)).alwaysReturn(null);
-      animation.when(callsTo('update', anything))
-        .thenReturn(true, 2)
-        .thenReturn(false);
-      
+      animation
+          .when(callsTo('update', anything))
+          .thenReturn(true, 2)
+          .thenReturn(false);
+
       runner.play(animation);
 
       animation.getLogs(callsTo('read', anything)).verify(happenedExactly(0));
@@ -43,31 +44,33 @@ main() {
 
       frame.frame(0.0);
       microLeap();
-      
+
       animation.getLogs(callsTo('read', anything)).verify(happenedExactly(1));
       animation.getLogs(callsTo('update', anything)).verify(happenedExactly(1));
       animation.clearLogs();
-      
+
       frame.frame(0.0);
       microLeap();
-      
+
       animation.getLogs(callsTo('read', anything)).verify(happenedExactly(0));
       animation.getLogs(callsTo('update', anything)).verify(happenedExactly(0));
     }));
-    
-    it('should forget about animations when forget(animation) is called', async(() {
+
+    it('should forget about animations when forget(animation) is called',
+        async(() {
       var animation = new MockAnimation();
       animation.when(callsTo('read', anything)).alwaysReturn(null);
-      animation.when(callsTo('update', anything))
-        .thenReturn(true, 2)
-         .thenReturn(false);
-            
+      animation
+          .when(callsTo('update', anything))
+          .thenReturn(true, 2)
+          .thenReturn(false);
+
       runner.play(animation);
       runner.forget(animation);
 
       frame.frame(0.0);
       microLeap();
-      
+
       animation.getLogs(callsTo('read', anything)).verify(happenedExactly(0));
       animation.getLogs(callsTo('update', anything)).verify(happenedExactly(0));
     }));
@@ -75,20 +78,20 @@ main() {
 }
 
 class MockAnimation extends Mock implements LoopedAnimation {
-  final Completer<AnimationResult> onCompletedCompleter = new Completer<AnimationResult>();
+  final Completer<AnimationResult> onCompletedCompleter =
+      new Completer<AnimationResult>();
   Future<AnimationResult> get onCompleted => onCompletedCompleter.future;
-  
+
   noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
 class MockAnimationFrame implements AnimationFrame {
   Completer<num> frameCompleter;
   Future<num> get animationFrame {
-    if (frameCompleter == null)
-      frameCompleter = new Completer<num>();
+    if (frameCompleter == null) frameCompleter = new Completer<num>();
     return frameCompleter.future;
   }
-  
+
   frame(num time) {
     var completer = frameCompleter;
     frameCompleter = null;

@@ -1,4 +1,5 @@
 part of angular.directive;
+
 /**
  * Specifies a base CSS to use for components defined under the directive. `Selector: [ng-base-css]`
  *
@@ -8,9 +9,7 @@ part of angular.directive;
  * # Example
  *     <div ng-base-css="my_application.css">
  */
-@Decorator(
-    selector: '[ng-base-css]',
-    visibility: Visibility.CHILDREN)
+@Decorator(selector: '[ng-base-css]', visibility: Visibility.CHILDREN)
 class NgBaseCss {
   List<dom.StyleElement> styles;
   List<String> _urls = const [];

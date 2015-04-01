@@ -5,7 +5,6 @@ import 'package:angular/core/parser/characters.dart';
 String shimCssText(String css, String tag) =>
     new _CssShim(tag).shimCssText(css);
 
-
 /**
  * This is a shim for ShadowDOM css styling. It adds an attribute selector suffix
  * to each simple selector.
@@ -52,20 +51,18 @@ String shimCssText(String css, String tag) =>
 class _CssShim {
   static final List SELECTOR_SPLITS = const [' ', '>', '+', '~'];
 
-  static final RegExp CONTENT = new RegExp(
-      r"[^}]*"
+  static final RegExp CONTENT = new RegExp(r"[^}]*"
       r"content:\s*"
       "('|\")([^\\1]*)\\1"
-      r"[^}]*}",
-      caseSensitive: false,
-      multiLine: true
-  );
+      r"[^}]*}", caseSensitive: false, multiLine: true);
 
   static final String HOST_TOKEN = '-host-element';
-  static final RegExp COLON_SELECTORS = new RegExp(r'(' + HOST_TOKEN + r')(\(.*\))?(.*)',
-      caseSensitive: false);
-  static final RegExp SIMPLE_SELECTORS = new RegExp(r'([^:]*)(:*)(.*)', caseSensitive: false);
-  static final RegExp IS_SELECTORS = new RegExp(r'\[is="([^\]]*)"\]', caseSensitive: false);
+  static final RegExp COLON_SELECTORS =
+      new RegExp(r'(' + HOST_TOKEN + r')(\(.*\))?(.*)', caseSensitive: false);
+  static final RegExp SIMPLE_SELECTORS =
+      new RegExp(r'([^:]*)(:*)(.*)', caseSensitive: false);
+  static final RegExp IS_SELECTORS =
+      new RegExp(r'\[is="([^\]]*)"\]', caseSensitive: false);
 
   // See https://github.com/Polymer/platform-dev/blob/master/src/ShadowCSS.js#L561
   static final String PAREN_SUFFIX = r')(?:\(('
@@ -75,7 +72,8 @@ class _CssShim {
       caseSensitive: false, multiLine: true);
 
   static final String POLYFILL_NON_STRICT = "polyfill-non-strict";
-  static final String POLYFILL_UNSCOPED_NEXT_SELECTOR = "polyfill-unscoped-next-selector";
+  static final String POLYFILL_UNSCOPED_NEXT_SELECTOR =
+      "polyfill-unscoped-next-selector";
   static final String POLYFILL_NEXT_SELECTOR = "polyfill-next-selector";
 
   static final List<RegExp> COMBINATORS = [
@@ -89,7 +87,8 @@ class _CssShim {
   final String attr;
 
   _CssShim(String tag)
-      : tag = tag, attr = "[$tag]";
+      : tag = tag,
+        attr = "[$tag]";
 
   String shimCssText(String css) {
     final preprocessed = convertColonHost(css);
@@ -109,7 +108,8 @@ class _CssShim {
       final rest = m.group(3);
 
       if (inParens != null && inParens.isNotEmpty) {
-        return inParens.split(',')
+        return inParens
+            .split(',')
             .map((p) => p.trim())
             .where((_) => _.isNotEmpty)
             .map((p) => partReplacer(base, p, rest))
@@ -120,8 +120,7 @@ class _CssShim {
     });
   }
 
-  List<_Rule> cssToRules(String css) =>
-      new _Parser(css).parse();
+  List<_Rule> cssToRules(String css) => new _Parser(css).parse();
 
   String scopeRules(List<_Rule> rules) {
     final scopedRules = [];
@@ -130,15 +129,14 @@ class _CssShim {
     rules.forEach((rule) {
       if (prevRule != null && prevRule.selectorText == POLYFILL_NON_STRICT) {
         scopedRules.add(scopeNonStrictMode(rule));
-
-      } else if (prevRule != null && prevRule.selectorText == POLYFILL_UNSCOPED_NEXT_SELECTOR) {
+      } else if (prevRule != null &&
+          prevRule.selectorText == POLYFILL_UNSCOPED_NEXT_SELECTOR) {
         final content = extractContent(prevRule);
         scopedRules.add(ruleToString(new _Rule(content, body: rule.body)));
-
-      } else if (prevRule != null && prevRule.selectorText == POLYFILL_NEXT_SELECTOR) {
+      } else if (prevRule != null &&
+          prevRule.selectorText == POLYFILL_NEXT_SELECTOR) {
         final content = extractContent(prevRule);
         scopedRules.add(scopeStrictMode(new _Rule(content, body: rule.body)));
-
       } else if (rule.selectorText != POLYFILL_NON_STRICT &&
           rule.selectorText != POLYFILL_UNSCOPED_NEXT_SELECTOR &&
           rule.selectorText != POLYFILL_NEXT_SELECTOR) {
@@ -206,7 +204,8 @@ class _CssShim {
 
   String replaceColonSelectors(String css) {
     return css.replaceAllMapped(COLON_SELECTORS, (m) {
-      final selectorInParens = m[2] == null ? "" : m[2].substring(1, m[2].length - 1);
+      final selectorInParens =
+          m[2] == null ? "" : m[2].substring(1, m[2].length - 1);
       final rest = m[3];
       return "$tag$selectorInParens$rest";
     });
@@ -224,7 +223,8 @@ class _CssShim {
   }
 
   String insertAttrSuffixIntoSelectorPart(String p) {
-    final shouldInsert = p.isNotEmpty && !SELECTOR_SPLITS.contains(p) && !p.contains(attr);
+    final shouldInsert =
+        p.isNotEmpty && !SELECTOR_SPLITS.contains(p) && !p.contains(attr);
     return shouldInsert ? insertAttr(p) : p;
   }
 
@@ -240,8 +240,6 @@ class _CssShim {
   String handleIsSelector(String selector) =>
       selector.replaceAllMapped(IS_SELECTORS, (m) => m[1]);
 }
-
-
 
 class _Token {
   static final _Token EOF = new _Token(null);
@@ -259,7 +257,8 @@ class _Lexer {
   final int length;
 
   _Lexer(String input)
-      : input = input, length = input.length {
+      : input = input,
+        length = input.length {
     advance();
   }
 

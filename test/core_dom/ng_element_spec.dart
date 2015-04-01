@@ -9,16 +9,16 @@ class _MockLightDom extends Mock implements DestinationLightDom {
 
 void main() {
   describe('ngElement', () {
-
     describe('classes', () {
       it('should add classes to the element on domWrite',
           (TestBed _, Animate animate) {
-
         var scope = _.rootScope;
         var element = e('<div></div>');
         var ngElement = new NgElement(element, scope, animate);
 
-        ngElement..addClass('one')..addClass('two three');
+        ngElement
+          ..addClass('one')
+          ..addClass('two three');
 
         ['one', 'two', 'three'].forEach((className) {
           expect(element).not.toHaveClass(className);
@@ -33,14 +33,14 @@ void main() {
 
       it('should remove classes from the element on domWrite',
           (TestBed _, Animate animate) {
-
         var scope = _.rootScope;
         var element = e('<div class="one two three four"></div>');
         var ngElement = new NgElement(element, scope, animate);
 
-        ngElement..removeClass('one')
-                 ..removeClass('two')
-                 ..removeClass('three');
+        ngElement
+          ..removeClass('one')
+          ..removeClass('two')
+          ..removeClass('three');
 
         ['one', 'two', 'three', 'four'].forEach((className) {
           expect(element).toHaveClass(className);
@@ -56,14 +56,14 @@ void main() {
 
       it('should always apply the last dom operation on the given className',
           (TestBed _, Animate animate) {
-
         var scope = _.rootScope;
         var element = e('<div></div>');
         var ngElement = new NgElement(element, scope, animate);
 
-        ngElement..addClass('one')
-                 ..addClass('one')
-                 ..removeClass('one');
+        ngElement
+          ..addClass('one')
+          ..addClass('one')
+          ..removeClass('one');
 
         expect(element).not.toHaveClass('one');
 
@@ -71,9 +71,10 @@ void main() {
 
         expect(element).not.toHaveClass('one');
 
-        ngElement..removeClass('one')
-                 ..removeClass('one')
-                 ..addClass('one');
+        ngElement
+          ..removeClass('one')
+          ..removeClass('one')
+          ..addClass('one');
 
         scope.apply();
 
@@ -85,7 +86,6 @@ void main() {
   describe('attributes', () {
     it('should set attributes on domWrite to the element',
         (TestBed _, Animate animate) {
-
       var scope = _.rootScope;
       var element = e('<div></div>');
       var ngElement = new NgElement(element, scope, animate);
@@ -105,13 +105,13 @@ void main() {
 
     it('should remove attributes from the element on domWrite ',
         (TestBed _, Animate animate) {
-
       var scope = _.rootScope;
       var element = e('<div id="foo" title="bar"></div>');
       var ngElement = new NgElement(element, scope, animate);
 
-      ngElement..removeAttribute('id')
-               ..removeAttribute('title');
+      ngElement
+        ..removeAttribute('id')
+        ..removeAttribute('title');
 
       expect(element).toHaveAttribute('id', 'foo');
       expect(element).toHaveAttribute('title', 'bar');
@@ -124,14 +124,14 @@ void main() {
 
     it('should always apply the last operation on the attribute',
         (TestBed _, Animate animate) {
-
       var scope = _.rootScope;
       var element = e('<div></div>');
       var ngElement = new NgElement(element, scope, animate);
 
-      ngElement..setAttribute('id', 'foo')
-               ..setAttribute('id', 'foo')
-               ..removeAttribute('id');
+      ngElement
+        ..setAttribute('id', 'foo')
+        ..setAttribute('id', 'foo')
+        ..removeAttribute('id');
 
       expect(element).not.toHaveAttribute('id');
 
@@ -139,21 +139,20 @@ void main() {
 
       expect(element).not.toHaveAttribute('id');
 
-      ngElement..removeAttribute('id')
-               ..setAttribute('id', 'foobar')
-               ..setAttribute('id', 'foo');
+      ngElement
+        ..removeAttribute('id')
+        ..setAttribute('id', 'foobar')
+        ..setAttribute('id', 'foo');
 
       scope.apply();
 
       expect(element).toHaveAttribute('id', 'foo');
-
     });
   });
 
   describe('light dom notification', () {
     it('should notify light dom on dom write',
         (RootScope scope, Animate animate) {
-
       var element = e('<div></div>');
       var lightDom = new _MockLightDom();
       var ngElement = new NgElement(element, scope, animate, lightDom);

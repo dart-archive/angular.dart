@@ -8,7 +8,5 @@ class HelloWorld {
 }
 
 main() {
-  applicationFactory()
-      .rootContextType(HelloWorld)
-      .run();
+  applicationFactory().rootContextType(HelloWorld).run();
 }

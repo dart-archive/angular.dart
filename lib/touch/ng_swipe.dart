@@ -10,7 +10,7 @@ abstract class _SwipeGesture {
   static const int UP = 1;
   static const int LEFT = 2;
   static const int RIGHT = 3;
-  
+
   // Less than 100 pixels of move in each direction does not count.
   static const int _POS_TOLERANCE = 100;
   // If swipe lasts more than 1s, it is not a swipe.
@@ -27,12 +27,12 @@ abstract class _SwipeGesture {
   int _startTime;
   int xDirection;
   int yDirection;
-  
+
   _SwipeGesture(dom.Element target) {
     target.onTouchStart.listen(_handleTouchStartEvent);
     target.onTouchEnd.listen(_handleTouchEndEvent);
   }
-  
+
   void handleTouchStart(int x, int y, int timestamp) {
     // Reset values every time swipe starts
     xDirection = NO_SWIPE;
@@ -61,13 +61,13 @@ abstract class _SwipeGesture {
       fn();
     }
   }
-  
+
   void _handleTouchStartEvent(dom.TouchEvent ev) {
     // Guaranteed to have at least one touch in changedTouches.
     dom.Touch t = ev.changedTouches.first;
     handleTouchStart(t.client.x, t.client.y, ev.timeStamp);
   }
-  
+
   void _handleTouchEndEvent(dom.TouchEvent ev) {
     // Guaranteed to have at least one touch in changedTouches.
     dom.Touch t = ev.changedTouches.first;
@@ -80,14 +80,12 @@ abstract class _SwipeGesture {
  * swipes her finger to the right.
  * Also see [NgSwipeLeft].
  */
-@Decorator(
-    selector: '[ng-swipe-right]',
-    map: const {'ng-swipe-right':'&fn'})
+@Decorator(selector: '[ng-swipe-right]', map: const {'ng-swipe-right': '&fn'})
 class NgSwipeRight extends _SwipeGesture {
-  NgSwipeRight(dom.Element target): super(target);
-  
-  bool get shouldFire => xDirection == _SwipeGesture.RIGHT &&
-                         yDirection == _SwipeGesture.NO_SWIPE;
+  NgSwipeRight(dom.Element target) : super(target);
+
+  bool get shouldFire =>
+      xDirection == _SwipeGesture.RIGHT && yDirection == _SwipeGesture.NO_SWIPE;
 }
 
 /**
@@ -95,12 +93,10 @@ class NgSwipeRight extends _SwipeGesture {
  * swipes his finger to the left.
  * Also see [NgSwipeRight].
  */
-@Decorator(
-    selector: '[ng-swipe-left]',
-    map: const {'ng-swipe-left':'&fn'})
+@Decorator(selector: '[ng-swipe-left]', map: const {'ng-swipe-left': '&fn'})
 class NgSwipeLeft extends _SwipeGesture {
-  NgSwipeLeft(dom.Element target): super(target);
-  
-  bool get shouldFire => xDirection == _SwipeGesture.LEFT &&
-                         yDirection == _SwipeGesture.NO_SWIPE;
+  NgSwipeLeft(dom.Element target) : super(target);
+
+  bool get shouldFire =>
+      xDirection == _SwipeGesture.LEFT && yDirection == _SwipeGesture.NO_SWIPE;
 }

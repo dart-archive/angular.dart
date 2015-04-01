@@ -23,9 +23,9 @@ class JsCacheRegister {
 
   JsCacheRegister(CacheRegister this._caches) {
     js.context['ngCaches'] = new js.JsObject.jsify({
-        "sizes": new js.JsFunction.withThis(sizesAsMap),
-        "clear": new js.JsFunction.withThis((_, [name]) => _caches.clear(name)),
-        "dump": new js.JsFunction.withThis(dump)
+      "sizes": new js.JsFunction.withThis(sizesAsMap),
+      "clear": new js.JsFunction.withThis((_, [name]) => _caches.clear(name)),
+      "dump": new js.JsFunction.withThis(dump)
     });
   }
 

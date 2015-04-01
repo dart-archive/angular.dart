@@ -12,7 +12,7 @@ class CacheModule extends Module {
   CacheModule() {
     bind(CacheRegister);
   }
-  CacheModule.withReflector(reflector): super.withReflector(reflector) {
+  CacheModule.withReflector(reflector) : super.withReflector(reflector) {
     bind(CacheRegister);
   }
 }

@@ -16,12 +16,12 @@ class _ParseExpression {
   int index = 0;
 
   _ParseExpression(Lexer lexer, this.backend, String input)
-      : this.input = input, tokens = lexer.call(input);
+      : this.input = input,
+        tokens = lexer.call(input);
 
   Token get next => peek(0);
-  Token peek(int offset) => (index + offset < tokens.length)
-      ? tokens[index + offset]
-      : Token.EOF;
+  Token peek(int offset) =>
+      (index + offset < tokens.length) ? tokens[index + offset] : Token.EOF;
 
   parseChain() {
     bool isChain = false;
@@ -284,7 +284,7 @@ class _ParseExpression {
     if (!next.isCharacter(terminator)) {
       do {
         result.add(parseExpression());
-       } while (optionalCharacter($COMMA));
+      } while (optionalCharacter($COMMA));
     }
     return result;
   }
@@ -308,7 +308,8 @@ class _ParseExpression {
       int marker = index;
       String name = expectIdentifierOrKeyword();
       if (isReservedWord(name)) {
-        error("Cannot use Dart reserved word '$name' as named argument", marker);
+        error(
+            "Cannot use Dart reserved word '$name' as named argument", marker);
       } else if (named.containsKey(name)) {
         error("Duplicate argument named '$name'", marker);
       }

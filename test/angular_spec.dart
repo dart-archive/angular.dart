@@ -25,21 +25,20 @@ main() {
       }
 
       var ALLOWED_NAMES = [
-          "angular.animate.AbstractNgAnimate",
-          "angular.animate.AnimationLoop",
-          "angular.animate.AnimationModule",
-          "angular.animate.AnimationOptimizer",
-          "angular.animate.CssAnimate",
-          "angular.animate.CssAnimationMap",
-          "angular.animate.NgAnimate",
-          "angular.animate.NgAnimateChildren",
-          "angular.animate.CssAnimation",
-          "angular.animate.AnimationFrame",
-          "angular.animate.AnimationList",
-          "angular.animate.LoopedAnimation"
+        "angular.animate.AbstractNgAnimate",
+        "angular.animate.AnimationLoop",
+        "angular.animate.AnimationModule",
+        "angular.animate.AnimationOptimizer",
+        "angular.animate.CssAnimate",
+        "angular.animate.CssAnimationMap",
+        "angular.animate.NgAnimate",
+        "angular.animate.NgAnimateChildren",
+        "angular.animate.CssAnimation",
+        "angular.animate.AnimationFrame",
+        "angular.animate.AnimationList",
+        "angular.animate.LoopedAnimation"
       ];
       assertSymbolNamesAreOk(ALLOWED_NAMES, libraryInfo);
-
     });
 
     it('should not export unknown symbols from touch', () {
@@ -51,12 +50,11 @@ main() {
       }
 
       var ALLOWED_NAMES = [
-          "angular.touch.NgSwipeLeft",
-          "angular.touch.NgSwipeRight",
-          "angular.touch.TouchModule"
+        "angular.touch.NgSwipeLeft",
+        "angular.touch.NgSwipeRight",
+        "angular.touch.TouchModule"
       ];
       assertSymbolNamesAreOk(ALLOWED_NAMES, libraryInfo);
-
     });
 
     it('should not export unknown symbols from angular', () {
@@ -291,4 +289,3 @@ main() {
     });
   });
 }
-

@@ -11,7 +11,8 @@ class DevToolsTimelineProfiler extends Profiler {
   }
 
   void stopTimer(dynamic name) {
-    prefix = prefix.length > 0 ? prefix.substring(0, prefix.length - 2) : prefix;
+    prefix =
+        prefix.length > 0 ? prefix.substring(0, prefix.length - 2) : prefix;
     console.timeEnd('$prefix$name');
   }
 

@@ -11,7 +11,7 @@ main() => describe('JsCacheRegister', () {
   s() => js.context['ngCaches']['sizes'].apply([]);
 
   // Create some caches in the system
-  beforeEach((JsCacheRegister js, Parser dp, ViewFactoryCache vc) { });
+  beforeEach((JsCacheRegister js, Parser dp, ViewFactoryCache vc) {});
 
   it('should publish a JS interface', () {
     expect(js.context['ngCaches']).toBeDefined();

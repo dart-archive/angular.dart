@@ -8,20 +8,22 @@ main() {
 
     beforeEach((TestBed tb) => _ = tb);
 
-    it('should fetch template from literal url', async((Scope scope, TemplateCache cache) {
+    it('should fetch template from literal url',
+        async((Scope scope, TemplateCache cache) {
       cache.put('tpl.html', new HttpResponse(200, 'my name is {{name}}'));
 
       var element = _.compile('<div ng-include="tpl.html"></div>');
 
       expect(element).toHaveText('');
 
-      microLeap();  // load the template from cache.
+      microLeap(); // load the template from cache.
       scope.context['name'] = 'Vojta';
       scope.apply();
       expect(element).toHaveText('my name is Vojta');
     }));
 
-    it('should fetch template from url using interpolation', async((Scope scope, TemplateCache cache) {
+    it('should fetch template from url using interpolation',
+        async((Scope scope, TemplateCache cache) {
       cache.put('tpl1.html', new HttpResponse(200, 'My name is {{name}}'));
       cache.put('tpl2.html', new HttpResponse(200, 'I am {{name}}'));
 
@@ -45,11 +47,13 @@ main() {
       expect(element).toHaveText('I am Vojta');
     }));
 
-    it('should create and destroy a child scope', async((Scope scope, TemplateCache cache) {
-      cache.put('tpl.html', new HttpResponse(200, '<p probe="probe">include</p>'));
+    it('should create and destroy a child scope',
+        async((Scope scope, TemplateCache cache) {
+      cache.put(
+          'tpl.html', new HttpResponse(200, '<p probe="probe">include</p>'));
 
-      var getChildScope = () => scope.context['probe'] == null ?
-          null : scope.context['probe'].scope;
+      var getChildScope = () =>
+          scope.context['probe'] == null ? null : scope.context['probe'].scope;
 
       var element = _.compile('<div ng-include="{{template}}"></div>');
 

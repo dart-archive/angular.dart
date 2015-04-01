@@ -28,17 +28,20 @@ part of angular.formatter_internal;
  *     '2014-05-22' | date:'fullDate'     // "Thursday, May 22, 2014" for the en_US locale
  *
  */
-@Formatter(name:'date')
+@Formatter(name: 'date')
 class Date implements Function {
-  static final _PATTERNS = const <String, dynamic> {
-    'medium':     const [DateFormat.YEAR_ABBR_MONTH_DAY, DateFormat.HOUR_MINUTE_SECOND],
-    'short':      const [DateFormat.YEAR_NUM_MONTH_DAY, DateFormat.HOUR_MINUTE],
-    'fullDate':   DateFormat.YEAR_MONTH_WEEKDAY_DAY,
-    'longDate':   DateFormat.YEAR_MONTH_DAY,
+  static final _PATTERNS = const <String, dynamic>{
+    'medium': const [
+      DateFormat.YEAR_ABBR_MONTH_DAY,
+      DateFormat.HOUR_MINUTE_SECOND
+    ],
+    'short': const [DateFormat.YEAR_NUM_MONTH_DAY, DateFormat.HOUR_MINUTE],
+    'fullDate': DateFormat.YEAR_MONTH_WEEKDAY_DAY,
+    'longDate': DateFormat.YEAR_MONTH_DAY,
     'mediumDate': DateFormat.YEAR_ABBR_MONTH_DAY,
-    'shortDate':  DateFormat.YEAR_NUM_MONTH_DAY,
+    'shortDate': DateFormat.YEAR_NUM_MONTH_DAY,
     'mediumTime': DateFormat.HOUR_MINUTE_SECOND,
-    'shortTime':  DateFormat.HOUR_MINUTE,
+    'shortTime': DateFormat.HOUR_MINUTE,
   };
 
   /// locale -> (format -> DateFormat)
@@ -58,7 +61,8 @@ class Date implements Function {
     if (date is String) date = DateTime.parse(date);
     if (date is num) date = new DateTime.fromMillisecondsSinceEpoch(date);
     if (date is! DateTime) return date;
-    var verifiedLocale = Intl.verifiedLocale(Intl.getCurrentLocale(), DateFormat.localeExists);
+    var verifiedLocale =
+        Intl.verifiedLocale(Intl.getCurrentLocale(), DateFormat.localeExists);
     return _getDateFormat(verifiedLocale, format).format(date);
   }
 
@@ -67,10 +71,10 @@ class Date implements Function {
 
     if (_dfs[locale][format] == null) {
       var pattern = _PATTERNS.containsKey(format) ? _PATTERNS[format] : format;
-      if (pattern is !Iterable) pattern = [pattern];
+      if (pattern is! Iterable) pattern = [pattern];
       var df = new DateFormat();
       pattern.forEach((p) {
-         df.addPattern(p);
+        df.addPattern(p);
       });
       if (format == "short" || format == "shortDate") {
         // "short" and "shortDate" formats use a 2-digit year

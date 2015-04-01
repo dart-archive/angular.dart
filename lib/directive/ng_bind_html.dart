@@ -10,9 +10,7 @@ part of angular.directive;
  *
  * The expression must evaluate to a string. Content is sanitized using a default [NodeValidator].
  */
-@Decorator(
-  selector: '[ng-bind-html]',
-  map: const {'ng-bind-html': '=>value'})
+@Decorator(selector: '[ng-bind-html]', map: const {'ng-bind-html': '=>value'})
 class NgBindHtml {
   final dom.Element element;
   final dom.NodeValidator validator;

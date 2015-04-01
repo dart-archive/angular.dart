@@ -12,17 +12,18 @@ class MockWindow extends Mock implements Window {
 
   var animationFrameCompleter = new dart_async.Completer<num>();
 
-  dart_async.Stream<PopStateEvent> get onPopState => onPopStateController.stream;
+  dart_async.Stream<PopStateEvent> get onPopState =>
+      onPopStateController.stream;
   dart_async.Stream<Event> get onHashChange => onHashChangeController.stream;
   dart_async.Stream<Event> get onClick => onClickController.stream;
   dart_async.Future<num> get animationFrame => animationFrameCompleter.future;
-  
-  executeAnimationFrame([num time=0.0]) {
+
+  executeAnimationFrame([num time = 0.0]) {
     var last = animationFrameCompleter;
     animationFrameCompleter = new dart_async.Completer<num>();
     last.complete(time);
   }
-      
+
   noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 

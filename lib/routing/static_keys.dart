@@ -3,7 +3,8 @@ library angular.routing.static_keys;
 import 'package:di/di.dart';
 import 'package:angular/routing/module.dart';
 
-export 'package:angular/core_dom/static_keys.dart' show WINDOW_KEY, DIRECTIVE_MAP_KEY;
+export 'package:angular/core_dom/static_keys.dart'
+    show WINDOW_KEY, DIRECTIVE_MAP_KEY;
 
 Key NG_BIND_ROUTE_KEY = new Key(NgBindRoute);
 Key NG_ROUTING_USE_PUSH_STATE_KEY = new Key(NgRoutingUsePushState);

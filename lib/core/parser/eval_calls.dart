@@ -5,16 +5,14 @@ import 'package:angular/core/parser/syntax.dart' as syntax;
 import 'package:angular/core/parser/utils.dart';
 import 'package:angular/core/formatter.dart' show FormatterMap;
 
-
 class CallScope extends syntax.CallScope {
   final MethodClosure methodClosure;
-  CallScope(name, this.methodClosure, arguments)
-      : super(name, arguments);
+  CallScope(name, this.methodClosure, arguments) : super(name, arguments);
 
   eval(scope, [FormatterMap formatters]) {
     var positionals = arguments.positionals;
     var posArgs = new List(positionals.length);
-    for(var i = 0; i < positionals.length; i++) {
+    for (var i = 0; i < positionals.length; i++) {
       posArgs[i] = positionals[i].eval(scope, formatters);
     }
     var namedArgs = {};
@@ -31,8 +29,7 @@ class CallScope extends syntax.CallScope {
 class CallMember extends syntax.CallMember {
   final MethodClosure methodClosure;
   CallMember(object, this.methodClosure, name, arguments)
-      : super(object, name, arguments)
-  {
+      : super(object, name, arguments) {
     if (methodClosure == null) {
       _throwUndefinedFunction(name);
     }
@@ -41,7 +38,7 @@ class CallMember extends syntax.CallMember {
   eval(scope, [FormatterMap formatters]) {
     var positionals = arguments.positionals;
     var posArgs = new List(positionals.length);
-    for(var i = 0; i < positionals.length; i++) {
+    for (var i = 0; i < positionals.length; i++) {
       posArgs[i] = positionals[i].eval(scope, formatters);
     }
     var namedArgs = {};
@@ -54,9 +51,10 @@ class CallMember extends syntax.CallMember {
 
 class CallFunction extends syntax.CallFunction {
   final ClosureMap closureMap;
-  CallFunction(function, this.closureMap, arguments) : super(function, arguments);
+  CallFunction(function, this.closureMap, arguments)
+      : super(function, arguments);
   eval(scope, [FormatterMap formatters]) {
-    var function  = this.function.eval(scope, formatters);
+    var function = this.function.eval(scope, formatters);
     if (function is! Function) {
       throw new EvalError('${this.function} is not a function');
     } else {
@@ -73,7 +71,6 @@ class CallFunction extends syntax.CallFunction {
     }
   }
 }
-
 
 _throwUndefinedFunction(name) {
   throw "Undefined function $name";

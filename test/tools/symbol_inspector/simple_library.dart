@@ -33,7 +33,7 @@ class ClosureParam {}
 class TypedefReturnType {}
 class TypedefParam {}
 
-
-class Generic<K> { // Generic should be exported, but not K.
+class Generic<K> {
+  // Generic should be exported, but not K.
   K get method => null;
 }

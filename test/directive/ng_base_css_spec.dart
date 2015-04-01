@@ -3,9 +3,7 @@ library ng_base_css_spec;
 import '../_specs.dart';
 
 @Component(
-    selector: 'html-and-css',
-    templateUrl: 'simple.html',
-    cssUrl: 'simple.css')
+    selector: 'html-and-css', templateUrl: 'simple.html', cssUrl: 'simple.css')
 class _HtmlAndCssComponent {}
 
 @Component(
@@ -15,7 +13,6 @@ class _HtmlAndCssComponent {}
     useNgBaseCss: false)
 class _NoBaseCssComponent {}
 
-
 main() => describe('NgBaseCss', () {
   beforeEachModule((Module module) {
     module
@@ -23,21 +20,24 @@ main() => describe('NgBaseCss', () {
       ..bind(_NoBaseCssComponent);
   });
 
-  it('should load css urls from ng-base-css', async((TestBed _, MockHttpBackend backend,
-      DirectiveMap directiveMap) {
+  it('should load css urls from ng-base-css',
+      async((TestBed _, MockHttpBackend backend, DirectiveMap directiveMap) {
     NgBaseCss ngBaseCss = new NgBaseCss();
     ngBaseCss.urls = 'base.css';
-    DirectiveInjector directiveInjector = new DirectiveInjector(
-        null, _.injector, null, null, null, null, null);
-    directiveInjector.bind(NgBaseCss, toValue: ngBaseCss, visibility: Visibility.CHILDREN);
+    DirectiveInjector directiveInjector =
+        new DirectiveInjector(null, _.injector, null, null, null, null, null);
+    directiveInjector.bind(NgBaseCss,
+        toValue: ngBaseCss, visibility: Visibility.CHILDREN);
     var elements = es('<div><html-and-css>ignore</html-and-css></div>');
     ViewFactory viewFactory = _.compiler(elements, directiveMap);
     View view = viewFactory.call(_.rootScope, directiveInjector);
 
     microLeap();
     backend
-      ..flushGET('${TEST_SERVER_BASE_PREFIX}test/directive/simple.css').respond(200, '.simple{}')
-      ..flushGET('${TEST_SERVER_BASE_PREFIX}test/directive/simple.html').respond(200, '<div>Simple!</div>')
+      ..flushGET('${TEST_SERVER_BASE_PREFIX}test/directive/simple.css').respond(
+          200, '.simple{}')
+      ..flushGET('${TEST_SERVER_BASE_PREFIX}test/directive/simple.html')
+          .respond(200, '<div>Simple!</div>')
       ..flushGET('base.css').respond(200, '.base{}');
     microLeap();
 
@@ -47,38 +47,42 @@ main() => describe('NgBaseCss', () {
 
     // Now styles are loaded sync
     view = viewFactory.call(_.rootScope, directiveInjector);
-    expect((view.nodes[0].firstChild as Element).shadowRoot).toHaveHtml(
-        '<style>.base{}</style><style>.simple{}</style>');
-
+    expect((view.nodes[0].firstChild as Element).shadowRoot)
+        .toHaveHtml('<style>.base{}</style><style>.simple{}</style>');
   }));
 
-  it('ng-base-css should overwrite parent ng-base-csses', async((TestBed _, MockHttpBackend backend) {
-    var element = e('<div ng-base-css="hidden.css"><div ng-base-css="base.css"><html-and-css>ignore</html-and-css></div></div>');
+  it('ng-base-css should overwrite parent ng-base-csses',
+      async((TestBed _, MockHttpBackend backend) {
+    var element = e(
+        '<div ng-base-css="hidden.css"><div ng-base-css="base.css"><html-and-css>ignore</html-and-css></div></div>');
     _.compile(element);
 
     backend
-      ..flushGET('${TEST_SERVER_BASE_PREFIX}test/directive/simple.css').respond(200, '.simple{}')
-      ..flushGET('${TEST_SERVER_BASE_PREFIX}test/directive/simple.html').respond(200, '<div>Simple!</div>')
+      ..flushGET('${TEST_SERVER_BASE_PREFIX}test/directive/simple.css').respond(
+          200, '.simple{}')
+      ..flushGET('${TEST_SERVER_BASE_PREFIX}test/directive/simple.html')
+          .respond(200, '<div>Simple!</div>')
       ..flushGET('base.css').respond(200, '.base{}');
     microLeap();
 
     expect(element.children[0].children[0].shadowRoot).toHaveHtml(
-        '<style>.base{}</style><style>.simple{}</style><div>Simple!</div>'
-    );
+        '<style>.base{}</style><style>.simple{}</style><div>Simple!</div>');
   }));
 
   it('should respect useNgBaseCss', async((TestBed _, MockHttpBackend backend) {
-    var element = e('<div ng-base-css="base.css"><no-base-css>ignore</no-base-css></div>');
+    var element = e(
+        '<div ng-base-css="base.css"><no-base-css>ignore</no-base-css></div>');
     _.compile(element);
 
     backend
-        ..flushGET('${TEST_SERVER_BASE_PREFIX}test/directive/simple.css').respond(200, '.simple{}')
-        ..flushGET('${TEST_SERVER_BASE_PREFIX}test/directive/simple.html').respond(200, '<div>Simple!</div>');
+      ..flushGET('${TEST_SERVER_BASE_PREFIX}test/directive/simple.css').respond(
+          200, '.simple{}')
+      ..flushGET('${TEST_SERVER_BASE_PREFIX}test/directive/simple.html')
+          .respond(200, '<div>Simple!</div>');
     microLeap();
 
-    expect(element.children[0].shadowRoot).toHaveHtml(
-        '<style>.simple{}</style><div>Simple!</div>'
-    );
+    expect(element.children[0].shadowRoot)
+        .toHaveHtml('<style>.simple{}</style><div>Simple!</div>');
   }));
 
   describe('from injector', () {
@@ -86,33 +90,37 @@ main() => describe('NgBaseCss', () {
       module.bind(NgBaseCss, toValue: new NgBaseCss()..urls = ['injected.css']);
     });
 
-    it('ng-base-css should be available from the injector', async((TestBed _, MockHttpBackend backend) {
+    it('ng-base-css should be available from the injector',
+        async((TestBed _, MockHttpBackend backend) {
       var element = e('<div><html-and-css>ignore</html-and-css></div></div>');
       _.compile(element);
 
       backend
-          ..flushGET('${TEST_SERVER_BASE_PREFIX}test/directive/simple.css').respond(200, '.simple{}')
-          ..flushGET('${TEST_SERVER_BASE_PREFIX}test/directive/simple.html').respond(200, '<div>Simple!</div>')
-          ..flushGET('injected.css').respond(200, '.injected{}');
+        ..flushGET('${TEST_SERVER_BASE_PREFIX}test/directive/simple.css')
+            .respond(200, '.simple{}')
+        ..flushGET('${TEST_SERVER_BASE_PREFIX}test/directive/simple.html')
+            .respond(200, '<div>Simple!</div>')
+        ..flushGET('injected.css').respond(200, '.injected{}');
       microLeap();
 
       expect(element.children[0].shadowRoot).toHaveHtml(
-          '<style>.injected{}</style><style>.simple{}</style><div>Simple!</div>'
-      );
+          '<style>.injected{}</style><style>.simple{}</style><div>Simple!</div>');
     }));
 
-    it('should respect useNgBaseCss', async((TestBed _, MockHttpBackend backend) {
+    it('should respect useNgBaseCss',
+        async((TestBed _, MockHttpBackend backend) {
       var element = e('<div><no-base-css>ignore</no-base-css></div>');
       _.compile(element);
 
       backend
-          ..flushGET('${TEST_SERVER_BASE_PREFIX}test/directive/simple.css').respond(200, '.simple{}')
-          ..flushGET('${TEST_SERVER_BASE_PREFIX}test/directive/simple.html').respond(200, '<div>Simple!</div>');
+        ..flushGET('${TEST_SERVER_BASE_PREFIX}test/directive/simple.css')
+            .respond(200, '.simple{}')
+        ..flushGET('${TEST_SERVER_BASE_PREFIX}test/directive/simple.html')
+            .respond(200, '<div>Simple!</div>');
       microLeap();
 
-      expect(element.children[0].shadowRoot).toHaveHtml(
-          '<style>.simple{}</style><div>Simple!</div>'
-      );
+      expect(element.children[0].shadowRoot)
+          .toHaveHtml('<style>.simple{}</style><div>Simple!</div>');
     }));
   });
 
@@ -125,13 +133,17 @@ main() => describe('NgBaseCss', () {
       document.head.querySelectorAll("style").forEach((t) => t.remove());
     });
 
-    it('should load css urls from ng-base-css', async((TestBed _, MockHttpBackend backend) {
-      var element = _.compile('<div ng-base-css="base.css"><html-and-css>ignore</html-and-css></div>');
+    it('should load css urls from ng-base-css',
+        async((TestBed _, MockHttpBackend backend) {
+      var element = _.compile(
+          '<div ng-base-css="base.css"><html-and-css>ignore</html-and-css></div>');
 
       microLeap();
       backend
-        ..flushGET('${TEST_SERVER_BASE_PREFIX}test/directive/simple.css').respond(200, '.simple{}')
-        ..flushGET('${TEST_SERVER_BASE_PREFIX}test/directive/simple.html').respond(200, '<div>Simple!</div>')
+        ..flushGET('${TEST_SERVER_BASE_PREFIX}test/directive/simple.css')
+            .respond(200, '.simple{}')
+        ..flushGET('${TEST_SERVER_BASE_PREFIX}test/directive/simple.html')
+            .respond(200, '<div>Simple!</div>')
         ..flushGET('base.css').respond(200, '.base{}');
       microLeap();
 
@@ -140,13 +152,16 @@ main() => describe('NgBaseCss', () {
       expect(styleTags[1]).toHaveText(".simple{}");
     }));
 
-    it('should respect useNgBaseCss', async((TestBed _, MockHttpBackend backend) {
+    it('should respect useNgBaseCss',
+        async((TestBed _, MockHttpBackend backend) {
       var element = _.compile('<div><no-base-css>ignore</no-base-css></div>');
 
       microLeap();
       backend
-        ..flushGET('${TEST_SERVER_BASE_PREFIX}test/directive/simple.css').respond(200, '.simple{}')
-        ..flushGET('${TEST_SERVER_BASE_PREFIX}test/directive/simple.html').respond(200, '<div>Simple!</div>');
+        ..flushGET('${TEST_SERVER_BASE_PREFIX}test/directive/simple.css')
+            .respond(200, '.simple{}')
+        ..flushGET('${TEST_SERVER_BASE_PREFIX}test/directive/simple.html')
+            .respond(200, '<div>Simple!</div>');
       microLeap();
 
       expect(document.head.text).not.toContain(".base{}");

@@ -3,7 +3,7 @@ library ng_model_validators;
 import '../_specs.dart';
 
 void main() {
-  they(should, tokens, callback, [exclusive=false]) {
+  they(should, tokens, callback, [exclusive = false]) {
     tokens.forEach((token) {
       describe(token, () {
         (exclusive ? iit : it)(should, () => callback(token));
@@ -11,8 +11,7 @@ void main() {
     });
   }
 
-  tthey(should, tokens, callback) =>
-    they(should, tokens, callback, true);
+  tthey(should, tokens, callback) => they(should, tokens, callback, true);
 
   describe('ngModel validators', () {
     TestBed _;
@@ -20,7 +19,8 @@ void main() {
     beforeEach((TestBed tb) => _ = tb);
 
     describe('required', () {
-      it('should validate the input field if the required attribute is set', (RootScope scope) {
+      it('should validate the input field if the required attribute is set',
+          (RootScope scope) {
         _.compile('<input type="text" ng-model="val" probe="i" required />');
         Probe probe = _.rootScope.context['i'];
         var model = probe.directive(NgModel);
@@ -37,9 +37,10 @@ void main() {
         expect(model.invalid).toEqual(false);
       });
 
-
-      it('should validate a number input field if the required attribute is set', (RootScope scope) {
-        _.compile('<input type="number" ng-model="val" probe="i" required="true" />');
+      it('should validate a number input field if the required attribute is set',
+          (RootScope scope) {
+        _.compile(
+            '<input type="number" ng-model="val" probe="i" required="true" />');
         Probe probe = _.rootScope.context['i'];
         var model = probe.directive(NgModel);
 
@@ -56,9 +57,10 @@ void main() {
         expect(model.invalid).toEqual(false);
       });
 
-
-      it('should validate the input field depending on if ng-required is true', (RootScope scope) {
-        _.compile('<input type="text" ng-model="val" probe="i" ng-required="requireMe" />');
+      it('should validate the input field depending on if ng-required is true',
+          (RootScope scope) {
+        _.compile(
+            '<input type="text" ng-model="val" probe="i" ng-required="requireMe" />');
         Probe probe = _.rootScope.context['i'];
         var model = probe.directive(NgModel);
 
@@ -87,7 +89,8 @@ void main() {
     });
 
     describe('[type="url"]', () {
-      it('should validate the input field given a valid or invalid URL', (RootScope scope) {
+      it('should validate the input field given a valid or invalid URL',
+          (RootScope scope) {
         _.compile('<input type="url" ng-model="val" probe="i" />');
         Probe probe = _.rootScope.context['i'];
         var model = probe.directive(NgModel);
@@ -112,7 +115,8 @@ void main() {
     });
 
     describe('[type="color"]', () {
-      it('should validate the input field given a valid or invalid color', (RootScope scope) {
+      it('should validate the input field given a valid or invalid color',
+          (RootScope scope) {
         _.compile('<input type="color" ng-model="val" probe="i" />');
         Probe probe = _.rootScope.context['i'];
         var model = probe.directive(NgModel);
@@ -137,7 +141,8 @@ void main() {
     });
 
     describe('[type="email"]', () {
-      it('should validate the input field given a valid or invalid email address', (RootScope scope) {
+      it('should validate the input field given a valid or invalid email address',
+          (RootScope scope) {
         _.compile('<input type="email" ng-model="val" probe="i" />');
         Probe probe = _.rootScope.context['i'];
         var model = probe.directive(NgModel);
@@ -165,10 +170,10 @@ void main() {
     });
 
     describe('[type="number|range"]', () {
-      they('should validate the input field given a valid or invalid number',
-        ['range', 'number'],
-        (type) {
-
+      they('should validate the input field given a valid or invalid number', [
+        'range',
+        'number'
+      ], (type) {
         _.compile('<input type="$type" ng-model="val" probe="i" />');
         Probe probe = _.rootScope.context['i'];
         var model = probe.directive(NgModel);
@@ -184,7 +189,6 @@ void main() {
         model.validate();
         expect(model.valid).toEqual(true);
         expect(model.invalid).toEqual(false);
-
 
         _.rootScope.apply(() {
           _.rootScope.context['val'] = 10;
@@ -203,10 +207,9 @@ void main() {
         expect(model.invalid).toEqual(true);
       });
 
-      they('should perform a max number validation if a max attribute value is present',
-        ['range', 'number'],
-        (type) {
-
+      they(
+          'should perform a max number validation if a max attribute value is present',
+          ['range', 'number'], (type) {
         _.compile('<input type="$type" ng-model="val" max="10" probe="i" />');
         Probe probe = _.rootScope.context['i'];
         var model = probe.directive(NgModel);
@@ -240,11 +243,11 @@ void main() {
         expect(model.hasErrorState('ng-number')).toBe(true);
       });
 
-      they('should perform a max number validation if a ng-max attribute value is present and/or changed',
-        ['range', 'number'],
-        (type) {
-
-        _.compile('<input type="$type" ng-model="val" ng-max="maxVal" probe="i" />');
+      they(
+          'should perform a max number validation if a ng-max attribute value is present and/or changed',
+          ['range', 'number'], (type) {
+        _.compile(
+            '<input type="$type" ng-model="val" ng-max="maxVal" probe="i" />');
         Probe probe = _.rootScope.context['i'];
         var model = probe.directive(NgModel);
 
@@ -282,10 +285,9 @@ void main() {
         expect(model.hasErrorState('ng-max')).toBe(false);
       });
 
-      they('should perform a min number validation if a min attribute value is present',
-        ['range', 'number'],
-        (type) {
-
+      they(
+          'should perform a min number validation if a min attribute value is present',
+          ['range', 'number'], (type) {
         _.compile('<input type="$type" ng-model="val" min="-10" probe="i" />');
         Probe probe = _.rootScope.context['i'];
         var model = probe.directive(NgModel);
@@ -319,11 +321,11 @@ void main() {
         expect(model.hasErrorState('ng-number')).toBe(true);
       });
 
-      they('should perform a min number validation if a ng-min attribute value is present and/or changed',
-        ['range', 'number'],
-        (type) {
-
-        _.compile('<input type="$type" ng-model="val" ng-min="minVal" probe="i" />');
+      they(
+          'should perform a min number validation if a ng-min attribute value is present and/or changed',
+          ['range', 'number'], (type) {
+        _.compile(
+            '<input type="$type" ng-model="val" ng-min="minVal" probe="i" />');
         Probe probe = _.rootScope.context['i'];
         var model = probe.directive(NgModel);
 
@@ -363,8 +365,10 @@ void main() {
     });
 
     describe('pattern', () {
-      it('should validate the input field if a ng-pattern attribute is provided', (RootScope scope) {
-        _.compile('<input type="text" ng-pattern="myPattern" ng-model="val" probe="i" />');
+      it('should validate the input field if a ng-pattern attribute is provided',
+          (RootScope scope) {
+        _.compile(
+            '<input type="text" ng-pattern="myPattern" ng-model="val" probe="i" />');
         Probe probe = _.rootScope.context['i'];
         var model = probe.directive(NgModel);
 
@@ -400,8 +404,10 @@ void main() {
         expect(model.invalid).toEqual(false);
       });
 
-      it('should validate the input field if a pattern attribute is provided', (RootScope scope) {
-        _.compile('<input type="text" pattern="[0-5]+" ng-model="val" probe="i" />');
+      it('should validate the input field if a pattern attribute is provided',
+          (RootScope scope) {
+        _.compile(
+            '<input type="text" pattern="[0-5]+" ng-model="val" probe="i" />');
         Probe probe = _.rootScope.context['i'];
         var model = probe.directive(NgModel);
 
@@ -436,8 +442,10 @@ void main() {
     });
 
     describe('minlength', () {
-      it('should validate the input field if a minlength attribute is provided', (RootScope scope) {
-        _.compile('<input type="text" minlength="5" ng-model="val" probe="i" />');
+      it('should validate the input field if a minlength attribute is provided',
+          (RootScope scope) {
+        _.compile(
+            '<input type="text" minlength="5" ng-model="val" probe="i" />');
         Probe probe = _.rootScope.context['i'];
         var model = probe.directive(NgModel);
 
@@ -462,8 +470,10 @@ void main() {
         expect(model.invalid).toEqual(false);
       });
 
-      it('should validate the input field if a ng-minlength attribute is provided', (RootScope scope) {
-        _.compile('<input type="text" ng-minlength="len" ng-model="val" probe="i" />');
+      it('should validate the input field if a ng-minlength attribute is provided',
+          (RootScope scope) {
+        _.compile(
+            '<input type="text" ng-minlength="len" ng-model="val" probe="i" />');
         Probe probe = _.rootScope.context['i'];
         var model = probe.directive(NgModel);
 
@@ -492,8 +502,10 @@ void main() {
     });
 
     describe('maxlength', () {
-      it('should validate the input field if a maxlength attribute is provided', (RootScope scope) {
-        _.compile('<input type="text" maxlength="5" ng-model="val" probe="i" />');
+      it('should validate the input field if a maxlength attribute is provided',
+          (RootScope scope) {
+        _.compile(
+            '<input type="text" maxlength="5" ng-model="val" probe="i" />');
         Probe probe = _.rootScope.context['i'];
         var model = probe.directive(NgModel);
 
@@ -518,8 +530,10 @@ void main() {
         expect(model.invalid).toEqual(false);
       });
 
-      it('should validate the input field if a ng-maxlength attribute is provided', (RootScope scope) {
-        _.compile('<input type="text" ng-maxlength="len" ng-model="val" probe="i" />');
+      it('should validate the input field if a ng-maxlength attribute is provided',
+          (RootScope scope) {
+        _.compile(
+            '<input type="text" ng-maxlength="len" ng-model="val" probe="i" />');
         Probe probe = _.rootScope.context['i'];
         var model = probe.directive(NgModel);
 
@@ -552,7 +566,8 @@ void main() {
       beforeEach(() {
         scope = _.rootScope;
         build = (attr, type) {
-          input = _.compile('<input type="$type" probe="p" ng-model="value" $attr="attr" />');
+          input = _.compile(
+              '<input type="$type" probe="p" ng-model="value" $attr="attr" />');
           model = scope.context['p'].directive(NgModel);
         };
       });

@@ -23,9 +23,9 @@ relaxFnApply(Function fn, List args) {
       return fn(args[0], args[1], args[2], args[3], args[4]);
     } else if (fn is FnWith4Args && argsLen > 3) {
       return fn(args[0], args[1], args[2], args[3]);
-    } else if (fn is FnWith3Args && argsLen > 2 ) {
+    } else if (fn is FnWith3Args && argsLen > 2) {
       return fn(args[0], args[1], args[2]);
-    } else if (fn is FnWith2Args && argsLen > 1 ) {
+    } else if (fn is FnWith2Args && argsLen > 1) {
       return fn(args[0], args[1]);
     } else if (fn is FnWith1Args && argsLen > 0) {
       return fn(args[0]);
@@ -136,6 +136,8 @@ bool eqOrNaN(Object o1, Object o2) => o1 == o2 || (isNaN(o1) && isNaN(o2));
 Future<Iterable> mergeFutures(Future<Iterable> f1, Future<Iterable> f2) {
   return Future.wait([f1, f2]).then((twoLists) {
     assert(twoLists.length == 2);
-    return []..addAll(twoLists[0])..addAll(twoLists[1]);
+    return []
+      ..addAll(twoLists[0])
+      ..addAll(twoLists[1]);
   });
 }

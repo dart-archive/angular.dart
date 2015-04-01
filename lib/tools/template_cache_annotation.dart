@@ -17,5 +17,5 @@ class NgTemplateCache {
   final bool cache;
 
   const NgTemplateCache(
-      {this.preCacheUrls : const <String> [], this.cache : true});
+      {this.preCacheUrls: const <String>[], this.cache: true});
 }

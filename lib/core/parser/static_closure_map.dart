@@ -46,7 +46,6 @@ class StaticClosureMap extends ClosureMap {
   }
 }
 
-
 /**
  * The [AccessFast] mixin is used to share code between access expressions
  * where we have a pair of pre-compiled getter and setter functions that we

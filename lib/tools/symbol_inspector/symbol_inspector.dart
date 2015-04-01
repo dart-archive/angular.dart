@@ -19,8 +19,8 @@ class LibraryInfo {
   LibraryInfo(this.names, this.symbolsUsedForName);
 }
 
-Iterable<Symbol> _getUsedSymbols(DeclarationMirror decl, seenDecls, path, onlyType) {
-
+Iterable<Symbol> _getUsedSymbols(
+    DeclarationMirror decl, seenDecls, path, onlyType) {
   if (seenDecls.containsKey(decl.qualifiedName)) return [];
   seenDecls[decl.qualifiedName] = true;
 
@@ -41,12 +41,10 @@ Iterable<Symbol> _getUsedSymbols(DeclarationMirror decl, seenDecls, path, onlyTy
       used.addAll(_getUsedSymbols(p.type, seenDecls, path, onlyType));
     });
     used.addAll(_getUsedSymbols(ftdecl.returnType, seenDecls, path, onlyType));
-  }
-  else if (decl is TypeMirror) {
+  } else if (decl is TypeMirror) {
     var tdecl = decl as TypeMirror;
     used.add(tdecl.qualifiedName);
   }
-
 
   if (!onlyType) {
     if (decl is ClassMirror) {
@@ -58,15 +56,13 @@ Iterable<Symbol> _getUsedSymbols(DeclarationMirror decl, seenDecls, path, onlyTy
           print("Got error [$e] when visiting $d\n$s");
         }
       });
-
     }
 
     if (decl is MethodMirror) {
       MethodMirror mdecl = decl;
-      if (mdecl.parameters != null)
-        mdecl.parameters.forEach((p) {
-          used.addAll(_getUsedSymbols(p.type, seenDecls, path, true));
-        });
+      if (mdecl.parameters != null) mdecl.parameters.forEach((p) {
+        used.addAll(_getUsedSymbols(p.type, seenDecls, path, true));
+      });
       used.addAll(_getUsedSymbols(mdecl.returnType, seenDecls, path, true));
     }
 
@@ -91,11 +87,13 @@ getSymbolsFromLibrary(String libraryName) {
   var SHOULD_PRINT_SYMBOL_TREE = false;
 
 // TODO(deboer): Add types once Dart VM 1.2 is deprecated.
-  LibraryInfo extractSymbols(/* LibraryMirror */ lib, [String printPrefix = ""]) {
+  LibraryInfo extractSymbols(/* LibraryMirror */ lib,
+      [String printPrefix = ""]) {
     List<QualifiedSymbol> names = [];
     Map<Symbol, List<Symbol>> used = {};
 
-    if (SHOULD_PRINT_SYMBOL_TREE) print(printPrefix + unwrapSymbol(lib.qualifiedName));
+    if (SHOULD_PRINT_SYMBOL_TREE) print(
+        printPrefix + unwrapSymbol(lib.qualifiedName));
     printPrefix += "  ";
     lib.declarations.forEach((symbol, decl) {
       if (decl.isPrivate) return;
@@ -104,7 +102,8 @@ getSymbolsFromLibrary(String libraryName) {
       if (decl is TypedefMirror && unwrapSymbol(symbol).startsWith('_')) return;
 
       if (SHOULD_PRINT_SYMBOL_TREE) print(printPrefix + unwrapSymbol(symbol));
-      names.add(new QualifiedSymbol(symbol, decl.qualifiedName, lib.qualifiedName));
+      names.add(
+          new QualifiedSymbol(symbol, decl.qualifiedName, lib.qualifiedName));
       used[decl.qualifiedName] = _getUsedSymbols(decl, {}, "", false);
     });
 
@@ -117,7 +116,8 @@ getSymbolsFromLibrary(String libraryName) {
 
       // If there was a "show" or "hide" on the exported library, filter the results.
       // This API needs love :-(
-      var showSymbols = [], hideSymbols = [];
+      var showSymbols = [],
+          hideSymbols = [];
       libDep.combinators.forEach((/* CombinatorMirror */ c) {
         if (c.isShow) {
           showSymbols.addAll(c.identifiers);
@@ -144,7 +144,8 @@ getSymbolsFromLibrary(String libraryName) {
       used.addAll(childInfo.symbolsUsedForName);
     });
     return new LibraryInfo(names, used);
-  };
+  }
+  ;
 
   var lib = currentMirrorSystem().findLibrary(new Symbol(libraryName));
   return extractSymbols(lib);
@@ -163,7 +164,6 @@ assertSymbolNamesAreOk(List<String> allowedNames, LibraryInfo libraryInfo) {
 
   var usedButNotExported = {};
   var exported = [];
-
 
   libraryInfo.names.forEach((nameInfo) {
     String name = unwrapSymbol(nameInfo.qualified);
@@ -192,7 +192,7 @@ assertSymbolNamesAreOk(List<String> allowedNames, LibraryInfo libraryInfo) {
   });
   if (exported.isNotEmpty) {
     throw "These symbols are exported thru the angular library, but it shouldn't be:\n"
-          "${exported.join('\n')}";
+        "${exported.join('\n')}";
   }
 
   bool needHeader = true;
@@ -206,7 +206,7 @@ assertSymbolNamesAreOk(List<String> allowedNames, LibraryInfo libraryInfo) {
 
   // If there are keys that no longer need to be in the ALLOWED_NAMES list, complain.
   var keys = [];
-  _nameMap.forEach((k,v) {
+  _nameMap.forEach((k, v) {
     if (v) keys.add(k);
   });
   if (keys.isNotEmpty) {

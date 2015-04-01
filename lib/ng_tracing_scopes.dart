@@ -15,9 +15,6 @@ import 'package:angular/tracing.dart';
  */
 final Application_bootstrap = traceCreateScope('Application#bootstrap()');
 
-
-
-
 /**
  * Name: `ChangeDetector#check()`
  *
@@ -56,10 +53,8 @@ final ChangeDetector_reaction = traceCreateScope('ChangeDetector#reaction()');
  *
  * Designates time spent processing the individual expressions in `ChangeDetector#reaction()`.
  */
-final ChangeDetector_invoke = traceCreateScope('ChangeDetector#invoke(ascii expression)');
-
-
-
+final ChangeDetector_invoke =
+    traceCreateScope('ChangeDetector#invoke(ascii expression)');
 
 /**
  * Name: `Scope#apply()`
@@ -111,7 +106,6 @@ final Scope_domRead = traceCreateScope('Scope#domRead()');
  */
 final Scope_assert = traceCreateScope('Scope#assert()');
 
-
 /**
  * Name: `Scope#execAsync()`
  *
@@ -138,8 +132,8 @@ final VmTurnZone_run = traceCreateScope('VmTurnZone#run()');
  *
  * Designates where new microtasks are scheduled. This is usually in response to creating [Future]s.
  */
-final VmTurnZone_scheduleMicrotask = traceCreateScope('VmTurnZone#scheduleMicrotask()');
-
+final VmTurnZone_scheduleMicrotask =
+    traceCreateScope('VmTurnZone#scheduleMicrotask()');
 
 /**
  * Name: `VmTurnZone#createTimer()`
@@ -147,7 +141,6 @@ final VmTurnZone_scheduleMicrotask = traceCreateScope('VmTurnZone#scheduleMicrot
  * Designates where new timers are scheduled.
  */
 final VmTurnZone_createTimer = traceCreateScope('VmTurnZone#createTimer()');
-
 
 /**
  * Name: `Compiler#compile()`

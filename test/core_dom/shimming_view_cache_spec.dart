@@ -10,7 +10,8 @@ main() {
     Injector inj;
     TestBed _;
 
-    beforeEach((Injector _inj, TestBed tb, MockHttpBackend _backend, MockWebPlatformShim _platformShim) {
+    beforeEach((Injector _inj, TestBed tb, MockHttpBackend _backend,
+        MockWebPlatformShim _platformShim) {
       _ = tb;
       inj = _inj;
       backend = _backend;
@@ -20,7 +21,8 @@ main() {
         root.innerHtml = "SHIMMED";
       };
 
-      cache = new ShimmingViewFactoryCache(inj.get(ViewFactoryCache), "selector", platformShim);
+      cache = new ShimmingViewFactoryCache(
+          inj.get(ViewFactoryCache), "selector", platformShim);
     });
 
     describe("fromHtml", () {
@@ -46,8 +48,8 @@ main() {
         });
 
         it("uses uniq cache key per selector", () {
-          final cache2 = new ShimmingViewFactoryCache(inj.get(ViewFactoryCache), "selector2",
-                                                      platformShim);
+          final cache2 = new ShimmingViewFactoryCache(
+              inj.get(ViewFactoryCache), "selector2", platformShim);
 
           fromHtml(cache, "HTML");
           fromHtml(cache2, "HTML");
@@ -93,8 +95,8 @@ main() {
         }));
 
         it("uses uniq cache key per selector", async(() {
-          final cache2 = new ShimmingViewFactoryCache(inj.get(ViewFactoryCache), "selector2",
-                                                      platformShim);
+          final cache2 = new ShimmingViewFactoryCache(
+              inj.get(ViewFactoryCache), "selector2", platformShim);
 
           fromUrl(cache, "URL");
           fromUrl(cache2, "URL");

@@ -37,15 +37,14 @@ main() {
       expect(optimizer.shouldAnimate(_.rootElement)).toBeFalsy();
       expect(optimizer.shouldAnimate(_.rootElement.children[0])).toBeTruthy();
 
-      _.compile('<div ng-animate="always">'
-        + '<div ng-animate="never"></div></div>');
+      _.compile(
+          '<div ng-animate="always">' + '<div ng-animate="never"></div></div>');
       _.rootScope.apply();
       expect(optimizer.shouldAnimate(_.rootElement)).toBeTruthy();
       expect(optimizer.shouldAnimate(_.rootElement.children[0])).toBeFalsy();
 
-
-      _.compile('<div ng-animate="never">'
-      + '<div ng-animate="always"></div></div>');
+      _.compile(
+          '<div ng-animate="never">' + '<div ng-animate="always"></div></div>');
       _.rootScope.apply();
       expect(optimizer.shouldAnimate(_.rootElement)).toBeFalsy();
       expect(optimizer.shouldAnimate(_.rootElement.children[0])).toBeTruthy();

@@ -4,7 +4,6 @@ import 'dart:io';
 import 'package:angular/tools/io.dart';
 
 class IoServiceImpl implements IoService {
-
   String readAsStringSync(String filePath) =>
       new File(filePath).readAsStringSync();
 

@@ -37,7 +37,8 @@ export 'package:angular/mock/module.dart';
 export 'package:perf_api/perf_api.dart';
 
 es(String html) {
-  var div = new DivElement()..setInnerHtml(html, treeSanitizer: new NullTreeSanitizer());
+  var div = new DivElement()
+    ..setInnerHtml(html, treeSanitizer: new NullTreeSanitizer());
   return new List.from(div.nodes);
 }
 
@@ -60,9 +61,11 @@ class Expect extends gns.Expect {
 
   NotExpect get not => new NotExpect(actual);
 
-  void toBeValid() => _expect(actual.valid && !actual.invalid, true, reason: 'Form is not valid');
+  void toBeValid() => _expect(actual.valid && !actual.invalid, true,
+      reason: 'Form is not valid');
 
-  void toBePristine() => _expect(actual.pristine && !actual.dirty, true, reason: 'Form is dirty');
+  void toBePristine() =>
+      _expect(actual.pristine && !actual.dirty, true, reason: 'Form is dirty');
 
   void toHaveText(String text) => _expect(actual, new _TextMatcher(text));
 
@@ -72,13 +75,14 @@ class Expect extends gns.Expect {
 class NotExpect extends gns.NotExpect {
   NotExpect(actual) : super(actual);
 
-  void toBeValid() => _expect(actual.valid && !actual.invalid, false, reason: 'Form is valid');
+  void toBeValid() =>
+      _expect(actual.valid && !actual.invalid, false, reason: 'Form is valid');
 
-  void toBePristine() => _expect(actual.pristine && !actual.dirty, false, reason: 'Form is pristine');
+  void toBePristine() => _expect(actual.pristine && !actual.dirty, false,
+      reason: 'Form is pristine');
 
   Function get _expect => gns.guinness.matchers.expect;
 }
-
 
 class _TextMatcher extends unit.Matcher {
   final String expected;
@@ -88,12 +92,11 @@ class _TextMatcher extends unit.Matcher {
   unit.Description describe(unit.Description description) =>
       description..replace("element matching: ${expected}");
 
-  unit.Description describeMismatch(actual, unit.Description mismatchDescription,
-      Map matchState, bool verbose) =>
+  unit.Description describeMismatch(actual,
+          unit.Description mismatchDescription, Map matchState, bool verbose) =>
       mismatchDescription..add(_elementText(actual));
 
-  bool matches(actual, Map matchState) =>
-      _elementText(actual) == expected;
+  bool matches(actual, Map matchState) => _elementText(actual) == expected;
 }
 
 String _elementText(n) {
@@ -105,7 +108,6 @@ String _elementText(n) {
   if (n.nodes == null || n.nodes.isEmpty) return n.text;
   return _elementText(n.nodes);
 }
-
 
 Function _injectify(Function fn) {
   // The function does two things:
@@ -121,7 +123,7 @@ Function _injectify(Function fn) {
 
 // Replace guinness syntax elements to inject dependencies.
 void beforeEachModule(Function fn) {
-  gns.beforeEach(module(fn), priority:1);
+  gns.beforeEach(module(fn), priority: 1);
 }
 
 void beforeEach(Function fn) {
@@ -129,7 +131,7 @@ void beforeEach(Function fn) {
 }
 
 void afterEach(Function fn) {
-   gns.afterEach(_injectify(fn));
+  gns.afterEach(_injectify(fn));
 }
 
 // For sharding across multiple instances of karma.
@@ -152,8 +154,8 @@ int _shardId = 0;
 int _itCount = 0;
 bool _failOnIit = false;
 
-_safeJsGet(dottedName) => dottedName.split(".").fold(
-    js.context, (a, b) => (a == null ? a : a[b]));
+_safeJsGet(dottedName) =>
+    dottedName.split(".").fold(js.context, (a, b) => (a == null ? a : a[b]));
 
 _initSharding() {
   _failOnIit = (_safeJsGet("__karma__.config.clientArgs.travis") != null);
@@ -214,7 +216,7 @@ _removeNgBinding(node) {
 }
 
 main() {
-  gns.beforeEach(setUpInjector, priority:3);
+  gns.beforeEach(setUpInjector, priority: 3);
   gns.afterEach(tearDownInjector);
 
   gns.guinnessEnableHtmlMatchers();

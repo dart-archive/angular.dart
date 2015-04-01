@@ -15,9 +15,10 @@ void main() {
         var parts = path.split('/');
         while (parts.isNotEmpty) {
           var joinedParts = parts.join('/');
-          document.cookie = name + "=;path=" +
-                                   (joinedParts.isEmpty ? '/': joinedParts) +
-                                   ";expires=Thu, 01 Jan 1970 00:00:00 GMT";
+          document.cookie = name +
+              "=;path=" +
+              (joinedParts.isEmpty ? '/' : joinedParts) +
+              ";expires=Thu, 01 Jan 1970 00:00:00 GMT";
           parts.removeLast();
         }
       }
@@ -32,7 +33,8 @@ void main() {
       var cookies;
 
       beforeEachModule((Module module) {
-        module.bind(ExceptionHandler, toImplementation: LoggingExceptionHandler);
+        module.bind(ExceptionHandler,
+            toImplementation: LoggingExceptionHandler);
       });
 
       beforeEach((BrowserCookies iCookies) {
@@ -45,7 +47,6 @@ void main() {
       });
 
       describe('remove via cookies(cookieName, null)', () {
-
         it('should remove a cookie when it is present', () {
           document.cookie = 'foo=bar;path=/';
 
@@ -55,7 +56,6 @@ void main() {
           expect(cookies.all).toEqual({});
         });
 
-
         it('should do nothing when an nonexisting cookie is being removed', () {
           cookies['doesntexist'] = null;
           expect(document.cookie).toEqual('');
@@ -63,15 +63,12 @@ void main() {
         });
       });
 
-
       describe('put via cookies(cookieName, string)', () {
-
         it('should create and store a cookie', () {
           cookies['cookieName'] = 'cookie=Value';
           expect(document.cookie).toEqual('cookieName=cookie%3DValue');
-          expect(cookies.all).toEqual({'cookieName':'cookie=Value'});
+          expect(cookies.all).toEqual({'cookieName': 'cookie=Value'});
         });
-
 
         it('should overwrite an existing unsynced cookie', () {
           document.cookie = "cookie=new;path=/";
@@ -79,7 +76,7 @@ void main() {
           var oldVal = cookies['cookie'] = 'newer';
 
           expect(document.cookie).toEqual('cookie=newer');
-          expect(cookies.all).toEqual({'cookie':'newer'});
+          expect(cookies.all).toEqual({'cookie': 'newer'});
           expect(oldVal).not.toBe(null);
         });
 
@@ -87,7 +84,8 @@ void main() {
           cookies['cookie1='] = 'val;ue';
           cookies['cookie2=bar;baz'] = 'val=ue';
 
-          var rawCookies = document.cookie.split("; "); //order is not guaranteed, so we need to parse
+          var rawCookies = document.cookie
+              .split("; "); //order is not guaranteed, so we need to parse
           expect(rawCookies.length).toEqual(2);
           expect(rawCookies).toContain('cookie1%3D=val%3Bue');
           expect(rawCookies).toContain('cookie2%3Dbar%3Bbaz=val%3Due');
@@ -115,16 +113,18 @@ void main() {
 
           if (document.cookie != cookieStr) {
             throw "browser didn't drop long cookie when it was expected. make the " +
-                  "cookie in this test longer";
+                "cookie in this test longer";
           }
 
           expect(cookies['x']).toEqual('shortVal');
           var errors = (exceptionHandler as LoggingExceptionHandler).errors;
           expect(errors.length).toEqual(2);
-          expect(errors[0].error).toEqual("Cookie 'x' possibly not set or overflowed because it was"
-                                          " too large (4113 > 4096 bytes)!");
-          expect(errors[1].error).toEqual("Cookie 'x' possibly not set or overflowed because it was"
-                                          " too large (12259 > 4096 bytes)!");
+          expect(errors[0].error).toEqual(
+              "Cookie 'x' possibly not set or overflowed because it was"
+              " too large (4113 > 4096 bytes)!");
+          expect(errors[1].error).toEqual(
+              "Cookie 'x' possibly not set or overflowed because it was"
+              " too large (12259 > 4096 bytes)!");
           errors.clear();
         });
       });
@@ -147,7 +147,7 @@ void main() {
           expect(cookies['nonexistent']).toBe(null);
         });
 
-        it ('should return a value for an existing cookie', () {
+        it('should return a value for an existing cookie', () {
           document.cookie = "foo=bar=baz;path=/";
           expect(cookies['foo']).toEqual('bar=baz');
         });
@@ -160,7 +160,7 @@ void main() {
           expect(cookies['foo']).toEqual('"first"');
         });
 
-        it ('should unescape cookie values that were escaped by puts', () {
+        it('should unescape cookie values that were escaped by puts', () {
           document.cookie = "cookie2%3Dbar%3Bbaz=val%3Due;path=/";
           expect(cookies['cookie2=bar;baz']).toEqual('val=ue');
         });
@@ -176,7 +176,7 @@ void main() {
         it('should return cookies as hash', () {
           document.cookie = "foo1=bar1;path=/";
           document.cookie = "foo2=bar2;path=/";
-          expect(cookies.all).toEqual({'foo1':'bar1', 'foo2':'bar2'});
+          expect(cookies.all).toEqual({'foo1': 'bar1', 'foo2': 'bar2'});
         });
 
         it('should return empty hash if no cookies exist', () {
@@ -186,7 +186,7 @@ void main() {
 
       it('should pick up external changes made to browser cookies', () {
         cookies['oatmealCookie'] = 'drool';
-        expect(cookies.all).toEqual({'oatmealCookie':'drool'});
+        expect(cookies.all).toEqual({'oatmealCookie': 'drool'});
 
         document.cookie = 'oatmealCookie=changed;path=/';
         expect(cookies['oatmealCookie']).toEqual('changed');
@@ -194,7 +194,7 @@ void main() {
 
       it('should initialize cookie cache with existing cookies', () {
         document.cookie = "existingCookie=existingValue;path=/";
-        expect(cookies.all).toEqual({'existingCookie':'existingValue'});
+        expect(cookies.all).toEqual({'existingCookie': 'existingValue'});
       });
     });
 
@@ -228,4 +228,3 @@ void main() {
     });
   });
 }
-

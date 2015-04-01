@@ -12,8 +12,7 @@ main() {
     beforeEach((TestBed tb) => _ = tb);
 
     it('should replace {{}} in text', (Compiler compile, Scope rootScope,
-        Injector injector, DirectiveMap directives)
-    {
+        Injector injector, DirectiveMap directives) {
       var element = es('<div>{{name}}<span>!</span></div>');
       var template = compile(element, directives);
 
@@ -61,7 +60,6 @@ main() {
       expect(element.attributes['other-attr']).toEqual('23');
     });
 
-
     it('should allow newlines in attribute', (Compiler compile,
         RootScope rootScope, Injector injector, DirectiveMap directives) {
       Element element =
@@ -78,7 +76,6 @@ main() {
       expect(element.attributes['multiline-attr'])
           .toEqual('line1: L1\nline2: L2');
     });
-
 
     it('should handle formatters', (Compiler compile, RootScope rootScope,
         Injector injector, DirectiveMap directives) {
@@ -134,7 +131,6 @@ main() {
       expect(element).not.toHaveClass('ng-hide');
     });
   });
-
 }
 
 @Formatter(name: 'hello')

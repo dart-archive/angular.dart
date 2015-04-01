@@ -35,7 +35,8 @@ class AnimationLoop {
 
       // TODO(codleogic): This should run outside of an angular scope digest.
       _zone.runOutsideAngular(() {
-        _frames.animationFrame.then((timeInMs) => _animationFrame(timeInMs))
+        _frames.animationFrame
+            .then((timeInMs) => _animationFrame(timeInMs))
             .catchError((error) => print(error));
       });
     }
@@ -73,7 +74,7 @@ class AnimationLoop {
   }
 
   void _update(num timeInMs) {
-    for (int i=0; i< _animations.length; i++) {
+    for (int i = 0; i < _animations.length; i++) {
       var controller = _animations[i];
       if (!controller.update(timeInMs)) {
         _animations.removeAt(i--);
@@ -82,7 +83,7 @@ class AnimationLoop {
   }
 
   void _read(num timeInMs) {
-    for (int i=0; i< _animations.length; i++) {
+    for (int i = 0; i < _animations.length; i++) {
       var animation = _animations[i];
       animation.read(timeInMs);
     }

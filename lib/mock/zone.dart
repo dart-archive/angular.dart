@@ -76,16 +76,14 @@ isTimerQueueEmpty() => _timerQueue.isEmpty;
 /**
  * Returns whether there are outstanding non-periodic timers.
  */
-isNonPeriodicTimerQueueEmpty() => _timerQueue
-    .where((_TimerSpec spec) => !spec.periodic)
-    .isEmpty;
+isNonPeriodicTimerQueueEmpty() =>
+    _timerQueue.where((_TimerSpec spec) => !spec.periodic).isEmpty;
 
 /**
  * Returns whether there are outstanding periodic timers.
  */
-isPeriodicTimerQueueEmpty() => _timerQueue
-    .where((_TimerSpec spec) => spec.periodic)
-    .isEmpty;
+isPeriodicTimerQueueEmpty() =>
+    _timerQueue.where((_TimerSpec spec) => spec.periodic).isEmpty;
 
 /**
  * Simulates a clock tick by running any scheduled timers. Can only be used
@@ -118,46 +116,45 @@ isPeriodicTimerQueueEmpty() => _timerQueue
  *       expect(timerRan).toBe(4);
  *     }));
  */
-void clockTick({int days: 0,
-          int hours: 0,
-          int minutes: 0,
-          int seconds: 0,
-          int milliseconds: 0,
-          int microseconds: 0}) {
-  var tickDuration = new Duration(days: days, hours: hours, minutes: minutes,
-      seconds: seconds, milliseconds: milliseconds, microseconds: microseconds);
+void clockTick({int days: 0, int hours: 0, int minutes: 0, int seconds: 0,
+    int milliseconds: 0, int microseconds: 0}) {
+  var tickDuration = new Duration(
+      days: days,
+      hours: hours,
+      minutes: minutes,
+      seconds: seconds,
+      milliseconds: milliseconds,
+      microseconds: microseconds);
 
   var remainingTimers = [];
   var queue = new List.from(_timerQueue);
   _timerQueue.clear();
-  queue
-    .where((_TimerSpec spec) => spec.isActive)
-    .forEach((_TimerSpec spec) {
-      if (spec.periodic) {
-        // We always add back the periodic timer unless it's cancelled.
-        remainingTimers.add(spec);
+  queue.where((_TimerSpec spec) => spec.isActive).forEach((_TimerSpec spec) {
+    if (spec.periodic) {
+      // We always add back the periodic timer unless it's cancelled.
+      remainingTimers.add(spec);
 
-        // Ignore ZERO duration ticks for periodic timers.
-        if (tickDuration == Duration.ZERO) return;
+      // Ignore ZERO duration ticks for periodic timers.
+      if (tickDuration == Duration.ZERO) return;
 
-        spec.elapsed += tickDuration;
-        // Run the timer as many times as the timer priod fits into the tick.
-        while (spec.elapsed >= spec.duration) {
-          spec.elapsed -= spec.duration;
-          microLeap();
-          spec.fn(spec);
-        }
-      } else {
-        spec.duration -= tickDuration;
-        if (spec.duration <= Duration.ZERO) {
-          microLeap();
-          spec.fn();
-          spec.isActive = false;
-        } else {
-          remainingTimers.add(spec);
-        }
+      spec.elapsed += tickDuration;
+      // Run the timer as many times as the timer priod fits into the tick.
+      while (spec.elapsed >= spec.duration) {
+        spec.elapsed -= spec.duration;
+        microLeap();
+        spec.fn(spec);
       }
-    });
+    } else {
+      spec.duration -= tickDuration;
+      if (spec.duration <= Duration.ZERO) {
+        microLeap();
+        spec.fn();
+        spec.isActive = false;
+      } else {
+        remainingTimers.add(spec);
+      }
+    }
+  });
   // Remaining timers should come before anything else scheduled after them.
   _timerQueue.insertAll(0, remainingTimers);
 }
@@ -198,23 +195,21 @@ _asyncOuter(Function fn) => () {
   _timerQueue.clear();
   var zoneSpec = new dart_async.ZoneSpecification(
       scheduleMicrotask: (_, __, ___, asyncFn) {
-        if (_noMoreAsync) {
-          throw ['scheduleMicrotask called after noMoreAsync()'];
-        } else {
-          _asyncQueue.add(asyncFn);
-        }
-      },
+    if (_noMoreAsync) {
+      throw ['scheduleMicrotask called after noMoreAsync()'];
+    } else {
+      _asyncQueue.add(asyncFn);
+    }
+  },
       createTimer: (_, __, ____, Duration duration, void f()) =>
           _createTimer(f, duration, false),
-      createPeriodicTimer:
-          (_, __, ___, Duration period, void f(dart_async.Timer timer)) =>
-              _createTimer(f, period, true),
-      handleUncaughtError: (_, __, ___, e, s) => _asyncErrors.add([e, s])
-  );
+      createPeriodicTimer: (_, __, ___, Duration period,
+          void f(dart_async.Timer timer)) => _createTimer(f, period, true),
+      handleUncaughtError: (_, __, ___, e, s) => _asyncErrors.add([e, s]));
   dart_async.runZoned(() {
-      fn();
-      microLeap();
-    }, zoneSpecification: zoneSpec);
+    fn();
+    microLeap();
+  }, zoneSpecification: zoneSpec);
 
   _asyncErrors.forEach((e) {
     throw "During runZoned: ${e[0]}.  Stack:\n${e[1]}";
@@ -244,19 +239,17 @@ sync(Function fn) => new FunctionComposition(_syncOuter, fn);
 _syncOuter(Function fn) => () {
   _asyncErrors.clear();
 
-  dart_async.runZoned(fn, zoneSpecification: new dart_async.ZoneSpecification(
-    scheduleMicrotask: (_, __, ___, asyncFn) {
-        throw ['scheduleMicrotask called from sync function.'];
-    },
-    createTimer: (_, __, ____, Duration duration, void f()) {
-        throw ['Timer created from sync function.'];
-    },
-    createPeriodicTimer:
-        (_, __, ___, Duration period, void f(dart_async.Timer timer)) {
-            throw ['periodic Timer created from sync function.'];
-        },
-    handleUncaughtError: (_, __, ___, e, s) => _asyncErrors.add([e, s])
-    ));
+  dart_async.runZoned(fn,
+      zoneSpecification: new dart_async.ZoneSpecification(
+          scheduleMicrotask: (_, __, ___, asyncFn) {
+    throw ['scheduleMicrotask called from sync function.'];
+  }, createTimer: (_, __, ____, Duration duration, void f()) {
+    throw ['Timer created from sync function.'];
+  },
+      createPeriodicTimer: (_, __, ___, Duration period,
+          void f(dart_async.Timer timer)) {
+    throw ['periodic Timer created from sync function.'];
+  }, handleUncaughtError: (_, __, ___, e, s) => _asyncErrors.add([e, s])));
 
   _asyncErrors.forEach((e) {
     throw "During runZoned: ${e[0]}.  Stack:\n${e[1]}";
@@ -277,7 +270,6 @@ class _TimerSpec implements dart_async.Timer {
   }
 }
 
-
 class MockZone {
   MockZone._internal();
 
@@ -285,6 +277,6 @@ class MockZone {
 
   static Zone fork(Zone zone) {
     MockZone mockZone = new MockZone._internal();
-    return zone.fork(zoneValues: { 'AngularMockZone': mockZone });
+    return zone.fork(zoneValues: {'AngularMockZone': mockZone});
   }
 }

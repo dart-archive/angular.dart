@@ -43,11 +43,10 @@ main(List arguments) {
   Map<String, String> templates = {};
 
   var c = new SourceCrawler(options.sdkPath, options.packageRoots);
-  var visitor = new TemplateCollectingVisitor(templates, options.skippedClasses,
-      c, options.templateRoots);
-  c.crawl(options.entryPoint,
-      (CompilationUnitElement compilationUnit, SourceFile source) =>
-          visitor(compilationUnit, source.canonicalPath));
+  var visitor = new TemplateCollectingVisitor(
+      templates, options.skippedClasses, c, options.templateRoots);
+  c.crawl(options.entryPoint, (CompilationUnitElement compilationUnit,
+      SourceFile source) => visitor(compilationUnit, source.canonicalPath));
 
   var sink;
   if (options.output == '-') {
@@ -56,9 +55,8 @@ main(List arguments) {
     var f = new File(options.output)..createSync(recursive: true);
     sink = f.openWrite();
   }
-  return printTemplateCache(
-      templates, options.urlRewrites, options.outputLibrary, sink,
-          options.cssRewriter)
+  return printTemplateCache(templates, options.urlRewrites,
+          options.outputLibrary, sink, options.cssRewriter)
       .then((_) => sink.flush());
 }
 
@@ -77,30 +75,37 @@ class Options {
 
 Options parseArgs(List arguments) {
   var parser = new ArgParser()
-      ..addOption('sdk-path', abbr: 's',
-          defaultsTo: Platform.environment['DART_SDK'],
-          help: 'Dart SDK Path')
-      ..addOption('package-root', abbr: 'p', defaultsTo: Platform.packageRoot,
-          help: 'comma-separated list of package roots')
-      ..addOption('template-root', abbr: 't', defaultsTo: '.',
-          help: 'comma-separated list of paths from which templates with'
-                'absolute paths can be fetched')
-      ..addOption('out', abbr: 'o', defaultsTo: '-',
-          help: 'output file or "-" for stdout')
-      ..addOption('url-rewrites', abbr: 'u',
-          help: 'semicolon-separated list of URL rewrite rules, of the form: '
-                'patternUrl,rewriteTo')
-      ..addOption('skip-classes', abbr: 'b',
-          help: 'comma-separated list of classes to skip templating')
-      ..addOption('css-rewriter', defaultsTo: null,
-          help: 'application used to rewrite css. Each css file will be passed '
-                'to stdin and rewriten one is expected on stdout.')
-      ..addFlag('verbose', abbr: 'v', help: 'verbose output')
-      ..addFlag('help', abbr: 'h', negatable: false, help: 'show this help');
+    ..addOption('sdk-path',
+        abbr: 's',
+        defaultsTo: Platform.environment['DART_SDK'],
+        help: 'Dart SDK Path')
+    ..addOption('package-root',
+        abbr: 'p',
+        defaultsTo: Platform.packageRoot,
+        help: 'comma-separated list of package roots')
+    ..addOption('template-root',
+        abbr: 't',
+        defaultsTo: '.',
+        help: 'comma-separated list of paths from which templates with'
+        'absolute paths can be fetched')
+    ..addOption('out',
+        abbr: 'o', defaultsTo: '-', help: 'output file or "-" for stdout')
+    ..addOption('url-rewrites',
+        abbr: 'u',
+        help: 'semicolon-separated list of URL rewrite rules, of the form: '
+        'patternUrl,rewriteTo')
+    ..addOption('skip-classes',
+        abbr: 'b', help: 'comma-separated list of classes to skip templating')
+    ..addOption('css-rewriter',
+        defaultsTo: null,
+        help: 'application used to rewrite css. Each css file will be passed '
+        'to stdin and rewriten one is expected on stdout.')
+    ..addFlag('verbose', abbr: 'v', help: 'verbose output')
+    ..addFlag('help', abbr: 'h', negatable: false, help: 'show this help');
 
   printUsage() {
     print('Usage: dart template_cache_generator.dart '
-          '--sdk-path=path [OPTION...] entryPoint libraryName');
+        '--sdk-path=path [OPTION...] entryPoint libraryName');
     print(parser.getUsage());
   }
 
@@ -134,8 +139,7 @@ Options parseArgs(List arguments) {
   if (args['url-rewrites'] != null) {
     options.urlRewrites = new LinkedHashMap.fromIterable(
         args['url-rewrites'].split(';').map((p) => p.split(',')),
-        key:   (p) => new RegExp(p[0]),
-        value: (p) => p[1]);
+        key: (p) => new RegExp(p[0]), value: (p) => p[1]);
   } else {
     options.urlRewrites = {};
   }
@@ -155,43 +159,42 @@ Options parseArgs(List arguments) {
 }
 
 printTemplateCache(Map<String, String> templateKeyMap,
-                   Map<RegExp, String> urlRewriters,
-                   String outputLibrary,
-                   IOSink outSink,
-                   String cssRewriter) {
-
+    Map<RegExp, String> urlRewriters, String outputLibrary, IOSink outSink,
+    String cssRewriter) {
   outSink.write(fileHeader(outputLibrary));
 
   Future future = new Future.value(0);
-  List uris = templateKeyMap.keys.toList()..sort()..forEach((uri) {
-    var templateFile = templateKeyMap[uri];
-    String resultUri = uri;
-    urlRewriters.forEach((regexp, replacement) {
-      resultUri = resultUri.replaceFirst(regexp, replacement);
-    });
-    var putToCache = (String content) {
-      var out = content.replaceAll('"""', r'\"\"\"');
-      outSink.write(
-        'tc.put("$resultUri", new HttpResponse(200, r"""$out"""));\n');
-    };
-    future = future.then((_) {
-      var fileContentFuture = new File(templateFile).readAsString();
-      if (templateFile.endsWith(".css") && cssRewriter != null) {
-        return fileContentFuture.then((fileStr) {
-          return Process.start(cssRewriter, []).then((process) {
-            process.stdin.write(fileStr);
-            process.stdin.close();
-            return process.stdout
-                          .transform(UTF8.decoder)
-                          .join("")
-                          .then(putToCache);
+  List uris = templateKeyMap.keys.toList()
+    ..sort()
+    ..forEach((uri) {
+      var templateFile = templateKeyMap[uri];
+      String resultUri = uri;
+      urlRewriters.forEach((regexp, replacement) {
+        resultUri = resultUri.replaceFirst(regexp, replacement);
+      });
+      var putToCache = (String content) {
+        var out = content.replaceAll('"""', r'\"\"\"');
+        outSink.write(
+            'tc.put("$resultUri", new HttpResponse(200, r"""$out"""));\n');
+      };
+      future = future.then((_) {
+        var fileContentFuture = new File(templateFile).readAsString();
+        if (templateFile.endsWith(".css") && cssRewriter != null) {
+          return fileContentFuture.then((fileStr) {
+            return Process.start(cssRewriter, []).then((process) {
+              process.stdin.write(fileStr);
+              process.stdin.close();
+              return process.stdout
+                  .transform(UTF8.decoder)
+                  .join("")
+                  .then(putToCache);
+            });
           });
-        });
-      } else {
-        return fileContentFuture.then(putToCache);
-      }
+        } else {
+          return fileContentFuture.then(putToCache);
+        }
+      });
     });
-  });
 
   // Wait until all templates files are processed.
   return future.then((_) {
@@ -217,8 +220,8 @@ class TemplateCollectingVisitor {
   }
 
   void processDeclarations(CompilationUnitElement cue, String srcPath) {
-    CompilationUnit cu = sourceCrawler.context
-        .resolveCompilationUnit(cue.source, cue.library);
+    CompilationUnit cu =
+        sourceCrawler.context.resolveCompilationUnit(cue.source, cue.library);
     cu.declarations.forEach((CompilationUnitMember declaration) {
       // We only care about classes.
       if (declaration is! ClassDeclaration) return;
@@ -231,16 +234,19 @@ class TemplateCollectingVisitor {
 
         switch (ann.name.name) {
           case 'Component':
-              extractComponentMetadata(ann, cacheUris); break;
+            extractComponentMetadata(ann, cacheUris);
+            break;
           case 'NgTemplateCache':
-              cache = extractNgTemplateCache(ann, cacheUris); break;
+            cache = extractNgTemplateCache(ann, cacheUris);
+            break;
         }
       });
       if (cache && cacheUris.isNotEmpty) {
-        Source currentSrcDir = sourceCrawler.context.sourceFactory
-            .resolveUri(null, 'file://$srcPath');
-        cacheUris..sort()..forEach(
-            (uri) => storeUriAsset(uri, currentSrcDir, templateRoots));
+        Source currentSrcDir = sourceCrawler.context.sourceFactory.resolveUri(
+            null, 'file://$srcPath');
+        cacheUris
+          ..sort()
+          ..forEach((uri) => storeUriAsset(uri, currentSrcDir, templateRoots));
       }
     });
   }
@@ -256,8 +262,8 @@ class TemplateCollectingVisitor {
           if (namedArg.expression is StringLiteral) {
             cacheUris.add(assertString(namedArg.expression).stringValue);
           } else {
-            cacheUris.addAll(assertList(namedArg.expression).elements.map((e) =>
-                assertString(e).stringValue));
+            cacheUris.addAll(assertList(namedArg.expression).elements
+                .map((e) => assertString(e).stringValue));
           }
         }
       }
@@ -298,34 +304,34 @@ class TemplateCollectingVisitor {
         orElse: () => paths.first);
   }
 
-  String findAssetLocation(String uri, Source srcPath, List<String>
-      templateRoots) {
+  String findAssetLocation(
+      String uri, Source srcPath, List<String> templateRoots) {
     if (uri.startsWith('/')) {
       return _resolveInTemplateRoots(uri, templateRoots);
     }
     // Otherwise let the sourceFactory resolve for packages, and relative paths.
-    Source source = sourceCrawler.context.sourceFactory
-        .resolveUri(srcPath, uri);
+    Source source =
+        sourceCrawler.context.sourceFactory.resolveUri(srcPath, uri);
     return (source != null) ? source.fullName : null;
   }
 
   BooleanLiteral assertBoolean(Expression key) {
     if (key is! BooleanLiteral) {
-        throw 'must be a boolean literal: ${key.runtimeType}';
+      throw 'must be a boolean literal: ${key.runtimeType}';
     }
     return key;
   }
 
   ListLiteral assertList(Expression key) {
     if (key is! ListLiteral) {
-        throw 'must be a list literal: ${key.runtimeType}';
+      throw 'must be a list literal: ${key.runtimeType}';
     }
     return key;
   }
 
   StringLiteral assertString(Expression key) {
     if (key is! StringLiteral) {
-        throw 'must be a string literal: ${key.runtimeType}';
+      throw 'must be a string literal: ${key.runtimeType}';
     }
     return key;
   }

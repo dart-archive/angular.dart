@@ -5,9 +5,8 @@ part of angular.animate;
  * dom elements. Valid options are [always] [never] and [auto]. If this
  * directive is not applied the default value is [auto] for animation.
  */
-@Decorator(selector: '[ng-animate]',
-    map: const {'ng-animate': '@option'})
-class NgAnimate  extends AbstractNgAnimate {
+@Decorator(selector: '[ng-animate]', map: const {'ng-animate': '@option'})
+class NgAnimate extends AbstractNgAnimate {
   set option(value) {
     _option = value;
     _optimizer.alwaysAnimate(_element, _option);
@@ -25,7 +24,8 @@ class NgAnimate  extends AbstractNgAnimate {
  * Values provided in [ng-animate] will override this directive since they are
  * more specific.
  */
-@Decorator(selector: '[ng-animate-children]',
+@Decorator(
+    selector: '[ng-animate-children]',
     map: const {'ng-animate-children': '@option'})
 class NgAnimateChildren extends AbstractNgAnimate {
   set option(value) {
@@ -34,7 +34,7 @@ class NgAnimateChildren extends AbstractNgAnimate {
   }
 
   NgAnimateChildren(dom.Element element, AnimationOptimizer optimizer)
-    : super(element, optimizer);
+      : super(element, optimizer);
 }
 
 /**

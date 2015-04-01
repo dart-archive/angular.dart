@@ -15,25 +15,39 @@ void main() {
       List<DirectiveInfo> directives = sourceMetadataExtractor
           .gatherDirectiveInfo('test/io/test_files/main.dart', sourceCrawler);
 
-      expect(directives.map((d) => d.selector), unorderedEquals(['[ng-if]', 'my-component']));
+      expect(directives.map((d) => d.selector),
+          unorderedEquals(['[ng-if]', 'my-component']));
 
       DirectiveInfo info = directives.elementAt(1);
-      expect(info.expressionAttrs, unorderedEquals(['expr', 'another-expression',
-          'callback', 'two-way-stuff', 'exported-attr']));
-      expect(info.expressions, unorderedEquals(['attr', 'expr',
-          'anotherExpression', 'callback', 'twoWayStuff', 'exported + expression']));
+      expect(info.expressionAttrs, unorderedEquals([
+        'expr',
+        'another-expression',
+        'callback',
+        'two-way-stuff',
+        'exported-attr'
+      ]));
+      expect(info.expressions, unorderedEquals([
+        'attr',
+        'expr',
+        'anotherExpression',
+        'callback',
+        'twoWayStuff',
+        'exported + expression'
+      ]));
     });
 
     it('should extract ngRoute templates from ngRoute viewHtml', () {
       var sourceCrawler = new SourceCrawlerImpl(['packages/']);
       var sourceMetadataExtractor = new SourceMetadataExtractor();
       List<DirectiveInfo> directives = sourceMetadataExtractor
-          .gatherDirectiveInfo('test/io/test_files/routing.dart', sourceCrawler);
+          .gatherDirectiveInfo(
+              'test/io/test_files/routing.dart', sourceCrawler);
 
-      var templates = directives.where((i) => i.selector == null)
-                                .map((i) => i.template);
+      var templates =
+          directives.where((i) => i.selector == null).map((i) => i.template);
       expect(templates, hasLength(2));
-      expect(templates, unorderedEquals(['<div ng-if="foo"></div>', '<div ng-if="bar"></div>']));
+      expect(templates, unorderedEquals(
+          ['<div ng-if="foo"></div>', '<div ng-if="bar"></div>']));
     });
   });
 }

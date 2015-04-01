@@ -10,52 +10,50 @@ import 'package:guinness/guinness.dart';
 
 void main() {
   describe('SourceMetadataExtractor', () {
-
     it('should extract expressions and attribute names with expressions', () {
       var info = extractDirectiveInfo([
-          new DirectiveMetadata('FooComponent', 'foo-component', {
-              'barVal': '@bar',
-              'baz-expr1': '<=>baz1',
-              'baz-expr2': '=>baz2',
-              'baz-expr3': '=>!baz3',
-              'baz-callback': '&aux',
-          })
+        new DirectiveMetadata('FooComponent', 'foo-component', {
+          'barVal': '@bar',
+          'baz-expr1': '<=>baz1',
+          'baz-expr2': '=>baz2',
+          'baz-expr3': '=>!baz3',
+          'baz-callback': '&aux',
+        })
       ]);
 
       expect(flattenList(info, (DirectiveInfo i) => i.expressionAttrs),
-      equals(['baz-expr1',
-          'baz-expr2',
-          'baz-expr3',
-          'baz-callback']));
+          equals(['baz-expr1', 'baz-expr2', 'baz-expr3', 'baz-callback']));
       expect(flattenList(info, (DirectiveInfo i) => i.expressions),
-      equals(['bar',
-          'baz1',
-          'baz2',
-          'baz3',
-          'aux']));
+          equals(['bar', 'baz1', 'baz2', 'baz3', 'aux']));
     });
 
-    it('should build a component selector if one is not explicitly specified', () {
+    it('should build a component selector if one is not explicitly specified',
+        () {
       var info = extractDirectiveInfo([
-          new DirectiveMetadata('MyFooComponent', 'my-foo', {'foo-expr': '=>fooExpr'})
+        new DirectiveMetadata(
+            'MyFooComponent', 'my-foo', {'foo-expr': '=>fooExpr'})
       ]);
 
       expect(info, hasLength(1));
       expect(info[0].selector, equals('my-foo'));
     });
 
-    it('should build an element directive selector if one is not explicitly specified', () {
+    it('should build an element directive selector if one is not explicitly specified',
+        () {
       var info = extractDirectiveInfo([
-          new DirectiveMetadata('MyFooDirective', 'my-foo', {'foo-expr': '=>fooExpr'})
+        new DirectiveMetadata(
+            'MyFooDirective', 'my-foo', {'foo-expr': '=>fooExpr'})
       ]);
 
       expect(info, hasLength(1));
       expect(info[0].selector, equals('my-foo'));
     });
 
-    it('should build an attr directive selector if one is not explicitly specified', () {
+    it('should build an attr directive selector if one is not explicitly specified',
+        () {
       var info = extractDirectiveInfo([
-          new DirectiveMetadata('MyFooAttrDirective', '[my-foo]', {'foo-expr': '=>fooExpr'})
+        new DirectiveMetadata(
+            'MyFooAttrDirective', '[my-foo]', {'foo-expr': '=>fooExpr'})
       ]);
 
       expect(info, hasLength(1));
@@ -64,46 +62,49 @@ void main() {
 
     it('should figure out attribute name if dot(.) is used', () {
       var info = extractDirectiveInfo([
-          new DirectiveMetadata('MyFooAttrDirective', '[my-foo]', {'.': '=>fooExpr'})
+        new DirectiveMetadata(
+            'MyFooAttrDirective', '[my-foo]', {'.': '=>fooExpr'})
       ]);
 
       expect(flattenList(info, (DirectiveInfo i) => i.expressionAttrs),
-      equals(['my-foo']));
+          equals(['my-foo']));
     });
 
     it('should figure out attribute name from selector if dot(.) is used', () {
       var info = extractDirectiveInfo([
-          new DirectiveMetadata('MyFooAttrDirective', '[blah][foo]', {'.': '=>fooExpr'})
+        new DirectiveMetadata(
+            'MyFooAttrDirective', '[blah][foo]', {'.': '=>fooExpr'})
       ]);
 
       expect(flattenList(info, (DirectiveInfo i) => i.expressionAttrs),
-      equals(['foo']));
+          equals(['foo']));
     });
 
     it('should include exported expression attributes', () {
       var info = extractDirectiveInfo([
-          new DirectiveMetadata('MyFooAttrDirective', '[blah][foo]', {'.': '=>fooExpr'}, ['baz'])
+        new DirectiveMetadata(
+            'MyFooAttrDirective', '[blah][foo]', {'.': '=>fooExpr'}, ['baz'])
       ]);
 
       expect(flattenList(info, (DirectiveInfo i) => i.expressionAttrs),
-      equals(['foo', 'baz']));
+          equals(['foo', 'baz']));
     });
 
     it('should include exported expressions', () {
       var info = extractDirectiveInfo([
-          new DirectiveMetadata('MyFooAttrDirective', '[blah][foo]', {'.': '=>fooExpr'}, null,
-                                ['ctrl.baz'])
+        new DirectiveMetadata('MyFooAttrDirective', '[blah][foo]', {
+          '.': '=>fooExpr'
+        }, null, ['ctrl.baz'])
       ]);
 
       expect(flattenList(info, (DirectiveInfo i) => i.expressions),
           equals(['fooExpr', 'ctrl.baz']));
     });
-
   });
 }
 
-flattenList(list, map) => list.map(map).fold([], (prev, exprs) =>
-    new List.from(prev)..addAll(exprs));
+flattenList(list, map) =>
+    list.map(map).fold([], (prev, exprs) => new List.from(prev)..addAll(exprs));
 
 List<DirectiveInfo> extractDirectiveInfo(List<DirectiveMetadata> metadata) {
   var sourceCrawler = new MockSourceCrawler();
@@ -125,7 +126,6 @@ class MockDirectiveMetadataCollectingVisitor
 }
 
 class MockSourceCrawler implements SourceCrawler {
-
   void crawl(String entryPoint, visitor(CompilationUnit cu)) {
     // do nothing
   }

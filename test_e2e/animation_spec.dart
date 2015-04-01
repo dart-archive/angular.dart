@@ -12,7 +12,6 @@ class AppState {
   var heading = element(by.css(".demo h2"));
 }
 
-
 main() {
   describe('animation example', () {
     beforeEach(() {

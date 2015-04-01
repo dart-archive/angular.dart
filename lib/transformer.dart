@@ -13,8 +13,7 @@ import 'package:code_transformers/resolver.dart';
 import 'package:di/transformer.dart' as di;
 import 'package:observe/transformer.dart' show ObservableTransformer;
 
-
- /**
+/**
   * The Angular transformer, which internally runs several phases that will:
   *
   * * Extract all expressions for evaluation at runtime without using Mirrors.
@@ -34,16 +33,15 @@ class AngularTransformerGroup implements TransformerGroup {
 TransformOptions _parseSettings(Map args) {
   // Default angular annotations for injectable types
   var annotations = [
-      'di.annotations.Injectable',
-      'angular.core.annotation_src.Decorator',
-      'angular.core.annotation_src.Component',
-      'angular.core.annotation_src.Formatter'];
+    'di.annotations.Injectable',
+    'angular.core.annotation_src.Decorator',
+    'angular.core.annotation_src.Component',
+    'angular.core.annotation_src.Formatter'
+  ];
   annotations.addAll(_readStringListValue(args, 'injectable_annotations'));
 
   // List of types which are otherwise not indicated as being injectable.
-  var injectedTypes = [
-      'perf_api.Profiler',
-  ];
+  var injectedTypes = ['perf_api.Profiler',];
   injectedTypes.addAll(_readStringListValue(args, 'injected_types'));
 
   var sdkDir = _readStringValue(args, 'dart_sdk', required: false);
@@ -59,8 +57,8 @@ TransformOptions _parseSettings(Map args) {
       sdkDirectory: sdkDir,
       templateUriRewrites: _readStringMapValue(args, 'template_uri_rewrites'),
       diOptions: diOptions,
-      generateTemplateCache:
-          _readBoolValue(args, 'generate_template_cache', required: false));
+      generateTemplateCache: _readBoolValue(args, 'generate_template_cache',
+          required: false));
 }
 
 _readBoolValue(Map args, String name, {bool required: true}) {
@@ -137,22 +135,22 @@ Map<String, String> _readStringMapValue(Map args, String name) {
 
 Transformer _staticGenerator(TransformOptions options, Resolvers resolvers) {
   return new _SerialTransformer([
-      new TypeRelativeUriGenerator(options, resolvers),
-      new ExpressionGenerator(options, resolvers),
-      new MetadataGenerator(options, resolvers),
-      new TemplateCacheGenerator(options, resolvers),
-      new StaticAngularGenerator(options, resolvers)
+    new TypeRelativeUriGenerator(options, resolvers),
+    new ExpressionGenerator(options, resolvers),
+    new MetadataGenerator(options, resolvers),
+    new TemplateCacheGenerator(options, resolvers),
+    new StaticAngularGenerator(options, resolvers)
   ]);
 }
 
 List<List<Transformer>> _createPhases(TransformOptions options) {
- var resolvers = new Resolvers(options.sdkDirectory);
- return [
-   [ new ObservableTransformer() ],
-   [ new HtmlDartReferencesGenerator(options) ],
-   [ new di.InjectorGenerator(options.diOptions, resolvers ) ],
-   [ _staticGenerator(options, resolvers) ]
- ];
+  var resolvers = new Resolvers(options.sdkDirectory);
+  return [
+    [new ObservableTransformer()],
+    [new HtmlDartReferencesGenerator(options)],
+    [new di.InjectorGenerator(options.diOptions, resolvers)],
+    [_staticGenerator(options, resolvers)]
+  ];
 }
 
 /// Helper which runs a group of transformers serially and ensures that
@@ -167,16 +165,16 @@ class _SerialTransformer extends Transformer {
   final Iterable<Transformer> _transformers;
   _SerialTransformer(this._transformers);
 
-  Future<bool> isPrimary(input) =>
-      Future.wait(_transformers.map((t) => t.isPrimary(input)))
-          .then((l) => l.any((result) => result));
+  Future<bool> isPrimary(input) => Future
+      .wait(_transformers.map((t) => t.isPrimary(input)))
+      .then((l) => l.any((result) => result));
 
   Future apply(Transform transform) {
     return Future.forEach(_transformers, (t) {
       return new Future.value(t.isPrimary(transform.primaryInput))
-        .then((isPrimary) {
-          if (isPrimary) return t.apply(transform);
-        });
+          .then((isPrimary) {
+        if (isPrimary) return t.apply(transform);
+      });
     });
   }
 }

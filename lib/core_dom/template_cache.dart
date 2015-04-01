@@ -68,5 +68,5 @@ part of angular.core.dom_internal;
  * isn't necessary for your web server to even serve those templates.
  */
 class TemplateCache extends LruCache<String, HttpResponse> {
-  TemplateCache({int capacity}): super(capacity: capacity);
+  TemplateCache({int capacity}) : super(capacity: capacity);
 }

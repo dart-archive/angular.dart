@@ -74,8 +74,8 @@ class NgElement {
   _writeToDom() {
     _classesToUpdate.forEach((String className, bool toBeAdded) {
       toBeAdded
-        ? _animate.addClass(node, className)
-        : _animate.removeClass(node, className);
+          ? _animate.addClass(node, className)
+          : _animate.removeClass(node, className);
     });
     _classesToUpdate.clear();
 

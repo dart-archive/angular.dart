@@ -1,6 +1,5 @@
 part of angular.watch_group;
 
-
 /**
  * RULES:
  *  - ASTs are reusable. Don't store scope/instance refs there
@@ -10,12 +9,10 @@ abstract class AST {
   static final String _CONTEXT = '#';
   final String expression;
   var parsedExp; // The parsed version of expression.
-  AST(expression)
-      : expression = expression.startsWith('#.')
+  AST(expression) : expression = expression.startsWith('#.')
           ? expression.substring(2)
-          : expression
-  {
-    assert(expression!=null);
+          : expression {
+    assert(expression != null);
   }
   WatchRecord<_Handler> setupWatch(WatchGroup watchGroup);
   String toString() => expression;
@@ -27,7 +24,7 @@ abstract class AST {
  * This represent the initial _context_ for evaluation.
  */
 class ContextReferenceAST extends AST {
-  ContextReferenceAST(): super(AST._CONTEXT);
+  ContextReferenceAST() : super(AST._CONTEXT);
   WatchRecord<_Handler> setupWatch(WatchGroup watchGroup) =>
       new _ConstantWatchRecord(watchGroup, expression, watchGroup.context);
 }
@@ -124,10 +121,9 @@ class MethodAST extends AST {
         argsAST = argsAST,
         super('$lhsAST.$name(${_argList(argsAST)})');
 
-  WatchRecord<_Handler> setupWatch(WatchGroup watchGroup) =>
-      watchGroup.addMethodWatch(lhsAST, name, argsAST, namedArgsAST, expression);
+  WatchRecord<_Handler> setupWatch(WatchGroup watchGroup) => watchGroup
+      .addMethodWatch(lhsAST, name, argsAST, namedArgsAST, expression);
 }
-
 
 class CollectionAST extends AST {
   final AST valueAST;
@@ -164,4 +160,3 @@ class _ConstantWatchRecord extends WatchRecord<_Handler> {
   set object(_) => null;
   get nextChange => null;
 }
-

@@ -22,20 +22,17 @@ class Item {
   }
 }
 
-
 // ServerController interface. Logic in main.dart determines which
 // implementation we should use.
 abstract class Server {
   init(Todo todo);
 }
 
-
 // An implementation of ServerController that does nothing.
 @Injectable()
 class NoOpServer implements Server {
-  init(Todo todo) { }
+  init(Todo todo) {}
 }
-
 
 // An implementation of ServerController that fetches items from
 // the server over HTTP.
@@ -61,9 +58,9 @@ class Todo {
   Todo(Server serverController) {
     newItem = new Item();
     items = [
-        new Item('Write Angular in Dart', true),
-        new Item('Write Dart in Angular'),
-        new Item('Do something useful')
+      new Item('Write Angular in Dart', true),
+      new Item('Write Dart in Angular'),
+      new Item('Do something useful')
     ];
 
     serverController.init(this);
@@ -89,7 +86,6 @@ class Todo {
   int remaining() => items.fold(0, (count, item) => count += item.done ? 0 : 1);
 }
 
-
 main() {
   print(window.location.search);
   var module = new Module()..bind(PlaybackHttpBackendConfig);
@@ -97,12 +93,14 @@ main() {
   // If these is a query in the URL, use the server-backed
   // TodoController.  Otherwise, use the stored-data controller.
   var query = window.location.search;
-  module.bind(Server, toImplementation: query.contains('?') ? HttpServer : NoOpServer);
+  module.bind(Server,
+      toImplementation: query.contains('?') ? HttpServer : NoOpServer);
 
   if (query == '?record') {
     print('Using recording HttpBackend');
     var wrapper = new HttpBackendWrapper(new HttpBackend());
-    module.bind(HttpBackendWrapper, toValue: new HttpBackendWrapper(new HttpBackend()));
+    module.bind(HttpBackendWrapper,
+        toValue: new HttpBackendWrapper(new HttpBackend()));
     module.bind(HttpBackend, toImplementation: RecordingHttpBackend);
   }
 
@@ -111,8 +109,5 @@ main() {
     module.bind(HttpBackend, toImplementation: PlaybackHttpBackend);
   }
 
-  applicationFactory()
-      .addModule(module)
-      .rootContextType(Todo)
-      .run();
+  applicationFactory().addModule(module).rootContextType(Todo).run();
 }

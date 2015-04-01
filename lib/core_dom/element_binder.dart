@@ -1,6 +1,5 @@
 part of angular.core.dom_internal;
 
-
 class TemplateElementBinder extends ElementBinder {
   final DirectiveRef template;
   ViewFactory templateViewFactory;
@@ -16,10 +15,9 @@ class TemplateElementBinder extends ElementBinder {
   }
 
   TemplateElementBinder(perf, expando, parser, config, appInjector,
-                        this.template, this.templateBinder,
-                        onEvents, bindAttrs, childMode)
-      : super(perf, expando, parser, config, appInjector,
-          null, null, onEvents, bindAttrs, childMode);
+      this.template, this.templateBinder, onEvents, bindAttrs, childMode)
+      : super(perf, expando, parser, config, appInjector, null, null, onEvents,
+          bindAttrs, childMode);
 
   String toString() => "[TemplateElementBinder template:$template]";
 }
@@ -49,15 +47,14 @@ class ElementBinder {
   final String childMode;
 
   ElementBinder(this._perf, this._expando, this._parser, this._config,
-                this._appInjector, this.componentData, this.decorators,
-                this.onEvents, this.bindAttrs, this.childMode) {
+      this._appInjector, this.componentData, this.decorators, this.onEvents,
+      this.bindAttrs, this.childMode) {
     _animate = _appInjector.getByKey(ANIMATE_KEY);
   }
 
   final bool hasTemplate = false;
 
-  bool get shouldCompileChildren =>
-      childMode == Directive.COMPILE_CHILDREN;
+  bool get shouldCompileChildren => childMode == Directive.COMPILE_CHILDREN;
 
   List<String> _bindAssignablePropsOnCache;
   List<String> get _bindAssignablePropsOn {
@@ -69,22 +66,25 @@ class ElementBinder {
         _bindAssignablePropsOnCache.addAll(eventNames);
       }
     });
-    if (_bindAssignablePropsOnCache.isEmpty) _bindAssignablePropsOnCache.add('change');
+    if (_bindAssignablePropsOnCache.isEmpty) _bindAssignablePropsOnCache
+        .add('change');
     return _bindAssignablePropsOnCache;
   }
 
   var _directiveCache;
   List<DirectiveRef> get _usableDirectiveRefs {
     if (_directiveCache != null) return _directiveCache;
-    if (componentData != null) return _directiveCache = new List.from(decorators)..add(componentData.ref);
+    if (componentData != null) return _directiveCache =
+        new List.from(decorators)..add(componentData.ref);
     return _directiveCache = decorators;
   }
 
-  bool get hasDirectivesOrEvents =>
-      _usableDirectiveRefs.isNotEmpty || onEvents.isNotEmpty || bindAttrs.isNotEmpty;
+  bool get hasDirectivesOrEvents => _usableDirectiveRefs.isNotEmpty ||
+      onEvents.isNotEmpty ||
+      bindAttrs.isNotEmpty;
 
-  void _bindTwoWay(tasks, AST ast, scope, directiveScope,
-                   controller, AST dstAST) {
+  void _bindTwoWay(
+      tasks, AST ast, scope, directiveScope, controller, AST dstAST) {
     var taskId = (tasks != null) ? tasks.registerTask() : 0;
 
     var viewOutbound = false;
@@ -120,13 +120,14 @@ class ElementBinder {
   }
 
   void _bindCallback(dstPathFn, controller, expression, scope) {
-    dstPathFn.assign(controller, _parser(expression).bind(scope.context, ContextLocals.wrapper));
+    dstPathFn.assign(controller,
+        _parser(expression).bind(scope.context, ContextLocals.wrapper));
   }
 
-
-  void _createAttrMappings(directive, scope, List<MappingParts> mappings, nodeAttrs, tasks) {
+  void _createAttrMappings(
+      directive, scope, List<MappingParts> mappings, nodeAttrs, tasks) {
     Scope directiveScope; // Only created if there is a two-way binding in the element.
-    for(var i = 0; i < mappings.length; i++) {
+    for (var i = 0; i < mappings.length; i++) {
       MappingParts p = mappings[i];
       var attrName = p.attrName;
       var attrValueAST = p.attrValueAST;
@@ -134,7 +135,7 @@ class ElementBinder {
 
       if (!dstAST.parsedExp.isAssignable) {
         throw "Expression '${dstAST.expression}' is not assignable in mapping '${p.originalValue}' "
-              "for attribute '$attrName'.";
+            "for attribute '$attrName'.";
       }
 
       // Check if there is a bind attribute for this mapping.
@@ -144,8 +145,8 @@ class ElementBinder {
           if (directiveScope == null) {
             directiveScope = scope.createChild(directive);
           }
-          _bindTwoWay(tasks, bindAttr, scope, directiveScope,
-              directive, dstAST);
+          _bindTwoWay(
+              tasks, bindAttr, scope, directiveScope, directive, dstAST);
         } else if (p.mode == '&') {
           throw "Callbacks do not support bind- syntax";
         } else {
@@ -168,8 +169,8 @@ class ElementBinder {
           if (directiveScope == null) {
             directiveScope = scope.createChild(directive);
           }
-          _bindTwoWay(tasks, attrValueAST, scope, directiveScope,
-              directive, dstAST);
+          _bindTwoWay(
+              tasks, attrValueAST, scope, directiveScope, directive, dstAST);
           break;
 
         case '=>': // one-way
@@ -183,22 +184,27 @@ class ElementBinder {
           var watch;
           var lastOneTimeValue;
           watch = scope.watchAST(attrValueAST, (value, _) {
-            if ((lastOneTimeValue = dstAST.parsedExp.assign(directive, value)) != null && watch != null) {
-                var watchToRemove = watch;
-                watch = null;
-                scope.rootScope.domWrite(() {
-                  if (lastOneTimeValue != null) {
-                    watchToRemove.remove();
-                  } else {  // It was set to non-null, but stablized to null, wait.
-                    watch = watchToRemove;
-                  }
-                });
+            if ((lastOneTimeValue =
+                        dstAST.parsedExp.assign(directive, value)) !=
+                    null &&
+                watch != null) {
+              var watchToRemove = watch;
+              watch = null;
+              scope.rootScope.domWrite(() {
+                if (lastOneTimeValue != null) {
+                  watchToRemove.remove();
+                } else {
+                  // It was set to non-null, but stablized to null, wait.
+                  watch = watchToRemove;
+                }
+              });
             }
           });
           break;
 
         case '&': // callback
-          _bindCallback(dstAST.parsedExp, directive, nodeAttrs[attrName], scope);
+          _bindCallback(
+              dstAST.parsedExp, directive, nodeAttrs[attrName], scope);
           break;
       }
     }
@@ -206,20 +212,23 @@ class ElementBinder {
 
   void _link(DirectiveInjector directiveInjector, Scope scope, nodeAttrs) {
     var s;
-    for(var i = 0; i < _usableDirectiveRefs.length; i++) {
+    for (var i = 0; i < _usableDirectiveRefs.length; i++) {
       DirectiveRef ref = _usableDirectiveRefs[i];
       var key = ref.typeKey;
       var directiveName = traceEnabled ? ref.typeKey.toString() : null;
-      if (identical(key, TEXT_MUSTACHE_KEY) || identical(key, ATTR_MUSTACHE_KEY)) continue;
+      if (identical(key, TEXT_MUSTACHE_KEY) ||
+          identical(key, ATTR_MUSTACHE_KEY)) continue;
 
       s = traceEnter1(Directive_create, directiveName);
       var directive;
       try {
         directive = directiveInjector.getByKey(ref.typeKey);
 
-        var tasks = directive is AttachAware ? new _TaskList(() {
+        var tasks = directive is AttachAware
+            ? new _TaskList(() {
           if (scope.isAttached) directive.attach();
-        }) : null;
+        })
+            : null;
 
         if (ref.mappings.isNotEmpty) {
           if (nodeAttrs == null) nodeAttrs = new _AnchorAttrs(ref);
@@ -251,8 +260,8 @@ class ElementBinder {
     }
   }
 
-  void _createDirectiveFactories(DirectiveRef ref, DirectiveInjector nodeInjector, node,
-                                 nodeAttrs) {
+  void _createDirectiveFactories(
+      DirectiveRef ref, DirectiveInjector nodeInjector, node, nodeAttrs) {
     if (ref.typeKey == TEXT_MUSTACHE_KEY) {
       new TextMustache(node, ref.valueAST, nodeInjector.scope);
     } else if (ref.typeKey == ATTR_MUSTACHE_KEY) {
@@ -265,30 +274,32 @@ class ElementBinder {
       nodeInjector.bindByKey(ref.typeKey, componentFactory,
           boundComponentFactory.callArgs, ref.annotation.visibility);
     } else {
-      nodeInjector.bindByKey(ref.typeKey, ref.factory, ref.paramKeys, ref.annotation.visibility);
+      nodeInjector.bindByKey(
+          ref.typeKey, ref.factory, ref.paramKeys, ref.annotation.visibility);
     }
   }
 
-  DirectiveInjector bind(View view, Scope scope,
-                         DirectiveInjector parentInjector,
-                         dom.Node node) {
+  DirectiveInjector bind(
+      View view, Scope scope, DirectiveInjector parentInjector, dom.Node node) {
     var nodeAttrs = node is dom.Element ? new NodeAttrs(node) : null;
 
     var directiveRefs = _usableDirectiveRefs;
     if (!hasDirectivesOrEvents) return parentInjector;
 
     DirectiveInjector nodeInjector;
-    var parentEventHandler = parentInjector == null ?
-        _appInjector.getByKey(EVENT_HANDLER_KEY) :
-        eventHandler(parentInjector);
+    var parentEventHandler = parentInjector == null
+        ? _appInjector.getByKey(EVENT_HANDLER_KEY)
+        : eventHandler(parentInjector);
     if (this is TemplateElementBinder) {
       nodeInjector = new TemplateDirectiveInjector(parentInjector, _appInjector,
-          node, nodeAttrs, parentEventHandler, scope, _animate, (this as TemplateElementBinder).templateViewFactory, view);
+          node, nodeAttrs, parentEventHandler, scope, _animate,
+          (this as TemplateElementBinder).templateViewFactory, view);
     } else {
-      nodeInjector = new DirectiveInjector(parentInjector, _appInjector, node, nodeAttrs, parentEventHandler, scope, _animate, view);
+      nodeInjector = new DirectiveInjector(parentInjector, _appInjector, node,
+          nodeAttrs, parentEventHandler, scope, _animate, view);
     }
 
-    for(var i = 0; i < directiveRefs.length; i++) {
+    for (var i = 0; i < directiveRefs.length; i++) {
       DirectiveRef ref = directiveRefs[i];
       Directive annotation = ref.annotation;
       _createDirectiveFactories(ref, nodeInjector, node, nodeAttrs);
@@ -297,7 +308,8 @@ class ElementBinder {
         if (config != null) config(nodeInjector);
       }
       if (_config.elementProbeEnabled && ref.bindingExpressions != null) {
-        nodeInjector.elementProbe.bindingExpressions.addAll(ref.bindingExpressions);
+        nodeInjector.elementProbe.bindingExpressions
+            .addAll(ref.bindingExpressions);
       }
     }
 
@@ -327,11 +339,16 @@ class ElementBinder {
       // due to https://code.google.com/p/dart/issues/detail?id=17406
       // we have to manually run the zone.
       var zone = Zone.current;
-      _bindAssignablePropsOn.forEach((String eventName) =>
-	      node.addEventListener(eventName, (_) =>
-	        zone.run(() =>
-	          bindAssignableProps.forEach((propAndExp) =>
-	            propAndExp[1].assign(scope.context, jsNode[propAndExp[0]])))));
+      _bindAssignablePropsOn
+          .forEach(
+              (String eventName) =>
+                  node
+                      .addEventListener(
+                          eventName,
+                          (_) =>
+                              zone.run(() => bindAssignableProps.forEach(
+                                  (propAndExp) => propAndExp[1].assign(
+                                      scope.context, jsNode[propAndExp[0]])))));
     }
 
     if (onEvents.isNotEmpty) {
@@ -420,5 +437,5 @@ class TaggedElementBinder {
   bool get isDummy => binder == null && textBinders == null && !isTopLevel;
 
   String toString() => "[TaggedElementBinder binder:$binder parentBinderOffset:"
-                       "$parentBinderOffset textBinders:$textBinders]";
+      "$parentBinderOffset textBinders:$textBinders]";
 }

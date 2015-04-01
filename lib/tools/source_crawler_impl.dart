@@ -41,9 +41,8 @@ class SourceCrawlerImpl implements SourceCrawler {
     }
   }
 
-  void processImports(CompilationUnit cu, String currentDir,
-                      String currentFile, List<String> visited,
-                      List<String> toVisit) {
+  void processImports(CompilationUnit cu, String currentDir, String currentFile,
+      List<String> visited, List<String> toVisit) {
     cu.directives.forEach((Directive directive) {
       if (directive is ImportDirective ||
           directive is PartDirective ||
@@ -60,9 +59,8 @@ class SourceCrawlerImpl implements SourceCrawler {
     });
   }
 
-  String canonicalizeImportPath(String currentDir,
-                                String currentFile,
-                                String uri) {
+  String canonicalizeImportPath(
+      String currentDir, String currentFile, String uri) {
     // ignore core libraries
     if (uri.startsWith('dart:')) {
       return null;

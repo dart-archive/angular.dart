@@ -14,7 +14,7 @@ class _FunctionChain {
   final Function fn;
   _FunctionChain _next;
 
-  _FunctionChain(fn()): fn = fn {
+  _FunctionChain(fn()) : fn = fn {
     assert(fn != null);
   }
 }
@@ -26,8 +26,7 @@ class ASTParser {
 
   ASTParser(this._parser, this._closureMap);
 
-  AST call(String input, {FormatterMap formatters,
-                          bool collection: false }) {
+  AST call(String input, {FormatterMap formatters, bool collection: false}) {
     var visitor = new _ExpressionVisitor(_closureMap, formatters);
     var exp = _parser(input);
     AST ast = collection ? visitor.visitCollection(exp) : visitor.visit(exp);
@@ -76,24 +75,21 @@ class _ExpressionVisitor implements syntax.Visitor {
   AST visitAccessMember(syntax.AccessMember exp) =>
       new FieldReadAST(visit(exp.object), exp.name);
 
-  AST visitBinary(syntax.Binary exp) =>
-      new PureFunctionAST(exp.operation,
-                          _operationToFunction(exp.operation),
-                          [visit(exp.left), visit(exp.right)]);
+  AST visitBinary(syntax.Binary exp) => new PureFunctionAST(exp.operation,
+      _operationToFunction(exp.operation), [visit(exp.left), visit(exp.right)]);
 
-  AST visitPrefix(syntax.Prefix exp) =>
-      new PureFunctionAST(exp.operation,
-                          _operationToFunction(exp.operation),
-                          [visit(exp.expression)]);
+  AST visitPrefix(syntax.Prefix exp) => new PureFunctionAST(exp.operation,
+      _operationToFunction(exp.operation), [visit(exp.expression)]);
 
-  AST visitConditional(syntax.Conditional exp) =>
-      new PureFunctionAST('?:', _operation_ternary,
-                          [visit(exp.condition), visit(exp.yes),
-                          visit(exp.no)]);
+  AST visitConditional(syntax.Conditional exp) => new PureFunctionAST('?:',
+      _operation_ternary, [
+    visit(exp.condition),
+    visit(exp.yes),
+    visit(exp.no)
+  ]);
 
-  AST visitAccessKeyed(syntax.AccessKeyed exp) =>
-      new ClosureAST('[]', _operation_bracket,
-                     [visit(exp.object), visit(exp.key)]);
+  AST visitAccessKeyed(syntax.AccessKeyed exp) => new ClosureAST(
+      '[]', _operation_bracket, [visit(exp.object), visit(exp.key)]);
 
   AST visitLiteralPrimitive(syntax.LiteralPrimitive exp) =>
       new ConstantAST(exp.value);
@@ -145,57 +141,87 @@ class _ExpressionVisitor implements syntax.Visitor {
     _notSupported(';');
   }
 
-  void  _notSupported(String name) {
+  void _notSupported(String name) {
     throw new StateError("Can not watch expression containing '$name'.");
   }
 }
 
 Function _operationToFunction(String operation) {
-  switch(operation) {
-    case '!'  : return _operation_negate;
-    case '+'  : return _operation_add;
-    case '-'  : return _operation_subtract;
-    case '*'  : return _operation_multiply;
-    case '/'  : return _operation_divide;
-    case '~/' : return _operation_divide_int;
-    case '%'  : return _operation_remainder;
-    case '==' : return _operation_equals;
-    case '!=' : return _operation_not_equals;
-    case '<'  : return _operation_less_then;
-    case '>'  : return _operation_greater_then;
-    case '<=' : return _operation_less_or_equals_then;
-    case '>=' : return _operation_greater_or_equals_then;
-    case '^'  : return _operation_power;
-    case '&'  : return _operation_bitwise_and;
-    case '&&' : return _operation_logical_and;
-    case '||' : return _operation_logical_or;
-    default: throw new StateError(operation);
+  switch (operation) {
+    case '!':
+      return _operation_negate;
+    case '+':
+      return _operation_add;
+    case '-':
+      return _operation_subtract;
+    case '*':
+      return _operation_multiply;
+    case '/':
+      return _operation_divide;
+    case '~/':
+      return _operation_divide_int;
+    case '%':
+      return _operation_remainder;
+    case '==':
+      return _operation_equals;
+    case '!=':
+      return _operation_not_equals;
+    case '<':
+      return _operation_less_then;
+    case '>':
+      return _operation_greater_then;
+    case '<=':
+      return _operation_less_or_equals_then;
+    case '>=':
+      return _operation_greater_or_equals_then;
+    case '^':
+      return _operation_power;
+    case '&':
+      return _operation_bitwise_and;
+    case '&&':
+      return _operation_logical_and;
+    case '||':
+      return _operation_logical_or;
+    default:
+      throw new StateError(operation);
   }
 }
 
-_operation_negate(value)                       => !toBool(value);
-_operation_add(left, right)                    => autoConvertAdd(left, right);
-_operation_subtract(left, right)               => (left != null && right != null) ? left - right : (left != null ? left : (right != null ? 0 - right : 0));
-_operation_multiply(left, right)               => (left == null || right == null) ? null : left * right;
-_operation_divide(left, right)                 => (left == null || right == null) ? null : left / right;
-_operation_divide_int(left, right)             => (left == null || right == null) ? null : left ~/ right;
-_operation_remainder(left, right)              => (left == null || right == null) ? null : left % right;
-_operation_equals(left, right)                 => left == right;
-_operation_not_equals(left, right)             => left != right;
-_operation_less_then(left, right)              => (left == null || right == null) ? null : left < right;
-_operation_greater_then(left, right)           => (left == null || right == null) ? null : left > right;
-_operation_less_or_equals_then(left, right)    => (left == null || right == null) ? null : left <= right;
-_operation_greater_or_equals_then(left, right) => (left == null || right == null) ? null : left >= right;
-_operation_power(left, right)                  => (left == null || right == null) ? null : left ^ right;
-_operation_bitwise_and(left, right)            => (left == null || right == null) ? null : left & right;
+_operation_negate(value) => !toBool(value);
+_operation_add(left, right) => autoConvertAdd(left, right);
+_operation_subtract(left, right) => (left != null && right != null)
+    ? left - right
+    : (left != null ? left : (right != null ? 0 - right : 0));
+_operation_multiply(left, right) =>
+    (left == null || right == null) ? null : left * right;
+_operation_divide(left, right) =>
+    (left == null || right == null) ? null : left / right;
+_operation_divide_int(left, right) =>
+    (left == null || right == null) ? null : left ~/ right;
+_operation_remainder(left, right) =>
+    (left == null || right == null) ? null : left % right;
+_operation_equals(left, right) => left == right;
+_operation_not_equals(left, right) => left != right;
+_operation_less_then(left, right) =>
+    (left == null || right == null) ? null : left < right;
+_operation_greater_then(left, right) =>
+    (left == null || right == null) ? null : left > right;
+_operation_less_or_equals_then(left, right) =>
+    (left == null || right == null) ? null : left <= right;
+_operation_greater_or_equals_then(left, right) =>
+    (left == null || right == null) ? null : left >= right;
+_operation_power(left, right) =>
+    (left == null || right == null) ? null : left ^ right;
+_operation_bitwise_and(left, right) =>
+    (left == null || right == null) ? null : left & right;
 // TODO(misko): these should short circuit the evaluation.
-_operation_logical_and(left, right)            => toBool(left) && toBool(right);
-_operation_logical_or(left, right)             => toBool(left) || toBool(right);
+_operation_logical_and(left, right) => toBool(left) && toBool(right);
+_operation_logical_or(left, right) => toBool(left) || toBool(right);
 
 _operation_ternary(condition, yes, no) => toBool(condition) ? yes : no;
 _operation_bracket(obj, key) {
-  if (obj != null && (
-      obj is! List || (key is int && key >= 0 && key < obj.length))) {
+  if (obj != null &&
+      (obj is! List || (key is int && key >= 0 && key < obj.length))) {
     return obj[key];
   } else {
     return null;
@@ -223,22 +249,22 @@ class _FormatterWrapper extends FunctionApply {
   final Function formatterFn;
   final List args;
   final List<Watch> argsWatches;
-  _FormatterWrapper(this.formatterFn, length):
-      args = new List(length),
-      argsWatches = new List(length);
+  _FormatterWrapper(this.formatterFn, length)
+      : args = new List(length),
+        argsWatches = new List(length);
 
   apply(List values) {
-    for (var i=0; i < values.length; i++) {
+    for (var i = 0; i < values.length; i++) {
       var value = values[i];
       var lastValue = args[i];
       if (!identical(value, lastValue)) {
-       if (value is CollectionChangeRecord) {
-         args[i] = (value as CollectionChangeRecord).iterable;
-       } else if (value is MapChangeRecord) {
-         args[i] = (value as MapChangeRecord).map;
-       } else {
-         args[i] = value;
-       }
+        if (value is CollectionChangeRecord) {
+          args[i] = (value as CollectionChangeRecord).iterable;
+        } else if (value is MapChangeRecord) {
+          args[i] = (value as MapChangeRecord).map;
+        } else {
+          args[i] = value;
+        }
       }
     }
     var value = Function.apply(formatterFn, args);

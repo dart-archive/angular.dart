@@ -50,9 +50,12 @@ class ViewPort {
   final View _parentView;
   final views = <View>[];
 
-  ViewPort(DirectiveInjector directiveInjector, this.scope, this.placeholder, this._animate, [this._lightDom, View parentView])
+  ViewPort(DirectiveInjector directiveInjector, this.scope, this.placeholder,
+      this._animate, [this._lightDom, View parentView])
       : directiveInjector = directiveInjector,
-      _parentView = parentView != null ? parentView : directiveInjector.getByKey(VIEW_KEY) {
+        _parentView = parentView != null
+            ? parentView
+            : directiveInjector.getByKey(VIEW_KEY) {
     _parentView.addViewPort(this);
   }
 
@@ -68,11 +71,12 @@ class ViewPort {
 
   /// Schedules the insertion of the view in the next DOM write phase.
   /// The [view] gets inserted as the first child or after [insertAfter] when specified.
-  View insert(View view, { View insertAfter }) {
+  View insert(View view, {View insertAfter}) {
     scope.rootScope.domWrite(() {
       dom.Node previousNode = _lastNode(insertAfter);
       _viewsInsertAfter(view, insertAfter);
-      _animate.insert(view.nodes, placeholder.parentNode, insertBefore: previousNode.nextNode);
+      _animate.insert(view.nodes, placeholder.parentNode,
+          insertBefore: previousNode.nextNode);
       _notifyLightDom();
     });
     return view;
@@ -108,12 +112,13 @@ class ViewPort {
   }
 
   /// Schedules the move of the [view] in the next DOM write phase.
-  View move(View view, { View moveAfter }) {
+  View move(View view, {View moveAfter}) {
     dom.Node previousNode = _lastNode(moveAfter);
     views.remove(view);
     _viewsInsertAfter(view, moveAfter);
     scope.rootScope.domWrite(() {
-      _animate.move(view.nodes, placeholder.parentNode, insertBefore: previousNode.nextNode);
+      _animate.move(view.nodes, placeholder.parentNode,
+          insertBefore: previousNode.nextNode);
       _notifyLightDom();
     });
     return view;
@@ -127,7 +132,7 @@ class ViewPort {
   /// Concatenates and returns the nodes for all the views.
   List<dom.Node> get nodes {
     final r = [];
-    for(final v in views) {
+    for (final v in views) {
       r.addAll(v.nodes);
     }
     return r;
@@ -138,7 +143,5 @@ class ViewPort {
   }
 
   dom.Node _lastNode(View insertAfter) =>
-    insertAfter == null
-      ? placeholder
-      : insertAfter.nodes.last;
+      insertAfter == null ? placeholder : insertAfter.nodes.last;
 }

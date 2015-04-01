@@ -25,39 +25,35 @@ import 'dart:html';
  * your own @MirrorsUsed annotation or ensure that everything is tagged with
  * the Ng annotations.
  */
-@MirrorsUsed(targets: const [
-    'angular',
-    'angular.core_internal',
-    'angular.core.dom_internal',
-    'angular.formatter',
-    'angular.perf',
-    'angular.directive',
-    'angular.routing',
-    'angular.core.annotation_src',
-    'angular.core.parser.Parser',
-    'angular.core.parser',
-    'angular.core.parser.lexer',
-    'angular.core_dom.type_to_uri_mapper_dynamic',
-    'angular.core_dynamic.DynamicMetadataExtractor',
-    'perf_api',
-    List,
-    NodeTreeSanitizer,
+@MirrorsUsed(
+    targets: const [
+  'angular',
+  'angular.core_internal',
+  'angular.core.dom_internal',
+  'angular.formatter',
+  'angular.perf',
+  'angular.directive',
+  'angular.routing',
+  'angular.core.annotation_src',
+  'angular.core.parser.Parser',
+  'angular.core.parser',
+  'angular.core.parser.lexer',
+  'angular.core_dom.type_to_uri_mapper_dynamic',
+  'angular.core_dynamic.DynamicMetadataExtractor',
+  'perf_api',
+  List,
+  NodeTreeSanitizer,
 ],
-metaTargets: const [
-    Injectable,
-    Decorator,
-    Component,
-    Formatter
-])
+    metaTargets: const [Injectable, Decorator, Component, Formatter])
 import 'dart:mirrors' show MirrorsUsed;
 
 class _DynamicApplication extends Application {
   _DynamicApplication() {
     ngModule
-        ..bind(TypeToUriMapper, toImplementation: DynamicTypeToUriMapper)
-        ..bind(MetadataExtractor, toImplementation: DynamicMetadataExtractor)
-        ..bind(FieldGetterFactory, toImplementation: DynamicFieldGetterFactory)
-        ..bind(ClosureMap, toImplementation: DynamicClosureMap);
+      ..bind(TypeToUriMapper, toImplementation: DynamicTypeToUriMapper)
+      ..bind(MetadataExtractor, toImplementation: DynamicMetadataExtractor)
+      ..bind(FieldGetterFactory, toImplementation: DynamicFieldGetterFactory)
+      ..bind(ClosureMap, toImplementation: DynamicClosureMap);
   }
 }
 

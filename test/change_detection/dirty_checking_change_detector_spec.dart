@@ -8,16 +8,12 @@ import 'package:angular/change_detection/dirty_checking_change_detector_dynamic.
 import 'dart:collection';
 import 'dart:math';
 import 'package:observe/observe.dart'
-    show ObservableList,
-         ObservableMap,
-         ChangeNotifier,
-         observable;
+    show ObservableList, ObservableMap, ChangeNotifier, observable;
 
 DirtyCheckingChangeDetector<String> detector;
 
 void testWithGetterFactory(FieldGetterFactory getterFactory) {
   describe('DirtyCheckingChangeDetector with ${getterFactory.runtimeType}', () {
-
     beforeEach(() {
       detector = new DirtyCheckingChangeDetector<String>(getterFactory);
     });
@@ -32,14 +28,16 @@ void testWithGetterFactory(FieldGetterFactory getterFactory) {
         var user = new _ObservableUser('', '');
         Iterator changeIterator;
 
-        detector..watch(user, 'first', null)
-                ..watch(user, 'last', null)
-                ..collectChanges(); // throw away first set
+        detector
+          ..watch(user, 'first', null)
+          ..watch(user, 'last', null)
+          ..collectChanges(); // throw away first set
 
         changeIterator = detector.collectChanges();
         expect(changeIterator.moveNext()).toEqual(false);
-        user..first = 'misko'
-            ..last = 'hevery';
+        user
+          ..first = 'misko'
+          ..last = 'hevery';
 
         microLeap();
         changeIterator = detector.collectChanges();
@@ -64,14 +62,16 @@ void testWithGetterFactory(FieldGetterFactory getterFactory) {
         var user = new _User('', '');
         Iterator changeIterator;
 
-        detector..watch(user, 'first', null)
-                ..watch(user, 'last', null)
-                ..collectChanges(); // throw away first set
+        detector
+          ..watch(user, 'first', null)
+          ..watch(user, 'last', null)
+          ..collectChanges(); // throw away first set
 
         changeIterator = detector.collectChanges();
         expect(changeIterator.moveNext()).toEqual(false);
-        user..first = 'misko'
-            ..last = 'hevery';
+        user
+          ..first = 'misko'
+          ..last = 'hevery';
 
         changeIterator = detector.collectChanges();
         expect(changeIterator.moveNext()).toEqual(true);
@@ -100,7 +100,9 @@ void testWithGetterFactory(FieldGetterFactory getterFactory) {
       it('should ignore NaN != NaN', () {
         var user = new _User();
         user.age = double.NAN;
-        detector..watch(user, 'age', null)..collectChanges(); // throw away first set
+        detector
+          ..watch(user, 'age', null)
+          ..collectChanges(); // throw away first set
 
         var changeIterator = detector.collectChanges();
         expect(changeIterator.moveNext()).toEqual(false);
@@ -114,7 +116,7 @@ void testWithGetterFactory(FieldGetterFactory getterFactory) {
       });
 
       it('should treat map field dereference as []', () {
-        var obj = {'name':'misko'};
+        var obj = {'name': 'misko'};
         detector.watch(obj, 'name', null);
         detector.collectChanges(); // throw away first set
 
@@ -159,11 +161,11 @@ void testWithGetterFactory(FieldGetterFactory getterFactory) {
         var child1a = detector.newGroup();
         var child1b = detector.newGroup();
         var child2 = child1a.newGroup();
-        child1a.watch(obj,'a', '1a');
-        child1b.watch(obj,'a', '1b');
+        child1a.watch(obj, 'a', '1a');
+        child1b.watch(obj, 'a', '1b');
         detector.watch(obj, 'a', '0A');
-        child1a.watch(obj,'a', '1A');
-        child2.watch(obj,'a', '2A');
+        child1a.watch(obj, 'a', '1A');
+        child2.watch(obj, 'a', '2A');
 
         var iterator;
         obj['a'] = 1;
@@ -183,11 +185,11 @@ void testWithGetterFactory(FieldGetterFactory getterFactory) {
         var child1a = detector.newGroup();
         var child1b = detector.newGroup();
         var child2 = child1a.newGroup();
-        child1a.watch(observable,'first', '1a');
+        child1a.watch(observable, 'first', '1a');
         child1b.watch(obj, 'a', '1b');
         detector.watch(obj, 'a', '0A');
-        child1a.watch(obj,'a', '1A');
-        child2.watch(observable,'last', '2A');
+        child1a.watch(obj, 'a', '1A');
+        child2.watch(observable, 'last', '2A');
 
         var iterator;
         obj['a'] = 1;
@@ -218,7 +220,7 @@ void testWithGetterFactory(FieldGetterFactory getterFactory) {
         var obj = {};
         var ra = detector.watch(obj, 'a', 'a');
         var child = detector.newGroup();
-        var cb = child.watch(obj,'b', 'b');
+        var cb = child.watch(obj, 'b', 'b');
         var iterotar;
 
         obj['a'] = obj['b'] = 1;
@@ -233,7 +235,7 @@ void testWithGetterFactory(FieldGetterFactory getterFactory) {
         expect(detector.collectChanges(), toEqualChanges([]));
 
         // TODO: add them back in wrong order, assert events in right order
-        cb = child.watch(obj,'b', 'b');
+        cb = child.watch(obj, 'b', 'b');
         ra = detector.watch(obj, 'a', 'a');
         obj['a'] = obj['b'] = 4;
         expect(detector.collectChanges(), toEqualChanges(['a', 'b']));
@@ -246,16 +248,17 @@ void testWithGetterFactory(FieldGetterFactory getterFactory) {
         expect(detector.collectChanges).not.toThrow();
       });
 
-      it('should properly disconnect group in case watch is removed in disconected group', () {
+      it('should properly disconnect group in case watch is removed in disconected group',
+          () {
         var map = {};
         var detector0 = new DirtyCheckingChangeDetector<String>(getterFactory);
-          var detector1 = detector0.newGroup();
-            var detector2 = detector1.newGroup();
-            var watch2 = detector2.watch(map, 'f1', null);
-          var detector3 = detector0.newGroup();
-          detector1.remove();
-            watch2.remove(); // removing a dead record
-          detector3.watch(map, 'f2', null);
+        var detector1 = detector0.newGroup();
+        var detector2 = detector1.newGroup();
+        var watch2 = detector2.watch(map, 'f1', null);
+        var detector3 = detector0.newGroup();
+        detector1.remove();
+        watch2.remove(); // removing a dead record
+        detector3.watch(map, 'f2', null);
       });
 
       it('should find random bugs', () {
@@ -274,7 +277,8 @@ void testWithGetterFactory(FieldGetterFactory getterFactory) {
             if (i % 50 == 0) {
               records = [];
               steps = [];
-              detectors = [new DirtyCheckingChangeDetector<String>(getterFactory)];
+              detectors =
+                  [new DirtyCheckingChangeDetector<String>(getterFactory)];
             }
             switch (random.nextInt(4)) {
               case 0: // new child detector
@@ -298,9 +302,7 @@ void testWithGetterFactory(FieldGetterFactory getterFactory) {
                 ChangeDetectorGroup detector = detectors[index];
                 step('detectors[$index].remove()');
                 detector.remove();
-                detectors = detectors
-                    .where((s) => s.isAttached)
-                    .toList();
+                detectors = detectors.where((s) => s.isAttached).toList();
                 break;
               case 3: // remove watch on watch group
                 if (records.length == 0) break;
@@ -311,12 +313,11 @@ void testWithGetterFactory(FieldGetterFactory getterFactory) {
                 break;
             }
           }
-        } catch(e) {
+        } catch (e) {
           print(steps);
           rethrow;
         }
       });
-
     });
 
     describe('list watching', () {
@@ -399,7 +400,9 @@ void testWithGetterFactory(FieldGetterFactory getterFactory) {
           var record = detector.watch(list, null, null);
           var iterator = detector.collectChanges()..moveNext();
 
-          list..clear()..addAll(['b', 'a', 'c']);
+          list
+            ..clear()
+            ..addAll(['b', 'a', 'c']);
           iterator = detector.collectChanges()..moveNext();
           expect(iterator.current.currentValue, toEqualCollectionRecord(
               collection: ['b[1 -> 0]', 'a[0 -> 1]', 'c'],
@@ -408,7 +411,9 @@ void testWithGetterFactory(FieldGetterFactory getterFactory) {
               moves: ['b[1 -> 0]', 'a[0 -> 1]'],
               removals: []));
 
-          list..clear()..addAll(['b', 'c', 'a']);
+          list
+            ..clear()
+            ..addAll(['b', 'c', 'a']);
           iterator = detector.collectChanges()..moveNext();
           expect(iterator.current.currentValue, toEqualCollectionRecord(
               collection: ['b', 'c[2 -> 1]', 'a[1 -> 2]'],
@@ -480,7 +485,9 @@ void testWithGetterFactory(FieldGetterFactory getterFactory) {
 
       it('should test string by value rather than by reference', () {
         var list = ['a', 'boo'];
-        detector..watch(list, null, null)..collectChanges();
+        detector
+          ..watch(list, null, null)
+          ..collectChanges();
 
         list[1] = 'b' + 'oo';
 
@@ -489,16 +496,22 @@ void testWithGetterFactory(FieldGetterFactory getterFactory) {
 
       it('should ignore [NaN] != [NaN]', () {
         var list = [double.NAN];
-        var record = detector..watch(list, null, null)..collectChanges();
+        var record = detector
+          ..watch(list, null, null)
+          ..collectChanges();
 
         expect(detector.collectChanges().moveNext()).toEqual(false);
       });
 
       it('should detect [NaN] moves', () {
         var list = [double.NAN, double.NAN];
-        detector..watch(list, null, null)..collectChanges();
+        detector
+          ..watch(list, null, null)
+          ..collectChanges();
 
-        list..clear()..addAll(['foo', double.NAN, double.NAN]);
+        list
+          ..clear()
+          ..addAll(['foo', double.NAN, double.NAN]);
         var iterator = detector.collectChanges();
         expect(iterator.moveNext()).toEqual(true);
         expect(iterator.current.currentValue, toEqualCollectionRecord(
@@ -550,7 +563,6 @@ void testWithGetterFactory(FieldGetterFactory getterFactory) {
             removals: ['a[2 -> null]']));
       });
 
-
       it('should support insertions/moves', () {
         var list = ['a', 'a', 'b', 'b'];
         var record = detector.watch(list, null, 'handler');
@@ -560,7 +572,13 @@ void testWithGetterFactory(FieldGetterFactory getterFactory) {
         expect(list).toEqual(['b', 'a', 'a', 'b', 'b']);
         iterator = detector.collectChanges()..moveNext();
         expect(iterator.current.currentValue, toEqualCollectionRecord(
-            collection: ['b[2 -> 0]', 'a[0 -> 1]', 'a[1 -> 2]', 'b', 'b[null -> 4]'],
+            collection: [
+          'b[2 -> 0]',
+          'a[0 -> 1]',
+          'a[1 -> 2]',
+          'b',
+          'b[null -> 4]'
+        ],
             previous: ['a[0 -> 1]', 'a[1 -> 2]', 'b[2 -> 0]', 'b'],
             additions: ['b[null -> 4]'],
             moves: ['b[2 -> 0]', 'a[0 -> 1]', 'a[1 -> 2]'],
@@ -674,7 +692,9 @@ void testWithGetterFactory(FieldGetterFactory getterFactory) {
         var k1 = 'a';
         var r1 = new ItemRecord(k1)..currentIndex = 1;
         var r2 = new ItemRecord(k1)..currentIndex = 2;
-        map..put(r1)..put(r2);
+        map
+          ..put(r1)
+          ..put(r2);
         expect(map.get(k1, 0)).toEqual(r1);
         expect(map.get(k1, 1)).toEqual(r2);
         expect(map.get(k1, 2)).toEqual(null);
@@ -687,24 +707,24 @@ void testWithGetterFactory(FieldGetterFactory getterFactory) {
   });
 }
 
-
 void main() {
   testWithGetterFactory(new DynamicFieldGetterFactory());
 
   testWithGetterFactory(new StaticFieldGetterFactory({
-      "first": (o) => o.first,
-      "age": (o) => o.age,
-      "last": (o) => o.last,
-      "toString": (o) => o.toString,
-      "isUnderAge": (o) => o.isUnderAge,
-      "isUnderAgeAsVariable": (o) => o.isUnderAgeAsVariable,
+    "first": (o) => o.first,
+    "age": (o) => o.age,
+    "last": (o) => o.last,
+    "toString": (o) => o.toString,
+    "isUnderAge": (o) => o.isUnderAge,
+    "isUnderAgeAsVariable": (o) => o.isUnderAgeAsVariable,
   }));
 }
 
 void addListSpec({bool useObservable}) {
   Function wrap(fn) => useObservable ? async(fn) : sync(fn);
 
-  List listFactory(List list) => useObservable ? new ObservableList.from(list) : list;
+  List listFactory(List list) =>
+      useObservable ? new ObservableList.from(list) : list;
 
   Iterator<Record> getChangeIterator() {
     if (useObservable) microLeap();
@@ -765,7 +785,9 @@ void addListSpec({bool useObservable}) {
         var record = detector.watch(list, null, null);
         var iterator = getChangeIterator()..moveNext();
 
-        list..clear()..addAll(['b', 'a', 'c']);
+        list
+          ..clear()
+          ..addAll(['b', 'a', 'c']);
         iterator = getChangeIterator()..moveNext();
         expect(iterator.current.currentValue, toEqualCollectionRecord(
             collection: ['b[1 -> 0]', 'a[0 -> 1]', 'c'],
@@ -774,7 +796,9 @@ void addListSpec({bool useObservable}) {
             moves: ['b[1 -> 0]', 'a[0 -> 1]'],
             removals: []));
 
-        list..clear()..addAll(['b', 'c', 'a']);
+        list
+          ..clear()
+          ..addAll(['b', 'c', 'a']);
         iterator = getChangeIterator()..moveNext();
         expect(iterator.current.currentValue, toEqualCollectionRecord(
             collection: ['b', 'c[2 -> 1]', 'a[1 -> 2]'],
@@ -903,7 +927,6 @@ void addListSpec({bool useObservable}) {
           removals: ['a[2 -> null]']));
     }));
 
-
     it('should support insertions/moves', wrap(() {
       var list = listFactory(['a', 'a', 'b', 'b']);
       var record = detector.watch(list, null, 'handler');
@@ -913,7 +936,13 @@ void addListSpec({bool useObservable}) {
       expect(list).toEqual(['b', 'a', 'a', 'b', 'b']);
       iterator = getChangeIterator()..moveNext();
       expect(iterator.current.currentValue, toEqualCollectionRecord(
-          collection: ['b[2 -> 0]', 'a[0 -> 1]', 'a[1 -> 2]', 'b', 'b[null -> 4]'],
+          collection: [
+        'b[2 -> 0]',
+        'a[0 -> 1]',
+        'a[1 -> 2]',
+        'b',
+        'b[null -> 4]'
+      ],
           previous: ['a[0 -> 1]', 'a[1 -> 2]', 'b[2 -> 0]', 'b'],
           additions: ['b[null -> 4]'],
           moves: ['b[2 -> 0]', 'a[0 -> 1]', 'a[1 -> 2]'],
@@ -927,8 +956,18 @@ void addListSpec({bool useObservable}) {
 
       iterator = getChangeIterator()..moveNext();
       expect(iterator.current.currentValue, toEqualCollectionRecord(
-          collection: ['1[null -> 0]', '2[null -> 1]', '3[null -> 2]', '4[null -> 3]'],
-          additions: ['1[null -> 0]', '2[null -> 1]', '3[null -> 2]', '4[null -> 3]'],
+          collection: [
+        '1[null -> 0]',
+        '2[null -> 1]',
+        '3[null -> 2]',
+        '4[null -> 3]'
+      ],
+          additions: [
+        '1[null -> 0]',
+        '2[null -> 1]',
+        '3[null -> 2]',
+        '4[null -> 3]'
+      ],
           moves: [],
           removals: []));
       detector.collectChanges();
@@ -990,7 +1029,9 @@ void addListSpec({bool useObservable}) {
       var record = detector.watch(list, null, null);
       var iterator = detector.collectChanges()..moveNext();
 
-      list..clear()..addAll(['b', 'a', 'c']);
+      list
+        ..clear()
+        ..addAll(['b', 'a', 'c']);
       iterator = getChangeIterator()..moveNext();
       expect(iterator.current.currentValue, toEqualCollectionRecord(
           collection: ['b[1 -> 0]', 'a[0 -> 1]', 'c'],
@@ -1031,7 +1072,6 @@ void addMapSpec({bool useObservable}) {
 
   describe('use observable: $useObservable', () {
     describe('previous state', () {
-
       it('should detect map value changes', wrap(() {
         var map = mapFactory({'foo': 'bar'});
         detector.watch(map, 'foo', null);
@@ -1135,7 +1175,7 @@ void addMapSpec({bool useObservable}) {
           removals: []));
 
       map.remove('b');
-      expect(map).toEqual({'a': 'A', 'd':'D'});
+      expect(map).toEqual({'a': 'A', 'd': 'D'});
       changeIterator = getChangeIterator();
       expect(changeIterator.moveNext()).toEqual(true);
       expect(changeIterator.current.currentValue, toEqualMapRecord(
@@ -1241,13 +1281,22 @@ class _ObservableUser extends ChangeNotifier {
   }
 }
 
-Matcher toEqualCollectionRecord({collection, previous, additions, moves, removals}) =>
-    new CollectionRecordMatcher(collection:collection, previous: previous,
-                                additions:additions, moves:moves, removals:removals);
+Matcher toEqualCollectionRecord(
+        {collection, previous, additions, moves, removals}) =>
+    new CollectionRecordMatcher(
+        collection: collection,
+        previous: previous,
+        additions: additions,
+        moves: moves,
+        removals: removals);
 
 Matcher toEqualMapRecord({map, previous, additions, changes, removals}) =>
-    new MapRecordMatcher(map:map, previous: previous,
-                         additions:additions, changes:changes, removals:removals);
+    new MapRecordMatcher(
+        map: map,
+        previous: previous,
+        additions: additions,
+        changes: changes,
+        removals: removals);
 
 Matcher toEqualChanges(List changes) => new ChangeMatcher(changes);
 
@@ -1260,10 +1309,9 @@ class ChangeMatcher extends Matcher {
       description..add(expected.toString());
 
   Description describeMismatch(Iterator<Record> changes,
-                               Description mismatchDescription,
-                               Map matchState, bool verbose) {
+      Description mismatchDescription, Map matchState, bool verbose) {
     List list = [];
-    while(changes.moveNext()) {
+    while (changes.moveNext()) {
       list.add(changes.current.handler);
     }
     return mismatchDescription..add(list.toString());
@@ -1271,7 +1319,7 @@ class ChangeMatcher extends Matcher {
 
   bool matches(Iterator<Record> changes, Map matchState) {
     int count = 0;
-    while(changes.moveNext()) {
+    while (changes.moveNext()) {
       if (changes.current.handler != expected[count++]) return false;
     }
     return count == expected.length;
@@ -1323,11 +1371,11 @@ class CollectionRecordMatcher extends _CollectionMatcher<ItemRecord> {
   final List moves;
   final List removals;
 
-  CollectionRecordMatcher({this.collection, this.previous,
-                          this.additions, this.moves, this.removals});
+  CollectionRecordMatcher({this.collection, this.previous, this.additions,
+      this.moves, this.removals});
 
-  Description describeMismatch(changes, Description mismatchDescription,
-                               Map matchState, bool verbose) {
+  Description describeMismatch(
+      changes, Description mismatchDescription, Map matchState, bool verbose) {
     List diffs = matchState['diffs'];
     if (diffs == null) return mismatchDescription;
     return mismatchDescription..add(diffs.join('\n'));
@@ -1351,10 +1399,10 @@ class CollectionRecordMatcher extends _CollectionMatcher<ItemRecord> {
   bool matches(CollectionChangeRecord changeRecord, Map matchState) {
     var diffs = matchState['diffs'] = [];
     return checkCollection(changeRecord, diffs) &&
-           checkPrevious(changeRecord, diffs) &&
-           checkAdditions(changeRecord, diffs) &&
-           checkMoves(changeRecord, diffs) &&
-           checkRemovals(changeRecord, diffs);
+        checkPrevious(changeRecord, diffs) &&
+        checkAdditions(changeRecord, diffs) &&
+        checkMoves(changeRecord, diffs) &&
+        checkRemovals(changeRecord, diffs);
   }
 
   bool checkCollection(CollectionChangeRecord changeRecord, List diffs) {
@@ -1362,7 +1410,8 @@ class CollectionRecordMatcher extends _CollectionMatcher<ItemRecord> {
     bool equals = _compareLists("collection", collection, items, diffs);
     int iterableLength = changeRecord.iterable.toList().length;
     if (iterableLength != items.length) {
-      diffs.add('collection length mismatched: $iterableLength != ${items.length}');
+      diffs.add(
+          'collection length mismatched: $iterableLength != ${items.length}');
       equals = false;
     }
     return equals;
@@ -1389,17 +1438,18 @@ class CollectionRecordMatcher extends _CollectionMatcher<ItemRecord> {
   }
 }
 
-class MapRecordMatcher  extends _CollectionMatcher<KeyValueRecord> {
+class MapRecordMatcher extends _CollectionMatcher<KeyValueRecord> {
   final List map;
   final List previous;
   final List additions;
   final List changes;
   final List removals;
 
-  MapRecordMatcher({this.map, this.previous, this.additions, this.changes, this.removals});
+  MapRecordMatcher(
+      {this.map, this.previous, this.additions, this.changes, this.removals});
 
-  Description describeMismatch(changes, Description mismatchDescription,
-                               Map matchState, bool verbose) {
+  Description describeMismatch(
+      changes, Description mismatchDescription, Map matchState, bool verbose) {
     List diffs = matchState['diffs'];
     if (diffs == null) return mismatchDescription;
     return mismatchDescription..add(diffs.join('\n'));
@@ -1423,10 +1473,10 @@ class MapRecordMatcher  extends _CollectionMatcher<KeyValueRecord> {
   bool matches(MapChangeRecord changeRecord, Map matchState) {
     var diffs = matchState['diffs'] = [];
     return checkMap(changeRecord, diffs) &&
-           checkPrevious(changeRecord, diffs) &&
-           checkAdditions(changeRecord, diffs) &&
-           checkChanges(changeRecord, diffs) &&
-           checkRemovals(changeRecord, diffs);
+        checkPrevious(changeRecord, diffs) &&
+        checkAdditions(changeRecord, diffs) &&
+        checkChanges(changeRecord, diffs) &&
+        checkRemovals(changeRecord, diffs);
   }
 
   bool checkMap(MapChangeRecord changeRecord, List diffs) {
@@ -1471,7 +1521,7 @@ class FooBar {
     id = fooIds++;
   }
 
-  bool operator==(other) =>
+  bool operator ==(other) =>
       other is FooBar && foo == other.foo && bar == other.bar;
 
   int get hashCode => foo.hashCode ^ bar.hashCode;

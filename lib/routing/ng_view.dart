@@ -52,12 +52,10 @@ part of angular.routing;
  *     </ul>
  */
 @Decorator(
-    selector: 'ng-view',
-    module: NgView.module,
-    visibility: Visibility.CHILDREN)
+    selector: 'ng-view', module: NgView.module, visibility: Visibility.CHILDREN)
 class NgView implements DetachAware, RouteProvider {
-  static void module(DirectiveBinder binder) =>
-      binder.bind(RouteProvider, toInstanceOf: NG_VIEW_KEY, visibility: Visibility.CHILDREN);
+  static void module(DirectiveBinder binder) => binder.bind(RouteProvider,
+      toInstanceOf: NG_VIEW_KEY, visibility: Visibility.CHILDREN);
 
   final NgRoutingHelper _locationService;
   final ViewFactoryCache _viewFactoryCache;
@@ -71,15 +69,14 @@ class NgView implements DetachAware, RouteProvider {
   Scope _childScope;
   Route _viewRoute;
 
-  NgView(this._element, this._viewFactoryCache, DirectiveInjector dirInjector, this._appInjector,
-         Router router, this._scope)
+  NgView(this._element, this._viewFactoryCache, DirectiveInjector dirInjector,
+      this._appInjector, Router router, this._scope)
       : _dirInjector = dirInjector,
-        _locationService = dirInjector.getByKey(NG_ROUTING_HELPER_KEY)
-  {
+        _locationService = dirInjector.getByKey(NG_ROUTING_HELPER_KEY) {
     RouteProvider routeProvider = dirInjector.getFromParentByKey(NG_VIEW_KEY);
-    _route = routeProvider != null ?
-        routeProvider.route.newHandle() :
-        router.root.newHandle();
+    _route = routeProvider != null
+        ? routeProvider.route.newHandle()
+        : router.root.newHandle();
     _locationService._registerPortal(this);
     _maybeReloadViews();
   }
@@ -115,9 +112,10 @@ class NgView implements DetachAware, RouteProvider {
     }
 
     var newDirectives = viewInjector.getByKey(DIRECTIVE_MAP_KEY);
-    var viewFactoryFuture = viewDef.templateHtml != null ?
-        new Future.value(_viewFactoryCache.fromHtml(viewDef.templateHtml, newDirectives)) :
-        _viewFactoryCache.fromUrl(viewDef.template, newDirectives, Uri.base);
+    var viewFactoryFuture = viewDef.templateHtml != null
+        ? new Future.value(
+            _viewFactoryCache.fromHtml(viewDef.templateHtml, newDirectives))
+        : _viewFactoryCache.fromUrl(viewDef.template, newDirectives, Uri.base);
     viewFactoryFuture.then((ViewFactory viewFactory) {
       _cleanUp();
       _childScope = _scope.createProtoChild();
@@ -152,16 +150,16 @@ class NgView implements DetachAware, RouteProvider {
    * Creates a child injector that allows loading new directives, formatters and
    * services from the provided modules.
    */
-  static Injector createChildInjectorWithReload(Injector injector, List<Module> modules) {
+  static Injector createChildInjectorWithReload(
+      Injector injector, List<Module> modules) {
     var modulesToAdd = new List<Module>.from(modules);
     modulesToAdd.add(new Module()
-        ..bind(DirectiveMap)
-        ..bind(FormatterMap));
+      ..bind(DirectiveMap)
+      ..bind(FormatterMap));
 
     return new ModuleInjector(modulesToAdd, injector);
   }
 }
-
 
 /**
  * Class that can be injected to retrieve information about the current route.

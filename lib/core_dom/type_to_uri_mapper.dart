@@ -6,7 +6,6 @@ final _path = native_path.url;
 
 /// Utility to convert type-relative URIs to be page-relative.
 abstract class TypeToUriMapper {
-
   TypeToUriMapper();
 
   static final RegExp _libraryRegExp = new RegExp(r'/packages/');

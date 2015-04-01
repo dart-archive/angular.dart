@@ -16,9 +16,9 @@ class ContextLocals {
 
   bool hasProperty(String prop) => _locals.containsKey(prop);
 
-  void operator[]=(String prop, value) {
+  void operator []=(String prop, value) {
     _locals[prop] = value;
   }
 
-  dynamic operator[](String prop) => _locals[prop];
+  dynamic operator [](String prop) => _locals[prop];
 }

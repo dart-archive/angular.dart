@@ -4,7 +4,6 @@ import '../_specs.dart';
 
 main() {
   describe('PluralizeDirective', () {
-
     describe('deal with pluralized strings without offset', () {
       var element;
       var elementAlt;
@@ -14,23 +13,19 @@ main() {
       beforeEach((TestBed tb) {
         _ = tb;
 
-        element = _.compile(
-            '<ng-pluralize count="email"' +
-                "when=\"{'-1': 'You have negative email. Whohoo!'," +
-                "'0': 'You have no new email'," +
-                "'one': 'You have one new email'," +
-                "'other': 'You have {} new emails'}\">" +
-            '</ng-pluralize>'
-        );
+        element = _.compile('<ng-pluralize count="email"' +
+            "when=\"{'-1': 'You have negative email. Whohoo!'," +
+            "'0': 'You have no new email'," +
+            "'one': 'You have one new email'," +
+            "'other': 'You have {} new emails'}\">" +
+            '</ng-pluralize>');
 
-        elementAlt = _.compile(
-            '<p ng-pluralize count="email" ' +
-                "when-minus-1='You have negative email. Whohoo!' " +
-                "when-0='You have no new email' " +
-                "when-one='You have one new email' " +
-                "when-other='You have {} new emails'>" +
-            '</p>'
-        );
+        elementAlt = _.compile('<p ng-pluralize count="email" ' +
+            "when-minus-1='You have negative email. Whohoo!' " +
+            "when-0='You have no new email' " +
+            "when-one='You have one new email' " +
+            "when-other='You have {} new emails'>" +
+            '</p>');
       });
 
       it('should show single/plural strings', () {
@@ -129,12 +124,12 @@ main() {
     });
 
     describe('edge cases', () {
-      it('should be able to handle empty strings as possible values', ((TestBed _) {
-        var element = _.compile(
-            '<ng-pluralize count="email"' +
-                "when=\"{'0': ''," +
-                "'one': 'Some text'," +
-                "'other': 'Some text'}\">" +
+      it('should be able to handle empty strings as possible values',
+          ((TestBed _) {
+        var element = _.compile('<ng-pluralize count="email"' +
+            "when=\"{'0': ''," +
+            "'one': 'Some text'," +
+            "'other': 'Some text'}\">" +
             '</ng-pluralize>');
         _.rootScope.context['email'] = '0';
         _.rootScope.apply();
@@ -144,13 +139,12 @@ main() {
 
     describe('deal with pluralized strings with offset', () {
       it('should show single/plural strings with offset', ((TestBed _) {
-        var element = _.compile(
-            "<ng-pluralize count='viewCount'  offset='2' " +
-                "when=\"{'0': 'Nobody is viewing.'," +
-                "'1': '\${p1} is viewing.'," +
-                "'2': '\${p1} and \${p2} are viewing.'," +
-                "'one': '\${p1}, \${p2} and one other person are viewing.'," +
-                "'other': '\${p1}, \${p2} and {} other people are viewing.'}\">" +
+        var element = _.compile("<ng-pluralize count='viewCount'  offset='2' " +
+            "when=\"{'0': 'Nobody is viewing.'," +
+            "'1': '\${p1} is viewing.'," +
+            "'2': '\${p1} and \${p2} are viewing.'," +
+            "'one': '\${p1}, \${p2} and one other person are viewing.'," +
+            "'other': '\${p1}, \${p2} and {} other people are viewing.'}\">" +
             "</ng-pluralize>");
         var elementAlt = _.compile(
             "<ng-pluralize count='viewCount'  offset='2' " +
@@ -159,7 +153,7 @@ main() {
                 "when-2='\${p1} and \${p2} are viewing.'" +
                 "when-one='\${p1}, \${p2} and one other person are viewing.'" +
                 "when-other='\${p1}, \${p2} and {} other people are viewing.'>" +
-            "</ng-pluralize>");
+                "</ng-pluralize>");
         _.rootScope.context['p1'] = 'Igor';
         _.rootScope.context['p2'] = 'Misko';
 
@@ -180,13 +174,17 @@ main() {
 
         _.rootScope.context['viewCount'] = 3;
         _.rootScope.apply();
-        expect(element.text).toEqual('Igor, Misko and one other person are viewing.');
-        expect(elementAlt.text).toEqual('Igor, Misko and one other person are viewing.');
+        expect(element.text)
+            .toEqual('Igor, Misko and one other person are viewing.');
+        expect(elementAlt.text)
+            .toEqual('Igor, Misko and one other person are viewing.');
 
         _.rootScope.context['viewCount'] = 4;
         _.rootScope.apply();
-        expect(element.text).toEqual('Igor, Misko and 2 other people are viewing.');
-        expect(elementAlt.text).toEqual('Igor, Misko and 2 other people are viewing.');
+        expect(element.text)
+            .toEqual('Igor, Misko and 2 other people are viewing.');
+        expect(elementAlt.text)
+            .toEqual('Igor, Misko and 2 other people are viewing.');
       }));
     });
   });

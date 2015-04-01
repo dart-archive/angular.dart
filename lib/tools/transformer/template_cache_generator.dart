@@ -31,15 +31,15 @@ class TemplateCacheGenerator extends Transformer with ResolverTransformer {
     var outputBuffer = new StringBuffer();
 
     return gatherReferencedUris(transform, resolver, options,
-            templatesOnly: false).then((templates) {
+        templatesOnly: false).then((templates) {
       _writeTemplateCacheHeader(asset.id, outputBuffer);
       templates.forEach((uri, contents) {
         contents = contents.replaceAll("'''", r"\'\'\'");
         outputBuffer.write("  r'$uri' : r'''\n$contents''',\n");
       });
       _writeTemplateCacheFooter(outputBuffer);
-      transform.addOutput(
-          new Asset.fromString(outputId, outputBuffer.toString()));
+      transform
+          .addOutput(new Asset.fromString(outputId, outputBuffer.toString()));
     });
   }
 

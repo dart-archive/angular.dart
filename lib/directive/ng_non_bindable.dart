@@ -18,7 +18,5 @@ part of angular.directive;
  * element.  However, the `foo` attribute *will* be interpolated because it is
  * not on a child node.
  */
-@Decorator(
-    selector: '[ng-non-bindable]',
-    children: Directive.IGNORE_CHILDREN)
+@Decorator(selector: '[ng-non-bindable]', children: Directive.IGNORE_CHILDREN)
 class NgNonBindable {}

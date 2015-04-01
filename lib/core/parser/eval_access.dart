@@ -21,9 +21,10 @@ class AccessMemberFast extends syntax.AccessMember with AccessFast {
   final Setter setter;
   AccessMemberFast(object, String name, this.getter, this.setter)
       : super(object, name);
-  eval(scope, [FormatterMap formatters]) => _eval(object.eval(scope, formatters));
+  eval(scope, [FormatterMap formatters]) =>
+      _eval(object.eval(scope, formatters));
   assign(scope, value) => _assign(scope, object.eval(scope), value);
-  _assignToNonExisting(scope, value) => object.assign(scope, { name: value });
+  _assignToNonExisting(scope, value) => object.assign(scope, {name: value});
 }
 
 class AccessKeyed extends syntax.AccessKeyed {
@@ -65,4 +66,3 @@ abstract class AccessFast {
   // is overwritten for access to members.
   _assignToNonExisting(scope, value) => null;
 }
-

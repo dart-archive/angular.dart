@@ -7,7 +7,7 @@ part of angular.formatter_internal;
  *
  *     expression | uppercase
  */
-@Formatter(name:'uppercase')
+@Formatter(name: 'uppercase')
 class Uppercase implements Function {
   call(String text) => text == null ? text : text.toUpperCase();
 }

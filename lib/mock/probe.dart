@@ -31,4 +31,3 @@ class Probe implements DetachAware {
    */
   directive(Type type) => injector.get(type);
 }
-

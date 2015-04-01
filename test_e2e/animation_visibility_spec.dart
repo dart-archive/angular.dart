@@ -6,13 +6,14 @@ class VisibilityAppState extends AppState {
   var visibleHide = element(by.css(".visible-hide"));
 
   hasClass(var element, String expectedClass) {
-    return element.getAttribute("class").then((_class) =>
-      "$_class".split(" ").contains(expectedClass));
+    return element
+        .getAttribute("class")
+        .then((_class) => "$_class".split(" ").contains(expectedClass));
   }
 
   assertState({bool toggled: false}) {
-      expect(hasClass(visibleHide, "ng-hide")).toEqual(toggled);
-      expect(visibleIf.isPresent()).toEqual(toggled);
+    expect(hasClass(visibleHide, "ng-hide")).toEqual(toggled);
+    expect(visibleIf.isPresent()).toEqual(toggled);
   }
 }
 
@@ -41,6 +42,5 @@ animation_visibility_spec() {
       S.toggleBtn.click();
       S.assertState(toggled: true);
     });
-
   });
 }

@@ -7,9 +7,7 @@ import 'package:angular/change_detection/ast_parser.dart';
 import 'dart:html';
 import 'dart:js' as js;
 
-@Component(
-    selector: 'tree',
-    template: '<span> {{data.value}}'
+@Component(selector: 'tree', template: '<span> {{data.value}}'
     '<span ng-if="data.right != null"><tree data=data.right></span>'
     '<span ng-if="data.left != null"><tree data=data.left></span>'
     '</span>')
@@ -18,18 +16,13 @@ class TreeComponent {
   var data;
 }
 
-@Component(
-    selector: 'transcluding-tree',
-    template: '<span> {{data.value}}'
+@Component(selector: 'transcluding-tree', template: '<span> {{data.value}}'
     '<span ng-if="data.right != null"><transcluding-tree data=data.right></span>'
     '<span ng-if="data.left != null"><transcluding-tree data=data.left></span>'
-    '</span>',
-    useShadowDom: false)
+    '</span>', useShadowDom: false)
 class TranscludingTreeComponent extends TreeComponent {}
 
-@Component(
-    selector: 'tree-url',
-    templateUrl: 'tree-tmpl.html')
+@Component(selector: 'tree-url', templateUrl: 'tree-tmpl.html')
 class TreeUrlComponent {
   @NgOneWay('data')
   var data;
@@ -41,21 +34,16 @@ class TreeUrlComponent {
     useShadowDom: false)
 class TranscludingTreeUrlComponent extends TreeUrlComponent {}
 
-
 // This is a baseline implementation of TreeComponent.
 // It assumes the data never changes and simply throws elements on the DOM
-@Component(
-  selector: 'ng-free-tree',
-  template: ''
-  )
+@Component(selector: 'ng-free-tree', template: '')
 class NgFreeTree implements ShadowRootAware {
   var _data;
 
   @NgOneWay('data')
   set data(v) {
     _data = v;
-    if (sroot != null)
-    updateElement(sroot, _data);
+    if (sroot != null) updateElement(sroot, _data);
   }
 
   ShadowRoot sroot;
@@ -76,12 +64,10 @@ class NgFreeTree implements ShadowRootAware {
       s.text = " $value";
     }
     if (tree.containsKey('right')) {
-      s.append(new SpanElement()
-          ..append(newFreeTree(tree['right'])));
+      s.append(new SpanElement()..append(newFreeTree(tree['right'])));
     }
     if (tree.containsKey('left')) {
-      s.append(new SpanElement()
-        ..append(newFreeTree(tree['left'])));
+      s.append(new SpanElement()..append(newFreeTree(tree['left'])));
     }
     return elt;
   }
@@ -93,7 +79,12 @@ class NgFreeTree implements ShadowRootAware {
   }
 }
 
-var treeValueAST, treeRightNotNullAST, treeLeftNotNullAST, treeRightAST, treeLeftAST, treeAST;
+var treeValueAST,
+    treeRightNotNullAST,
+    treeLeftNotNullAST,
+    treeRightAST,
+    treeLeftAST,
+    treeAST;
 /**
  *  A baseline version of TreeComponent which uses Angular's Scope to
  *  manage data.  This version is setting up data binding so arbitrary
@@ -102,18 +93,14 @@ var treeValueAST, treeRightNotNullAST, treeLeftNotNullAST, treeRightAST, treeLef
  *  Note that removing subtrees is not implemented as that feature
  *  is never exercised in the benchmark.
  */
-@Component(
-  selector: 'ng-free-tree-scoped',
-  template: ''
-  )
+@Component(selector: 'ng-free-tree-scoped', template: '')
 class NgFreeTreeScoped implements ShadowRootAware {
   var _data;
 
   @NgOneWay('data')
   set data(v) {
     _data = v;
-    if (sroot != null)
-    updateElement(sroot, _data);
+    if (sroot != null) updateElement(sroot, _data);
   }
 
   ShadowRoot sroot;
@@ -144,14 +131,12 @@ class NgFreeTreeScoped implements ShadowRootAware {
 
     scope.watchAST(treeRightNotNullAST, (v, _) {
       if (v != true) return;
-      s.append(new SpanElement()
-          ..append(newFreeTree(scope, treeRightAST)));
+      s.append(new SpanElement()..append(newFreeTree(scope, treeRightAST)));
     });
 
     scope.watchAST(treeLeftNotNullAST, (v, _) {
       if (v != true) return;
-      s.append(new SpanElement()
-        ..append(newFreeTree(scope, treeLeftAST)));
+      s.append(new SpanElement()..append(newFreeTree(scope, treeLeftAST)));
     });
 
     return elt;
@@ -169,7 +154,6 @@ class NgFreeTreeScoped implements ShadowRootAware {
     root.append(newFreeTree(treeScope, treeAST));
   }
 }
-
 
 /**
  * A scope-backed baseline that data-binds through a Dart object.
@@ -205,7 +189,7 @@ class FreeTreeClass {
     scope.watchAST(treeRightNotNullAST, (v, _) {
       if (v != true) return;
       s.append(new SpanElement()
-          ..append(new FreeTreeClass(scope, treeRightAST).element()));
+        ..append(new FreeTreeClass(scope, treeRightAST).element()));
     });
 
     scope.watchAST(treeLeftNotNullAST, (v, _) {
@@ -218,18 +202,14 @@ class FreeTreeClass {
   }
 }
 
-@Component(
-  selector: 'ng-free-tree-class',
-  template: ''
-  )
+@Component(selector: 'ng-free-tree-class', template: '')
 class NgFreeTreeClass implements ShadowRootAware {
   var _data;
 
   @NgOneWay('data')
   set data(v) {
     _data = v;
-    if (sroot != null)
-    updateElement(sroot, _data);
+    if (sroot != null) updateElement(sroot, _data);
   }
 
   ShadowRoot sroot;
@@ -240,7 +220,6 @@ class NgFreeTreeClass implements ShadowRootAware {
     sroot = root;
     if (_data != null) updateElement(sroot, _data);
   }
-
 
   var treeScope;
   updateElement(root, tree) {
@@ -260,11 +239,14 @@ class TreeNode {
   TreeNode left;
   TreeNode right;
   TreeNode([this.value, this.left, this.right]);
-  operator[](key) {
+  operator [](key) {
     switch (key) {
-      case 'value': return value;
-      case 'left': return left;
-      case 'right': return right;
+      case 'value':
+        return value;
+      case 'left':
+        return left;
+      case 'right':
+        return right;
     }
   }
 }
@@ -274,15 +256,17 @@ main() {
   var cleanup, createDom;
 
   var module = new Module()
-      ..bind(TreeComponent)
-      ..bind(TranscludingTreeComponent)
-      ..bind(TreeUrlComponent)
-      ..bind(TranscludingTreeUrlComponent)
-      ..bind(NgFreeTree)
-      ..bind(NgFreeTreeScoped)
-      ..bind(NgFreeTreeClass)
-      ..bind(ScopeDigestTTL, toFactory: () => new ScopeDigestTTL.value(15), inject: [])
-      ..bind(CompilerConfig, toValue: new CompilerConfig.withOptions(elementProbeEnabled: false));
+    ..bind(TreeComponent)
+    ..bind(TranscludingTreeComponent)
+    ..bind(TreeUrlComponent)
+    ..bind(TranscludingTreeUrlComponent)
+    ..bind(NgFreeTree)
+    ..bind(NgFreeTreeScoped)
+    ..bind(NgFreeTreeClass)
+    ..bind(ScopeDigestTTL,
+        toFactory: () => new ScopeDigestTTL.value(15), inject: [])
+    ..bind(CompilerConfig,
+        toValue: new CompilerConfig.withOptions(elementProbeEnabled: false));
 
   var injector = applicationFactory().addModule(module).run();
   assert(injector != null);
@@ -304,10 +288,9 @@ main() {
 
   buildTree(maxDepth, values, curDepth) {
     if (maxDepth == curDepth) return new TreeNode();
-    return new TreeNode(
-        values[curDepth],
-        buildTree(maxDepth, values, curDepth+1),
-        buildTree(maxDepth, values, curDepth+1));
+    return new TreeNode(values[curDepth],
+        buildTree(maxDepth, values, curDepth + 1),
+        buildTree(maxDepth, values, curDepth + 1));
   }
   cleanup = (_) => zone.run(() {
     scope.context['initData'] = new TreeNode();
@@ -316,16 +299,14 @@ main() {
   var count = 0;
   createDom = (_) => zone.run(() {
     var maxDepth = 9;
-    var values = count++ % 2 == 0 ?
-    ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '*'] :
-    ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', '-'];
+    var values = count++ % 2 == 0
+        ? ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '*']
+        : ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', '-'];
     scope.context['initData'] = buildTree(maxDepth, values, 0);
   });
 
-  js.context['benchmarkSteps'].add(new js.JsObject.jsify({
-      "name": "cleanup", "fn": new js.JsFunction.withThis(cleanup)
-  }));
-  js.context['benchmarkSteps'].add(new js.JsObject.jsify({
-      "name": "createDom", "fn": new js.JsFunction.withThis(createDom)
-  }));
+  js.context['benchmarkSteps'].add(new js.JsObject.jsify(
+      {"name": "cleanup", "fn": new js.JsFunction.withThis(cleanup)}));
+  js.context['benchmarkSteps'].add(new js.JsObject.jsify(
+      {"name": "createDom", "fn": new js.JsFunction.withThis(createDom)}));
 }

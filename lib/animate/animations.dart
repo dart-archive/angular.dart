@@ -14,15 +14,17 @@ abstract class LoopedAnimation implements Animation {
    *
    * [timeInMs] is the time since the last animation frame.
    */
-  void read(num timeInMs) { }
-  
+  void read(num timeInMs) {}
+
   /**
    * Occurs every animation frame. Return false to stop receiving animation
    * frame updates. Detach will be called after [update] returns false.
    *
    * [timeInMs] is the time since the last animation frame.
    */
-  bool update(num timeInMs) { return false; }
+  bool update(num timeInMs) {
+    return false;
+  }
 }
 
 /**
@@ -48,19 +50,19 @@ class AnimationList extends Animation {
    */
   Future<AnimationResult> get onCompleted {
     if (_onCompleted == null) {
-      _onCompleted = Future.wait(_animations.map((x) => x.onCompleted))
-        .then((results) {
-          var rtrn = AnimationResult.COMPLETED;
-          for (var result in results) {
-            if (result == AnimationResult.CANCELED)
-              return AnimationResult.CANCELED;
-            if (result == AnimationResult.COMPLETED_IGNORED)
-              rtrn = result;
-          }
-          return rtrn;
-        });
+      _onCompleted = Future
+          .wait(_animations.map((x) => x.onCompleted))
+          .then((results) {
+        var rtrn = AnimationResult.COMPLETED;
+        for (var result in results) {
+          if (result ==
+              AnimationResult.CANCELED) return AnimationResult.CANCELED;
+          if (result == AnimationResult.COMPLETED_IGNORED) rtrn = result;
+        }
+        return rtrn;
+      });
     }
-    
+
     return _onCompleted;
   }
 
@@ -89,7 +91,7 @@ Animation _animationFromList(Iterable<Animation> animations) {
   }
 
   List<Animation> list = animations.toList();
- 
+
   if (list.length == 0) {
     return new NoOpAnimation();
   }

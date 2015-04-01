@@ -28,7 +28,6 @@ part "interpolate.dart";
 part "scope.dart";
 part "zone.dart";
 
-
 class CoreModule extends Module {
   CoreModule() {
     bind(ScopeDigestTTL);
@@ -39,7 +38,8 @@ class CoreModule extends Module {
     bind(RootScope);
     bind(PendingAsync);
     bind(Scope, toInstanceOf: RootScope);
-    bind(ClosureMap, toFactory: () => throw "Must provide dynamic/static ClosureMap.");
+    bind(ClosureMap,
+        toFactory: () => throw "Must provide dynamic/static ClosureMap.");
     bind(ScopeStats);
     bind(ScopeStatsEmitter);
     bind(ScopeStatsConfig);

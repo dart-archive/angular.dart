@@ -29,7 +29,9 @@ typedef void ChangeLog(String expression, current, previous);
  * number of arguments with which the function will get called with.
  */
 abstract class FunctionApply {
-  dynamic call() { throw new StateError('Use apply()'); }
+  dynamic call() {
+    throw new StateError('Use apply()');
+  }
   dynamic apply(List arguments);
 }
 
@@ -88,7 +90,6 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
   /// STATS: Number of invocation watchers (closures/methods) which are in use.
   int get evalCost => _evalCost;
 
-
   /// STATS: Number of invocation watchers which are in use including child [WatchGroup]s.
   int get totalEvalCost {
     var cost = _evalCost;
@@ -107,11 +108,10 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
   WatchGroup _watchGroupHead, _watchGroupTail;
   WatchGroup _prevWatchGroup, _nextWatchGroup;
 
-  WatchGroup._child(_parentWatchGroup, this._changeDetector, this.context,
-                    this._rootGroup)
+  WatchGroup._child(
+      _parentWatchGroup, this._changeDetector, this.context, this._rootGroup)
       : _parentWatchGroup = _parentWatchGroup,
-        id = '${_parentWatchGroup.id}.${_parentWatchGroup._nextChildId++}'
-  {
+        id = '${_parentWatchGroup.id}.${_parentWatchGroup._nextChildId++}' {
     _marker.watchGrp = this;
     _evalWatchTail = _evalWatchHead = _marker;
   }
@@ -119,8 +119,7 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
   WatchGroup._root(this._changeDetector, this.context)
       : id = '',
         _rootGroup = null,
-        _parentWatchGroup = null
-  {
+        _parentWatchGroup = null {
     _marker.watchGrp = this;
     _evalWatchTail = _evalWatchHead = _marker;
   }
@@ -129,7 +128,7 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
     var group = this;
     var root = _rootGroup;
     while (group != null) {
-      if (group == root){
+      if (group == root) {
         return true;
       }
       group = group._parentWatchGroup;
@@ -194,8 +193,7 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
    *   function is idempotent.
    */
   _EvalWatchRecord addFunctionWatch(Function fn, List<AST> argsAST,
-                                    Map<Symbol, AST> namedArgsAST,
-                                    String expression, bool isPure) =>
+          Map<Symbol, AST> namedArgsAST, String expression, bool isPure) =>
       _addEvalWatch(null, fn, null, argsAST, namedArgsAST, expression, isPure);
 
   /**
@@ -207,20 +205,15 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
    * - [expression] normalized expression used for caching.
    */
   _EvalWatchRecord addMethodWatch(AST lhs, String name, List<AST> argsAST,
-                                  Map<Symbol, AST> namedArgsAST,
-                                  String expression) =>
-     _addEvalWatch(lhs, null, name, argsAST, namedArgsAST, expression, false);
-
-
+          Map<Symbol, AST> namedArgsAST, String expression) =>
+      _addEvalWatch(lhs, null, name, argsAST, namedArgsAST, expression, false);
 
   _EvalWatchRecord _addEvalWatch(AST lhsAST, Function fn, String name,
-                                 List<AST> argsAST,
-                                 Map<Symbol, AST> namedArgsAST,
-                                 String expression, bool isPure) {
+      List<AST> argsAST, Map<Symbol, AST> namedArgsAST, String expression,
+      bool isPure) {
     _InvokeHandler invokeHandler = new _InvokeHandler(this, expression);
-    var evalWatchRecord = new _EvalWatchRecord(
-        _rootGroup._fieldGetterFactory, this, invokeHandler, fn, name,
-        argsAST.length, isPure);
+    var evalWatchRecord = new _EvalWatchRecord(_rootGroup._fieldGetterFactory,
+        this, invokeHandler, fn, name, argsAST.length, isPure);
     invokeHandler.watchRecord = evalWatchRecord;
 
     if (lhsAST != null) {
@@ -261,7 +254,8 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
   }
 
   WatchGroup get _childWatchGroupTail {
-    var tail = this, nextTail;
+    var tail = this,
+        nextTail;
     while ((nextTail = tail._watchGroupTail) != null) {
       tail = nextTail;
     }
@@ -277,9 +271,7 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
   WatchGroup newGroup([Object context]) {
     _EvalWatchRecord prev = _childWatchGroupTail._evalWatchTail;
     _EvalWatchRecord next = prev._nextEvalWatch;
-    var childGroup = new WatchGroup._child(
-        this,
-        _changeDetector.newGroup(),
+    var childGroup = new WatchGroup._child(this, _changeDetector.newGroup(),
         context == null ? this.context : context,
         _rootGroup == null ? this : _rootGroup);
     _WatchGroupList._add(this, childGroup);
@@ -367,10 +359,8 @@ class RootWatchGroup extends WatchGroup {
    */
   int _removeCount = 0;
 
-
-  RootWatchGroup(this._fieldGetterFactory,
-                 ChangeDetector changeDetector,
-                 Object context)
+  RootWatchGroup(
+      this._fieldGetterFactory, ChangeDetector changeDetector, Object context)
       : super._root(changeDetector, context);
 
   RootWatchGroup get _rootGroup => this;
@@ -386,24 +376,20 @@ class RootWatchGroup extends WatchGroup {
    * Each step is called in sequence. ([ReactionFn]s are not called until all
    * previous steps are completed).
    */
-  int detectChanges({ EvalExceptionHandler exceptionHandler,
-                      ChangeLog changeLog,
-                      AvgStopwatch fieldStopwatch,
-                      AvgStopwatch evalStopwatch,
-                      AvgStopwatch processStopwatch}) {
+  int detectChanges({EvalExceptionHandler exceptionHandler, ChangeLog changeLog,
+      AvgStopwatch fieldStopwatch, AvgStopwatch evalStopwatch,
+      AvgStopwatch processStopwatch}) {
     // Process the Records from the change detector
     var sDetect = traceEnter(ChangeDetector_check);
     var sFields = traceEnter(ChangeDetector_fields);
     Iterator<Record<_Handler>> changedRecordIterator =
         (_changeDetector as ChangeDetector<_Handler>).collectChanges(
-            exceptionHandler:exceptionHandler,
-            stopwatch: fieldStopwatch);
+            exceptionHandler: exceptionHandler, stopwatch: fieldStopwatch);
     if (processStopwatch != null) processStopwatch.start();
     while (changedRecordIterator.moveNext()) {
       var record = changedRecordIterator.current;
-      if (changeLog != null) changeLog(record.handler.expression,
-                                       record.currentValue,
-                                       record.previousValue);
+      if (changeLog != null) changeLog(
+          record.handler.expression, record.currentValue, record.previousValue);
       record.handler.onChange(record);
     }
     traceLeave(sFields);
@@ -418,19 +404,21 @@ class RootWatchGroup extends WatchGroup {
       try {
         if (evalStopwatch != null) evalCount++;
         if (evalRecord.check() && changeLog != null) {
-          changeLog(evalRecord.handler.expression,
-                    evalRecord.currentValue,
-                    evalRecord.previousValue);
+          changeLog(evalRecord.handler.expression, evalRecord.currentValue,
+              evalRecord.previousValue);
         }
       } catch (e, s) {
-        if (exceptionHandler == null) rethrow; else exceptionHandler(e, s);
+        if (exceptionHandler == null) rethrow;
+        else exceptionHandler(e, s);
       }
       evalRecord = evalRecord._nextEvalWatch;
     }
 
     traceLeave(sEval);
     traceLeave(sDetect);
-    if (evalStopwatch != null) evalStopwatch..stop()..increment(evalCount);
+    if (evalStopwatch != null) evalStopwatch
+      ..stop()
+      ..increment(evalCount);
 
     // Because the handler can forward changes between each other synchronously
     // We need to call reaction functions asynchronously. This processes the
@@ -449,7 +437,8 @@ class RootWatchGroup extends WatchGroup {
             dirtyWatch.invoke();
           }
         } catch (e, s) {
-          if (exceptionHandler == null) rethrow; else exceptionHandler(e, s);
+          if (exceptionHandler == null) rethrow;
+          else exceptionHandler(e, s);
         }
         var nextDirtyWatch = dirtyWatch._nextDirtyWatch;
         dirtyWatch._nextDirtyWatch = null;
@@ -460,7 +449,9 @@ class RootWatchGroup extends WatchGroup {
       root._removeCount = 0;
     }
     traceLeaveVal(sReaction, count);
-    if (processStopwatch != null) processStopwatch..stop()..increment(count);
+    if (processStopwatch != null) processStopwatch
+      ..stop()
+      ..increment(count);
     return count;
   }
 
@@ -505,7 +496,8 @@ class Watch {
   void invoke() {
     if (_deleted || !_dirty) return;
     _dirty = false;
-    var s = traceEnabled ? traceEnter1(ChangeDetector_invoke, expression) : null;
+    var s =
+        traceEnabled ? traceEnter1(ChangeDetector_invoke, expression) : null;
     try {
       reactionFn(_record.currentValue, _record.previousValue);
     } finally {
@@ -558,8 +550,8 @@ abstract class _Handler implements _LinkedList, _LinkedListItem, _WatchList {
 
   Watch addReactionFn(ReactionFn reactionFn) {
     assert(_next != this); // verify we are not detached
-    return watchGrp._rootGroup._addDirtyWatch(_WatchList._add(this,
-        new Watch(watchGrp, watchRecord, reactionFn)));
+    return watchGrp._rootGroup._addDirtyWatch(
+        _WatchList._add(this, new Watch(watchGrp, watchRecord, reactionFn)));
   }
 
   void addForwardHandler(_Handler forwardToHandler) {
@@ -613,15 +605,14 @@ abstract class _Handler implements _LinkedList, _LinkedListItem, _WatchList {
 
 class _ConstantHandler extends _Handler {
   _ConstantHandler(WatchGroup watchGroup, String expression, constantValue)
-      : super(watchGroup, expression)
-  {
+      : super(watchGroup, expression) {
     watchRecord = new _EvalWatchRecord.constant(this, constantValue);
   }
   release() => null;
 }
 
 class _FieldHandler extends _Handler {
-  _FieldHandler(watchGrp, expression): super(watchGrp, expression);
+  _FieldHandler(watchGrp, expression) : super(watchGrp, expression);
 
   /**
    * This function forwards the watched object to the next [_Handler]
@@ -662,7 +653,8 @@ abstract class _ArgHandler extends _Handler {
 }
 
 class _PositionalArgHandler extends _ArgHandler {
-  static final List<String> _ARGS = new List.generate(20, (index) => 'arg[$index]');
+  static final List<String> _ARGS =
+      new List.generate(20, (index) => 'arg[$index]');
   final int index;
   _PositionalArgHandler(WatchGroup watchGrp, _EvalWatchRecord record, int index)
       : this.index = index,
@@ -724,19 +716,18 @@ class _InvokeHandler extends _Handler implements _ArgHandlerList {
   }
 }
 
-
 class _EvalWatchRecord implements WatchRecord<_Handler> {
-  static const int _MODE_INVALID_                  = -2;
-  static const int _MODE_DELETED_                  = -1;
-  static const int _MODE_MARKER_                   = 0;
-  static const int _MODE_PURE_FUNCTION_            = 1;
-  static const int _MODE_FUNCTION_                 = 2;
-  static const int _MODE_PURE_FUNCTION_APPLY_      = 3;
-  static const int _MODE_NULL_                     = 4;
-  static const int _MODE_FIELD_OR_METHOD_CLOSURE_  = 5;
-  static const int _MODE_METHOD_                   = 6;
-  static const int _MODE_FIELD_CLOSURE_            = 7;
-  static const int _MODE_MAP_CLOSURE_              = 8;
+  static const int _MODE_INVALID_ = -2;
+  static const int _MODE_DELETED_ = -1;
+  static const int _MODE_MARKER_ = 0;
+  static const int _MODE_PURE_FUNCTION_ = 1;
+  static const int _MODE_FUNCTION_ = 2;
+  static const int _MODE_PURE_FUNCTION_APPLY_ = 3;
+  static const int _MODE_NULL_ = 4;
+  static const int _MODE_FIELD_OR_METHOD_CLOSURE_ = 5;
+  static const int _MODE_METHOD_ = 6;
+  static const int _MODE_FIELD_CLOSURE_ = 7;
+  static const int _MODE_MAP_CLOSURE_ = 8;
   WatchGroup watchGrp;
   final _Handler handler;
   final List args;
@@ -751,11 +742,10 @@ class _EvalWatchRecord implements WatchRecord<_Handler> {
   _EvalWatchRecord _prevEvalWatch, _nextEvalWatch;
 
   _EvalWatchRecord(this._fieldGetterFactory, this.watchGrp, this.handler,
-                   this.fn, this.name, int arity, bool pure)
-      : args = new List(arity)
-  {
+      this.fn, this.name, int arity, bool pure)
+      : args = new List(arity) {
     if (fn is FunctionApply) {
-      mode = pure ? _MODE_PURE_FUNCTION_APPLY_: _MODE_INVALID_;
+      mode = pure ? _MODE_PURE_FUNCTION_APPLY_ : _MODE_INVALID_;
     } else if (fn is Function) {
       mode = pure ? _MODE_PURE_FUNCTION_ : _MODE_FUNCTION_;
     } else {
@@ -804,7 +794,7 @@ class _EvalWatchRecord implements WatchRecord<_Handler> {
       while (_object is ContextLocals) {
         var ctx = _object as ContextLocals;
         if (ctx.hasProperty(name)) {
-          mode =  _MODE_MAP_CLOSURE_;
+          mode = _MODE_MAP_CLOSURE_;
           return;
         }
         _object = ctx.parentContext;
@@ -812,7 +802,6 @@ class _EvalWatchRecord implements WatchRecord<_Handler> {
       mode = _MODE_FIELD_OR_METHOD_CLOSURE_;
       fn = _fieldGetterFactory.getter(_object, name);
     }
-
   }
 
   bool check() {
@@ -848,18 +837,21 @@ class _EvalWatchRecord implements WatchRecord<_Handler> {
         } else {
           mode = _MODE_FIELD_CLOSURE_;
         }
-        value = (closure == null) ? null : Function.apply(closure, args, namedArgs);
+        value =
+            (closure == null) ? null : Function.apply(closure, args, namedArgs);
         break;
       case _MODE_METHOD_:
         value = Function.apply(fn, args, namedArgs);
         break;
       case _MODE_FIELD_CLOSURE_:
         var closure = fn(_object);
-        value = (closure == null) ? null : Function.apply(closure, args, namedArgs);
+        value =
+            (closure == null) ? null : Function.apply(closure, args, namedArgs);
         break;
       case _MODE_MAP_CLOSURE_:
         var closure = object[name];
-        value = (closure == null) ? null : Function.apply(closure, args, namedArgs);
+        value =
+            (closure == null) ? null : Function.apply(closure, args, namedArgs);
         break;
       default:
         assert(false);
@@ -870,7 +862,10 @@ class _EvalWatchRecord implements WatchRecord<_Handler> {
       if (value is String && current is String && value == current) {
         // it is really the same, recover and save so next time identity is same
         current = value;
-      } else if (value is num && value.isNaN && current is num && current.isNaN) {
+      } else if (value is num &&
+          value.isNaN &&
+          current is num &&
+          current.isNaN) {
         // we need this for the compiled JavaScript since in JS NaN !== NaN.
       } else {
         previousValue = current;

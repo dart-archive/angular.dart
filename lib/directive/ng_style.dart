@@ -20,7 +20,7 @@ class NgStyle {
 
   NgStyle(this._element, this._scope);
 
- /**
+  /**
   * ng-style attribute takes an expression which evaluates to an
   * object whose keys are CSS style names and values are corresponding values
   * for those CSS keys.
@@ -28,8 +28,8 @@ class NgStyle {
   set styleExpression(String value) {
     _styleExpression = value;
     if (_watch != null) _watch.remove();
-    _watch = _scope.watch(_styleExpression, _onStyleChange, collection: true,
-        canChangeModel: false);
+    _watch = _scope.watch(_styleExpression, _onStyleChange,
+        collection: true, canChangeModel: false);
   }
 
   _onStyleChange(MapChangeRecord mapChangeRecord, _) {
@@ -38,9 +38,10 @@ class NgStyle {
       fn(MapKeyValue m) =>
           css.setProperty(m.key, m.currentValue == null ? '' : m.currentValue);
 
-      mapChangeRecord..forEachRemoval(fn)
-                     ..forEachChange(fn)
-                     ..forEachAddition(fn);
+      mapChangeRecord
+        ..forEachRemoval(fn)
+        ..forEachChange(fn)
+        ..forEachAddition(fn);
     }
   }
 }

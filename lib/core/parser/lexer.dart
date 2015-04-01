@@ -26,7 +26,9 @@ class Scanner {
   int peek = 0;
   int index = -1;
 
-  Scanner(String input) : this.input = input, this.length = input.length {
+  Scanner(String input)
+      : this.input = input,
+        this.length = input.length {
     advance();
   }
 
@@ -49,7 +51,9 @@ class Scanner {
     switch (peek) {
       case $PERIOD:
         advance();
-        return isDigit(peek) ? scanNumber(start) : new CharacterToken(start, $PERIOD);
+        return isDigit(peek)
+            ? scanNumber(start)
+            : new CharacterToken(start, $PERIOD);
       case $LPAREN:
       case $RPAREN:
       case $LBRACE:
@@ -75,7 +79,8 @@ class Scanner {
       case $GT:
       case $BANG:
       case $EQ:
-        return scanComplexOperator(start, $EQ, new String.fromCharCode(peek), '=');
+        return scanComplexOperator(
+            start, $EQ, new String.fromCharCode(peek), '=');
       case $AMPERSAND:
         return scanComplexOperator(start, $AMPERSAND, '&', '&');
       case $BAR:
@@ -129,7 +134,7 @@ class Scanner {
   Token scanNumber(int start) {
     assert(isDigit(peek));
     bool simple = (index == start);
-    advance();  // Skip initial digit.
+    advance(); // Skip initial digit.
     while (true) {
       if (isDigit(peek)) {
         // Do nothing.
@@ -154,7 +159,7 @@ class Scanner {
     assert(peek == $SQ || peek == $DQ);
     int start = index;
     int quote = peek;
-    advance();  // Skip initial quote.
+    advance(); // Skip initial quote.
 
     StringBuffer buffer;
     int marker = index;
@@ -170,7 +175,8 @@ class Scanner {
           // coverage for this.
           String hex = input.substring(index + 1, index + 5);
           unescaped = int.parse(hex, radix: 16, onError: (ignore) {
-            error('Invalid unicode escape [\\u$hex]'); });
+            error('Invalid unicode escape [\\u$hex]');
+          });
           for (int i = 0; i < 5; i++) {
             advance();
           }
@@ -188,7 +194,7 @@ class Scanner {
     }
 
     String last = input.substring(marker, index);
-    advance();  // Skip terminating quote.
+    advance(); // Skip terminating quote.
     String string = input.substring(start, index);
 
     // Compute the unescaped string value.
@@ -212,33 +218,28 @@ class Scanner {
   }
 }
 
-Set<String> KEYWORDS = new Set<String>.from([
-    'null',
-    'undefined',
-    'true',
-    'false',
-]);
+Set<String> KEYWORDS =
+    new Set<String>.from(['null', 'undefined', 'true', 'false',]);
 
 Set<String> OPERATORS = new Set<String>.from([
-    '+',
-    '-',
-    '*',
-    '/',
-    '~/',
-    '%',
-    '^',
-    '=',
-    '==',
-    '!=',
-    '<',
-    '>',
-    '<=',
-    '>=',
-    '&&',
-    '||',
-    '&',
-    '|',
-    '!',
-    '?',
+  '+',
+  '-',
+  '*',
+  '/',
+  '~/',
+  '%',
+  '^',
+  '=',
+  '==',
+  '!=',
+  '<',
+  '>',
+  '<=',
+  '>=',
+  '&&',
+  '||',
+  '&',
+  '|',
+  '!',
+  '?',
 ]);
-

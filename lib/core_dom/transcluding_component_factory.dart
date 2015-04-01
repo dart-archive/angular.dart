@@ -2,7 +2,6 @@ part of angular.core.dom_internal;
 
 @Injectable()
 class TranscludingComponentFactory implements ComponentFactory {
-
   final Expando expando;
   final ViewFactoryCache viewFactoryCache;
   final CompilerConfig config;
@@ -11,15 +10,17 @@ class TranscludingComponentFactory implements ComponentFactory {
   final ResourceUrlResolver resourceResolver;
   ComponentCssLoader cssLoader;
 
-  TranscludingComponentFactory(this.expando, this.viewFactoryCache, this.config, this.platformShim,
-      this.uriMapper, this.resourceResolver, Http http, TemplateCache templateCache,
-      ComponentCssRewriter componentCssRewriter, dom.NodeTreeSanitizer treeSanitizer,
-      CacheRegister cacheRegister) {
+  TranscludingComponentFactory(this.expando, this.viewFactoryCache, this.config,
+      this.platformShim, this.uriMapper, this.resourceResolver, Http http,
+      TemplateCache templateCache, ComponentCssRewriter componentCssRewriter,
+      dom.NodeTreeSanitizer treeSanitizer, CacheRegister cacheRegister) {
     final styleElementCache = new HashMap();
-    cacheRegister.registerCache("TranscludingComponentFactoryStyles", styleElementCache);
+    cacheRegister.registerCache(
+        "TranscludingComponentFactoryStyles", styleElementCache);
 
     cssLoader = new ComponentCssLoader(http, templateCache, platformShim,
-        componentCssRewriter, treeSanitizer, styleElementCache, resourceResolver);
+        componentCssRewriter, treeSanitizer, styleElementCache,
+        resourceResolver);
   }
 
   bind(DirectiveRef ref, directives, injector) =>
@@ -40,20 +41,18 @@ class BoundTranscludingComponentFactory implements BoundComponentFactory {
   async.Future<ViewFactory> _viewFactoryFuture;
   ViewFactory _viewFactory;
 
-  BoundTranscludingComponentFactory(this._f, this._ref, this._directives, this._injector) {
+  BoundTranscludingComponentFactory(
+      this._f, this._ref, this._directives, this._injector) {
     _tag = _ref.annotation.selector.toLowerCase();
-    _styleElementsFuture = _f.cssLoader(_tag, _component.cssUrls, type: _ref.type)
+    _styleElementsFuture = _f
+        .cssLoader(_tag, _component.cssUrls, type: _ref.type)
         .then((styleElements) => _styleElements = styleElements);
 
-    final viewFactoryCache = new ShimmingViewFactoryCache(_f.viewFactoryCache, _tag,
-        _f.platformShim);
+    final viewFactoryCache = new ShimmingViewFactoryCache(
+        _f.viewFactoryCache, _tag, _f.platformShim);
 
-    _viewFactoryFuture = BoundComponentFactory._viewFactoryFuture(
-        _component,
-        viewFactoryCache,
-        _directives,
-        _f.uriMapper,
-        _f.resourceResolver,
+    _viewFactoryFuture = BoundComponentFactory._viewFactoryFuture(_component,
+        viewFactoryCache, _directives, _f.uriMapper, _f.resourceResolver,
         _ref.type);
 
     if (_viewFactoryFuture != null) {
@@ -62,27 +61,36 @@ class BoundTranscludingComponentFactory implements BoundComponentFactory {
   }
 
   List<Key> get callArgs => _CALL_ARGS;
-  static var _CALL_ARGS = [ DIRECTIVE_INJECTOR_KEY, SCOPE_KEY, VIEW_KEY,
-                            VIEW_FACTORY_CACHE_KEY, HTTP_KEY, TEMPLATE_CACHE_KEY,
-                            DIRECTIVE_MAP_KEY, NG_BASE_CSS_KEY, EVENT_HANDLER_KEY,
-                            SHADOW_BOUNDARY_KEY];
+  static var _CALL_ARGS = [
+    DIRECTIVE_INJECTOR_KEY,
+    SCOPE_KEY,
+    VIEW_KEY,
+    VIEW_FACTORY_CACHE_KEY,
+    HTTP_KEY,
+    TEMPLATE_CACHE_KEY,
+    DIRECTIVE_MAP_KEY,
+    NG_BASE_CSS_KEY,
+    EVENT_HANDLER_KEY,
+    SHADOW_BOUNDARY_KEY
+  ];
 
   Function call(dom.Node node) {
     var element = node as dom.Element;
     return (DirectiveInjector injector, Scope scope, View view,
-            ViewFactoryCache viewCache, Http http, TemplateCache templateCache,
-            DirectiveMap directives, NgBaseCss baseCss, EventHandler eventHandler,
-            ShadowBoundary shadowBoundary) {
-
+        ViewFactoryCache viewCache, Http http, TemplateCache templateCache,
+        DirectiveMap directives, NgBaseCss baseCss, EventHandler eventHandler,
+        ShadowBoundary shadowBoundary) {
       final shadowRoot = new EmulatedShadowRoot(element);
       final lightDom = new LightDom(element, scope)..pullNodes();
 
       List<async.Future> futures = <async.Future>[];
       TemplateLoader templateLoader = new TemplateLoader(shadowRoot, futures);
 
-      final childInjector = new ComponentDirectiveInjector(injector, this._injector,
-          eventHandler, null, templateLoader, shadowRoot, lightDom, _ref.typeKey, view);
-      childInjector.bindByKey(_ref.typeKey, _ref.factory, _ref.paramKeys, _ref.annotation.visibility);
+      final childInjector = new ComponentDirectiveInjector(injector,
+          this._injector, eventHandler, null, templateLoader, shadowRoot,
+          lightDom, _ref.typeKey, view);
+      childInjector.bindByKey(_ref.typeKey, _ref.factory, _ref.paramKeys,
+          _ref.annotation.visibility);
 
       if (_component.useNgBaseCss && baseCss.urls.isNotEmpty) {
         if (baseCss.styles == null) {
@@ -98,7 +106,8 @@ class BoundTranscludingComponentFactory implements BoundComponentFactory {
 
       if (_styleElementsFuture != null) {
         if (_styleElements == null) {
-          final f = _styleElementsFuture.then(shadowBoundary.insertStyleElements);
+          final f =
+              _styleElementsFuture.then(shadowBoundary.insertStyleElements);
           futures.add(f);
         } else {
           shadowBoundary.insertStyleElements(_styleElements);
@@ -109,13 +118,15 @@ class BoundTranscludingComponentFactory implements BoundComponentFactory {
         if (_viewFactory == null) {
           final f = _viewFactoryFuture.then((ViewFactory viewFactory) {
             lightDom.clearComponentElement();
-            lightDom.shadowDomView = viewFactory.call(childInjector.scope, childInjector);
+            lightDom.shadowDomView =
+                viewFactory.call(childInjector.scope, childInjector);
           });
           futures.add(f);
         } else {
           final f = new Future.microtask(() {
             lightDom.clearComponentElement();
-            lightDom.shadowDomView = _viewFactory.call(childInjector.scope, childInjector);
+            lightDom.shadowDomView =
+                _viewFactory.call(childInjector.scope, childInjector);
           });
           futures.add(f);
         }
@@ -124,7 +135,8 @@ class BoundTranscludingComponentFactory implements BoundComponentFactory {
       var controller = childInjector.getByKey(_ref.typeKey);
       Scope shadowScope = childInjector.getByKey(SCOPE_KEY);
       if (controller is ScopeAware) controller.scope = shadowScope;
-      BoundComponentFactory._setupOnShadowDomAttach(controller, templateLoader, shadowScope);
+      BoundComponentFactory._setupOnShadowDomAttach(
+          controller, templateLoader, shadowScope);
 
       return controller;
     };

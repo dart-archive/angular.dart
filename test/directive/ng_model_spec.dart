@@ -13,11 +13,13 @@ import 'package:browser_detect/browser_detect.dart';
  * focus, the text dispatch may not work).
  */
 void simulateTypingText(InputElement input, String text) {
-  input..focus()..dispatchEvent(new TextEvent('textInput', data: text));
+  input
+    ..focus()
+    ..dispatchEvent(new TextEvent('textInput', data: text));
 }
 
 bool simulateTypingTextWithConfirmation(InputElement input, String text,
-                                        { bool shouldWorkForChrome : true }) {
+    {bool shouldWorkForChrome: true}) {
   bool result;
   String val = input.value;
   try {
@@ -30,7 +32,8 @@ bool simulateTypingTextWithConfirmation(InputElement input, String text,
   return result;
 }
 
-bool isBrowser(String pattern) => dom.window.navigator.userAgent.indexOf(pattern) > 0;
+bool isBrowser(String pattern) =>
+    dom.window.navigator.userAgent.indexOf(pattern) > 0;
 
 //-----------------------------------------------------------------------------
 
@@ -41,14 +44,15 @@ void main() {
 
     beforeEachModule((Module module) {
       module
-          ..bind(ComponentWithNoLove)
-          ..bind(MyCustomInputValidator)
-          ..bind(CountingValidator);
+        ..bind(ComponentWithNoLove)
+        ..bind(MyCustomInputValidator)
+        ..bind(CountingValidator);
     });
 
     beforeEach((TestBed tb) {
       _ = tb;
-      dirInjector = new DirectiveInjector(null, _.injector, null, null, null, null, null);
+      dirInjector =
+          new DirectiveInjector(null, _.injector, null, null, null, null, null);
     });
 
     describe('type="text"', () {
@@ -88,13 +92,15 @@ void main() {
         expect(_.rootScope.context['model']).toEqual('def');
       });
 
-      it('should write to input only if the value is different', (Injector i, Scope scope) {
+      it('should write to input only if the value is different',
+          (Injector i, Scope scope) {
         var element = _.compile('<input type="text" ng-model="model">');
         dom.querySelector('body').append(element);
 
-        element..value = 'abc'
-               ..selectionStart = 1
-               ..selectionEnd = 2;
+        element
+          ..value = 'abc'
+          ..selectionStart = 1
+          ..selectionEnd = 2;
 
         scope.apply('model = "abc"');
 
@@ -110,7 +116,8 @@ void main() {
         expect(element.selectionEnd).not.toEqual(2);
       });
 
-      it('should only render the input value upon the next digest', (Scope scope) {
+      it('should only render the input value upon the next digest',
+          (Scope scope) {
         _.compile('<input type="text" ng-model="model" probe="p">');
         Probe probe = _.rootScope.context['p'];
         var ngModel = probe.directive(NgModel);
@@ -128,7 +135,6 @@ void main() {
     });
 
     describe('type="number" or type="range"', () {
-
       it('should update model from the input value for type=number', () {
         _.compile('<input type="number" ng-model="model" probe="p">');
         Probe probe = _.rootScope.context['p'];
@@ -172,12 +178,15 @@ void main() {
         expect(ngModel.valid).toBe(false);
       });
 
-      it('should leave input unchanged when text does not represent a valid number', (Injector i) {
+      it('should leave input unchanged when text does not represent a valid number',
+          (Injector i) {
         var modelFieldName = 'modelForNumFromInvalid1';
-        var element = _.compile('<input type="number" ng-model="$modelFieldName">');
+        var element =
+            _.compile('<input type="number" ng-model="$modelFieldName">');
         dom.querySelector('body').append(element);
 
-        if (!simulateTypingTextWithConfirmation(element, '1')) return; // skip test.
+        if (!simulateTypingTextWithConfirmation(
+            element, '1')) return; // skip test.
         element.value = ''; // reset input
 
         // This test will progressively enter the text '1e1'
@@ -197,7 +206,8 @@ void main() {
         if (!failsOnThisBrowser) expect(element.value).toEqual('');
         // When the input is invalid, the model is [double.NAN]:
         _.triggerEvent(element, 'change');
-        if (!failsOnThisBrowser) expect(_.rootScope.context[modelFieldName].isNaN).toBeTruthy();
+        if (!failsOnThisBrowser) expect(
+            _.rootScope.context[modelFieldName].isNaN).toBeTruthy();
 
         simulateTypingText(element, '1');
         _.triggerEvent(element, 'change');
@@ -205,12 +215,15 @@ void main() {
         expect(_.rootScope.context[modelFieldName]).toEqual(10);
       });
 
-      it('should not reformat user input to equivalent numeric representation', (Injector i) {
+      it('should not reformat user input to equivalent numeric representation',
+          (Injector i) {
         var modelFieldName = 'modelForNumFromInvalid2';
-        var element = _.compile('<input type="number" ng-model="$modelFieldName">');
+        var element =
+            _.compile('<input type="number" ng-model="$modelFieldName">');
         dom.querySelector('body').append(element);
 
-        if (!simulateTypingTextWithConfirmation(element, '1')) return; // skip test.
+        if (!simulateTypingTextWithConfirmation(
+            element, '1')) return; // skip test.
         element.value = ''; // reset input
 
         simulateTypingText(element, '1e-1');
@@ -277,7 +290,8 @@ void main() {
         expect(_.rootScope.context['model']).toEqual(43);
       });
 
-      it('should update model to a native default value from a blank range input value', () {
+      it('should update model to a native default value from a blank range input value',
+          () {
         _.compile('<input type="range" ng-model="model" probe="p">');
         Probe probe = _.rootScope.context['p'];
         var ngModel = probe.directive(NgModel);
@@ -296,7 +310,8 @@ void main() {
         expect((_.rootElement as dom.InputElement).value).toEqual('');
       });
 
-      it('should only render the input value upon the next digest', (Scope scope) {
+      it('should only render the input value upon the next digest',
+          (Scope scope) {
         _.compile('<input type="number" ng-model="model" probe="p">');
         Probe probe = _.rootScope.context['p'];
         var ngModel = probe.directive(NgModel);
@@ -311,7 +326,6 @@ void main() {
 
         expect(inputElement.value).toEqual('123');
       });
-
     });
 
     describe('type="password"', () {
@@ -349,16 +363,17 @@ void main() {
         var input = probe.directive(InputTextLike);
         input.processValue();
         expect(_.rootScope.context['model']).toEqual('def');
-
       });
 
-      it('should write to input only if value is different', (Injector i, Scope scope) {
+      it('should write to input only if value is different',
+          (Injector i, Scope scope) {
         var element = _.compile('<input type=password ng-model=model>');
         dom.querySelector('body').append(element);
 
-        element..value = 'abc'
-               ..selectionStart = 1
-               ..selectionEnd = 2;
+        element
+          ..value = 'abc'
+          ..selectionStart = 1
+          ..selectionEnd = 2;
 
         scope.apply('model = "abc"');
 
@@ -370,9 +385,11 @@ void main() {
         // Value updated. selectionStart/End changed. IE reports 0 for both, other browsers report 3
         expect(element.value).toEqual('xyz');
         expect(element.selectionStart).not.toEqual(1);
-        expect(element.selectionEnd).not.toEqual(2);      });
+        expect(element.selectionEnd).not.toEqual(2);
+      });
 
-      it('should only render the input value upon the next digest', (Scope scope) {
+      it('should only render the input value upon the next digest',
+          (Scope scope) {
         _.compile('<input type="password" ng-model="model" probe="p">');
         Probe probe = _.rootScope.context['p'];
         var ngModel = probe.directive(NgModel);
@@ -426,13 +443,15 @@ void main() {
         expect(_.rootScope.context['model']).toEqual('def');
       });
 
-      it('should write to input only if value is different', (Injector i, Scope scope) {
+      it('should write to input only if value is different',
+          (Injector i, Scope scope) {
         var element = _.compile('<input type=search ng-model=model>');
         dom.querySelector('body').append(element);
 
-        element..value = 'abc'
-               ..selectionStart = 1
-               ..selectionEnd = 2;
+        element
+          ..value = 'abc'
+          ..selectionStart = 1
+          ..selectionEnd = 2;
 
         scope.apply('model = "abc"');
 
@@ -447,7 +466,8 @@ void main() {
         expect(element.selectionEnd).not.toEqual(2);
       });
 
-      it('should only render the input value upon the next digest', (Scope scope) {
+      it('should only render the input value upon the next digest',
+          (Scope scope) {
         _.compile('<input type="search" ng-model="model" probe="p">');
         Probe probe = _.rootScope.context['p'];
         var ngModel = probe.directive(NgModel);
@@ -468,7 +488,8 @@ void main() {
       it('should be set "text" as default value for "type" attribute', () {
         _.compile('<input ng-model="model">');
         _.rootScope.apply();
-        expect((_.rootElement as dom.InputElement).attributes['type']).toEqual('text');
+        expect((_.rootElement as dom.InputElement).attributes['type'])
+            .toEqual('text');
       });
 
       it('should update input value from model', () {
@@ -507,13 +528,15 @@ void main() {
         expect(_.rootScope.context['model']).toEqual('def');
       });
 
-      it('should write to input only if value is different', (Injector i, Scope scope) {
+      it('should write to input only if value is different',
+          (Injector i, Scope scope) {
         var element = _.compile('<input ng-model=model>');
         dom.querySelector('body').append(element);
 
-        element..value = 'abc'
-               ..selectionStart = 1
-               ..selectionEnd = 2;
+        element
+          ..value = 'abc'
+          ..selectionStart = 1
+          ..selectionEnd = 2;
 
         scope.apply('model = "abc"');
 
@@ -528,7 +551,8 @@ void main() {
         expect(element.selectionEnd).not.toEqual(2);
       });
 
-      it('should only render the input value upon the next digest', (Scope scope) {
+      it('should only render the input value upon the next digest',
+          (Scope scope) {
         _.compile('<input ng-model="model" probe="p">');
         Probe probe = _.rootScope.context['p'];
         var ngModel = probe.directive(NgModel);
@@ -561,7 +585,8 @@ void main() {
       });
 
       it('should render as dirty when checked', (Scope scope) {
-        var element = _.compile('<input type="text" ng-model="my_model" probe="i" />');
+        var element =
+            _.compile('<input type="text" ng-model="my_model" probe="i" />');
         Probe probe = _.rootScope.context['i'];
         var model = probe.directive(NgModel);
 
@@ -574,8 +599,10 @@ void main() {
         expect(model.dirty).toEqual(true);
       });
 
-      it('should update input value from model using ng-true-value/false', (Scope scope) {
-        var element = _.compile('<input type="checkbox" ng-model="model" ng-true-value="1" ng-false-value="0">');
+      it('should update input value from model using ng-true-value/false',
+          (Scope scope) {
+        var element = _.compile(
+            '<input type="checkbox" ng-model="model" ng-true-value="1" ng-false-value="0">');
 
         scope.apply(() {
           scope.context['model'] = 1;
@@ -627,9 +654,10 @@ void main() {
         expect(scope.context['model']).toBe(false);
       });
 
-      it('should update model from the input using ng-true-value/false', (Scope scope) {
+      it('should update model from the input using ng-true-value/false',
+          (Scope scope) {
         var element = _.compile('<input type="checkbox" ng-model="model" '
-                                'ng-true-value="yes" ng-false-value="no">');
+            'ng-true-value="yes" ng-false-value="no">');
         scope.apply(() {
           scope.context['yes'] = 'yes sir!';
           scope.context['no'] = 'no, sorry';
@@ -644,7 +672,8 @@ void main() {
         expect(scope.context['model']).toEqual('no, sorry');
       });
 
-      it('should only render the input value upon the next digest', (Scope scope) {
+      it('should only render the input value upon the next digest',
+          (Scope scope) {
         _.compile('<input type="checkbox" ng-model="model" probe="p">');
         Probe probe = _.rootScope.context['p'];
         var ngModel = probe.directive(NgModel);
@@ -696,18 +725,19 @@ void main() {
         var textarea = probe.directive(InputTextLike);
         textarea.processValue();
         expect(_.rootScope.context['model']).toEqual('def');
-
       });
 
       // NOTE(deboer): This test passes on Dartium, but fails in the content_shell.
       // The Dart team is looking into this bug.
-      xit('should write to input only if value is different', (Injector i, Scope scope) {
+      xit('should write to input only if value is different',
+          (Injector i, Scope scope) {
         var element = _.compile('<textarea ng-model=model></textarea>');
         dom.querySelector('body').append(element);
 
-        element..value = 'abc'
-               ..selectionStart = 1
-               ..selectionEnd = 2;
+        element
+          ..value = 'abc'
+          ..selectionStart = 1
+          ..selectionEnd = 2;
 
         scope.apply('model = "abc"');
 
@@ -724,7 +754,8 @@ void main() {
         expect(element.selectionEnd).not.toEqual(2);
       });
 
-      it('should only render the input value upon the next digest', (Scope scope) {
+      it('should only render the input value upon the next digest',
+          (Scope scope) {
         _.compile('<textarea ng-model="model" probe="p"></textarea>');
         Probe probe = _.rootScope.context['p'];
         var ngModel = probe.directive(NgModel);
@@ -744,8 +775,8 @@ void main() {
     describe('type="radio"', () {
       it('should update input value from model', () {
         _.compile('<input type="radio" name="color" value="red" ng-model="color" probe="r">' +
-                  '<input type="radio" name="color" value="green" ng-model="color" probe="g">' +
-                  '<input type="radio" name="color" value="blue" ng-model="color" probe="b">');
+            '<input type="radio" name="color" value="green" ng-model="color" probe="g">' +
+            '<input type="radio" name="color" value="blue" ng-model="color" probe="b">');
         _.rootScope.apply();
 
         RadioButtonInputElement redBtn = _.rootScope.context['r'].element;
@@ -787,8 +818,8 @@ void main() {
 
       it('should support ng-value', () {
         _.compile('<input type="radio" name="color" ng-value="red" ng-model="color" probe="r">' +
-                  '<input type="radio" name="color" ng-value="green" ng-model="color" probe="g">' +
-                  '<input type="radio" name="color" ng-value="blue" ng-model="color" probe="b">');
+            '<input type="radio" name="color" ng-value="green" ng-model="color" probe="g">' +
+            '<input type="radio" name="color" ng-value="blue" ng-model="color" probe="b">');
 
         var red = {'name': 'RED'};
         var green = {'name': 'GREEN'};
@@ -840,12 +871,10 @@ void main() {
       });
 
       it('should render as dirty when checked', (Scope scope) {
-        var element = _.compile(
-          '<div>' +
-          '  <input type="radio" id="on" ng-model="my_model" probe="i" value="on" />' +
-          '  <input type="radio" id="off" ng-model="my_model" probe="j" value="off" />' +
-          '</div>'
-        );
+        var element = _.compile('<div>' +
+            '  <input type="radio" id="on" ng-model="my_model" probe="i" value="on" />' +
+            '  <input type="radio" id="off" ng-model="my_model" probe="j" value="off" />' +
+            '</div>');
         Probe probe = _.rootScope.context['i'];
 
         var model = probe.directive(NgModel);
@@ -881,13 +910,12 @@ void main() {
         expect(input1.classes.contains("ng-pristine")).toBe(false);
       });
 
-      it('should only render the input value upon the next digest', (Scope scope) {
-        var element = _.compile(
-          '<div>' +
-          '  <input type="radio" id="on" ng-model="model" probe="i" value="on" />' +
-          '  <input type="radio" id="off" ng-model="model" probe="j" value="off" />' +
-          '</div>'
-        );
+      it('should only render the input value upon the next digest',
+          (Scope scope) {
+        var element = _.compile('<div>' +
+            '  <input type="radio" id="on" ng-model="model" probe="i" value="on" />' +
+            '  <input type="radio" id="off" ng-model="model" probe="j" value="off" />' +
+            '</div>');
 
         Probe probe1 = _.rootScope.context['i'];
         var ngModel1 = probe1.directive(NgModel);
@@ -947,7 +975,8 @@ void main() {
         expect(_.rootScope.context['model']).toEqual('123');
       });
 
-      it('should only render the input value upon the next digest', (Scope scope) {
+      it('should only render the input value upon the next digest',
+          (Scope scope) {
         _.compile('<input type="search" ng-model="model" probe="p">');
         Probe probe = _.rootScope.context['p'];
         var ngModel = probe.directive(NgModel);
@@ -1001,7 +1030,8 @@ void main() {
         expect(_.rootScope.context['model']).toEqual('123');
       });
 
-      it('should only render the input value upon the next digest', (Scope scope) {
+      it('should only render the input value upon the next digest',
+          (Scope scope) {
         _.compile('<input type="tel" ng-model="model" probe="p">');
         Probe probe = _.rootScope.context['p'];
         var ngModel = probe.directive(NgModel);
@@ -1038,12 +1068,12 @@ void main() {
         expect((_.rootElement as dom.InputElement).value).toEqual('#123456');
       });
 
-      it(r'should render as "#000000"/"" on default and when a null value is present', () {
+      it(r'should render as "#000000"/"" on default and when a null value is present',
+          () {
         _.compile('<input type="color" ng-model="model">');
         _.rootScope.apply();
 
         expect((_.rootElement as dom.InputElement).value).toEqual(defaultValue);
-
 
         _.rootScope.apply('model = null');
         expect((_.rootElement as dom.InputElement).value).toEqual(defaultValue);
@@ -1065,7 +1095,8 @@ void main() {
         expect(_.rootScope.context['model']).toEqual('#ffffff');
       });
 
-      it('should only render the input value upon the next digest', (Scope scope) {
+      it('should only render the input value upon the next digest',
+          (Scope scope) {
         _.compile('<input type="color" ng-model="model" probe="p">');
         Probe probe = _.rootScope.context['p'];
         var ngModel = probe.directive(NgModel);
@@ -1107,7 +1138,8 @@ void main() {
         expect(_.rootScope.context['model']).toEqual('def');
       });
 
-      it('should only render the input value upon the next digest', (Scope scope) {
+      it('should only render the input value upon the next digest',
+          (Scope scope) {
         _.compile('<div contenteditable ng-model="model" probe="p"></div>');
         Probe probe = _.rootScope.context['p'];
         var ngModel = probe.directive(NgModel);
@@ -1134,7 +1166,8 @@ void main() {
         expect(model.dirty).toEqual(false);
       });
 
-      it('should add and remove the correct CSS classes when set to dirty and to pristine', (Scope scope) {
+      it('should add and remove the correct CSS classes when set to dirty and to pristine',
+          (Scope scope) {
         _.compile('<input type="text" ng-model="my_model" probe="i" />');
         Probe probe = _.rootScope.context['i'];
         NgModel model = probe.directive(NgModel);
@@ -1159,19 +1192,18 @@ void main() {
 
       // TODO(matias): figure out why the 2nd apply is optional
       it('should render the parent form/fieldset as dirty but not the other models',
-        (Scope scope) {
-
+          (Scope scope) {
         _.compile('<form name="myForm">' +
-                  '  <fieldset name="myFieldset">' +
-                  '    <input type="text" ng-model="my_model1" probe="myModel1" />' +
-                  '    <input type="text" ng-model="my_model2" probe="myModel2" />' +
-                  '   </fieldset>' +
-                  '</form>');
+            '  <fieldset name="myFieldset">' +
+            '    <input type="text" ng-model="my_model1" probe="myModel1" />' +
+            '    <input type="text" ng-model="my_model2" probe="myModel2" />' +
+            '   </fieldset>' +
+            '</form>');
 
-        var formElement      = _.rootScope.context['myForm'].element.node;
-        var fieldsetElement  = _.rootScope.context['myFieldset'].element.node;
-        var inputElement1    = _.rootScope.context['myModel1'].element;
-        var inputElement2    = _.rootScope.context['myModel2'].element;
+        var formElement = _.rootScope.context['myForm'].element.node;
+        var fieldsetElement = _.rootScope.context['myFieldset'].element.node;
+        var inputElement1 = _.rootScope.context['myModel1'].element;
+        var inputElement2 = _.rootScope.context['myModel2'].element;
 
         scope.apply();
 
@@ -1222,7 +1254,8 @@ void main() {
         expect(model.valid).toBe(true);
       });
 
-      it('should happen automatically upon user input via the onInput event', () {
+      it('should happen automatically upon user input via the onInput event',
+          () {
         _.compile('<input type="text" ng-model="model" probe="i" required>');
         _.rootScope.apply();
 
@@ -1242,7 +1275,8 @@ void main() {
     });
 
     describe('valid / invalid', () {
-      it('should add and remove the correct flags when set to valid and to invalid', (Scope scope) {
+      it('should add and remove the correct flags when set to valid and to invalid',
+          (Scope scope) {
         _.compile('<input type="text" ng-model="my_model" probe="i" />');
         Probe probe = _.rootScope.context['i'];
         var model = probe.directive(NgModel);
@@ -1265,7 +1299,8 @@ void main() {
         expect(element).not.toHaveClass('ng-invalid');
       });
 
-      it('should set the validity with respect to all existing validations when setValidity() is used', (Scope scope) {
+      it('should set the validity with respect to all existing validations when setValidity() is used',
+          (Scope scope) {
         _.compile('<input type="text" ng-model="my_model" probe="i" />');
         Probe probe = _.rootScope.context['i'];
         var model = probe.directive(NgModel);
@@ -1308,9 +1343,9 @@ void main() {
 
     describe('error handling', () {
       it('should return true or false depending on if an error exists on a form',
-        (Scope scope, TestBed _) {
-
-        _.compile('<input type="text" ng-model="input" name="input" probe="i" />');
+          (Scope scope, TestBed _) {
+        _.compile(
+            '<input type="text" ng-model="input" name="input" probe="i" />');
         scope.apply();
 
         Probe p = scope.context['i'];
@@ -1327,31 +1362,32 @@ void main() {
         expect(model.hasErrorState('big-failure')).toBe(false);
       });
 
-      it("model.clearErrorState() should erase all the errors and set the model to valid", (TestBed _) {
-          Scope s = _.rootScope;
+      it("model.clearErrorState() should erase all the errors and set the model to valid",
+          (TestBed _) {
+        Scope s = _.rootScope;
 
-          _.compile('<input type="text" ng-model="myModel" probe="i" />');
-          _.rootScope.apply('myModel = "animal"');
+        _.compile('<input type="text" ng-model="myModel" probe="i" />');
+        _.rootScope.apply('myModel = "animal"');
 
-          NgModel inputModel = s.context['i'].directive(NgModel);
-          var input = inputModel.element.node;
+        NgModel inputModel = s.context['i'].directive(NgModel);
+        var input = inputModel.element.node;
 
-          inputModel.addError("required");
-          inputModel.addError("minlength");
-          s.apply();
+        inputModel.addError("required");
+        inputModel.addError("minlength");
+        s.apply();
 
-          expect(inputModel.hasErrorState("required")).toBe(true);
-          expect(inputModel.hasErrorState("minlength")).toBe(true);
-          expect(inputModel.invalid).toBe(true);
-          expect(inputModel.valid).toBe(false);
+        expect(inputModel.hasErrorState("required")).toBe(true);
+        expect(inputModel.hasErrorState("minlength")).toBe(true);
+        expect(inputModel.invalid).toBe(true);
+        expect(inputModel.valid).toBe(false);
 
-          inputModel.clearErrorStates();
-          s.apply();
+        inputModel.clearErrorStates();
+        s.apply();
 
-          expect(inputModel.hasErrorState("required")).toBe(false);
-          expect(inputModel.hasErrorState("minlength")).toBe(false);
-          expect(inputModel.invalid).toBe(false);
-          expect(inputModel.valid).toBe(true);
+        expect(inputModel.hasErrorState("required")).toBe(false);
+        expect(inputModel.hasErrorState("minlength")).toBe(false);
+        expect(inputModel.invalid).toBe(false);
+        expect(inputModel.valid).toBe(true);
       });
     });
 
@@ -1410,12 +1446,12 @@ void main() {
 
       it('should revalidate itself after the form is reset ', (Scope scope) {
         _.compile('<form name="myForm" novalidate>' +
-                  '  <input type="text" ng-required="true" ng-model="inputValue" probe="i">' +
-                  '</form>');
+            '  <input type="text" ng-required="true" ng-model="inputValue" probe="i">' +
+            '</form>');
 
         scope.apply();
 
-        var form = _.rootScope.context['myForm']; 
+        var form = _.rootScope.context['myForm'];
         var formElement = form.element.node;
 
         var input = _.rootScope.context['i'].directive(NgModel);
@@ -1433,7 +1469,7 @@ void main() {
 
         form.reset();
         //we need to run apply to properly update the input dom element
-        scope.apply(); 
+        scope.apply();
 
         expect(scope.context['inputValue']).toBe(null);
         expect(inputElement.value.length).toBe(0);
@@ -1443,7 +1479,8 @@ void main() {
     });
 
     it('should set the model to be untouched when the model is reset', () {
-      var input = _.compile('<input type="text" ng-model="myModel" probe="i" />');
+      var input =
+          _.compile('<input type="text" ng-model="myModel" probe="i" />');
       var model = _.rootScope.context['i'].directive(NgModel);
 
       expect(model.touched).toBe(false);
@@ -1462,8 +1499,7 @@ void main() {
 
     describe('validators', () {
       it('should display the valid and invalid CSS classes on the element for each validation',
-        (TestBed _, Scope scope) {
-
+          (TestBed _, Scope scope) {
         var input = _.compile('<input type="email" ng-model="myModel" />');
 
         scope.apply(() {
@@ -1482,9 +1518,9 @@ void main() {
       });
 
       it('should display the valid and invalid CSS classes on the element for custom validations',
-        (TestBed _, Scope scope) {
-
-        var input = _.compile('<input type="text" ng-model="myModel" custom-input-validation />');
+          (TestBed _, Scope scope) {
+        var input = _.compile(
+            '<input type="text" ng-model="myModel" custom-input-validation />');
 
         scope.apply();
 
@@ -1500,15 +1536,14 @@ void main() {
       });
 
       it('should only validate twice during compilation and once upon scope digest',
-        (TestBed _, Scope scope) {
-
+          (TestBed _, Scope scope) {
         scope.context['required'] = true;
         _.compile('<input type="text" '
-                         'ng-model="model" '
-                         'ng-required="required" '
-                         'ng-pattern="pattern" '
-                         'counting-validator '
-                         'probe="i">');
+            'ng-model="model" '
+            'ng-required="required" '
+            'ng-pattern="pattern" '
+            'counting-validator '
+            'probe="i">');
 
         scope.context['pattern'] = '^[aeiou]+\$';
         scope.context['required'] = true;
@@ -1516,7 +1551,8 @@ void main() {
         scope.apply();
 
         var model = scope.context['i'].directive(NgModel);
-        var counter = model.validators.firstWhere((validator) => validator.name == 'counting');
+        var counter = model.validators
+            .firstWhere((validator) => validator.name == 'counting');
 
         // TODO(#881): There is a bug in ngModel where the validators are validated too often.
         // Should be 2. One for ngModel and one for all the other ones
@@ -1532,14 +1568,15 @@ void main() {
         expect(counter.count).toBe(1);
       });
 
-      it('should only validate twice regardless of attribute order', (TestBed _, Scope scope) {
+      it('should only validate twice regardless of attribute order',
+          (TestBed _, Scope scope) {
         scope.context['required'] = true;
         _.compile('<input type="text" '
-                         'ng-required="required" '
-                         'ng-pattern="pattern" '
-                         'counting-validator '
-                         'ng-model="model" '
-                         'probe="i">');
+            'ng-required="required" '
+            'ng-pattern="pattern" '
+            'counting-validator '
+            'ng-model="model" '
+            'probe="i">');
 
         scope.context['pattern'] = '^[aeiou]+\$';
         scope.context['required'] = true;
@@ -1548,7 +1585,8 @@ void main() {
 
         var model = scope.context['i'].directive(NgModel);
 
-        var counter = model.validators.firstWhere((validator) => validator.name == 'counting');
+        var counter = model.validators
+            .firstWhere((validator) => validator.name == 'counting');
 
         // TODO(#881): There is a bug in ngModel where the validators are validated too often.
         // Should be 2. One for ngModel and one for all the other ones
@@ -1558,7 +1596,8 @@ void main() {
     });
 
     describe('converters', () {
-      it('should parse the model value according to the given parser', (Scope scope) {
+      it('should parse the model value according to the given parser',
+          (Scope scope) {
         _.compile('<input type="text" ng-model="model" probe="i">');
         scope.apply();
 
@@ -1575,7 +1614,8 @@ void main() {
         expect(model.modelValue).toEqual('hello');
       });
 
-      it('should format the model value according to the given formatter', (Scope scope) {
+      it('should format the model value according to the given formatter',
+          (Scope scope) {
         _.compile('<input type="text" ng-model="model" probe="i">');
         scope.apply();
 
@@ -1592,11 +1632,12 @@ void main() {
         expect(model.modelValue).toEqual('greetings');
       });
 
-      it('should retain the current input value if the parser fails', (Scope scope) {
+      it('should retain the current input value if the parser fails',
+          (Scope scope) {
         _.compile('<form name="myForm">' +
-                  ' <input type="text" ng-model="model1" name="myModel1" probe="i">' +
-                  ' <input type="text" ng-model="model2" name="myModel2" probe="j">' +
-                  '</form>');
+            ' <input type="text" ng-model="model1" name="myModel1" probe="i">' +
+            ' <input type="text" ng-model="model2" name="myModel2" probe="j">' +
+            '</form>');
         scope.apply();
 
         var probe1 = scope.context['i'];
@@ -1622,7 +1663,8 @@ void main() {
         expect(model2.modelValue).toEqual(null);
       });
 
-      it('should reformat the viewValue when the formatter is changed', (Scope scope) {
+      it('should reformat the viewValue when the formatter is changed',
+          (Scope scope) {
         _.compile('<input type="text" ng-model="model" probe="i">');
         scope.apply();
 
@@ -1647,11 +1689,8 @@ void main() {
   });
 }
 
-@Component(
-    selector: 'no-love',
-    template: '<input type="text" ng-model="love">')
-class ComponentWithNoLove {
-}
+@Component(selector: 'no-love', template: '<input type="text" ng-model="love">')
+class ComponentWithNoLove {}
 
 class LowercaseValueParser implements NgModelConverter {
   final name = 'lowercase';
@@ -1681,7 +1720,7 @@ class VowelValueParser implements NgModelConverter {
   final name = 'vowel';
   parse(value) => value;
   format(value) {
-    if(value != null) {
+    if (value != null) {
       var exp = new RegExp("[^aeiouAEIOU]");
       value = value.replaceAll(exp, "");
     }
@@ -1689,8 +1728,7 @@ class VowelValueParser implements NgModelConverter {
   }
 }
 
-@Decorator(
-    selector: '[custom-input-validation]')
+@Decorator(selector: '[custom-input-validation]')
 class MyCustomInputValidator extends NgValidator {
   MyCustomInputValidator(NgModel ngModel) {
     ngModel.addValidator(this);
@@ -1703,10 +1741,8 @@ class MyCustomInputValidator extends NgValidator {
   }
 }
 
-@Decorator(
-    selector: '[counting-validator]')
+@Decorator(selector: '[counting-validator]')
 class CountingValidator extends NgValidator {
-
   final String name = 'counting';
   int count = 0;
 

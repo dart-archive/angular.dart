@@ -25,9 +25,11 @@ void main() {
     });
 
     it('should compile starting at ng-app node', () {
-      var body = setBody(
-          '<div>{{ignor me}}<div ng-bind="\'works\'"></div></div>');
-      applicationFactory()..selector('div[ng-bind]')..run();
+      var body =
+          setBody('<div>{{ignor me}}<div ng-bind="\'works\'"></div></div>');
+      applicationFactory()
+        ..selector('div[ng-bind]')
+        ..run();
       expect(body.text).toEqual('{{ignor me}}works');
     });
 

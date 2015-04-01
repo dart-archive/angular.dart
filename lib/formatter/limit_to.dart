@@ -37,7 +37,7 @@ part of angular.formatter_internal;
  *     <li>i</li>
  *     <li>j</li>
  */
-@Formatter(name:'limitTo')
+@Formatter(name: 'limitTo')
 class LimitTo implements Function {
   Injector _injector;
 
@@ -45,17 +45,18 @@ class LimitTo implements Function {
 
   dynamic call(dynamic items, [int limit]) {
     if (items == null) return null;
-    if (limit == null) return const[];
+    if (limit == null) return const [];
     if (items is! List && items is! String) return items;
-    int i = 0, j = items.length;
+    int i = 0,
+        j = items.length;
     if (limit > -1) {
       j = (limit > j) ? j : limit;
     } else {
       i = j + limit;
       if (i < 0) i = 0;
     }
-    return items is String ?
-        (items as String).substring(i, j) :
-        (items as List).getRange(i, j).toList(growable: false);
+    return items is String
+        ? (items as String).substring(i, j)
+        : (items as List).getRange(i, j).toList(growable: false);
   }
 }

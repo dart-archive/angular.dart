@@ -9,7 +9,7 @@ var CACHED_VALUE = 'cached_value';
 
 class FakeCache extends UnboundedCache<String, HttpResponse> {
   HttpResponse get(x) => x == 'f' ? new HttpResponse(200, CACHED_VALUE) : null;
-  HttpResponse put(_,__) => null;
+  HttpResponse put(_, __) => null;
   void clear() {}
   int get length => 0;
 }
@@ -69,8 +69,8 @@ void main() {
       });
 
       describe('PendingAsync', () {
-        it('should register requests with PendingAsync', async((
-            Http http, PendingAsync pendingAsync) {
+        it('should register requests with PendingAsync',
+            async((Http http, PendingAsync pendingAsync) {
           var log = [];
           http(url: '/url', method: 'GET');
           pendingAsync.whenStable(() {
@@ -89,19 +89,16 @@ void main() {
         backend.flushGET('/url').respond('');
       }));
 
-
       it('should pass data if specified', async(() {
         http(url: '/url', method: 'POST', data: 'some-data');
         backend.flushPOST('/url', 'some-data').respond('');
       }));
-
 
       it('should not pass data if not specificed', async(() {
         // NOTE(deboer): I don't have a good why to test this since
         // a null in backend.expect's data parameter means "undefined;
         // we don't care about the data field.
         backend.expect('POST', '/url', 'null').respond('');
-
 
         expect(() {
           http(url: '/url', method: 'POST');
@@ -122,35 +119,30 @@ void main() {
         }));
       });
 
-
       describe('params', () {
         it('should do basic request with params and encode', async(() {
           backend.expect('GET', '/url?a%3D=%3F%26&b=2').respond('');
-          http(url: '/url', params: {'a=':'?&', 'b':2}, method: 'GET');
+          http(url: '/url', params: {'a=': '?&', 'b': 2}, method: 'GET');
           flush();
         }));
-
 
         it('should merge params if url contains some already', async(() {
           backend.expect('GET', '/url?c=3&a=1&b=2').respond('');
-          http(url: '/url?c=3', params: {'a':1, 'b':2}, method: 'GET');
+          http(url: '/url?c=3', params: {'a': 1, 'b': 2}, method: 'GET');
           flush();
         }));
-
 
         it('should jsonify objects in params map', async(() {
           backend.expect('GET', '/url?a=1&b=%7B%22c%22:3%7D').respond('');
-          http(url: '/url', params: {'a':1, 'b':{'c':3}}, method: 'GET');
+          http(url: '/url', params: {'a': 1, 'b': {'c': 3}}, method: 'GET');
           flush();
         }));
-
 
         it('should expand arrays in params map', async(() {
           backend.expect('GET', '/url?a=1&a=2&a=3').respond('');
-          http(url: '/url', params: {'a': [1,2,3]}, method: 'GET');
+          http(url: '/url', params: {'a': [1, 2, 3]}, method: 'GET');
           flush();
         }));
-
 
         it('should not encode @ in url params', async(() {
           //encodeURIComponent is too agressive and doesn't follow http://www.ietf.org/rfc/rfc3986.txt
@@ -158,17 +150,22 @@ void main() {
           //so we need this test to make sure that we don't over-encode the params and break stuff
           //like buzz api which uses @self
 
-          backend.expect('GET', r'/Path?!do%26h=g%3Da+h&:bar=$baz@1').respond('');
-          http(url: '/Path', params: {':bar': r'$baz@1', '!do&h': 'g=a h'}, method: 'GET');
+          backend
+              .expect('GET', r'/Path?!do%26h=g%3Da+h&:bar=$baz@1')
+              .respond('');
+          http(
+              url: '/Path',
+              params: {':bar': r'$baz@1', '!do&h': 'g=a h'},
+              method: 'GET');
           flush();
         }));
       });
 
-
       describe('callbacks', () {
-
-        it('should pass in the response object when a request is successful', async(() {
-          backend.expect('GET', '/url').respond(207, 'my content', {'content-encoding': 'smurf'});
+        it('should pass in the response object when a request is successful',
+            async(() {
+          backend.expect('GET', '/url').respond(
+              207, 'my content', {'content-encoding': 'smurf'});
           http(url: '/url', method: 'GET').then((HttpResponse response) {
             expect(response.data).toEqual('my content');
             expect(response.status).toEqual(207);
@@ -182,9 +179,10 @@ void main() {
           expect(callback).toHaveBeenCalledOnce();
         }));
 
-
-        it('should pass in the response object when a request failed', async(() {
-          backend.expect('GET', '/url').respond(543, 'bad error', {'request-id': '123'});
+        it('should pass in the response object when a request failed',
+            async(() {
+          backend.expect('GET', '/url').respond(
+              543, 'bad error', {'request-id': '123'});
           http(url: '/url', method: 'GET').then((_) {}, onError: (response) {
             expect(response.data).toEqual('bad error');
             expect(response.status).toEqual(543);
@@ -198,10 +196,11 @@ void main() {
           expect(callback).toHaveBeenCalledOnce();
         }));
 
-
         describe('success', () {
-          it('should allow http specific callbacks to be registered via "success"', async(() {
-            backend.expect('GET', '/url').respond(207, 'my content', {'content-encoding': 'smurf'});
+          it('should allow http specific callbacks to be registered via "success"',
+              async(() {
+            backend.expect('GET', '/url').respond(
+                207, 'my content', {'content-encoding': 'smurf'});
             http(url: '/url', method: 'GET').then((r) {
               expect(r.data).toEqual('my content');
               expect(r.status).toEqual(207);
@@ -216,12 +215,15 @@ void main() {
           }));
         });
 
-
         describe('error', () {
-          it('should allow http specific callbacks to be registered via "error"', async(() {
-            backend.expect('GET', '/url').respond(543, 'bad error', {'request-id': '123'});
+          it('should allow http specific callbacks to be registered via "error"',
+              async(() {
+            backend.expect('GET', '/url').respond(
+                543, 'bad error', {'request-id': '123'});
             http(url: '/url', method: 'GET').then((_) {}, onError: (r) {
-              if (r is! HttpResponse) { throw r; }
+              if (r is! HttpResponse) {
+                throw r;
+              }
               expect(r.data).toEqual('bad error');
               expect(r.status).toEqual(543);
               expect(r.headers()).toEqual({'request-id': '123'});
@@ -236,9 +238,7 @@ void main() {
         });
       });
 
-
       describe('response headers', () {
-
         it('should return single header', async(() {
           backend.expect('GET', '/url').respond('', {'date': 'date-val'});
           callback.andCallFake((r) {
@@ -251,7 +251,6 @@ void main() {
 
           expect(callback).toHaveBeenCalledOnce();
         }));
-
 
         it('should return null when single header does not exist', async(() {
           backend.expect('GET', '/url').respond('', {'Some-Header': 'Fake'});
@@ -266,15 +265,13 @@ void main() {
           expect(callback).toHaveBeenCalledOnce();
         }));
 
-
         it('should return all headers as object', async(() {
-          backend.expect('GET', '/url').respond('', {
-              'content-encoding': 'gzip',
-              'server': 'Apache'
-          });
+          backend.expect('GET', '/url').respond(
+              '', {'content-encoding': 'gzip', 'server': 'Apache'});
 
           callback.andCallFake((r) {
-            expect(r.headers()).toEqual({'content-encoding': 'gzip', 'server': 'Apache'});
+            expect(r.headers())
+                .toEqual({'content-encoding': 'gzip', 'server': 'Apache'});
           });
 
           http(url: '/url', method: 'GET').then(callback);
@@ -282,7 +279,6 @@ void main() {
 
           expect(callback).toHaveBeenCalledOnce();
         }));
-
 
         it('should return empty object for jsonp request', async(() {
           callback.andCallFake((r) {
@@ -297,13 +293,12 @@ void main() {
         }));
       });
 
-
       describe('response headers parser', () {
-        parseHeaders(x) => Http.parseHeaders(new MockHttpRequest(null, null, x));
+        parseHeaders(x) =>
+            Http.parseHeaders(new MockHttpRequest(null, null, x));
 
         it('should parse basic', () {
-          var parsed = parseHeaders(
-              'date: Thu, 04 Aug 2011 20:23:08 GMT\n' +
+          var parsed = parseHeaders('date: Thu, 04 Aug 2011 20:23:08 GMT\n' +
               'content-encoding: gzip\n' +
               'transfer-encoding: chunked\n' +
               'x-cache-info: not cacheable; response has already expired, not cacheable; response has already expired\n' +
@@ -323,38 +318,32 @@ void main() {
           expect(parsed['keep-alive']).toEqual('timeout=5, max=1000');
         });
 
-
         it('should parse lines without space after colon', () {
           expect(parseHeaders('key:value')['key']).toEqual('value');
         });
-
 
         it('should trim the values', () {
           expect(parseHeaders('key:    value ')['key']).toEqual('value');
         });
 
-
         it('should allow headers without value', () {
           expect(parseHeaders('key:')['key']).toEqual('');
         });
-
 
         it('should merge headers with same key', () {
           expect(parseHeaders('key: a\nkey:b\n')['key']).toEqual('a, b');
         });
 
-
         it('should normalize keys to lower case', () {
           expect(parseHeaders('KeY: value')['key']).toEqual('value');
         });
 
-
         it('should parse CRLF as delimiter', () {
           // IE does use CRLF
-          expect(parseHeaders('a: b\r\nc: d\r\n')).toEqual({'a': 'b', 'c': 'd'});
+          expect(parseHeaders('a: b\r\nc: d\r\n'))
+              .toEqual({'a': 'b', 'c': 'd'});
           expect(parseHeaders('a: b\r\nc: d\r\n')['a']).toEqual('b');
         });
-
 
         it('should parse tab after semi-colon', () {
           expect(parseHeaders('a:\tbb')['a']).toEqual('bb');
@@ -362,21 +351,16 @@ void main() {
         });
       });
 
-
       describe('request headers', () {
-
         it('should send custom headers', async(() {
           backend.expect('GET', '/url', null, (headers) {
             return headers['Custom'] == 'header';
           }).respond('');
 
-          http(url: '/url', method: 'GET', headers: {
-              'Custom': 'header',
-          });
+          http(url: '/url', method: 'GET', headers: {'Custom': 'header',});
 
           flush();
         }));
-
 
         it('should set default headers for GET request', async(() {
           backend.expect('GET', '/url', null, (headers) {
@@ -387,22 +371,20 @@ void main() {
           flush();
         }));
 
-
         it('should set default headers for POST request', async(() {
           backend.expect('POST', '/url', 'messageBody', (headers) {
             return headers['Accept'] == 'application/json, text/plain, */*' &&
-            headers['Content-Type'] == 'application/json;charset=utf-8';
+                headers['Content-Type'] == 'application/json;charset=utf-8';
           }).respond('');
 
           http(url: '/url', method: 'POST', headers: {}, data: 'messageBody');
           flush();
         }));
 
-
         it('should set default headers for PUT request', async(() {
           backend.expect('PUT', '/url', 'messageBody', (headers) {
             return headers['Accept'] == 'application/json, text/plain, */*' &&
-            headers['Content-Type'] == 'application/json;charset=utf-8';
+                headers['Content-Type'] == 'application/json;charset=utf-8';
           }).respond('');
 
           http(url: '/url', method: 'PUT', headers: {}, data: 'messageBody');
@@ -412,7 +394,7 @@ void main() {
         it('should set default headers for PATCH request', async(() {
           backend.expect('PATCH', '/url', 'messageBody', (headers) {
             return headers['Accept'] == 'application/json, text/plain, */*' &&
-            headers['Content-Type'] == 'application/json;charset=utf-8';
+                headers['Content-Type'] == 'application/json;charset=utf-8';
           }).respond('');
 
           http(url: '/url', method: 'PATCH', headers: {}, data: 'messageBody');
@@ -428,36 +410,42 @@ void main() {
           flush();
         }));
 
-
         it('should override default headers with custom', async(() {
           backend.expect('POST', '/url', 'messageBody', (headers) {
             return headers['Accept'] == 'Rewritten' &&
-            headers['Content-Type'] == 'Rewritten';
+                headers['Content-Type'] == 'Rewritten';
           }).respond('');
 
-          http(url: '/url', method: 'POST', data: 'messageBody', headers: {
-              'Accept': 'Rewritten',
-              'Content-Type': 'Rewritten'
-          });
+          http(
+              url: '/url',
+              method: 'POST',
+              data: 'messageBody',
+              headers: {'Accept': 'Rewritten', 'Content-Type': 'Rewritten'});
           flush();
         }));
 
-        it('should override default headers with custom in a case insensitive manner', async(() {
+        it('should override default headers with custom in a case insensitive manner',
+            async(() {
           backend.expect('POST', '/url', 'messageBody', (headers) {
             return headers['accept'] == 'Rewritten' &&
-            headers['content-type'] == 'Content-Type Rewritten' &&
-            headers['Accept'] == null &&
-            headers['Content-Type'] == null;
+                headers['content-type'] == 'Content-Type Rewritten' &&
+                headers['Accept'] == null &&
+                headers['Content-Type'] == null;
           }).respond('');
 
-          http(url: '/url', method: 'POST', data: 'messageBody', headers: {
-              'accept': 'Rewritten',
-              'content-type': 'Content-Type Rewritten'
+          http(
+              url: '/url',
+              method: 'POST',
+              data: 'messageBody',
+              headers: {
+            'accept': 'Rewritten',
+            'content-type': 'Content-Type Rewritten'
           });
           flush();
         }));
 
-        it('should not set XSRF cookie for cross-domain requests', async((BrowserCookies cookies) {
+        it('should not set XSRF cookie for cross-domain requests',
+            async((BrowserCookies cookies) {
           cookies['XSRF-TOKEN'] = 'secret';
           locationWrapper.url = 'http://host.com/base';
           backend.expect('GET', 'http://www.test.com/url', null, (headers) {
@@ -468,8 +456,8 @@ void main() {
           flush();
         }));
 
-
-        it('should not send Content-Type header if request data/body is null', async(() {
+        it('should not send Content-Type header if request data/body is null',
+            async(() {
           backend.expect('POST', '/url', null, (headers) {
             return !headers.containsKey('Content-Type');
           }).respond('');
@@ -479,15 +467,19 @@ void main() {
           }).respond('');
 
           http(url: '/url', method: 'POST');
-          http(url: '/url2', method: 'POST', headers: {'content-type': 'Rewritten'});
+          http(
+              url: '/url2',
+              method: 'POST',
+              headers: {'content-type': 'Rewritten'});
           flush();
         }));
 
-
-        it('should set the XSRF cookie into a XSRF header', async((BrowserCookies cookies) {
+        it('should set the XSRF cookie into a XSRF header',
+            async((BrowserCookies cookies) {
           checkXSRF(secret, [header]) {
             return (headers) {
-              return headers[header != null ? header : 'X-XSRF-TOKEN'] == secret;
+              return headers[header != null ? header : 'X-XSRF-TOKEN'] ==
+                  secret;
             };
           }
 
@@ -496,8 +488,12 @@ void main() {
           backend.expect('GET', '/url', null, checkXSRF('secret')).respond('');
           backend.expect('POST', '/url', null, checkXSRF('secret')).respond('');
           backend.expect('PUT', '/url', null, checkXSRF('secret')).respond('');
-          backend.expect('DELETE', '/url', null, checkXSRF('secret')).respond('');
-          backend.expect('GET', '/url', null, checkXSRF('secret', 'aHeader')).respond('');
+          backend
+              .expect('DELETE', '/url', null, checkXSRF('secret'))
+              .respond('');
+          backend
+              .expect('GET', '/url', null, checkXSRF('secret', 'aHeader'))
+              .respond('');
           backend.expect('GET', '/url', null, checkXSRF('secret2')).respond('');
 
           http(url: '/url', method: 'GET');
@@ -511,7 +507,11 @@ void main() {
         }));
 
         it('should send execute result if header value is function', async(() {
-          var headerConfig = {'Accept': () { return 'Rewritten'; }};
+          var headerConfig = {
+            'Accept': () {
+              return 'Rewritten';
+            }
+          };
 
           checkHeaders(headers) {
             return headers['Accept'] == 'Rewritten';
@@ -533,9 +533,7 @@ void main() {
         }));
       });
 
-
       describe('short methods', () {
-
         checkHeader(name, value) {
           return (headers) {
             return headers[name] == value;
@@ -548,13 +546,13 @@ void main() {
           flush();
         }));
 
-
         it('get() should allow config param', async(() {
-          backend.expect('GET', '/url', null, checkHeader('Custom', 'Header')).respond('');
+          backend
+              .expect('GET', '/url', null, checkHeader('Custom', 'Header'))
+              .respond('');
           http.get('/url', headers: {'Custom': 'Header'});
           flush();
         }));
-
 
         it('should have delete()', async(() {
           backend.expect('DELETE', '/url').respond('');
@@ -562,13 +560,13 @@ void main() {
           flush();
         }));
 
-
         it('delete() should allow config param', async(() {
-          backend.expect('DELETE', '/url', null, checkHeader('Custom', 'Header')).respond('');
+          backend
+              .expect('DELETE', '/url', null, checkHeader('Custom', 'Header'))
+              .respond('');
           http.delete('/url', headers: {'Custom': 'Header'});
           flush();
         }));
-
 
         it('should have head()', async(() {
           backend.expect('HEAD', '/url').respond('');
@@ -576,13 +574,13 @@ void main() {
           flush();
         }));
 
-
         it('head() should allow config param', async(() {
-          backend.expect('HEAD', '/url', null, checkHeader('Custom', 'Header')).respond('');
+          backend
+              .expect('HEAD', '/url', null, checkHeader('Custom', 'Header'))
+              .respond('');
           http.head('/url', headers: {'Custom': 'Header'});
           flush();
         }));
-
 
         it('should have post()', async(() {
           backend.expect('POST', '/url', 'some-data').respond('');
@@ -590,13 +588,14 @@ void main() {
           flush();
         }));
 
-
         it('post() should allow config param', async(() {
-          backend.expect('POST', '/url', 'some-data', checkHeader('Custom', 'Header')).respond('');
+          backend
+              .expect(
+                  'POST', '/url', 'some-data', checkHeader('Custom', 'Header'))
+              .respond('');
           http.post('/url', 'some-data', headers: {'Custom': 'Header'});
           flush();
         }));
-
 
         it('should have put()', async(() {
           backend.expect('PUT', '/url', 'some-data').respond('');
@@ -604,13 +603,14 @@ void main() {
           flush();
         }));
 
-
         it('put() should allow config param', async(() {
-          backend.expect('PUT', '/url', 'some-data', checkHeader('Custom', 'Header')).respond('');
+          backend
+              .expect(
+                  'PUT', '/url', 'some-data', checkHeader('Custom', 'Header'))
+              .respond('');
           http.put('/url', 'some-data', headers: {'Custom': 'Header'});
           flush();
         }));
-
 
         it('should have jsonp()', async(() {
           backend.expect('JSONP', '/url').respond('');
@@ -618,32 +618,31 @@ void main() {
           flush();
         }));
 
-
         it('jsonp() should allow config param', async(() {
-          backend.expect('JSONP', '/url', null, checkHeader('Custom', 'Header')).respond('');
+          backend
+              .expect('JSONP', '/url', null, checkHeader('Custom', 'Header'))
+              .respond('');
           http.jsonp('/url', headers: {'Custom': 'Header'});
           flush();
         }));
       });
 
-
       describe('cache', () {
-
         Cache cache;
 
         beforeEach((() {
           cache = new UnboundedCache();
         }));
 
-
         doFirstCacheRequest([String method, int respStatus, Map headers]) {
-          backend.expect(method != null ? method :'GET', '/url')
-          .respond(respStatus != null ? respStatus : 200, 'content', headers);
-          http(method: method != null ? method : 'GET', url: '/url', cache: cache)
-          .then((_){}, onError: (_){});
+          backend.expect(method != null ? method : 'GET', '/url').respond(
+              respStatus != null ? respStatus : 200, 'content', headers);
+          http(
+              method: method != null ? method : 'GET',
+              url: '/url',
+              cache: cache).then((_) {}, onError: (_) {});
           flush();
         }
-
 
         it('should cache GET request when cache is provided', async(() {
           doFirstCacheRequest();
@@ -653,9 +652,9 @@ void main() {
           microLeap();
 
           expect(callback).toHaveBeenCalledOnce();
-          expect(callback.mostRecentCall.positionalArguments[0].data).toEqual('content');
+          expect(callback.mostRecentCall.positionalArguments[0].data)
+              .toEqual('content');
         }));
-
 
         it('should not cache when cache is not provided', async(() {
           doFirstCacheRequest();
@@ -664,7 +663,6 @@ void main() {
           http(method: 'GET', url: '/url');
           flush();
         }));
-
 
         it('should perform request when cache cleared', async(() {
           doFirstCacheRequest();
@@ -675,7 +673,6 @@ void main() {
           flush();
         }));
 
-
         it('should not cache POST request', async(() {
           doFirstCacheRequest('POST');
 
@@ -684,9 +681,9 @@ void main() {
           flush();
 
           expect(callback).toHaveBeenCalledOnce();
-          expect(callback.mostRecentCall.positionalArguments[0].data).toEqual('content2');
+          expect(callback.mostRecentCall.positionalArguments[0].data)
+              .toEqual('content2');
         }));
-
 
         it('should not cache PUT request', async(() {
           doFirstCacheRequest('PUT');
@@ -696,9 +693,9 @@ void main() {
           flush();
 
           expect(callback).toHaveBeenCalledOnce();
-          expect(callback.mostRecentCall.positionalArguments[0].data).toEqual('content2');
+          expect(callback.mostRecentCall.positionalArguments[0].data)
+              .toEqual('content2');
         }));
-
 
         it('should not cache DELETE request', async(() {
           doFirstCacheRequest('DELETE');
@@ -710,7 +707,6 @@ void main() {
           expect(callback).toHaveBeenCalledOnce();
         }));
 
-
         it('should not cache non 2xx responses', async(() {
           doFirstCacheRequest('GET', 404);
 
@@ -719,14 +715,16 @@ void main() {
           flush();
 
           expect(callback).toHaveBeenCalledOnce();
-          expect(callback.mostRecentCall.positionalArguments[0].data).toEqual('content2');
+          expect(callback.mostRecentCall.positionalArguments[0].data)
+              .toEqual('content2');
         }));
 
-
         it('should cache the headers as well', async(() {
-          doFirstCacheRequest('GET', 200, {'content-encoding': 'gzip', 'server': 'Apache'});
+          doFirstCacheRequest(
+              'GET', 200, {'content-encoding': 'gzip', 'server': 'Apache'});
           callback.andCallFake((r) {
-            expect(r.headers()).toEqual({'content-encoding': 'gzip', 'server': 'Apache'});
+            expect(r.headers())
+                .toEqual({'content-encoding': 'gzip', 'server': 'Apache'});
             expect(r.headers('server')).toEqual('Apache');
           });
 
@@ -736,9 +734,9 @@ void main() {
           expect(callback).toHaveBeenCalledOnce();
         }));
 
-
         it('should not share the cached headers object instance', async(() {
-          doFirstCacheRequest('GET', 200, {'content-encoding': 'gzip', 'server': 'Apache'});
+          doFirstCacheRequest(
+              'GET', 200, {'content-encoding': 'gzip', 'server': 'Apache'});
           callback.andCallFake((r) {
             expect(r.headers()).toEqual(cache.get('/url').headers());
             expect(r.headers()).not.toBe(cache.get('/url').headers());
@@ -749,7 +747,6 @@ void main() {
 
           expect(callback).toHaveBeenCalledOnce();
         }));
-
 
         it('should cache status code as well', async(() {
           doFirstCacheRequest('GET', 201);
@@ -763,8 +760,8 @@ void main() {
           expect(callback).toHaveBeenCalledOnce();
         }));
 
-
-        it('should use cache even if second request was made before the first returned', async(() {
+        it('should use cache even if second request was made before the first returned',
+            async(() {
           backend.expect('GET', '/url').respond(201, 'fake-response');
 
           callback.andCallFake((r) {
@@ -781,19 +778,19 @@ void main() {
           expect(callback.callCount).toEqual(2);
         }));
 
-
         describe('http.defaults.cache', () {
-
           it('should be null by default', () {
             expect(http.defaults.cache).toBeNull();
           });
 
-          it('should cache requests when no cache given in request config', async(() {
+          it('should cache requests when no cache given in request config',
+              async(() {
             http.defaults.cache = cache;
 
             // First request fills the cache from server response.
             backend.expect('GET', '/url').respond(200, 'content');
-            http(method: 'GET', url: '/url'); // Notice no cache given in config.
+            http(
+                method: 'GET', url: '/url'); // Notice no cache given in config.
             flush();
 
             // Second should be served from cache, without sending request to server.
@@ -801,7 +798,8 @@ void main() {
             microLeap();
 
             expect(callback).toHaveBeenCalledOnce();
-            expect(callback.mostRecentCall.positionalArguments[0].data).toEqual('content');
+            expect(callback.mostRecentCall.positionalArguments[0].data)
+                .toEqual('content');
 
             // Invalidate cache entry.
             http.defaults.cache.remove("/url");
@@ -831,7 +829,8 @@ void main() {
             microLeap();
 
             expect(callback).toHaveBeenCalledOnce();
-            expect(callback.mostRecentCall.positionalArguments[0].data).toEqual('content-default-cache');
+            expect(callback.mostRecentCall.positionalArguments[0].data)
+                .toEqual('content-default-cache');
             callback.reset();
 
             // Serve request from local cache when it is given (but default filled too).
@@ -839,10 +838,12 @@ void main() {
             microLeap();
 
             expect(callback).toHaveBeenCalledOnce();
-            expect(callback.mostRecentCall.positionalArguments[0].data).toEqual('content-local-cache');
+            expect(callback.mostRecentCall.positionalArguments[0].data)
+                .toEqual('content-local-cache');
           }));
 
-          it('should be skipped if {cache: false} is passed in request config', async(() {
+          it('should be skipped if {cache: false} is passed in request config',
+              async(() {
             http.defaults.cache = cache;
 
             backend.expect('GET', '/url').respond(200, 'content');
@@ -854,7 +855,8 @@ void main() {
             flush();
           }));
 
-          it('should use default cache if {cache: true} is passed in request config', async(() {
+          it('should use default cache if {cache: true} is passed in request config',
+              async(() {
             http.defaults.cache = cache;
 
             // Fill default cache.
@@ -867,29 +869,28 @@ void main() {
             microLeap();
 
             expect(callback).toHaveBeenCalledOnce();
-            expect(callback.mostRecentCall.positionalArguments[0].data).toEqual('content-cache');
+            expect(callback.mostRecentCall.positionalArguments[0].data)
+                .toEqual('content-cache');
           }));
         });
       });
 
-
       // NOTE: We are punting on timeouts for now until we understand
       // Dart futures fully.
       xdescribe('timeout', () {
-
         it('should abort requests when timeout promise resolves', (q) {
           var canceler = q.defer();
 
           backend.expect('GET', '/some').respond(200);
 
-          http(method: 'GET', url: '/some', timeout: canceler.promise).error(
-                  (data, status, headers, config) {
-                expect(data).toBeNull();
-                expect(status).toEqual(0);
-                expect(headers()).toEqual({});
-                expect(config.url).toEqual('/some');
-                callback();
-              });
+          http(method: 'GET', url: '/some', timeout: canceler.promise)
+              .error((data, status, headers, config) {
+            expect(data).toBeNull();
+            expect(status).toEqual(0);
+            expect(headers()).toEqual({});
+            expect(config.url).toEqual('/some');
+            callback();
+          });
 
           //rootScope.apply(() {
           canceler.resolve();
@@ -901,9 +902,7 @@ void main() {
         });
       });
 
-
       describe('pendingRequests', () {
-
         it('should be an array of pending requests', async(() {
           backend.when('GET').respond(200);
           expect(http.pendingRequests.length).toEqual(0);
@@ -916,11 +915,11 @@ void main() {
           expect(http.pendingRequests.length).toEqual(0);
         }));
 
-
         // TODO(deboer): I think this test is incorrect.
         // pending requests should refer to the number of requests
         // on-the-wire, not the number of times a URL was requested.
-        xit('should update pending requests even when served from cache', async(() {
+        xit('should update pending requests even when served from cache',
+            async(() {
           var cache = new UnboundedCache();
           backend.when('GET').respond(200);
 
@@ -939,7 +938,6 @@ void main() {
           expect(http.pendingRequests.length).toEqual(0);
         }));
 
-
         it('should remove the request before firing callbacks', async(() {
           backend.when('GET').respond(200);
           http(method: 'get', url: '/url').then((_) {
@@ -952,9 +950,7 @@ void main() {
         }));
       });
 
-
       describe('defaults', () {
-
         it('should expose the defaults object at runtime', async(() {
           expect(http.defaults).toBeDefined();
 
@@ -987,12 +983,13 @@ void main() {
           });
 
           it('should call backend synchronously if request interceptor chain is '
-             'synchronous', async(() {
+              'synchronous', async(() {
             backend.expect('POST', '/url', '').respond('');
             http(url: '/url', method: 'POST', data: '');
 
             expect(interceptorCalled).toBe(true);
-            expect(backend.requests.isEmpty).toBe(false);  // request made immediately
+            expect(backend.requests.isEmpty)
+                .toBe(false); // request made immediately
             flush();
           }));
         });
@@ -1002,7 +999,8 @@ void main() {
             module.bind(HttpInterceptors, toValue: new HttpInterceptors()
               // The first interceptor is async, causing the second interceptor to be
               // called in a microtask
-              ..add(new HttpInterceptor(request: (cfg) => new Future.value(cfg)))
+              ..add(
+                  new HttpInterceptor(request: (cfg) => new Future.value(cfg)))
               ..add(new HttpInterceptor(request: (cfg) {
                 interceptorCalled = true;
                 return cfg;
@@ -1010,7 +1008,7 @@ void main() {
           });
 
           it('should call backend asynchronously if request interceptor chain is '
-             'asynchronous', async(() {
+              'asynchronous', async(() {
             backend.expect('POST', '/url', '').respond('');
             http(url: '/url', method: 'POST', data: '');
             expect(interceptorCalled).toBe(false);
@@ -1029,8 +1027,8 @@ void main() {
         module.bind(UrlRewriter, toImplementation: SubstringRewriter);
       });
 
-
-      it('should rewrite URLs before calling the backend', async((Http http, VmTurnZone zone) {
+      it('should rewrite URLs before calling the backend',
+          async((Http http, VmTurnZone zone) {
         backend.when('GET', 'a').respond(200, VALUE);
 
         var called = 0;
@@ -1048,8 +1046,8 @@ void main() {
         expect(called).toEqual(1);
       }));
 
-
-      it('should support pending requests for different raw URLs', async((Http http, VmTurnZone zone) {
+      it('should support pending requests for different raw URLs',
+          async((Http http, VmTurnZone zone) {
         backend.when('GET', 'a').respond(200, VALUE);
 
         var called = 0;
@@ -1070,7 +1068,6 @@ void main() {
         expect(called).toEqual(11);
       }));
 
-
       it('should support caching', async((Http http, VmTurnZone zone) {
         var called = 0;
         zone.run(() {
@@ -1085,7 +1082,8 @@ void main() {
     });
 
     describe('caching', () {
-      it('should not cache if no cache is present', async((Http http, VmTurnZone zone) {
+      it('should not cache if no cache is present',
+          async((Http http, VmTurnZone zone) {
         backend.when('GET', 'a').respond(200, VALUE, null);
 
         var called = 0;
@@ -1106,7 +1104,6 @@ void main() {
 
         expect(called).toEqual(11);
       }));
-
 
       it('should return a pending request', async((Http http, VmTurnZone zone) {
         backend.when('GET', 'a').respond(200, VALUE);
@@ -1129,8 +1126,8 @@ void main() {
         expect(called).toEqual(11);
       }));
 
-
-      it('should not return a pending request after the request is complete', async((Http http, VmTurnZone zone) {
+      it('should not return a pending request after the request is complete',
+          async((Http http, VmTurnZone zone) {
         backend.when('GET', 'a').respond(200, VALUE, null);
 
         var called = 0;
@@ -1157,8 +1154,8 @@ void main() {
         expect(called).toEqual(11);
       }));
 
-
-      it('should return a cached value if present', async((Http http, VmTurnZone zone) {
+      it('should return a cached value if present',
+          async((Http http, VmTurnZone zone) {
         var called = 0;
         // The URL string 'f' is primed in the FakeCache
         zone.run(() {
@@ -1173,16 +1170,16 @@ void main() {
       }));
     });
 
-
     describe('error handling', () {
       it('should reject 404 status codes', async((Http http, VmTurnZone zone) {
         backend.when('GET', '404.html').respond(404, VALUE);
 
         var response = null;
         zone.run(() {
-          http.get('404.html').then(
-                  (v) => response = 'FAILED',
-              onError:(v) { assert(v != null); return response = v; });
+          http.get('404.html').then((v) => response = 'FAILED', onError: (v) {
+            assert(v != null);
+            return response = v;
+          });
         });
 
         expect(response).toEqual(null);
@@ -1192,33 +1189,28 @@ void main() {
       }));
     });
 
-
     describe('interceptors', () {
-      it('should chain request, requestReject, response and responseReject interceptors', async(() {
+      it('should chain request, requestReject, response and responseReject interceptors',
+          async(() {
         (HttpInterceptors interceptors, Http http) {
           var savedConfig, savedResponse;
+          interceptors.add(new HttpInterceptor(request: (config) {
+            config.url += '/1';
+            savedConfig = config;
+            return new Future.error('/2');
+          }));
+          interceptors.add(new HttpInterceptor(requestError: (error) {
+            savedConfig.url += error;
+            return new Future.value(savedConfig);
+          }));
           interceptors.add(new HttpInterceptor(
-              request: (config) {
-                config.url += '/1';
-                savedConfig = config;
-                return new Future.error('/2');
-              }));
-          interceptors.add(new HttpInterceptor(
-              requestError: (error) {
-                savedConfig.url += error;
-                return new Future.value(savedConfig);
-              }));
-          interceptors.add(new HttpInterceptor(
-              responseError: (rejection) =>
-              new HttpResponse.copy(savedResponse,
-              data: savedResponse.data + rejection)
-          ));
-          interceptors.add(new HttpInterceptor(
-              response: (response) {
-                savedResponse = new HttpResponse.copy(
-                    response, data: response.data + ':1');
-                return new Future.error(':2');
-              }));
+              responseError: (rejection) => new HttpResponse.copy(savedResponse,
+                  data: savedResponse.data + rejection)));
+          interceptors.add(new HttpInterceptor(response: (response) {
+            savedResponse =
+                new HttpResponse.copy(response, data: response.data + ':1');
+            return new Future.error(':2');
+          }));
           var response;
           backend.expect('GET', '/url/1/2').respond('response');
           http(method: 'GET', url: '/url').then((r) {
@@ -1229,36 +1221,31 @@ void main() {
         };
       }));
 
+      it('should verify order of execution',
+          async((HttpInterceptors interceptors, Http http) {
+        interceptors.add(new HttpInterceptor(request: (config) {
+          config.url += '/outer';
+          return config;
+        }, response: (response) {
+          return new HttpResponse.copy(response,
+              data: '{' + response.data + '} outer');
+        }));
+        interceptors.add(new HttpInterceptor(request: (config) {
+          config.url += '/inner';
+          return config;
+        }, response: (response) {
+          return new HttpResponse.copy(response,
+              data: '{' + response.data + '} inner');
+        }));
 
-      it('should verify order of execution', async(
-          (HttpInterceptors interceptors, Http http) {
-            interceptors.add(new HttpInterceptor(
-                request: (config) {
-                  config.url += '/outer';
-                  return config;
-                },
-                response: (response) {
-                  return new HttpResponse.copy(
-                      response, data: '{' + response.data + '} outer');
-                }));
-            interceptors.add(new HttpInterceptor(
-                request: (config) {
-                  config.url += '/inner';
-                  return config;
-                },
-                response: (response) {
-                  return new HttpResponse.copy(
-                      response, data: '{' + response.data + '} inner');
-                }));
-
-            var response;
-            backend.expect('GET', '/url/outer/inner').respond('response');
-            http(method: 'GET', url: '/url').then((r) {
-              response = r;
-            });
-            flush();
-            expect(response.data).toEqual('{{response} inner} outer');
-          }));
+        var response;
+        backend.expect('GET', '/url/outer/inner').respond('response');
+        http(method: 'GET', url: '/url').then((r) {
+          response = r;
+        });
+        flush();
+        expect(response.data).toEqual('{{response} inner} outer');
+      }));
 
       describe('transformData', () {
         Http http;
@@ -1270,22 +1257,18 @@ void main() {
         });
 
         describe('request', () {
-
           describe('default', () {
-
             it('should transform object into json', async(() {
               backend.expect('POST', '/url', '{"one":"two"}').respond('');
               http(method: 'POST', url: '/url', data: {'one': 'two'});
               flush();
             }));
 
-
             it('should ignore strings', async(() {
               backend.expect('POST', '/url', 'string-data').respond('');
               http(method: 'POST', url: '/url', data: 'string-data');
               flush();
             }));
-
 
             it('should ignore File objects', async(() {
               var file = new FakeFile();
@@ -1297,87 +1280,90 @@ void main() {
             }));
           });
 
-
           it('should have access to request headers', async(() {
             backend.expect('POST', '/url', 'header1').respond(200);
-            http.post('/url', 'req',
-            headers: {'h1': 'header1'},
-            interceptors: new HttpInterceptor(request: (config) {
+            http
+                .post('/url', 'req',
+                    headers: {'h1': 'header1'},
+                    interceptors: new HttpInterceptor(request: (config) {
               config.data = config.header('h1');
               return config;
-            })
-            ).then(callback);
+            })).then(callback);
             flush();
 
             expect(callback).toHaveBeenCalledOnce();
           }));
 
-
           it('should pipeline more functions', async(() {
             backend.expect('POST', '/url', 'REQ-FIRST:V1').respond(200);
-            http.post('/url', 'req',
-            headers: {'h1': 'v1'},
-            interceptors: new HttpInterceptors.of([
-                new HttpInterceptor(request: (config) {
-                  config.data = config.data + '-first' + ':' + config.header('h1');
-                  return config;
-                }),
-                new HttpInterceptor(request: (config) {
-                  config.data = config.data.toUpperCase();
-                  return config;
-                })
-            ])
-            ).then(callback);
+            http
+                .post('/url', 'req',
+                    headers: {'h1': 'v1'},
+                    interceptors: new HttpInterceptors.of([
+              new HttpInterceptor(request: (config) {
+                config.data =
+                    config.data + '-first' + ':' + config.header('h1');
+                return config;
+              }),
+              new HttpInterceptor(request: (config) {
+                config.data = config.data.toUpperCase();
+                return config;
+              })
+            ])).then(callback);
             flush();
 
             expect(callback).toHaveBeenCalledOnce();
           }));
         });
 
-
         describe('response', () {
-
           describe('default', () {
-
             it('should deserialize json objects', async(() {
               backend.expect('GET', '/url').respond('{"foo":"bar","baz":23}');
               http(method: 'GET', url: '/url').then(callback);
               flush();
 
               expect(callback).toHaveBeenCalledOnce();
-              expect(callback.mostRecentCall.positionalArguments[0].data).toEqual({'foo': 'bar', 'baz': 23});
+              expect(callback.mostRecentCall.positionalArguments[0].data)
+                  .toEqual({'foo': 'bar', 'baz': 23});
             }));
-
 
             it('should deserialize json arrays', async(() {
-              backend.expect('GET', '/url').respond('[1, "abc", {"foo":"bar"}]');
+              backend
+                  .expect('GET', '/url')
+                  .respond('[1, "abc", {"foo":"bar"}]');
               http(method: 'GET', url: '/url').then(callback);
               flush();
 
               expect(callback).toHaveBeenCalledOnce();
-              expect(callback.mostRecentCall.positionalArguments[0].data).toEqual([1, 'abc', {'foo': 'bar'}]);
+              expect(callback.mostRecentCall.positionalArguments[0].data)
+                  .toEqual([1, 'abc', {'foo': 'bar'}]);
             }));
-
 
             it('should deserialize json with security prefix', async(() {
-              backend.expect('GET', '/url').respond(')]}\',\n[1, "abc", {"foo":"bar"}]');
+              backend
+                  .expect('GET', '/url')
+                  .respond(')]}\',\n[1, "abc", {"foo":"bar"}]');
               http(method: 'GET', url: '/url').then(callback);
               flush();
 
               expect(callback).toHaveBeenCalledOnce();
-              expect(callback.mostRecentCall.positionalArguments[0].data).toEqual([1, 'abc', {'foo':'bar'}]);
+              expect(callback.mostRecentCall.positionalArguments[0].data)
+                  .toEqual([1, 'abc', {'foo': 'bar'}]);
             }));
 
-
-            it('should deserialize json with security prefix ")]}\'"', async(() {
-              backend.expect('GET', '/url').respond(')]}\'\n\n[1, "abc", {"foo":"bar"}]');
+            it('should deserialize json with security prefix ")]}\'"',
+                async(() {
+              backend
+                  .expect('GET', '/url')
+                  .respond(')]}\'\n\n[1, "abc", {"foo":"bar"}]');
               http(method: 'GET', url: '/url').then(callback);
               flush();
 
               expect(callback).toHaveBeenCalledOnce();
-              expect(callback.mostRecentCall.positionalArguments[0].data).toEqual([1, 'abc', {'foo':'bar'}]);
+              expect(callback.mostRecentCall.positionalArguments[0].data)
+                  .toEqual([1, 'abc', {'foo': 'bar'}]);
             }));
-
 
             it('should call onError on a JSON parse error', async(() {
               backend.expect('GET', '/url').respond('[x]');
@@ -1385,7 +1371,7 @@ void main() {
               var onErrorCalled = false;
               http.get('/url').then((_) {
                 callbackCalled = true;
-              }, onError: (e,s) {
+              }, onError: (e, s) {
                 // Dartium -> "Unexpected character"
                 // dart2js:
                 // - Chrome -> "Unexpected token"
@@ -1400,44 +1386,47 @@ void main() {
               expect(onErrorCalled).toBeTruthy();
             }));
 
-
-            it('should not deserialize tpl beginning with ng expression', async(() {
+            it('should not deserialize tpl beginning with ng expression',
+                async(() {
               backend.expect('GET', '/url').respond('{{some}}');
               http.get('/url').then(callback);
               flush();
 
               expect(callback).toHaveBeenCalledOnce();
-              expect(callback.mostRecentCall.positionalArguments[0].data).toEqual('{{some}}');
+              expect(callback.mostRecentCall.positionalArguments[0].data)
+                  .toEqual('{{some}}');
             }));
           });
 
-
           it('should have access to response headers', async(() {
-            backend.expect('GET', '/url').respond(200, 'response', {'h1': 'header1'});
-            http.get('/url',
-            interceptors: new HttpInterceptor(response: (r) {
+            backend.expect('GET', '/url').respond(
+                200, 'response', {'h1': 'header1'});
+            http.get('/url', interceptors: new HttpInterceptor(response: (r) {
               return new HttpResponse.copy(r, data: r.headers('h1'));
-            })
-            ).then(callback);
+            })).then(callback);
             flush();
 
             expect(callback).toHaveBeenCalledOnce();
-            expect(callback.mostRecentCall.positionalArguments[0].data).toEqual('header1');
+            expect(callback.mostRecentCall.positionalArguments[0].data)
+                .toEqual('header1');
           }));
 
           it('should pipeline more functions', async(() {
             backend.expect('POST', '/url').respond(200, 'resp', {'h1': 'v1'});
             http.post('/url', '', interceptors: new HttpInterceptors.of([
-                new HttpInterceptor(response: (r) {
-                  return new HttpResponse.copy(r, data: r.data.toUpperCase());
-                }),
-                new HttpInterceptor(response: (r) {
-                  return new HttpResponse.copy(r, data: r.data + '-first' + ':' + r.headers('h1'));
-                })])).then(callback);
+              new HttpInterceptor(response: (r) {
+                return new HttpResponse.copy(r, data: r.data.toUpperCase());
+              }),
+              new HttpInterceptor(response: (r) {
+                return new HttpResponse.copy(r,
+                    data: r.data + '-first' + ':' + r.headers('h1'));
+              })
+            ])).then(callback);
             flush();
 
             expect(callback).toHaveBeenCalledOnce();
-            expect(callback.mostRecentCall.positionalArguments[0].data).toEqual('RESP-FIRST:V1');
+            expect(callback.mostRecentCall.positionalArguments[0].data)
+                .toEqual('RESP-FIRST:V1');
           }));
         });
       });
@@ -1446,7 +1435,8 @@ void main() {
     describe('coalesce', () {
       beforeEachModule((Module module) {
         var duration = new Duration(milliseconds: 100);
-        module.bind(HttpConfig, toValue: new HttpConfig.withOptions(coalesceDuration: duration));
+        module.bind(HttpConfig,
+            toValue: new HttpConfig.withOptions(coalesceDuration: duration));
       });
 
       it('should coalesce requests', async((Http http) {
@@ -1473,7 +1463,6 @@ void main() {
         expect(fooResp).toEqual('foo');
         expect(barResp).toEqual('bar');
       }));
-
     });
   });
 }

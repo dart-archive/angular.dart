@@ -2,8 +2,7 @@ library event_handler_spec;
 
 import '../_specs.dart';
 
-@Component(selector: 'bar',
-    template: '''
+@Component(selector: 'bar', template: '''
               <div>
                 <span on-abc="invoked=true;"></span>
                 <content></content>
@@ -38,16 +37,14 @@ main() {
     }
 
     it('should register and handle event', (TestBed _) {
-      var e = compile(_,
-        '''<div on-abc="invoked=true;"></div>''');
+      var e = compile(_, '''<div on-abc="invoked=true;"></div>''');
 
       _.triggerEvent(e, 'abc');
       expect(_.rootScope.context['invoked']).toEqual(true);
     });
 
     it('shoud register and handle event with long name', (TestBed _) {
-      var e = compile(_,
-        '''<div on-my-new-event="invoked=true;"></div>''');
+      var e = compile(_, '''<div on-my-new-event="invoked=true;"></div>''');
 
       _.triggerEvent(e, 'my-new-event');
       expect(_.rootScope.context['invoked']).toEqual(true);
@@ -55,14 +52,14 @@ main() {
 
     it('shoud have model updates applied correctly', (TestBed _) {
       var e = compile(_,
-        '''<div on-abc='description="new description";'>{{description}}</div>''');
+          '''<div on-abc='description="new description";'>{{description}}</div>''');
       e.dispatchEvent(new Event('abc'));
       _.rootScope.apply();
       expect(e.text).toEqual("new description");
     });
 
     it('shoud register event when shadow dom is used', async((TestBed _) {
-      var e = compile(_,'<bar></bar>');
+      var e = compile(_, '<bar></bar>');
 
       microLeap();
 
@@ -74,8 +71,7 @@ main() {
     }));
 
     it('shoud handle event within content only once', async((TestBed _) {
-      var e = compile(_,
-        ''' <bar>
+      var e = compile(_, ''' <bar>
                <div on-abc="invoked=true;"></div>
              </bar>
            ''');

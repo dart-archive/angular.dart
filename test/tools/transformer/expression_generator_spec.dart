@@ -27,43 +27,34 @@ main() {
     ];
 
     it('should extract expressions', () {
-      return generates(phases,
-          inputs: {
-            'a|web/main.dart': '''
+      return generates(phases, inputs: {
+        'a|web/main.dart': '''
                 import 'package:angular/angular.dart';
 
                 main() {} ''',
-            'a|web/index.html': '''
+        'a|web/index.html': '''
                 <div>{{some.getter}}</div>
                 <script src='main.dart' type='application/dart'></script>''',
-            'angular|lib/angular.dart': libAngular,
-          },
-          getters: ['some', 'getter'],
-          setters: ['some', 'getter'],
-          symbols: []);
+        'angular|lib/angular.dart': libAngular,
+      }, getters: ['some', 'getter'], setters: ['some', 'getter'], symbols: []);
     });
 
     it('should extract functions as getters', () {
-      return generates(phases,
-          inputs: {
-            'a|web/main.dart': '''
+      return generates(phases, inputs: {
+        'a|web/main.dart': '''
                 import 'package:angular/angular.dart';
 
                 main() {} ''',
-            'a|web/index.html': '''
+        'a|web/index.html': '''
                 <div>{{some.method()}}</div>
                 <script src='main.dart' type='application/dart'></script>''',
-            'angular|lib/angular.dart': libAngular,
-          },
-          getters: ['some', 'method'],
-          setters: ['some'],
-          symbols: []);
+        'angular|lib/angular.dart': libAngular,
+      }, getters: ['some', 'method'], setters: ['some'], symbols: []);
     });
 
     it('should follow templateUris', () {
-      return generates(phases,
-          inputs: {
-            'a|web/main.dart': '''
+      return generates(phases, inputs: {
+        'a|web/main.dart': '''
                 import 'package:angular/angular.dart';
 
                 @Component(
@@ -78,23 +69,22 @@ main() {
 
                 main() {}
                 ''',
-            'a|web/foo.html': '''
+        'a|web/foo.html': '''
                 <div>{{template.contents}}</div>''',
-            'b|lib/bar.html': '''
+        'b|lib/bar.html': '''
                 <div>{{bar}}</div>''',
-            'a|web/index.html': '''
+        'a|web/index.html': '''
                 <script src='main.dart' type='application/dart'></script>''',
-            'angular|lib/angular.dart': libAngular,
-          },
+        'angular|lib/angular.dart': libAngular,
+      },
           getters: ['template', 'contents', 'bar'],
           setters: ['template', 'contents', 'bar'],
           symbols: []);
     });
 
     it('should follow template cache uris', () {
-      return generates(phases,
-          inputs: {
-            'a|web/main.dart': '''
+      return generates(phases, inputs: {
+        'a|web/main.dart': '''
                 import 'package:angular/angular.dart';
                 import 'package:angular/cacheAnnotation.dart';
 
@@ -104,29 +94,28 @@ main() {
 
                 main() {}
                 ''',
-            'a|lib/foo.html': '''
+        'a|lib/foo.html': '''
                 <div>{{template.contents}}</div>''',
-            'b|lib/bar.html': '''
+        'b|lib/bar.html': '''
                 <div>{{bar}}</div>''',
-            'a|web/index.html': '''
+        'a|web/index.html': '''
                 <script src='main.dart' type='application/dart'></script>''',
-            'angular|lib/angular.dart': libAngular,
-            'angular|lib/cacheAnnotation.dart': libCacheAnnotation,
-          },
+        'angular|lib/angular.dart': libAngular,
+        'angular|lib/cacheAnnotation.dart': libCacheAnnotation,
+      },
           getters: ['template', 'contents', 'bar'],
           setters: ['template', 'contents', 'bar'],
           symbols: []);
     });
 
     it('should respect relative URLs', () {
-      return generates(phases,
-          inputs: {
-            'a|web/main.dart': '''
+      return generates(phases, inputs: {
+        'a|web/main.dart': '''
                 import 'package:b/bar.dart';
 
                 main() {}
                 ''',
-            'b|lib/bar.dart': '''
+        'b|lib/bar.dart': '''
                 import 'package:angular/angular.dart';
 
                 @Component(
@@ -134,21 +123,17 @@ main() {
                     selector: 'my-component')
                 class BarComponent {}
                 ''',
-            'b|lib/bar.html': '''
+        'b|lib/bar.html': '''
                 <div>{{bar}}</div>''',
-            'a|web/index.html': '''
+        'a|web/index.html': '''
                 <script src='main.dart' type='application/dart'></script>''',
-            'angular|lib/angular.dart': libAngular,
-          },
-          getters: ['bar'],
-          setters: ['bar'],
-      symbols: []);
+        'angular|lib/angular.dart': libAngular,
+      }, getters: ['bar'], setters: ['bar'], symbols: []);
     });
 
     it('should generate expressions for variables found in superclass', () {
-      return generates(phases,
-      inputs: {
-          'a|web/main.dart': '''
+      return generates(phases, inputs: {
+        'a|web/main.dart': '''
                 import 'package:angular/angular.dart';
 
                 @Component(
@@ -166,48 +151,46 @@ main() {
 
                 main() {}
                 ''',
-          'a|web/foo.html': '''
+        'a|web/foo.html': '''
                 <div>{{template.foo}}</div>
                 <div>{{template.bar}}</div>''',
-          'a|web/index.html': '''
+        'a|web/index.html': '''
                 <script src='main.dart' type='application/dart'></script>''',
-          'angular|lib/angular.dart': libAngular,
+        'angular|lib/angular.dart': libAngular,
       },
-      getters: ['foo', 'bar', 'template'],
-      setters: ['foo', 'bar', 'template'],
-      symbols: []);
+          getters: ['foo', 'bar', 'template'],
+          setters: ['foo', 'bar', 'template'],
+          symbols: []);
     });
 
     it('should apply additional HTML files', () {
       htmlFiles.add('web/dummy.html');
       htmlFiles.add('/packages/b/bar.html');
-      return generates(phases,
-          inputs: {
-            'a|web/main.dart': '''
+      return generates(phases, inputs: {
+        'a|web/main.dart': '''
                 import 'package:angular/angular.dart';
 
                 main() {}
                 ''',
-            'a|web/dummy.html': '''
+        'a|web/dummy.html': '''
                 <div>{{contents}}</div>''',
-            'b|lib/bar.html': '''
+        'b|lib/bar.html': '''
                 <div>{{bar}}</div>''',
-            'a|web/index.html': '''
+        'a|web/index.html': '''
                 <script src='main.dart' type='application/dart'></script>''',
-            'angular|lib/angular.dart': libAngular,
-          },
+        'angular|lib/angular.dart': libAngular,
+      },
           getters: ['contents', 'bar'],
           setters: ['contents', 'bar'],
           symbols: []).whenComplete(() {
-            htmlFiles.clear();
-          });
+        htmlFiles.clear();
+      });
     });
 
     it('should warn on not-found HTML files', () {
       htmlFiles.add('web/not-found.html');
-      return generates(phases,
-          inputs: {
-            'a|web/main.dart': '''
+      return generates(phases, inputs: {
+        'a|web/main.dart': '''
                 import 'package:angular/angular.dart';
 
                 main() {}
@@ -217,24 +200,22 @@ main() {
                     selector: 'my-component')
                 class BarComponent {}
                 ''',
-            'a|web/index.html': '''
+        'a|web/index.html': '''
                 <script src='main.dart' type='application/dart'></script>''',
-            'angular|lib/angular.dart': libAngular,
-          },
-          messages: [
-            'warning: Unable to find /packages/b/not-found.html at '
-                'b|lib/not-found.html (web/main.dart 4 16)',
-            'warning: Unable to find a|web/main.dart from html_files in '
-                'pubspec.yaml.',
-          ]).whenComplete(() {
-            htmlFiles.clear();
-          });
+        'angular|lib/angular.dart': libAngular,
+      }, messages: [
+        'warning: Unable to find /packages/b/not-found.html at '
+            'b|lib/not-found.html (web/main.dart 4 16)',
+        'warning: Unable to find a|web/main.dart from html_files in '
+            'pubspec.yaml.',
+      ]).whenComplete(() {
+        htmlFiles.clear();
+      });
     });
 
     it('should extract functions as getters when named import is used', () {
-      return generates(phases,
-          inputs: {
-            'a|web/main.dart': '''
+      return generates(phases, inputs: {
+        'a|web/main.dart': '''
               import 'package:angular/angular.dart' as ng;
 
               @ng.Component(selector: 'cmp', template: '{{foo}}')
@@ -243,25 +224,18 @@ main() {
               }
 
               main() {} ''',
-            'a|web/index.html': '''
+        'a|web/index.html': '''
               <cmp></cmp>
               <script src='main.dart' type='application/dart'></script>''',
-            'angular|lib/angular.dart': libAngular,
-          },
-          getters: ['foo'],
-          setters: ['foo'],
-          symbols: []);
+        'angular|lib/angular.dart': libAngular,
+      }, getters: ['foo'], setters: ['foo'], symbols: []);
     });
   });
 }
 
-Future generates(List<List<Transformer>> phases,
-    { Map<String, String> inputs,
-      List<String> getters: const [],
-      List<String> setters: const [],
-      List<String> symbols: const [],
-      Iterable<String> messages: const []}) {
-
+Future generates(List<List<Transformer>> phases, {Map<String, String> inputs,
+    List<String> getters: const [], List<String> setters: const [],
+    List<String> symbols: const [], Iterable<String> messages: const []}) {
   var buffer = new StringBuffer();
   buffer.write(header);
   buffer.write('final Map<String, FieldGetter> getters = {\n');
@@ -276,9 +250,7 @@ Future generates(List<List<Transformer>> phases,
 
   return tests.applyTransformers(phases,
       inputs: inputs,
-      results: {
-        'a|web/main_static_expressions.dart': buffer.toString()
-      },
+      results: {'a|web/main_static_expressions.dart': buffer.toString()},
       messages: messages);
 }
 

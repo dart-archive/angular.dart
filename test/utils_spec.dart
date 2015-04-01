@@ -12,7 +12,8 @@ main() {
       expect(relaxFnApply((a, b) => a + b, sixArgs)).toEqual(2);
       expect(relaxFnApply((a, b, c) => a + b + c, sixArgs)).toEqual(4);
       expect(relaxFnApply((a, b, c, d) => a + b + c + d, sixArgs)).toEqual(7);
-      expect(relaxFnApply((a, b, c, d, e) => a + b + c + d + e, sixArgs)).toEqual(12);
+      expect(relaxFnApply((a, b, c, d, e) => a + b + c + d + e, sixArgs))
+          .toEqual(12);
     });
 
     it('should work with 0 arguments', () {
@@ -50,4 +51,3 @@ main() {
     });
   });
 }
-

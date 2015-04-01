@@ -17,11 +17,11 @@ class TestBed {
   List<Node> rootElements;
   View rootView;
 
-  TestBed(this.injector, this.rootScope, this.compiler, this._parser, this.expando);
+  TestBed(
+      this.injector, this.rootScope, this.compiler, this._parser, this.expando);
 
-  TestBed.fromInjector(Injector i) :
-    this(i, i.get(RootScope), i.get(Compiler), i.get(Parser), i.get(Expando));
-
+  TestBed.fromInjector(Injector i) : this(
+          i, i.get(RootScope), i.get(Compiler), i.get(Parser), i.get(Expando));
 
   /**
    * Use to compile HTML and activate its directives.
@@ -48,7 +48,9 @@ class TestBed {
     } else {
       throw 'Expecting: String, Node, or List<Node> got $html.';
     }
-    rootElement = rootElements.length > 0 && rootElements[0] is Element ? rootElements[0] : null;
+    rootElement = rootElements.length > 0 && rootElements[0] is Element
+        ? rootElements[0]
+        : null;
     if (directives == null) {
       directives = injector.getByKey(DIRECTIVE_MAP_KEY);
     }
@@ -74,7 +76,7 @@ class TestBed {
    * Trigger a specific DOM element on a given node to test directives
    * which listen to events.
    */
-  triggerEvent(element, name, [type='MouseEvent']) {
+  triggerEvent(element, name, [type = 'MouseEvent']) {
     element.dispatchEvent(new Event.eventType(type, name));
     // Since we are manually triggering event we need to simulate apply();
     rootScope.apply();
@@ -85,7 +87,9 @@ class TestBed {
    * appropriate DOM event. Used when testing [SELECT] controlls in forms.
    */
   selectOption(element, text) {
-    element.querySelectorAll('option').forEach((o) => o.selected = o.text == text);
+    element
+        .querySelectorAll('option')
+        .forEach((o) => o.selected = o.text == text);
     triggerEvent(element, 'change');
     rootScope.apply();
   }
@@ -102,10 +106,9 @@ class TestBed {
   Scope getScope(Node node) => getProbe(node).scope;
 
   String _handleWhitespace(html) {
-    return html.split('\n')
-               .map((line) {
-                 var trimmed = line.trim();
-                 return trimmed + (trimmed.isEmpty || trimmed.endsWith('>') ? '' : ' ');})
-               .join();
+    return html.split('\n').map((line) {
+      var trimmed = line.trim();
+      return trimmed + (trimmed.isEmpty || trimmed.endsWith('>') ? '' : ' ');
+    }).join();
   }
 }

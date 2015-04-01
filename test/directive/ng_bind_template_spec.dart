@@ -9,8 +9,9 @@ main() {
     beforeEach((TestBed tb) => _ = tb);
 
     it('should bind template',
-          (Scope scope, Injector injector, Compiler compiler) {
-      var element = _.compile('<div ng-bind-template="{{salutation}} {{name}}!"></div>');
+        (Scope scope, Injector injector, Compiler compiler) {
+      var element =
+          _.compile('<div ng-bind-template="{{salutation}} {{name}}!"></div>');
       scope.context['salutation'] = 'Hello';
       scope.context['name'] = 'Heisenberg';
       scope.apply();

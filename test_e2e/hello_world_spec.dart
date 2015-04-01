@@ -18,6 +18,5 @@ main() {
       nameByBinding = element(by.binding('name'));
       expect(nameByBinding.getText()).toEqual('Hello world!');
     });
-
   });
 }

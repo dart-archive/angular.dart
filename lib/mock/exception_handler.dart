@@ -4,7 +4,7 @@ part of angular.mock;
  * Mock implementation of [ExceptionHandler] that rethrows exceptions.
  */
 class RethrowExceptionHandler extends ExceptionHandler {
-  call(error, stack, [reason]){
+  call(error, stack, [reason]) {
     throw "$error $reason \nORIGINAL STACKTRACE:\n $stack";
   }
 }

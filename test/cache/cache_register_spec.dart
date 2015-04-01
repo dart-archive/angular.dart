@@ -23,8 +23,6 @@ main() => describe('CacheRegister', () {
     register.clear();
     expect(map.length).toEqual(0);
     expect(map2.length).toEqual(0);
-
-
   });
 
   it('should return stats when empty', (CacheRegister register) {
@@ -48,6 +46,5 @@ main() => describe('CacheRegister', () {
       expect(register.stats[1].name).toEqual('a');
       expect(register.stats[1].length).toEqual(1);
     }
-
   });
 });

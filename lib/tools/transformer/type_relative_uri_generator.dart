@@ -8,7 +8,6 @@ import 'package:barback/barback.dart';
 import 'package:code_transformers/resolver.dart';
 import 'package:path/path.dart' as path;
 
-
 class TypeRelativeUriGenerator extends Transformer with ResolverTransformer {
   final TransformOptions options;
 
@@ -48,8 +47,7 @@ class TypeRelativeUriGenerator extends Transformer with ResolverTransformer {
     var outputBuffer = new StringBuffer();
     _writeHeader(asset.id, outputBuffer);
 
-    var libs = annotatedTypes.map((type) => type.library)
-        .toSet();
+    var libs = annotatedTypes.map((type) => type.library).toSet();
 
     var importPrefixes = <LibraryElement, String>{};
     var index = 0;
@@ -75,9 +73,8 @@ class TypeRelativeUriGenerator extends Transformer with ResolverTransformer {
     }
     _writeFooter(outputBuffer);
 
-
-    transform.addOutput(
-          new Asset.fromString(outputId, outputBuffer.toString()));
+    transform
+        .addOutput(new Asset.fromString(outputId, outputBuffer.toString()));
     transform.addOutput(asset);
   }
 }
@@ -128,7 +125,7 @@ class _AnnotatedElement {
 
   static Iterable<_AnnotatedElement> fromElement(Element element) {
     AnnotatedNode node = element.node;
-    return node.metadata.map(
-        (annotation) => new _AnnotatedElement(annotation, element));
+    return node.metadata
+        .map((annotation) => new _AnnotatedElement(annotation, element));
   }
 }

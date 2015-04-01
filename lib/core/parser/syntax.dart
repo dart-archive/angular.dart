@@ -41,8 +41,7 @@ abstract class Expression {
 
   eval(scope, [FormatterMap formatters = defaultFormatterMap]) =>
       throw new EvalError("Cannot evaluate $this");
-  assign(scope, value) =>
-      throw new EvalError("Cannot assign to $this");
+  assign(scope, value) => throw new EvalError("Cannot assign to $this");
   bind(context, [LocalsWrapper wrapper]) =>
       new BoundExpression(this, context, wrapper);
 
@@ -126,9 +125,11 @@ class CallArguments {
 
   int get arity => positionals.length + named.length;
 
-  Expression operator[](int index) {
+  Expression operator [](int index) {
     int split = positionals.length;
-    return index < split ? positionals[index] : named.values.elementAt(index - split);
+    return index < split
+        ? positionals[index]
+        : named.values.elementAt(index - split);
   }
 }
 
@@ -169,8 +170,7 @@ class Prefix extends Expression {
   accept(Visitor visitor) => visitor.visitPrefix(this);
 }
 
-abstract class Literal extends Expression {
-}
+abstract class Literal extends Expression {}
 
 class LiteralPrimitive extends Literal {
   final value;
@@ -203,6 +203,6 @@ class _DefaultFormatterMap implements FormatterMap {
   const _DefaultFormatterMap();
 
   call(name) => throw 'No Formatter: $name found!';
-  Type operator[](annotation) => null;
-  forEach(fn) { }
+  Type operator [](annotation) => null;
+  forEach(fn) {}
 }

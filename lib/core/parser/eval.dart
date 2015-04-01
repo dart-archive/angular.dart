@@ -21,12 +21,12 @@ class Chain extends syntax.Chain {
 
 class Formatter extends syntax.Formatter {
   final List<syntax.Expression> allArguments;
-  Formatter(syntax.Expression expression, String name, List<syntax.Expression> arguments,
-         this.allArguments)
+  Formatter(syntax.Expression expression, String name,
+      List<syntax.Expression> arguments, this.allArguments)
       : super(expression, name, arguments);
 
-  eval(scope, [FormatterMap formatters]) =>
-      Function.apply(formatters(name), evalList(scope, allArguments, formatters));
+  eval(scope, [FormatterMap formatters]) => Function.apply(
+      formatters(name), evalList(scope, allArguments, formatters));
 }
 
 class Assign extends syntax.Assign {
@@ -36,27 +36,31 @@ class Assign extends syntax.Assign {
 }
 
 class Conditional extends syntax.Conditional {
-  Conditional(syntax.Expression condition,
-              syntax.Expression yes, syntax.Expression no)
+  Conditional(
+      syntax.Expression condition, syntax.Expression yes, syntax.Expression no)
       : super(condition, yes, no);
-  eval(scope, [FormatterMap formatters]) => toBool(condition.eval(scope, formatters))
-      ? yes.eval(scope, formatters)
-      : no.eval(scope, formatters);
+  eval(scope, [FormatterMap formatters]) =>
+      toBool(condition.eval(scope, formatters))
+          ? yes.eval(scope, formatters)
+          : no.eval(scope, formatters);
 }
 
 class PrefixNot extends syntax.Prefix {
   PrefixNot(syntax.Expression expression) : super('!', expression);
-  eval(scope, [FormatterMap formatters]) => !toBool(expression.eval(scope, formatters));
+  eval(scope, [FormatterMap formatters]) =>
+      !toBool(expression.eval(scope, formatters));
 }
 
 class Binary extends syntax.Binary {
-  Binary(String operation, syntax.Expression left, syntax.Expression right):
-      super(operation, left, right);
+  Binary(String operation, syntax.Expression left, syntax.Expression right)
+      : super(operation, left, right);
   eval(scope, [FormatterMap formatters]) {
     var left = this.left.eval(scope, formatters);
     switch (operation) {
-      case '&&': return toBool(left) && toBool(this.right.eval(scope, formatters));
-      case '||': return toBool(left) || toBool(this.right.eval(scope, formatters));
+      case '&&':
+        return toBool(left) && toBool(this.right.eval(scope, formatters));
+      case '||':
+        return toBool(left) || toBool(this.right.eval(scope, formatters));
     }
     var right = this.right.eval(scope, formatters);
 
@@ -76,20 +80,34 @@ class Binary extends syntax.Binary {
     }
 
     switch (operation) {
-      case '+'  : return autoConvertAdd(left, right);
-      case '-'  : return left - right;
-      case '*'  : return left * right;
-      case '/'  : return left / right;
-      case '~/' : return left ~/ right;
-      case '%'  : return left % right;
-      case '==' : return left == right;
-      case '!=' : return left != right;
-      case '<'  : return left < right;
-      case '>'  : return left > right;
-      case '<=' : return left <= right;
-      case '>=' : return left >= right;
-      case '^'  : return left ^ right;
-      case '&'  : return left & right;
+      case '+':
+        return autoConvertAdd(left, right);
+      case '-':
+        return left - right;
+      case '*':
+        return left * right;
+      case '/':
+        return left / right;
+      case '~/':
+        return left ~/ right;
+      case '%':
+        return left % right;
+      case '==':
+        return left == right;
+      case '!=':
+        return left != right;
+      case '<':
+        return left < right;
+      case '>':
+        return left > right;
+      case '<=':
+        return left <= right;
+      case '>=':
+        return left >= right;
+      case '^':
+        return left ^ right;
+      case '&':
+        return left & right;
     }
     throw new EvalError('Internal error [$operation] not handled');
   }
@@ -112,7 +130,8 @@ class LiteralArray extends syntax.LiteralArray {
 }
 
 class LiteralObject extends syntax.LiteralObject {
-  LiteralObject(List<String> keys, List<syntax.Expression>values) : super(keys, values);
+  LiteralObject(List<String> keys, List<syntax.Expression> values)
+      : super(keys, values);
   eval(scope, [FormatterMap formatters]) =>
       new Map.fromIterables(keys, values.map((e) => e.eval(scope, formatters)));
 }

@@ -19,7 +19,7 @@ class BallModel {
 
   static _color() {
     var color = '#';
-    for(var i = 0; i < 6; i++) {
+    for (var i = 0; i < 6; i++) {
       color += random.nextInt(16).toRadixString(16);
     }
     return color;
@@ -58,11 +58,11 @@ class BouncingBalls implements ScopeAware {
   }
 
   void changeCount(count) {
-    while(count > 0) {
+    while (count > 0) {
       balls.add(new BallModel());
       count--;
     }
-    while(count < 0 && balls.isNotEmpty) {
+    while (count < 0 && balls.isNotEmpty) {
       balls.removeAt(0);
       count++;
     }
@@ -81,15 +81,27 @@ class BouncingBalls implements ScopeAware {
     var now = window.performance.now();
     var delay = now - lastTime;
 
-    fps = (1000/delay).round();
-    for(var i = 0; i < balls.length; i++) {
+    fps = (1000 / delay).round();
+    for (var i = 0; i < balls.length; i++) {
       var b = balls[i];
       b.x += delay * b.velX;
       b.y += delay * b.velY;
-      if (b.x < 0) { b.x *= -1; b.velX *= -1; }
-      if (b.y < 0) { b.y *= -1; b.velY *= -1; }
-      if (b.x > width) { b.x = 2*width - b.x; b.velX *= -1; }
-      if (b.y > height) { b.y = 2*height - b.y; b.velY *= -1; }
+      if (b.x < 0) {
+        b.x *= -1;
+        b.velX *= -1;
+      }
+      if (b.y < 0) {
+        b.y *= -1;
+        b.velY *= -1;
+      }
+      if (b.x > width) {
+        b.x = 2 * width - b.x;
+        b.velX *= -1;
+      }
+      if (b.y > height) {
+        b.y = 2 * height - b.y;
+        b.velY *= -1;
+      }
     }
     lastTime = now;
     timeDigest();
@@ -100,10 +112,9 @@ class BouncingBalls implements ScopeAware {
 List<String> _CACHE = new List.generate(500, (i) => '${i}px');
 
 @Decorator(
-  selector: '[ball-position]',
-  map: const {
-    "ball-position": '=>position'},
-  exportExpressions: const ['x', 'y'])
+    selector: '[ball-position]',
+    map: const {"ball-position": '=>position'},
+    exportExpressions: const ['x', 'y'])
 class BallPosition {
   final Element element;
   final Scope scope;
@@ -115,10 +126,10 @@ class BallPosition {
     var style = element.style;
     style.backgroundColor = model.color;
     scope
-        ..watch('x', (x, _) => element.style.left = '${x + 10}px',
-            context: model, canChangeModel: false)
-        ..watch('y', (y, _) => element.style.top = '${y + 10}px',
-            context: model, canChangeModel: false);
+      ..watch('x', (x, _) => element.style.left = '${x + 10}px',
+          context: model, canChangeModel: false)
+      ..watch('y', (y, _) => element.style.top = '${y + 10}px',
+          context: model, canChangeModel: false);
   }
 }
 
@@ -130,7 +141,5 @@ class MyModule extends Module {
 }
 
 main() {
-  applicationFactory()
-      .addModule(new MyModule())
-      .run();
+  applicationFactory().addModule(new MyModule()).run();
 }

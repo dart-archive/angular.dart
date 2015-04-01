@@ -45,7 +45,6 @@ traceDetectWTF(dynamic /* JsObject */ context) {
       _beginTimeRange = _trace['beginTimeRange'];
       _endTimeRange = _trace['endTimeRange'];
     }
-
   }
 }
 
@@ -146,7 +145,8 @@ dynamic /* JsObject */ traceLeave(dynamic /* JsObject */ scope) {
  *        }
  *     }
  */
-dynamic /* JsObject */ traceLeaveVal(dynamic /* JsObject */ scope, dynamic returnValue) {
+dynamic /* JsObject */ traceLeaveVal(
+    dynamic /* JsObject */ scope, dynamic returnValue) {
   if (traceEnabled) {
     _arg2[0] = scope;
     _arg2[1] = returnValue;
@@ -183,4 +183,3 @@ dynamic /* JsObject */ traceAsyncEnd(dynamic /* JsObject */ range) {
   }
   return null;
 }
-

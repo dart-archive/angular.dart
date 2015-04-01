@@ -1,4 +1,4 @@
-library angular.source_metadata_extractor ;
+library angular.source_metadata_extractor;
 
 import 'package:analyzer/src/generated/ast.dart';
 import 'package:angular/tools/source_crawler.dart';
@@ -17,7 +17,7 @@ const Map<String, String> _attrAnnotationsToSpec = const {
 class SourceMetadataExtractor {
   DirectiveMetadataCollectingVisitor metadataVisitor;
 
-  SourceMetadataExtractor([ this.metadataVisitor ]) {
+  SourceMetadataExtractor([this.metadataVisitor]) {
     if (metadataVisitor == null) {
       metadataVisitor = new DirectiveMetadataCollectingVisitor();
     }
@@ -32,12 +32,14 @@ class SourceMetadataExtractor {
       dirInfo.selector = meta.selector;
       dirInfo.template = meta.template;
       meta.attributeMappings.forEach((attrName, mappingSpec) {
-        var spec = _specs.firstWhere((specPrefix) => mappingSpec.startsWith(specPrefix),
-                                      orElse: () => throw '$mappingSpec no matching spec');
+        var spec = _specs.firstWhere(
+            (specPrefix) => mappingSpec.startsWith(specPrefix),
+            orElse: () => throw '$mappingSpec no matching spec');
         if (spec != '@') {
           dirInfo.expressionAttrs.add(attrName);
         }
-        if (mappingSpec.length == 1) { // Shorthand. Remove.
+        if (mappingSpec.length == 1) {
+          // Shorthand. Remove.
           // TODO(pavelgj): Figure out if short-hand LHS should be expanded
           // and added to the expressions list.
           if (attrName != '.') {
@@ -85,8 +87,8 @@ class SourceMetadataExtractor {
       directives.add(dirInfo);
     });
 
-    directives.addAll(metadataVisitor.templates.map(
-        (tmpl) => new DirectiveInfo()..template = tmpl));
+    directives.addAll(metadataVisitor.templates
+        .map((tmpl) => new DirectiveInfo()..template = tmpl));
 
     return directives;
   }
@@ -95,21 +97,23 @@ class SourceMetadataExtractor {
 class DirectiveMetadataCollectingAstVisitor extends RecursiveAstVisitor {
   final List<DirectiveMetadata> metadata;
   final List<String> templates;
-  final RegExp _COMPONENT_OR_DECORATOR_EXPR = new RegExp(r"\.?(Component|Decorator)$");
+  final RegExp _COMPONENT_OR_DECORATOR_EXPR =
+      new RegExp(r"\.?(Component|Decorator)$");
 
   DirectiveMetadataCollectingAstVisitor(this.metadata, this.templates);
 
   visitMethodInvocation(MethodInvocation node) {
     if (node.methodName.name == 'ngRoute') {
-      NamedExpression viewHtmlExpression =
-          node.argumentList.arguments
-              .firstWhere((e) => e is NamedExpression && e.name.label.name == 'viewHtml',
-                          orElse: () => null);
+      NamedExpression viewHtmlExpression = node.argumentList.arguments
+          .firstWhere(
+              (e) => e is NamedExpression && e.name.label.name == 'viewHtml',
+              orElse: () => null);
       if (viewHtmlExpression != null) {
         if (viewHtmlExpression.expression is! StringLiteral) {
           throw 'viewHtml must be a string literal';
         }
-        templates.add((viewHtmlExpression.expression as StringLiteral).stringValue);
+        templates
+            .add((viewHtmlExpression.expression as StringLiteral).stringValue);
       }
     }
     super.visitMethodInvocation(node);
@@ -121,8 +125,7 @@ class DirectiveMetadataCollectingAstVisitor extends RecursiveAstVisitor {
       if (ann.arguments == null) return; // Ignore non-class annotations.
       // TODO(pavelj): this is not a safe check for the type of the
       // annotations, but good enough for now.
-      if (!_COMPONENT_OR_DECORATOR_EXPR.hasMatch(ann.name.name))
-        return;
+      if (!_COMPONENT_OR_DECORATOR_EXPR.hasMatch(ann.name.name)) return;
 
       var meta = new DirectiveMetadata()..className = clazz.name.name;
       metadata.add(meta);
@@ -153,14 +156,15 @@ class DirectiveMetadataCollectingAstVisitor extends RecursiveAstVisitor {
         }
       });
 
-      if (meta != null) _walkSuperclassChain(clazz, meta, _extractMappingsFromClass);
+      if (meta != null) _walkSuperclassChain(
+          clazz, meta, _extractMappingsFromClass);
     });
 
     return super.visitClassDeclaration(clazz);
   }
 
   void _walkSuperclassChain(ClassDeclaration clazz, DirectiveMetadata meta,
-                            metadataExtractor(ClassDeclaration clazz, DirectiveMetadata meta)) {
+      metadataExtractor(ClassDeclaration clazz, DirectiveMetadata meta)) {
     while (clazz != null) {
       metadataExtractor(clazz, meta);
       if (clazz.element != null && clazz.element.supertype != null) {
@@ -171,24 +175,27 @@ class DirectiveMetadataCollectingAstVisitor extends RecursiveAstVisitor {
     }
   }
 
-  void _extractMappingsFromClass(ClassDeclaration clazz, DirectiveMetadata meta) {
+  void _extractMappingsFromClass(
+      ClassDeclaration clazz, DirectiveMetadata meta) {
     // Check fields/getters/setter for presence of attr mapping annotations.
     clazz.members.forEach((ClassMember member) {
       if (member is FieldDeclaration ||
-      (member is MethodDeclaration &&
-      (member.isSetter || member.isGetter))) {
+          (member is MethodDeclaration &&
+              (member.isSetter || member.isGetter))) {
         member.metadata.forEach((Annotation ann) {
           if (_attrAnnotationsToSpec.containsKey(ann.name.name)) {
             String fieldName;
             if (member is FieldDeclaration) {
               fieldName = member.fields.variables.first.name.name;
-            } else { // MethodDeclaration
+            } else {
+              // MethodDeclaration
               fieldName = (member as MethodDeclaration).name.name;
             }
             StringLiteral attNameLiteral = ann.arguments.arguments.first;
-            if (meta.attributeMappings.containsKey(attNameLiteral.stringValue)) {
+            if (meta.attributeMappings
+                .containsKey(attNameLiteral.stringValue)) {
               throw 'Attribute mapping already defined for '
-                    '${clazz.name}.$fieldName';
+                  '${clazz.name}.$fieldName';
             }
             meta.attributeMappings[attNameLiteral.stringValue] =
                 _attrAnnotationsToSpec[ann.name.name] + fieldName;

@@ -9,16 +9,17 @@ main() {
     beforeEach((TestBed tb) => _ = tb);
 
     it('should set ignore all other markup/directives on the descendent nodes',
-          (Scope scope, Injector injector, Compiler compiler, DirectiveMap directives) {
+        (Scope scope, Injector injector, Compiler compiler,
+            DirectiveMap directives) {
       Element element = e('<div>' +
-                      '  <span id="s1">{{a}}</span>' +
-                      '  <span id="s2" ng-bind="b"></span>' +
-                      '  <div foo="{{a}}" ng-non-bindable>' +
-                      '    <span ng-bind="a"></span>{{b}}' +
-                      '  </div>' +
-                      '  <span id="s3">{{a}}</span>' +
-                      '  <span id="s4" ng-bind="b"></span>' +
-                      '</div>');
+          '  <span id="s1">{{a}}</span>' +
+          '  <span id="s2" ng-bind="b"></span>' +
+          '  <div foo="{{a}}" ng-non-bindable>' +
+          '    <span ng-bind="a"></span>{{b}}' +
+          '  </div>' +
+          '  <span id="s3">{{a}}</span>' +
+          '  <span id="s4" ng-bind="b"></span>' +
+          '</div>');
       compiler([element], directives)(scope, null, [element]);
       scope.context['a'] = "one";
       scope.context['b'] = "two";

@@ -10,7 +10,7 @@ part of angular.core_internal;
 @Injectable()
 class ExceptionHandler {
 
- /**
+  /**
   * Delegate uncaught exception for central error handling.
   *
   * - [error] The error which was caught.

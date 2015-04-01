@@ -61,7 +61,9 @@ class PendingAsync {
     while (_callbacks != null) {
       var callbacks = _callbacks;
       _callbacks = null;
-      callbacks.forEach((fn) { fn(); });
+      callbacks.forEach((fn) {
+        fn();
+      });
     }
   }
 }

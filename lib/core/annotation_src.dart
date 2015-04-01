@@ -8,12 +8,8 @@ import "package:di/annotations.dart" show Injectable;
  * to publish types that will become available for injection.
  */
 abstract class DirectiveBinder {
- void bind(key, {dynamic toValue,
-                 Function toFactory,
-                 Type toImplementation,
-                 toInstanceOf,
-                 inject: const[],
-                 Visibility visibility: Visibility.LOCAL});
+  void bind(key, {dynamic toValue, Function toFactory, Type toImplementation,
+      toInstanceOf, inject: const [], Visibility visibility: Visibility.LOCAL});
 }
 
 /**
@@ -25,7 +21,8 @@ typedef void DirectiveBinderFn(DirectiveBinder binder);
 
 RegExp _ATTR_NAME = new RegExp(r'\[([^\]]+)\]$');
 
-Directive cloneWithNewMap(Directive annotation, map) => annotation._cloneWithNewMap(map);
+Directive cloneWithNewMap(Directive annotation, map) =>
+    annotation._cloneWithNewMap(map);
 
 String mappingSpec(DirectiveAnnotation annotation) => annotation._mappingSpec;
 
@@ -236,16 +233,10 @@ abstract class Directive implements Injectable {
    */
   final List<String> updateBoundElementPropertiesOnEvents;
 
-  const Directive({
-    this.selector,
-    this.children,
-    this.visibility,
-    this.module,
-    this.map: const {},
-    this.exportExpressions: const [],
-    this.exportExpressionAttrs: const [],
-    this.updateBoundElementPropertiesOnEvents
-  });
+  const Directive({this.selector, this.children, this.visibility, this.module,
+      this.map: const {}, this.exportExpressions: const [],
+      this.exportExpressionAttrs: const [],
+      this.updateBoundElementPropertiesOnEvents});
 
   String toString() => selector;
   Directive _cloneWithNewMap(newMap);
@@ -299,8 +290,9 @@ class Component extends Directive {
    *
    *    in component template:  {{foo}}
    */
-  @Deprecated('next release. This property is left for backward compatibility but setting it has no'
-              ' effect.')
+  @Deprecated(
+      'next release. This property is left for backward compatibility but setting it has no'
+      ' effect.')
   final String publishAs;
 
   /**
@@ -331,49 +323,38 @@ class Component extends Directive {
    */
   final bool useNgBaseCss;
 
-  const Component({
-    this.template,
-    this.templateUrl,
-    cssUrl,
-    DirectiveBinderFn module,
-    map,
-    selector,
-    visibility,
-    exportExpressions,
-    exportExpressionAttrs,
-    this.useShadowDom,
-    this.useNgBaseCss: true,
-    updateBoundElementPropertiesOnEvents,
-    this.publishAs
-  }) : _cssUrls = cssUrl,
-        super(selector: selector,
-             children: Directive.COMPILE_CHILDREN,
-             visibility: visibility,
-             map: map,
-             module: module,
-             exportExpressions: exportExpressions,
-             exportExpressionAttrs: exportExpressionAttrs,
-             updateBoundElementPropertiesOnEvents: updateBoundElementPropertiesOnEvents);
+  const Component({this.template, this.templateUrl, cssUrl,
+      DirectiveBinderFn module, map, selector, visibility, exportExpressions,
+      exportExpressionAttrs, this.useShadowDom, this.useNgBaseCss: true,
+      updateBoundElementPropertiesOnEvents, this.publishAs})
+      : _cssUrls = cssUrl,
+        super(
+            selector: selector,
+            children: Directive.COMPILE_CHILDREN,
+            visibility: visibility,
+            map: map,
+            module: module,
+            exportExpressions: exportExpressions,
+            exportExpressionAttrs: exportExpressionAttrs,
+            updateBoundElementPropertiesOnEvents: updateBoundElementPropertiesOnEvents);
 
-  List<String> get cssUrls => _cssUrls == null ?
-      const [] :
-      _cssUrls is List ?  _cssUrls : [_cssUrls];
+  List<String> get cssUrls =>
+      _cssUrls == null ? const [] : _cssUrls is List ? _cssUrls : [_cssUrls];
 
-  Directive _cloneWithNewMap(newMap) =>
-      new Component(
-          template: template,
-          templateUrl: templateUrl,
-          cssUrl: cssUrls,
-          map: newMap,
-          module: module,
-          selector: selector,
-          visibility: visibility,
-          exportExpressions: exportExpressions,
-          exportExpressionAttrs: exportExpressionAttrs,
-          useShadowDom: useShadowDom,
-          useNgBaseCss: useNgBaseCss,
-          updateBoundElementPropertiesOnEvents: updateBoundElementPropertiesOnEvents,
-          publishAs: publishAs);
+  Directive _cloneWithNewMap(newMap) => new Component(
+      template: template,
+      templateUrl: templateUrl,
+      cssUrl: cssUrls,
+      map: newMap,
+      module: module,
+      selector: selector,
+      visibility: visibility,
+      exportExpressions: exportExpressions,
+      exportExpressionAttrs: exportExpressionAttrs,
+      useShadowDom: useShadowDom,
+      useNgBaseCss: useNgBaseCss,
+      updateBoundElementPropertiesOnEvents: updateBoundElementPropertiesOnEvents,
+      publishAs: publishAs);
 }
 
 /**
@@ -391,33 +372,28 @@ class Component extends Directive {
  * * `set scope(Scope scope)` - Called right after construction with the owning scope.
  */
 class Decorator extends Directive {
-  const Decorator({children: Directive.COMPILE_CHILDREN,
-                    map,
-                    selector,
-                    DirectiveBinderFn module,
-                    visibility,
-                    exportExpressions,
-                    exportExpressionAttrs,
-                    updateBoundElementPropertiesOnEvents})
-      : super(selector: selector,
-              children: children,
-              visibility: visibility,
-              map: map,
-              module: module,
-              exportExpressions: exportExpressions,
-              exportExpressionAttrs: exportExpressionAttrs,
-              updateBoundElementPropertiesOnEvents: updateBoundElementPropertiesOnEvents);
-
-  Directive _cloneWithNewMap(newMap) =>
-      new Decorator(
-          children: children,
-          map: newMap,
-          module: module,
+  const Decorator({children: Directive.COMPILE_CHILDREN, map, selector,
+      DirectiveBinderFn module, visibility, exportExpressions,
+      exportExpressionAttrs, updateBoundElementPropertiesOnEvents})
+      : super(
           selector: selector,
+          children: children,
           visibility: visibility,
+          map: map,
+          module: module,
           exportExpressions: exportExpressions,
           exportExpressionAttrs: exportExpressionAttrs,
           updateBoundElementPropertiesOnEvents: updateBoundElementPropertiesOnEvents);
+
+  Directive _cloneWithNewMap(newMap) => new Decorator(
+      children: children,
+      map: newMap,
+      module: module,
+      selector: selector,
+      visibility: visibility,
+      exportExpressions: exportExpressions,
+      exportExpressionAttrs: exportExpressionAttrs,
+      updateBoundElementPropertiesOnEvents: updateBoundElementPropertiesOnEvents);
 }
 
 /**

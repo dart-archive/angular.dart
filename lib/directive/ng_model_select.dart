@@ -18,9 +18,7 @@ part of angular.directive;
  * Note: The `option.value` attribute for the `<select>` element is defined as a string. To bind to
  * an object for `option.value`, see the [OptionValue] directive.
  */
-@Decorator(
-    selector: 'select[ng-model]',
-    visibility: Visibility.CHILDREN)
+@Decorator(selector: 'select[ng-model]', visibility: Visibility.CHILDREN)
 class InputSelect implements AttachAware {
   final options = new Expando<OptionValue>();
   final dom.SelectElement _selectElement;
@@ -33,7 +31,8 @@ class InputSelect implements AttachAware {
   _SelectMode _mode = new _SelectMode(null, null, null);
   bool _dirty = false;
 
-  InputSelect(dom.Element this._selectElement, this._attrs, this._model, this._scope) {
+  InputSelect(
+      dom.Element this._selectElement, this._attrs, this._model, this._scope) {
     _nullOption = _selectElement
         .querySelectorAll('option')
         .firstWhere((o) => o.value == '', orElse: () => null);
@@ -44,7 +43,8 @@ class InputSelect implements AttachAware {
       _mode.destroy();
       if (value == null) {
         _model.watchCollection = false;
-        _mode = new _SingleSelectMode(options, _selectElement, _model, _nullOption);
+        _mode =
+            new _SingleSelectMode(options, _selectElement, _model, _nullOption);
       } else {
         _model.watchCollection = true;
         _mode = new _MultipleSelectionMode(options, _selectElement, _model);
@@ -160,10 +160,8 @@ class _SingleSelectMode extends _SelectMode {
   final dom.OptionElement _nullOption;
   bool _unknownOptionActive = false;
 
-  _SingleSelectMode(Expando<OptionValue> options,
-                    dom.SelectElement select,
-                    NgModel model,
-                    this._nullOption)
+  _SingleSelectMode(Expando<OptionValue> options, dom.SelectElement select,
+      NgModel model, this._nullOption)
       : _unknownOption = new dom.OptionElement(value: '?', selected: true),
         super(options, select, model);
 
@@ -179,7 +177,7 @@ class _SingleSelectMode extends _SelectMode {
 
   void onModelChange(value) {
     bool anySelected = false;
-    var optionsToUnselect =[];
+    var optionsToUnselect = [];
     _forEachOption((option, i) {
       if (identical(option, _unknownOption)) return;
       var selected;
@@ -214,9 +212,8 @@ class _SingleSelectMode extends _SelectMode {
 }
 
 class _MultipleSelectionMode extends _SelectMode {
-  _MultipleSelectionMode(Expando<OptionValue> options,
-                         dom.SelectElement select,
-                         NgModel model)
+  _MultipleSelectionMode(
+      Expando<OptionValue> options, dom.SelectElement select, NgModel model)
       : super(options, select, model);
 
   void onViewChange(_) {
@@ -234,9 +231,9 @@ class _MultipleSelectionMode extends _SelectMode {
     if (selectedValues is List) {
       fn = (o, i) {
         var selected = options[o];
-        return selected == null ?
-            false :
-            o.selected = selectedValues.contains(selected.ngValue);
+        return selected == null
+            ? false
+            : o.selected = selectedValues.contains(selected.ngValue);
       };
     }
 

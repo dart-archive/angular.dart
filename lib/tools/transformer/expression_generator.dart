@@ -39,9 +39,8 @@ class ExpressionGenerator extends Transformer with ResolverTransformer {
     _writeStaticExpressionHeader(asset.id, outputBuffer);
 
     var sourceMetadataExtractor = new SourceMetadataExtractor();
-    var directives =
-        sourceMetadataExtractor.gatherDirectiveInfo(null,
-        new _LibrarySourceCrawler(resolver.libraries));
+    var directives = sourceMetadataExtractor.gatherDirectiveInfo(
+        null, new _LibrarySourceCrawler(resolver.libraries));
 
     var htmlExtractor = new HtmlExpressionExtractor(directives);
     return _getHtmlSources(transform, resolver)
@@ -63,8 +62,8 @@ class ExpressionGenerator extends Transformer with ResolverTransformer {
           '_static_expressions.dart';
       var outputPath = path.url.join(path.url.dirname(id.path), outputFilename);
       var outputId = new AssetId(id.package, outputPath);
-      transform.addOutput(
-            new Asset.fromString(outputId, outputBuffer.toString()));
+      transform
+          .addOutput(new Asset.fromString(outputId, outputBuffer.toString()));
 
       transform.addOutput(asset);
     });
@@ -94,16 +93,15 @@ class ExpressionGenerator extends Transformer with ResolverTransformer {
         assets.add(htmlRefId);
       }
       Future.wait(
-        // Add any manually specified HTML files.
-        assets.map((id) => transform.readInputAsString(id))
-            .map((future) =>
-                future.then(controller.add).catchError((e) {
-                  transform.logger.warning('Unable to find $id from html_files '
-                      'in pubspec.yaml.');
-                }))
-        ).then((_) {
-          controller.close();
-        });
+          // Add any manually specified HTML files.
+          assets
+              .map((id) => transform.readInputAsString(id))
+              .map((future) => future.then(controller.add).catchError((e) {
+        transform.logger.warning('Unable to find $id from html_files '
+            'in pubspec.yaml.');
+      }))).then((_) {
+        controller.close();
+      });
     });
 
     return controller.stream;
@@ -135,7 +133,8 @@ class ExpressionGenerator extends Transformer with ResolverTransformer {
 }
 
 void _writeStaticExpressionHeader(AssetId id, StringSink sink) {
-  var libPath = path.withoutExtension(id.path).replaceAll('/', '.').replaceAll('-', '_');
+  var libPath =
+      path.withoutExtension(id.path).replaceAll('/', '.').replaceAll('-', '_');
   sink.write('''
 library ${id.package}.$libPath.generated_expressions;
 
@@ -149,7 +148,8 @@ class _LibrarySourceCrawler implements SourceCrawler {
   _LibrarySourceCrawler(this.libraries);
 
   void crawl(String entryPoint, CompilationUnitVisitor visitor) {
-    libraries.expand((lib) => lib.units)
+    libraries
+        .expand((lib) => lib.units)
         .map((compilationUnitElement) => compilationUnitElement.node)
         .forEach(visitor);
   }
@@ -170,12 +170,12 @@ class _ParserGetterSetter {
     });
 
     DartGetterSetterGen backend = this.backend;
-    sink.write(generateClosures(backend.properties, backend.calls, backend.symbols));
+    sink.write(
+        generateClosures(backend.properties, backend.calls, backend.symbols));
   }
 
-  String generateClosures(Set<String> properties,
-                          Set<String> calls,
-                          Set<String> symbols) {
+  String generateClosures(
+      Set<String> properties, Set<String> calls, Set<String> symbols) {
     var getters = new Set.from(properties)..addAll(calls);
     return '''
 final Map<String, FieldGetter> getters = ${generateGetterMap(getters)};
@@ -199,4 +199,3 @@ final Map<String, Symbol> symbols = ${generateSymbolMap(symbols)};
     return '{\n${lines.join(",\n")}\n}';
   }
 }
-

@@ -53,8 +53,8 @@ class EventHandler {
     dom.Node element = event.target;
     while (element != null && element != _rootNode) {
       var expression;
-      if (element is dom.Element)
-        expression = (element as dom.Element).attributes[eventNameToAttrName(event.type)];
+      if (element is dom.Element) expression =
+          (element as dom.Element).attributes[eventNameToAttrName(event.type)];
       if (expression != null) {
         try {
           var scope = _getScope(element);
@@ -95,8 +95,7 @@ class EventHandler {
 
 @Injectable()
 class ShadowRootEventHandler extends EventHandler {
-  ShadowRootEventHandler(dom.ShadowRoot shadowRoot,
-                         Expando expando,
-                         ExceptionHandler exceptionHandler)
+  ShadowRootEventHandler(dom.ShadowRoot shadowRoot, Expando expando,
+      ExceptionHandler exceptionHandler)
       : super(shadowRoot, expando, exceptionHandler);
 }

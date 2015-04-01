@@ -4,18 +4,17 @@ String depth = '';
 
 ENTER(name) {
   dump('${depth}ENTER: $name');
-  depth = depth +  '  ';
+  depth = depth + '  ';
 }
 
 LEAVE(name) {
-  depth = depth.substring(0, depth.length -2);
+  depth = depth.substring(0, depth.length - 2);
   dump('${depth}LEAVE: $name');
 }
 
 MARK(name) {
   dump('$depth$name');
 }
-
 
 dump([p1, p2, p3, p4, p5, p6, p7, p8, p9, p10]) {
   var log = [];

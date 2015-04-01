@@ -18,13 +18,11 @@ abstract class NgValidator {
  * Validates the model depending if required or ng-required is present on the element. `Selector:
  * input[ng-model][required|ng-required]`
  */
-@Decorator(
-    selector: '[ng-model][required]')
+@Decorator(selector: '[ng-model][required]')
 @Decorator(
     selector: '[ng-model][ng-required]',
     map: const {'ng-required': '=>required'})
 class NgModelRequiredValidator implements NgValidator {
-
   final String name = 'ng-required';
   bool _required = true;
   final NgModel _ngModel;
@@ -41,7 +39,8 @@ class NgModelRequiredValidator implements NgValidator {
     // Empty lists and/or strings are not valid.
     // NOTE: This is an excellent use case for structural typing.
     //   We really want anything object that has a 'isEmpty' property.
-    return !((modelValue is List || modelValue is String) && modelValue.isEmpty);
+    return !((modelValue is List || modelValue is String) &&
+        modelValue.isEmpty);
   }
 
   set required(value) {
@@ -58,7 +57,7 @@ class NgModelRequiredValidator implements NgValidator {
 class NgModelUrlValidator implements NgValidator {
   static final URL_REGEXP = new RegExp(
       r'^(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?' +
-      r'(\/|\/([\w#!:.?+=&%@!\-\/]))?$');
+          r'(\/|\/([\w#!:.?+=&%@!\-\/]))?$');
 
   final String name = 'ng-url';
 
@@ -66,8 +65,9 @@ class NgModelUrlValidator implements NgValidator {
     ngModel.addValidator(this);
   }
 
-  bool isValid(modelValue) =>
-      modelValue == null || modelValue.isEmpty || URL_REGEXP.hasMatch(modelValue);
+  bool isValid(modelValue) => modelValue == null ||
+      modelValue.isEmpty ||
+      URL_REGEXP.hasMatch(modelValue);
 }
 
 /**
@@ -76,15 +76,17 @@ class NgModelUrlValidator implements NgValidator {
  */
 @Decorator(selector: 'input[type=color][ng-model]')
 class NgModelColorValidator implements NgValidator {
-  static final COLOR_REGEXP = new RegExp(r'^#[0-9a-f]{6}$', caseSensitive: false);
+  static final COLOR_REGEXP =
+      new RegExp(r'^#[0-9a-f]{6}$', caseSensitive: false);
   final String name = 'ng-color';
 
   NgModelColorValidator(NgModel ngModel) {
     ngModel.addValidator(this);
   }
 
-  bool isValid(modelValue) =>
-    modelValue == null || modelValue.isEmpty || COLOR_REGEXP.hasMatch(modelValue);
+  bool isValid(modelValue) => modelValue == null ||
+      modelValue.isEmpty ||
+      COLOR_REGEXP.hasMatch(modelValue);
 }
 
 /**
@@ -93,8 +95,8 @@ class NgModelColorValidator implements NgValidator {
  */
 @Decorator(selector: 'input[type=email][ng-model]')
 class NgModelEmailValidator implements NgValidator {
-  static final EMAIL_REGEXP = new RegExp(
-      r'^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,6}$');
+  static final EMAIL_REGEXP =
+      new RegExp(r'^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,6}$');
 
   final String name = 'ng-email';
 
@@ -102,8 +104,9 @@ class NgModelEmailValidator implements NgValidator {
     ngModel.addValidator(this);
   }
 
-  bool isValid(modelValue) =>
-      modelValue == null || modelValue.isEmpty || EMAIL_REGEXP.hasMatch(modelValue);
+  bool isValid(modelValue) => modelValue == null ||
+      modelValue.isEmpty ||
+      EMAIL_REGEXP.hasMatch(modelValue);
 }
 
 /**
@@ -113,7 +116,6 @@ class NgModelEmailValidator implements NgValidator {
 @Decorator(selector: 'input[type=number][ng-model]')
 @Decorator(selector: 'input[type=range][ng-model]')
 class NgModelNumberValidator implements NgValidator {
-
   final String name = 'ng-number';
 
   NgModelNumberValidator(NgModel ngModel) {
@@ -127,7 +129,7 @@ class NgModelNumberValidator implements NgValidator {
         if (val.isNaN) {
           return false;
         }
-      } catch(exception, stackTrace) {
+      } catch (exception, stackTrace) {
         return false;
       }
     }
@@ -148,7 +150,6 @@ class NgModelNumberValidator implements NgValidator {
     selector: 'input[type=range][ng-model][ng-max]',
     map: const {'ng-max': '=>max'})
 class NgModelMaxNumberValidator implements NgValidator {
-
   final String name = 'ng-max';
   double _max;
   final NgModel _ngModel;
@@ -163,7 +164,7 @@ class NgModelMaxNumberValidator implements NgValidator {
     try {
       num parsedValue = double.parse(value);
       _max = parsedValue.isNaN ? _max : parsedValue;
-    } catch(e) {
+    } catch (e) {
       _max = null;
     } finally {
       _ngModel.validateLater();
@@ -178,7 +179,7 @@ class NgModelMaxNumberValidator implements NgValidator {
       if (!parsedValue.isNaN) {
         return parsedValue <= max;
       }
-    } catch(exception, stackTrace) {}
+    } catch (exception, stackTrace) {}
 
     //this validator doesn't care if the type conversation fails or the value
     //is not a number (NaN) because NgModelNumberValidator will handle the
@@ -200,7 +201,6 @@ class NgModelMaxNumberValidator implements NgValidator {
     selector: 'input[type=range][ng-model][ng-min]',
     map: const {'ng-min': '=>min'})
 class NgModelMinNumberValidator implements NgValidator {
-
   final String name = 'ng-min';
   double _min;
   final NgModel _ngModel;
@@ -215,7 +215,7 @@ class NgModelMinNumberValidator implements NgValidator {
     try {
       num parsedValue = double.parse(value);
       _min = parsedValue.isNaN ? _min : parsedValue;
-    } catch(e) {
+    } catch (e) {
       _min = null;
     } finally {
       _ngModel.validateLater();
@@ -230,7 +230,7 @@ class NgModelMinNumberValidator implements NgValidator {
       if (!parsedValue.isNaN) {
         return parsedValue >= min;
       }
-    } catch(exception, stackTrace) {}
+    } catch (exception, stackTrace) {}
 
     //this validator doesn't care if the type conversation fails or the value
     //is not a number (NaN) because NgModelNumberValidator will handle the
@@ -246,10 +246,8 @@ class NgModelMinNumberValidator implements NgValidator {
  */
 @Decorator(selector: '[ng-model][pattern]')
 @Decorator(
-    selector: '[ng-model][ng-pattern]',
-    map: const {'ng-pattern': '=>pattern'})
+    selector: '[ng-model][ng-pattern]', map: const {'ng-pattern': '=>pattern'})
 class NgModelPatternValidator implements NgValidator {
-
   final String name = 'ng-pattern';
   RegExp _pattern;
   final NgModel _ngModel;
@@ -260,8 +258,10 @@ class NgModelPatternValidator implements NgValidator {
 
   bool isValid(modelValue) {
     //remember, only required validates for the input being empty
-    return _pattern == null || modelValue == null || modelValue.length == 0 ||
-           _pattern.hasMatch(modelValue);
+    return _pattern == null ||
+        modelValue == null ||
+        modelValue.length == 0 ||
+        _pattern.hasMatch(modelValue);
   }
 
   @NgAttr('pattern')
@@ -282,7 +282,6 @@ class NgModelPatternValidator implements NgValidator {
     selector: '[ng-model][ng-minlength]',
     map: const {'ng-minlength': '=>minlength'})
 class NgModelMinLengthValidator implements NgValidator {
-
   final String name = 'ng-minlength';
   int _minlength;
   final NgModel _ngModel;
@@ -293,8 +292,10 @@ class NgModelMinLengthValidator implements NgValidator {
 
   bool isValid(modelValue) {
     //remember, only required validates for the input being empty
-    return _minlength == 0 || modelValue == null || modelValue.length == 0 ||
-           modelValue.length >= _minlength;
+    return _minlength == 0 ||
+        modelValue == null ||
+        modelValue.length == 0 ||
+        modelValue.length >= _minlength;
   }
 
   @NgAttr('minlength')
@@ -315,7 +316,6 @@ class NgModelMinLengthValidator implements NgValidator {
     selector: '[ng-model][ng-maxlength]',
     map: const {'ng-maxlength': '=>maxlength'})
 class NgModelMaxLengthValidator implements NgValidator {
-
   final String name = 'ng-maxlength';
   int _maxlength = 0;
   final NgModel _ngModel;
@@ -324,8 +324,8 @@ class NgModelMaxLengthValidator implements NgValidator {
     _ngModel.addValidator(this);
   }
 
-  bool isValid(modelValue) =>
-      _maxlength == 0 || (modelValue == null ? 0 : modelValue.length) <= _maxlength;
+  bool isValid(modelValue) => _maxlength == 0 ||
+      (modelValue == null ? 0 : modelValue.length) <= _maxlength;
 
   @NgAttr('maxlength')
   void set maxlength(value) {
