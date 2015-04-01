@@ -2,8 +2,6 @@ library pending_async_spec;
 
 import '../_specs.dart';
 
-import 'dart:async';
-
 void main() {
   describe('pending_async', () {
     PendingAsync pendingAsync;

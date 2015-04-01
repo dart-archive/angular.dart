@@ -2,7 +2,6 @@ library js_cache_register_spec;
 
 import '../_specs.dart';
 import 'dart:js' as js;
-import 'package:angular/application_factory.dart';
 
 main() => describe('JsCacheRegister', () {
   beforeEachModule((Module m) {

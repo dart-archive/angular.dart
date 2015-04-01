@@ -6,7 +6,6 @@ import 'package:angular/core/parser/syntax.dart'
 import 'package:angular/core/parser/eval.dart';
 import 'package:angular/core/parser/utils.dart' show EvalError;
 import 'package:angular/cache/module.dart';
-import 'package:angular/core/annotation_src.dart' hide Formatter;
 import 'package:angular/core/module_internal.dart' show
     FormatterMap,
     ContextLocals;

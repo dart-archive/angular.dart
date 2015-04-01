@@ -1,6 +1,5 @@
 library angular.tools.transformer.relative_uri_generator;
 
-import 'dart:async';
 import 'package:analyzer/src/generated/ast.dart';
 import 'package:analyzer/src/generated/element.dart';
 import 'package:angular/tools/transformer/options.dart';

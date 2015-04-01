@@ -2,7 +2,6 @@ library angular.directive.static_keys;
 
 import 'package:di/di.dart';
 import 'package:angular/directive/module.dart';
-import 'package:angular/core_dom/static_keys.dart';
 
 export 'package:angular/core_dom/static_keys.dart';
 

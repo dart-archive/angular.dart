@@ -1,8 +1,6 @@
 import 'package:angular/angular.dart';
 import 'package:angular/application_factory.dart';
 
-import 'dart:html';
-
 @Decorator(
     selector: 'paper-radio-group',
     updateBoundElementPropertiesOnEvents: const ['core-select']

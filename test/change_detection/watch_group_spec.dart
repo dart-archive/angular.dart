@@ -7,7 +7,6 @@ import 'package:angular/change_detection/watch_group.dart';
 import 'package:angular/change_detection/dirty_checking_change_detector.dart';
 import 'package:angular/change_detection/dirty_checking_change_detector_dynamic.dart';
 import 'dirty_checking_change_detector_spec.dart' hide main;
-import 'package:angular/core/parser/dynamic_closure_map.dart';
 
 class TestData {
   sub1(a, {b: 0}) => a - b;

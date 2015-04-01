@@ -10,10 +10,7 @@ import 'package:di/annotations.dart';
 
 import 'package:angular/core/parser/parser.dart';
 import 'package:angular/core/parser/lexer.dart';
-import 'package:angular/utils.dart';
 import 'package:angular/ng_tracing.dart';
-
-import 'package:angular/core/annotation_src.dart';
 
 import 'package:angular/cache/module.dart';
 import 'package:angular/change_detection/watch_group.dart';
@@ -23,9 +20,6 @@ import 'package:angular/change_detection/change_detection.dart';
 import 'package:angular/change_detection/dirty_checking_change_detector.dart';
 import 'package:angular/core/formatter.dart';
 export 'package:angular/core/formatter.dart';
-import 'package:angular/core/parser/utils.dart';
-import 'package:angular/core/registry.dart';
-import 'package:angular/core/static_keys.dart';
 import 'package:angular/core/pending_async.dart';
 export 'package:angular/core/pending_async.dart';
 

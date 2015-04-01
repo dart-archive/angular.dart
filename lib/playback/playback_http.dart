@@ -6,7 +6,6 @@ import 'dart:html';
 
 import 'package:di/annotations.dart';
 import 'package:angular/core_dom/module_internal.dart';
-import 'package:angular/core/annotation_src.dart';
 import 'package:angular/mock/http_backend.dart' as mock;
 
 import 'package:angular/playback/playback_data.dart' as playback_data;

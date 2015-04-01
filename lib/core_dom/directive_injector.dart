@@ -1,11 +1,9 @@
 library angular.node_injector;
 
-import 'dart:collection';
 import 'dart:html' show Node, Element, ShadowRoot;
 import 'dart:profiler';
 
 import 'package:di/di.dart';
-import 'package:di/annotations.dart';
 import 'package:di/src/module.dart' show DEFAULT_VALUE, Binding;
 import 'package:angular/core/static_keys.dart';
 import 'package:angular/core_dom/static_keys.dart';

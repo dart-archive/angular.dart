@@ -6,7 +6,6 @@ import 'package:di/annotations.dart';
 import 'package:angular/core/parser/syntax.dart' as syntax;
 import 'package:angular/core/parser/parser.dart';
 import 'package:angular/core/formatter.dart';
-import 'package:angular/core/annotation_src.dart';
 import 'package:angular/change_detection/watch_group.dart';
 import 'package:angular/change_detection/change_detection.dart';
 import 'package:angular/core/parser/utils.dart';

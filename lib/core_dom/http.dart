@@ -512,7 +512,6 @@ class Http {
                        _pendingAsync.decreaseCount();
                        return _onError(e, runCoalesced, onError, config, url);
                      });
-        return request;
       }
 
       async.Future responseFuture;

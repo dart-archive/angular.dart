@@ -1,7 +1,6 @@
 library angular.dom.shimming_view_cache_spec;
 
 import '../_specs.dart';
-import 'package:angular/core_dom/css_shim.dart';
 
 main() {
   describe("ShimmingViewCache", () {

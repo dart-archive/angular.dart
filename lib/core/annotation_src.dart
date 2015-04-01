@@ -1,6 +1,5 @@
 library angular.core.annotation_src;
 
-import "package:di/di.dart" show Injector, Visibility, Factory;
 import "package:di/annotations.dart" show Injectable;
 
 /**

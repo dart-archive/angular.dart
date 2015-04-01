@@ -5,12 +5,7 @@ import 'package:angular/change_detection/dirty_checking_change_detector.dart';
 import 'package:angular/change_detection/dirty_checking_change_detector_dynamic.dart';
 import 'package:angular/change_detection/dirty_checking_change_detector_static.dart';
 import 'package:angular/change_detection/watch_group.dart';
-import 'package:benchmark_harness/benchmark_harness.dart';
 import 'package:observe/observe.dart';
-import 'package:observe/mirrors_used.dart';
-import "dart:io";
-import "dart:async";
-import "dart:convert";
 
 @MirrorsUsed(
     targets: const [

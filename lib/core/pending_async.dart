@@ -1,6 +1,5 @@
 library angular.core.pending_async;
 
-import 'dart:async';
 import 'package:di/annotations.dart';
 
 typedef void WhenStableCallback();

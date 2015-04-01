@@ -2,7 +2,6 @@ library view_spec;
 
 import '../_specs.dart';
 import 'package:angular/application_factory.dart';
-import 'package:angular/core_dom/static_keys.dart';
 
 class Log {
   List<String> log = <String>[];

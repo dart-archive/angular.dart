@@ -3,11 +3,9 @@
 */
 library angular.introspection;
 
-import 'dart:async' as async;
 import 'dart:html' as dom;
 import 'dart:js' as js;
 import 'package:di/di.dart';
-import 'package:angular/animate/module.dart';
 import 'package:angular/core/module_internal.dart';
 import 'package:angular/core_dom/module_internal.dart';
 import 'package:angular/core_dom/directive_injector.dart' show DirectiveInjector;
@@ -218,7 +216,7 @@ _jsify(var obj) {
     return _jsFunction(obj);
   }
   if ((obj is Map) || (obj is Iterable)) {
-    var mappedObj = (obj is Map) ? 
+    var mappedObj = (obj is Map) ?
         new Map.fromIterables(obj.keys, obj.values.map(_jsify)) : obj.map(_jsify);
     if (obj is List) {
       return new js.JsArray.from(mappedObj);

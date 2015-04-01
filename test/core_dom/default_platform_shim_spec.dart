@@ -2,8 +2,6 @@ library angular.dom.default_platform_shim_spec;
 
 import '../_specs.dart';
 
-import 'dart:js' as js;
-
 main() {
   describe("DefaultPlatformShim", () {
     final shim = new DefaultPlatformShim();

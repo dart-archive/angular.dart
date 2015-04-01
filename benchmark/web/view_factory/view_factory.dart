@@ -1,12 +1,11 @@
 library angular.benchmark.compiler;
 
-import 'package:angular/angular.dart';
-import 'package:angular/application_factory.dart';
-import 'package:angular/mock/module.dart';
-import 'package:benchmark_harness/benchmark_harness.dart';
-
 import 'dart:html';
 import 'dart:js' as js;
+
+import 'package:angular/angular.dart';
+import 'package:angular/application_factory.dart';
+
 
 
 class ViewFactoryInvocaton {

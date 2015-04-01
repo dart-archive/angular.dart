@@ -2,7 +2,6 @@ library light_dom_spec;
 
 import 'dart:html' as dom;
 import '../_specs.dart';
-import 'package:angular/core/module.dart';
 
 class DummyContent extends Mock implements Content {
   String select;

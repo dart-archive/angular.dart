@@ -1,9 +1,6 @@
 library angular.dom.platform_js_based_shim_spec;
 
 import '../_specs.dart';
-import 'package:browser_detect/browser_detect.dart';
-
-import 'dart:js' as js;
 
 main() {
   describe('PlatformJsBasedShim', () {
