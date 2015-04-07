@@ -102,7 +102,7 @@ class _NgDynamicToStaticVisitor extends GeneralizingAstVisitor {
         transaction.edit(
             m.end,
             m.end,
-            '..addModule(generated_template_cache.templateCacheModule)');
+            '.addModule(generated_template_cache.templateCacheModule)');
       }
     }
     super.visitMethodInvocation(m);
