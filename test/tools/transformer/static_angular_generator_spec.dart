@@ -79,7 +79,7 @@ import 'main_generated_template_cache.dart' as generated_template_cache;
 class MyModule extends Module {}
 
 main() {
-  var app = staticApplicationFactory(generated_static_metadata.typeAnnotations, generated_static_expressions.getters, generated_static_expressions.setters, generated_static_expressions.symbols, generated_static_type_to_uri_mapper.typeToUriMapper)..addModule(generated_template_cache.templateCacheModule)
+  var app = staticApplicationFactory(generated_static_metadata.typeAnnotations, generated_static_expressions.getters, generated_static_expressions.setters, generated_static_expressions.symbols, generated_static_type_to_uri_mapper.typeToUriMapper).addModule(generated_template_cache.templateCacheModule)
     .addModule(new MyModule())
     .run();
 }
@@ -117,7 +117,7 @@ import 'main_generated_template_cache.dart' as generated_template_cache;
 class MyModule extends Module {}
 
 main() {
-  var app = ng.staticApplicationFactory(generated_static_metadata.typeAnnotations, generated_static_expressions.getters, generated_static_expressions.setters, generated_static_expressions.symbols, generated_static_type_to_uri_mapper.typeToUriMapper)..addModule(generated_template_cache.templateCacheModule)
+  var app = ng.staticApplicationFactory(generated_static_metadata.typeAnnotations, generated_static_expressions.getters, generated_static_expressions.setters, generated_static_expressions.symbols, generated_static_type_to_uri_mapper.typeToUriMapper).addModule(generated_template_cache.templateCacheModule)
     .addModule(new MyModule())
     .run();
 }
