@@ -26,11 +26,11 @@ import 'package:observe/transformer.dart' show ObservableTransformer;
 class AngularTransformerGroup implements TransformerGroup {
   final Iterable<Iterable> phases;
 
-  AngularTransformerGroup(TransformOptions options)
-      : phases = _createPhases(options);
+  AngularTransformerGroup(TransformOptions options, {BarbackMode mode})
+      : phases = _createPhases(options, mode);
 
   AngularTransformerGroup.asPlugin(BarbackSettings settings)
-      : this(_parseSettings(settings.configuration));
+      : this(_parseSettings(settings.configuration), mode: settings.mode);
 }
 
 TransformOptions _parseSettings(Map args) {
@@ -147,12 +147,17 @@ Transformer _staticGenerator(TransformOptions options, Resolvers resolvers) {
   ]);
 }
 
-List<List<Transformer>> _createPhases(TransformOptions options) {
+List<List<Transformer>> _createPhases(
+    TransformOptions options, BarbackMode mode) {
  var resolvers = new Resolvers(options.sdkDirectory);
  return [
    [ new ObservableTransformer() ],
    [ new HtmlDartReferencesGenerator(options) ],
-   [ new di.InjectorGenerator(options.diOptions, resolvers ) ],
+   // During a pub build share the resolver to save memory, but for pub serve
+   // create a new resolver for any non-serial transformers or they will
+   // deadlock.
+   [ new di.InjectorGenerator(options.diOptions, mode == BarbackMode.RELEASE
+       ? resolvers : new Resolvers(options.sdkDirectory)) ],
    [ _staticGenerator(options, resolvers) ]
  ];
 }
