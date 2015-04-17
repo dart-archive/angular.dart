@@ -94,6 +94,19 @@ main() {
       expect(element).toHaveClass('B');
     });
 
+    it('should handle empty class strings', () {
+      var element = _.compile('<div class="existing" ng-class="\'\'"></div>');
+      _.rootScope.apply();
+      expect(element).toHaveClass('existing');
+    });
+
+    it('should gracefully handle extraneous whitespace', () {
+      var element = _.compile('<div class="existing" ng-class="\' A  B   \'"></div>');
+      _.rootScope.apply();
+      expect(element).toHaveClass('existing');
+      expect(element).toHaveClass('A');
+      expect(element).toHaveClass('B');
+    });
 
     it('should preserve class added post compilation with pre-existing classes', () {
       var element = _.compile('<div class="existing" ng-class="dynClass"></div>');

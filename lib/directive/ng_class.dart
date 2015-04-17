@@ -211,7 +211,8 @@ abstract class _NgClassBase {
       _computeMapChanges(value, _first);
     } else {
       if (value is String) {
-        _currentSet..clear()..addAll(value.split(' '));
+        var values = value.split(' ').where((c) => c.isNotEmpty);
+        _currentSet..clear()..addAll(values);
       } else if (value == null) {
         _currentSet.clear();
       } else {
