@@ -4,7 +4,7 @@ packages:
   analyzer:
     description: analyzer
     source: hosted
-    version: "0.22.4"
+    version: "0.24.6"
   args:
     description: args
     source: hosted
@@ -25,34 +25,54 @@ packages:
     description: browser_detect
     source: hosted
     version: "1.0.3"
+  cli_util:
+    description: cli_util
+    source: hosted
+    version: "0.0.1+1"
   code_transformers:
     description: code_transformers
     source: hosted
-    version: "0.2.3+2"
+    version: "0.2.8"
   collection:
     description: collection
     source: hosted
-    version: "0.9.4"
+    version: "1.1.0"
   csslib:
     description: csslib
     source: hosted
     version: "0.11.0+2"
+  dart_style:
+    description: dart_style
+    source: hosted
+    version: "0.1.8"
   di:
     description: di
     source: hosted
-    version: "3.3.3"
+    version: "3.3.4"
+  glob:
+    description: glob
+    source: hosted
+    version: "1.0.4"
   guinness:
     description: guinness
     source: hosted
     version: "0.1.15"
+  html:
+    description: html
+    source: hosted
+    version: "0.12.1+1"
   html5lib:
     description: html5lib
     source: hosted
     version: "0.12.0"
+  initialize:
+    description: initialize
+    source: hosted
+    version: "0.6.0+5"
   intl:
     description: intl
     source: hosted
-    version: "0.11.7"
+    version: "0.8.10+4"
   js:
     description: js
     source: hosted
@@ -65,6 +85,10 @@ packages:
     description: matcher
     source: hosted
     version: "0.11.1"
+  meta:
+    description: meta
+    source: hosted
+    version: "0.8.8"
   mock:
     description: mock
     source: hosted
@@ -72,19 +96,15 @@ packages:
   observe:
     description: observe
     source: hosted
-    version: "0.12.2"
+    version: "0.13.0+2"
   path:
     description: path
     source: hosted
-    version: "1.3.0"
+    version: "1.3.5"
   perf_api:
     description: perf_api
     source: hosted
     version: "0.0.9"
-  petitparser:
-    description: petitparser
-    source: hosted
-    version: "1.2.2"
   pool:
     description: pool
     source: hosted
@@ -100,7 +120,7 @@ packages:
   smoke:
     description: smoke
     source: hosted
-    version: "0.2.1+1"
+    version: "0.3.2"
   source_maps:
     description: source_maps
     source: hosted
@@ -113,6 +133,10 @@ packages:
     description: stack_trace
     source: hosted
     version: "1.1.1"
+  string_scanner:
+    description: string_scanner
+    source: hosted
+    version: "0.1.3+1"
   unittest:
     description: unittest
     source: hosted
@@ -128,4 +152,12 @@ packages:
   web_components:
     description: web_components
     source: hosted
-    version: "0.3.5+1"
+    version: "0.11.3+1"
+  when:
+    description: when
+    source: hosted
+    version: "0.2.0"
+  which:
+    description: which
+    source: hosted
+    version: "0.1.3"
