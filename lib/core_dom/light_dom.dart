@@ -87,7 +87,7 @@ class LightDom implements SourceLightDom, DestinationLightDom {
     for(final root in _lightDomRootNodes) {
       if (_ports.containsKey(root)) {
         list.addAll(_ports[root].nodes);
-      } else if (root is dom.ContentElement) {
+      } else if (isContentElement(root)) {
         if (!_contentTags.containsKey(root))
           throw new Exception('Unmatched content tag encountered during redistibution.');
         list.addAll(_contentTags[root].nodes);
@@ -97,6 +97,8 @@ class LightDom implements SourceLightDom, DestinationLightDom {
     }
     return list;
   }
+
+  static isContentElement(dom.Node node) => node is dom.Element && node.tagName == 'CONTENT';
 }
 
 void redistributeNodes(Iterable<Content> contents, List<dom.Node> nodes) {
