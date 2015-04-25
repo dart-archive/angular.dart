@@ -23,12 +23,12 @@ class EmulatedShadowRoot implements dom.ShadowRoot {
   void set applyAuthorStyles(bool value) { _notSupported(); }
   List<dom.Element> get children => _notSupported();
   void set children(List<dom.Element> value) { _notSupported(); }
-  dom.ElementList querySelectorAll(String selectors)  => _notSupported();
+  dom.ElementList<dom.Element> querySelectorAll(String selectors)  => _notSupported();
   void setInnerHtml(String html, {dom.NodeValidator validator, dom.NodeTreeSanitizer treeSanitizer}) { _notSupported(); }
   void appendText(String text) { _notSupported(); }
   void appendHtml(String text) { _notSupported(); }
   dom.Element query(String relativeSelectors) { _notSupported(); }
-  dom.ElementList queryAll(String relativeSelectors) { _notSupported(); }
+  dom.ElementList<dom.Element> queryAll(String relativeSelectors) { _notSupported(); }
   dom.Element querySelector(String selectors) => _notSupported();
   List<dom.Node> get nodes => _notSupported();
   void set nodes(Iterable<dom.Node> value) { _notSupported(); }

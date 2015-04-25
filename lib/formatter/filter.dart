@@ -1,8 +1,8 @@
 part of angular.formatter_internal;
 
 // Too bad you can't stick typedef's inside a class.
-typedef bool _Predicate(e);
-typedef bool _Equals(a, b);
+typedef _Predicate(e);
+typedef _Equals(a, b);
 
 /**
  * Selects a subset of items from the provided [List] and returns it as a new

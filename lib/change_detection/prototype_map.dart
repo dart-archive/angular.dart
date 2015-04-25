@@ -6,10 +6,10 @@ class PrototypeMap<K, V> implements Map<K,V> {
 
   PrototypeMap(this.prototype);
 
-  void operator []=(name, value) {
+  void operator []=(K name, V value) {
     self[name] = value;
   }
-  V operator [](name) => self.containsKey(name) ? self[name] : prototype[name];
+  V operator [](Object name) => self.containsKey(name) ? self[name] : prototype[name];
 
   bool get isEmpty => self.isEmpty && prototype.isEmpty;
   bool get isNotEmpty => self.isNotEmpty || prototype.isNotEmpty;
@@ -19,21 +19,21 @@ class PrototypeMap<K, V> implements Map<K,V> {
   Iterable<V> get values => self.values;
   int get length => self.length;
 
-  void forEach(fn) {
+  void forEach(void fn(K key, V value)) {
     // todo(vbe) include prototype ?
     self.forEach(fn);
   }
-  V remove(key) => self.remove(key);
+  V remove(Object key) => self.remove(key);
   clear() => self.clear;
   // todo(vbe) include prototype ?
-  bool containsKey(key) => self.containsKey(key);
+  bool containsKey(Object key) => self.containsKey(key);
   // todo(vbe) include prototype ?
-  bool containsValue(key) => self.containsValue(key);
-  void addAll(map) {
+  bool containsValue(Object value) => self.containsValue(value);
+  void addAll(Map<K, V> map) {
     self.addAll(map);
   }
   // todo(vbe) include prototype ?
-  V putIfAbsent(key, fn) => self.putIfAbsent(key, fn);
+  V putIfAbsent(K key, V fn()) => self.putIfAbsent(key, fn);
 
   toString() => self.toString();
 }

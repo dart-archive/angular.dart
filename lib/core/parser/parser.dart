@@ -130,39 +130,43 @@ class _UnwrapExceptionDecorator extends Expression {
 }
 
 @Injectable()
-class RuntimeParserBackend extends ParserBackend {
+class RuntimeParserBackend extends ParserBackend<Expression> {
   final ClosureMap _closures;
   RuntimeParserBackend(ClosureMap _closures): _closures = new ClosureMapLocalsAware(_closures);
 
   bool isAssignable(Expression expression) => expression.isAssignable;
 
-  Expression newFormatter(expression, name, arguments) {
+  Expression newFormatter(Expression expression, String name, List arguments) {
     List allArguments = new List(arguments.length + 1);
     allArguments[0] = expression;
     allArguments.setAll(1, arguments);
     return new Formatter(expression, name, arguments, allArguments);
   }
 
-  Expression newChain(expressions) => new Chain(expressions);
-  Expression newAssign(target, value) => new Assign(target, value);
-  Expression newConditional(condition, yes, no) =>
+  Expression newChain(List expressions) => new Chain(expressions);
+  Expression newAssign(Expression target, Expression value) =>
+      new Assign(target, value);
+  Expression newConditional(Expression condition, Expression yes,
+                            Expression no) =>
       new Conditional(condition, yes, no);
 
-  Expression newAccessKeyed(object, key) => new AccessKeyed(object, key);
-  Expression newCallFunction(function, arguments) =>
+  Expression newAccessKeyed(Expression object, Expression key) =>
+      new AccessKeyed(object, key);
+  Expression newCallFunction(Expression function, CallArguments arguments) =>
       new CallFunction(function, _closures, arguments);
 
-  Expression newPrefixNot(expression) => new PrefixNot(expression);
+  Expression newPrefixNot(Expression expression) => new PrefixNot(expression);
 
-  Expression newBinary(operation, left, right) =>
+  Expression newBinary(String operation, Expression left, Expression right) =>
       new Binary(operation, left, right);
 
   Expression newLiteralPrimitive(value) => new LiteralPrimitive(value);
-  Expression newLiteralArray(elements) => new LiteralArray(elements);
-  Expression newLiteralObject(keys, values) => new LiteralObject(keys, values);
-  Expression newLiteralString(value) => new LiteralString(value);
+  Expression newLiteralArray(List elements) => new LiteralArray(elements);
+  Expression newLiteralObject(List<String> keys, List values) =>
+      new LiteralObject(keys, values);
+  Expression newLiteralString(String value) => new LiteralString(value);
 
-  Expression newAccessScope(name) {
+  Expression newAccessScope(String name) {
     Getter getter;
     Setter setter;
     if (name == 'this') {
@@ -175,20 +179,21 @@ class RuntimeParserBackend extends ParserBackend {
     return new AccessScopeFast(name, getter, setter);
   }
 
-  Expression newAccessMember(object, name) {
+  Expression newAccessMember(Expression object, String name) {
     _assertNotReserved(name);
     Getter getter = _closures.lookupGetter(name);
     Setter setter = _closures.lookupSetter(name);
     return new AccessMemberFast(object, name, getter, setter);
   }
 
-  Expression newCallScope(name, arguments) {
+  Expression newCallScope(String name, CallArguments arguments) {
     _assertNotReserved(name);
     MethodClosure function = _closures.lookupFunction(name, arguments);
     return new CallScope(name, function, arguments);
   }
 
-  Expression newCallMember(object, name, arguments) {
+  Expression newCallMember(Expression object, String name,
+      CallArguments arguments) {
     _assertNotReserved(name);
     MethodClosure function = _closures.lookupFunction(name, arguments);
     return new CallMember(object, function, name, arguments);

@@ -65,6 +65,17 @@ fixed in the change detector.
 
 
 <a name="v1.1"></a>
+# v1.1.1
+
+## Highlights
+
+# v1.1.0 insert-catchy-name-here (2015-01-23)
+
+This is a bug fix release. Cleanup method signatures with inconsistent types
+and add generic types in cases where they were accidentally ommitted. Use
+smoke library for arity checks. Add types to fields and members the base
+classes had types.
+
 # v1.1.0 isomorphic-panda (2015-01-15)
 
 ## Highlights

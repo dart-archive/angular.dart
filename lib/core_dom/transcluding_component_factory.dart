@@ -22,7 +22,7 @@ class TranscludingComponentFactory implements ComponentFactory {
         componentCssRewriter, treeSanitizer, styleElementCache, resourceResolver);
   }
 
-  bind(DirectiveRef ref, directives, injector) =>
+  bind(DirectiveRef ref, directives, Injector injector) =>
       new BoundTranscludingComponentFactory(this, ref, directives, injector);
 }
 
