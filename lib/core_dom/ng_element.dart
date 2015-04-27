@@ -36,12 +36,14 @@ class NgElement {
 
   /// Schedules a DOM write adding [className] to the element.
   void addClass(String className) {
+    if (className.isEmpty) return;
     _scheduleDomWrite();
     _classesToUpdate[className] = true;
   }
 
   /// Schedules a DOM write removing [className] from the element.
   void removeClass(String className) {
+    if (className.isEmpty) return;
     _scheduleDomWrite();
     _classesToUpdate[className] = false;
   }

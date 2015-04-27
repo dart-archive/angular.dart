@@ -18,7 +18,7 @@ void main() {
         var element = e('<div></div>');
         var ngElement = new NgElement(element, scope, animate);
 
-        ngElement..addClass('one')..addClass('two three');
+        ngElement..addClass('one')..addClass('two')..addClass('three');
 
         ['one', 'two', 'three'].forEach((className) {
           expect(element).not.toHaveClass(className);
@@ -52,6 +52,19 @@ void main() {
           expect(element).not.toHaveClass(className);
         });
         expect(element).toHaveClass('four');
+      });
+
+      it('should ignore empty strings',
+          (TestBed _, Animate animate) {
+
+        var scope = _.rootScope;
+        var element = e('<div></div>');
+        var ngElement = new NgElement(element, scope, animate);
+
+        ngElement..addClass('');
+        ngElement..removeClass('');
+
+        scope.apply();
       });
 
       it('should always apply the last dom operation on the given className',
