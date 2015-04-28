@@ -1,3 +1,25 @@
+<a name="v1.1.2"></a>
+# v1.1.2 nefarious-crocodile (2015-04-27)
+
+## Highlights
+
+This release contains small bug fixes related to ShadowDom emulation,
+transformers, and template cache. Handling of empty string classes has be
+changed to support the upcoming Dart 1.10 release.
+
+## Bug Fixes
+
+- **css:** add empty class check to NgElement.
+  ([c68c451c](https://github.com/angular/angular.dart/commit/c68c451c5cecabafe616abc3cb129276c1e377bc))
+- **ng_class:** fix space-handling in css classes.
+  ([09797f0a](https://github.com/angular/angular.dart/commit/09797f0ac899021a5d46c523487e6aca4a5194b8))
+- **shadow_dom_emulation:** fix content reprojection bug.
+  ([0db910ae](https://github.com/angular/angular.dart/commit/0db910aee9a7430de6f7a265c8326f48dce84efb))
+- **template_cache:** Fixes an issue with the generated_template_cache.
+  ([1078ca5c](https://github.com/angular/angular.dart/commit/1078ca5c664907196b5aa6bb88723a1980b34169))
+- **transformers:** Fix deadlock issue in pub serve.
+  ([64df6b80](https://github.com/angular/angular.dart/commit/64df6b802bfc7491bd72839f16fd7f07ac9d8178))
+
 <a name="v1.1.1"></a>
 # v1.1.1 pathological-lemur (2015-03-31)
 
