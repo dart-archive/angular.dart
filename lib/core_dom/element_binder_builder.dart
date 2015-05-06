@@ -92,6 +92,9 @@ class ElementBinderBuilder {
 
     if (annotation.map != null) {
       annotation.map.forEach((attrName, mapping) {
+        if (mapping == null) {
+          throw "Null mapping value for '${attrName}' on annotation with selector '${annotation.selector}'.";
+        }
         Match match = _MAPPING.firstMatch(mapping);
         if (match == null) {
           throw "Unknown mapping '$mapping' for attribute '$attrName'.";
