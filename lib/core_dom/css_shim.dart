@@ -123,26 +123,28 @@ class _CssShim {
   List<_Rule> cssToRules(String css) =>
       new _Parser(css).parse();
 
-  String scopeRules(List<_Rule> rules) {
-    final scopedRules = [];
+  String scopeRules(List<_Rule> rules, {bool emitMode: false}) {
+    if (emitMode) {
+      return rules.map(ruleToString).join("\n");
+    }
 
+    final scopedRules = [];
     var prevRule;
     rules.forEach((rule) {
       if (prevRule != null && prevRule.selectorText == POLYFILL_NON_STRICT) {
-        scopedRules.add(scopeNonStrictMode(rule));
-
+        scopedRules.add(scopeNonStrictMode(rule, emitMode));
       } else if (prevRule != null && prevRule.selectorText == POLYFILL_UNSCOPED_NEXT_SELECTOR) {
         final content = extractContent(prevRule);
         scopedRules.add(ruleToString(new _Rule(content, body: rule.body)));
 
       } else if (prevRule != null && prevRule.selectorText == POLYFILL_NEXT_SELECTOR) {
         final content = extractContent(prevRule);
-        scopedRules.add(scopeStrictMode(new _Rule(content, body: rule.body)));
+        scopedRules.add(scopeStrictMode(new _Rule(content, body: rule.body), false));
 
       } else if (rule.selectorText != POLYFILL_NON_STRICT &&
           rule.selectorText != POLYFILL_UNSCOPED_NEXT_SELECTOR &&
           rule.selectorText != POLYFILL_NEXT_SELECTOR) {
-        scopedRules.add(scopeStrictMode(rule));
+        scopedRules.add(scopeStrictMode(rule, false));
       }
 
       prevRule = rule;
@@ -159,11 +161,10 @@ class _CssShim {
     return "${rule.selectorText} ${rule.body}";
   }
 
-  String scopeStrictMode(_Rule rule) {
+  String scopeStrictMode(_Rule rule, bool emitMode) {
     if (rule.hasNestedRules) {
-      final selector = rule.selectorText;
-      final rules = scopeRules(rule.rules);
-      return '$selector {\n$rules\n}';
+      final rules = scopeRules(rule.rules, emitMode: rule.selectorText.contains("keyframes"));
+      return "${rule.selectorText} {\n$rules\n}";
     } else {
       final scopedSelector = scopeSelector(rule.selectorText, strict: true);
       final scopedBody = cssText(rule);
@@ -171,7 +172,11 @@ class _CssShim {
     }
   }
 
-  String scopeNonStrictMode(_Rule rule) {
+  String scopeNonStrictMode(_Rule rule, bool emitMode) {
+    if (rule.hasNestedRules && rule.selectorText == "keyframes") {
+      final rules = scopeRules(rule.rules, emitMode: true);
+      return '${rule.selectorText} {\n$rules\n}';
+    }
     final scopedBody = cssText(rule);
     final scopedSelector = scopeSelector(rule.selectorText, strict: false);
     return "${scopedSelector} $scopedBody";
@@ -281,7 +286,7 @@ class _Lexer {
       advance();
       return new _Token("}", "rparen");
     }
-    if (isMedia(peek)) return scanMedia();
+    if (isDeclaration(peek)) return scanDeclaration();
     if (isSelector(peek)) return scanSelector();
     if (isBodyStart(peek)) return scanBody();
 
@@ -291,7 +296,7 @@ class _Lexer {
   bool isSelector(int v) => !isBodyStart(v) && v != $EOF;
   bool isBodyStart(int v) => v == $LBRACE;
   bool isBodyEnd(int v) => v == $RBRACE;
-  bool isMedia(int v) => v == 64; //@ = 64
+  bool isDeclaration(int v) => v == 64; //@ = 64
 
   void skipWhitespace() {
     while (isWhitespace(peek)) {
@@ -321,7 +326,7 @@ class _Lexer {
     return new _Token(string, "body");
   }
 
-  _Token scanMedia() {
+  _Token scanDeclaration() {
     int start = index;
     advance();
 
@@ -330,7 +335,10 @@ class _Lexer {
 
     advance(); //skip {
 
-    return new _Token(string, "media");
+    // we assume that declaration cannot start with media and contain keyframes.
+    String type = string.contains("keyframes") ? "keyframes" :
+      (string.startsWith("@media") ? "media" : string);
+    return new _Token(string, type);
   }
 
   void advance() {
@@ -370,8 +378,8 @@ class _Parser {
 
   _Rule parseRule() {
     try {
-      if (next.type == "media") {
-        return parseMedia();
+      if (next.type == "media" || next.type == "keyframes") {
+        return parseMedia(next.type);
       } else {
         return parseCssRule();
       }
@@ -380,8 +388,8 @@ class _Parser {
     }
   }
 
-  _Rule parseMedia() {
-    advance("media");
+  _Rule parseMedia(type) {
+    advance(type);
     final media = current.string;
 
     final rules = [];
