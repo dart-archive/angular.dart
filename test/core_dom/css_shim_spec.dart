@@ -52,6 +52,18 @@ main() {
       expect(s(css, "a")).toEqual(expected);
     });
 
+    it("should handle keyframe rules", () {
+      final css = "@keyframes foo {0% {transform: translate(-50%) scaleX(0)}}";
+
+      expect(s(css, "a")).toEqual(css);
+    });
+
+    it("should handle -webkit-keyframe rules", () {
+      final css = "@-webkit-keyframes foo {0% {transform: translate(-50% scaleX(0)}}";
+
+      expect(s(css, "a")).toEqual(css);
+    });
+
     it("should handle complicated selectors", () {
       expect(s('one::before {}', "a")).toEqual('one[a]::before {}');
       expect(s('one two {}', "a")).toEqual('one[a] two[a] {}');
