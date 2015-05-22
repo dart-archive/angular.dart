@@ -24,7 +24,7 @@ module.exports = function(config) {
     // all tests must be 'included', but all other libraries must be 'served' and
     // optionally 'watched' only.
     files: [
-      'packages/web_components/platform.js',
+      'packages/web_components/webcomponents.js',
       'packages/web_components/dart_support.js',
       'test/core_dom/web_components_support.js',
       'test/*.dart',
@@ -44,6 +44,7 @@ module.exports = function(config) {
 
     exclude: [
       'test/io/**',
+      'test/tools/**',
       'test/tools/transformer/**',
       'test/tools/symbol_inspector/**'
     ],
