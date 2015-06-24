@@ -8,7 +8,7 @@ part of angular.directive;
     selector: '[ng-hide]',
     map: const {'ng-hide': '=>hide'})
 class NgHide {
-  static String NG_HIDE_CLASS = 'ng-hide';
+  static const NG_HIDE_CLASS = 'ng-hide';
 
   final dom.Element element;
   final Animate animate;
