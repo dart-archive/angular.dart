@@ -68,8 +68,14 @@ class TypeRelativeUriGenerator extends Transformer with ResolverTransformer {
 
     _writePreamble(outputBuffer);
 
+    var usedKeys = new Set();
     for (var type in annotatedTypes) {
-      outputBuffer.write('  ${importPrefixes[type.library]}${type.name}: ');
+      var key = '${importPrefixes[type.library]}${type.name}';
+      if (usedKeys.contains(key)) {
+        continue;
+      }
+      usedKeys.add(key);
+      outputBuffer.write('  ${key}: ');
 
       var uri = urlResolver.findUriOfElement(type);
       outputBuffer.write("Uri.parse(r'''$uri'''),\n");
