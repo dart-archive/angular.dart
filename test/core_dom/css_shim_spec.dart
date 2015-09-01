@@ -116,5 +116,10 @@ main() {
       var css = s("polyfill-non-strict {} x /deep/ y {}", "a");
       expect(css).toEqual('a x   y {}');
     });
+
+    it("should handle comments", () {
+      var css = s("/*a*/ polyfill-non-strict {} x /deep/ y {}", "a");
+      expect(css).toEqual('a x   y {}');
+    });
   });
 }

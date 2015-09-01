@@ -52,6 +52,10 @@ String shimCssText(String css, String tag) =>
 class _CssShim {
   static final List SELECTOR_SPLITS = const [' ', '>', '+', '~'];
 
+  static final RegExp COMMENTS = new RegExp(
+    // Taken from http://www.w3.org/TR/CSS2/grammar.html#scanner.
+    r"\/\*[^*]*\*+([^/*][^*]*\*+)*\/");
+
   static final RegExp CONTENT = new RegExp(
       r"[^}]*"
       r"content:\s*"
@@ -92,10 +96,13 @@ class _CssShim {
       : tag = tag, attr = "[$tag]";
 
   String shimCssText(String css) {
-    final preprocessed = convertColonHost(css);
+    final preprocessed = convertColonHost(stripComments(css));
     final rules = cssToRules(preprocessed);
     return scopeRules(rules);
   }
+
+  String stripComments(String css) =>
+    css.replaceAll(COMMENTS, "");
 
   String convertColonHost(String css) {
     css = css.replaceAll(":host", HOST_TOKEN);
