@@ -2,7 +2,7 @@ library angular.node_injector;
 
 import 'dart:collection';
 import 'dart:html' show Node, Element, ShadowRoot;
-import 'dart:profiler';
+import 'dart:developer';
 
 import 'package:di/di.dart';
 import 'package:di/annotations.dart';

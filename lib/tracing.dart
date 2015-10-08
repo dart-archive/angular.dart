@@ -6,7 +6,7 @@
  */
 library angular.tracing;
 
-import "dart:profiler";
+import "dart:developer";
 
 bool traceEnabled = false;
 dynamic /* JsObject */ _trace;
