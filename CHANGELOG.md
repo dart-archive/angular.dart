@@ -1,3 +1,24 @@
+<a name="v1.1.2+2"></a>
+# v1.1.2+2 unwieldy-elephant (2015-10-14)
+
+## Highlights
+
+Prepare for Dart 1.13. Miscellaneous fixes.
+
+## Bug Fixes
+
+- **binder:**
+  - adds more explicit error message thrown.
+  ([6867ed21](https://github.com/angular/angular.dart/commit/6867ed212b4c941bbdfc2ab40391b79ac04c14c5))
+  - adds a null check for null mappings.
+  ([ff842e1b](https://github.com/angular/angular.dart/commit/ff842e1b30a5ea783f96265ebcffd64f5d7dbe03))
+- **css_shim:** escape keyframes from shimming.
+  ([4bed7857](https://github.com/angular/angular.dart/commit/4bed7857af37a96737e7520a7d2161cc5e729d12))
+- **karma:** remove analyzer deps from karma run.
+  ([6959dd3a](https://github.com/angular/angular.dart/commit/6959dd3a60ea25ac2997ad42fcb175d2d70bb07e))
+- **ng_show_hide:** make NG_HIDE_CLASS const
+  ([d5f45a69](https://github.com/angular/angular.dart/commit/d5f45a695c316df5492d6ad764257e0b9f81377e))
+
 <a name="v1.1.2"></a>
 # v1.1.2 nefarious-crocodile (2015-04-27)
 
@@ -325,7 +346,7 @@ by Protractor E2E tests.
 
 ## Breaking Changes
 
-- **mocks:** due to [635f9d0c](https://github.com/angular/angular.dart/commit/635f9d0cf2ac9f50e9190047bde080d468d7cfe8), 
+- **mocks:** due to [635f9d0c](https://github.com/angular/angular.dart/commit/635f9d0cf2ac9f50e9190047bde080d468d7cfe8),
 Unexpected requests are detected only when `flush` is called.
 
 Before:
@@ -339,7 +360,7 @@ After:
 
 Closes #900
 - **scope:** due to [a4f08a79](https://github.com/angular/angular.dart/commit/a4f08a798df7525132ec7b0e18c4c6a8091480e8),
- 
+
 
 Scope context is set to the component instance that trigged the creation
 of the scope (previously it was of a PrototypeMap.)
@@ -402,7 +423,7 @@ or:
 closes #919
 closes #917
 - **urls:** due to [50e26453](https://github.com/angular/angular.dart/commit/50e26453efc79d2db3a335112b37d13c5b0becbb),
- 
+
 
 You must update relative paths to your templates and in ng-include's to
 be relative to the component's library / ng-include'd file.
@@ -434,11 +455,11 @@ https://github.com/angular/angular.dart/blob/master/example/web/paper.html) for
 some [material
 design](http://www.google.com/design/spec/material-design/introduction.html)
 examples.
-                                                                                     
+
 Also, we have added instrumentation for [Web Tracing Framework]
 (http://google.github.io/tracing-framework/), so that you can visualize
 codepaths in your live apps (only browser plug-in required).
-                 
+
 At last we did plenty of bug fixing and performance improvements for an even
 smoother developer experience.
 
@@ -535,7 +556,7 @@ smoother developer experience.
 ## Breaking Changes
 
 - **directive-injector:** due to [600113a8](https://github.com/angular/angular.dart/commit/600113a8e6bc1aff08f00513eb1b794ca28e54ee),
- 
+
 
 Regular injectors (aka application injectors) can no longer be used to
 retrieve DirectiveInjectors.  The compiler creates the Directive
@@ -546,23 +567,23 @@ Injector as part of view creation process.
 
 ## Highlights
 
-This release is focused on performance and significantly speeds up rendering.  We optimized our 
-entire rendering pipeline and now component rendering is 2.8 times (those with inlined templates) 
+This release is focused on performance and significantly speeds up rendering.  We optimized our
+entire rendering pipeline and now component rendering is 2.8 times (those with inlined templates)
 to 6.3 times faster (those with template files) than the previous 0.12.0 release.
 
 To accomplish these performance improvements, we
 - fixed a number of performance bugs
-- moved more compilation work out of the ViewFactories, which stamps out DOM nodes, and into the 
+- moved more compilation work out of the ViewFactories, which stamps out DOM nodes, and into the
   Compiler, which sets up the ViewFactories.
-- implemented a custom "directive injector" to optimize Dependency Injection calls from the 
+- implemented a custom "directive injector" to optimize Dependency Injection calls from the
   ViewFactories
 - optimized Dependency Injection, eliminating slow APIs
 
 Also, we have given apps more knobs to tune performance
-- The Http service now supports coalescing http requests. This means that all the HTTP responses 
+- The Http service now supports coalescing http requests. This means that all the HTTP responses
   that arrive within a particular interval can all be processed in a single digest.
 - The ElementProbe can be disabled for apps that do not use animation
-- Along with the existing ScopeStats, Angular now exposes cache statistics through the ngCaches 
+- Along with the existing ScopeStats, Angular now exposes cache statistics through the ngCaches
   global object. This also allows developers to clear the caches and measure memory usage
 - Along with these changes, we have also added support for ProtractorDart.
 
@@ -815,12 +836,12 @@ towards the ScopeDigestTTL.
 ## Highlights
 
 - A 20% performance improvement from caching interpolated expressions.
-- Http service can make cross-site requests (get, post, put, etc.) which use credentials (such as 
+- Http service can make cross-site requests (get, post, put, etc.) which use credentials (such as
   cookies or authorization headers).
-- **Breaking change**: vetoing is no longer allowed on leave (RouteLeaveEvent). This change corrects 
+- **Breaking change**: vetoing is no longer allowed on leave (RouteLeaveEvent). This change corrects
   an issue with routes unable to recover from another route vetoing a leave event.
 - **Breaking change**:  Zone.defaultOnScheduleMicrotask is now named Zone.onScheduleMicrotask
-- **Breaking change**: OneWayOneTime bindings will continue to accept value assignments until their 
+- **Breaking change**: OneWayOneTime bindings will continue to accept value assignments until their
   stabilized value is non-null.
 
 ## Bug Fixes
@@ -911,7 +932,7 @@ towards the ScopeDigestTTL.
 ## Breaking Changes
 
 - **VmTurnZone:** due to [a8699da0](https://github.com/angular/angular.dart/commit/a8699da016c754e08502ae24034a86bd8d6e0d8e),
- 
+
 `Zone.defaultOnScheduleMicrotask` is now named `Zone.onScheduleMicrotask`
 
 
@@ -931,7 +952,7 @@ If you said: `Http.getString('data.txt').then((String data) { ... })` before, no
 
 - Shadow DOM-less components
 
-Shadow DOM is still enabled by default for components. Now, its use can be controlled through the 
+Shadow DOM is still enabled by default for components. Now, its use can be controlled through the
 new `useShadowDom` option in the Component annotation.
 
 For example:
@@ -944,28 +965,28 @@ For example:
 class MyComp {}
 ```
 
-will disable Shadow DOM for that component and construct the template in the "light" DOM. Either 
-omitting the `useShadowDom` option or explicitly setting it to `true` will cause Angular to 
+will disable Shadow DOM for that component and construct the template in the "light" DOM. Either
+omitting the `useShadowDom` option or explicitly setting it to `true` will cause Angular to
 construct the template in the component's shadow DOM.
 
-Adding cssUrls to Components with Shadow DOM disabled is not allowed. Since they aren't using Shadow 
-DOM, there is no style encapsulation and per-component CSS doesn't make sense. The component has 
-access to the styles in the `documentFragment` where it was created. Style encapsulation is a 
+Adding cssUrls to Components with Shadow DOM disabled is not allowed. Since they aren't using Shadow
+DOM, there is no style encapsulation and per-component CSS doesn't make sense. The component has
+access to the styles in the `documentFragment` where it was created. Style encapsulation is a
 feature we are thinking about, so this design will likely change in the future.
 
 - bind-* syntax
 
-We have shipped an early "preview" of the upcoming bind-* syntax. In 0.11.0, you may bind an 
-expression to any mapped attribute, even if that attribute is a `@NgAttr` mapping which typically 
+We have shipped an early "preview" of the upcoming bind-* syntax. In 0.11.0, you may bind an
+expression to any mapped attribute, even if that attribute is a `@NgAttr` mapping which typically
 takes a string.
 
 ### Performance improvements
 
 There are two significant performance improvements:
-- We now cache CSS as `StyleElement`s instead of string, saving a `setInnerHtml` call on each styled 
-  component instantiation. In a benchmark where components used unminified Bootstrap styles (124kB), 
+- We now cache CSS as `StyleElement`s instead of string, saving a `setInnerHtml` call on each styled
+  component instantiation. In a benchmark where components used unminified Bootstrap styles (124kB),
   this sped up component creation by 31%.
-- Changes in the DI package sped up View instantiation by 200%. This change makes AngularDart 
+- Changes in the DI package sped up View instantiation by 200%. This change makes AngularDart
   rendering significantly faster.
 
 ## Bug Fixes
@@ -1056,7 +1077,7 @@ There are two significant performance improvements:
 - **Http:** due to [39a143d](https://github.com/angular/angular.dart/commit/39a143da630965703cbe53e45e902e97163a75d54),
 
 The deprecated Http.getString() method has been removed in favour of Http.get()
- 
+
 <a name="v0.10.0"></a>
 # v0.10.0 ostemad-teleportation (2014-04-17)
 
@@ -2460,4 +2481,3 @@ http://semver.org/
   i.e.: v1.0.x, v1.2.x, and so on.
 - *Development*: All odd numbered minor versions are considered API unstable:
   i.e.: v0.9.x, v1.1.x, and so on.
-
