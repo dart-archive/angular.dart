@@ -118,7 +118,7 @@ part of angular.directive;
 @Decorator(selector: '[ng-selectstart]',      map: const {'ng-selectstart':      '&onSelectStart'})
 //@Decorator(selector: '[ng-speechchange]',     map: const {'ng-speechchange':     '&onSpeechChange'})
 @Decorator(selector: '[ng-submit]',           map: const {'ng-submit':           '&onSubmit'})
-@Decorator(selector: '[ng-toucheancel]',      map: const {'ng-touchcancel':      '&onTouchCancel'})
+@Decorator(selector: '[ng-touchcancel]',      map: const {'ng-touchcancel':      '&onTouchCancel'})
 @Decorator(selector: '[ng-touchend]',         map: const {'ng-touchend':         '&onTouchEnd'})
 @Decorator(selector: '[ng-touchenter]',       map: const {'ng-touchenter':       '&onTouchEnter'})
 @Decorator(selector: '[ng-touchleave]',       map: const {'ng-touchleave':       '&onTouchLeave'})
