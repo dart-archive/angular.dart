@@ -6,13 +6,13 @@ import 'dart:js' as js;
 import 'package:angular/angular.dart';
 import 'package:angular/mock/module.dart';
 
-import 'package:unittest/unittest.dart' as unit;
-import 'package:guinness/guinness_html.dart' as gns;
+import 'package:test/test.dart' as unit;
+import 'package:guinness2/guinness2_html.dart' as gns;
 
 export 'dart:html' hide Animation;
 
-export 'package:unittest/unittest.dart' hide expect;
-export 'package:guinness/guinness_html.dart';
+export 'package:test/test.dart' hide expect;
+export 'package:guinness2/guinness2_html.dart';
 
 export 'package:mock/mock.dart';
 export 'package:di/di.dart';
@@ -217,6 +217,6 @@ main() {
   gns.beforeEach(setUpInjector, priority:3);
   gns.afterEach(tearDownInjector);
 
-  gns.guinnessEnableHtmlMatchers();
+  gns.GuinnessEnableHtmlMatchers();
   gns.guinness.matchers.config.preprocessHtml = _removeNgBinding;
 }

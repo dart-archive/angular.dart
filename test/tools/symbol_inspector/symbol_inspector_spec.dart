@@ -3,8 +3,8 @@ library angular.tools.symbol_inspector;
 import 'package:angular/tools/symbol_inspector/symbol_inspector.dart';
 import 'simple_library.dart';
 
-import 'package:unittest/unittest.dart' hide expect;
-import 'package:guinness/guinness.dart';
+import 'package:test/test.dart' hide expect;
+import 'package:guinness2/guinness2.dart';
 
 Symbol symbolForName(libraryInfo, String name) =>
     libraryInfo.names.firstWhere(

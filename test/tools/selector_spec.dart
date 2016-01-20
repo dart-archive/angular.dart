@@ -3,8 +3,8 @@ library angular.selector_spec;
 import 'package:angular/tools/selector.dart';
 import 'package:html5lib/dom.dart';
 
-import 'package:unittest/unittest.dart' hide expect;
-import 'package:guinness/guinness.dart';
+import 'package:test/test.dart' hide expect;
+import 'package:guinness2/guinness2.dart';
 
 void main() {
   describe('selector', () {

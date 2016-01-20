@@ -3,8 +3,8 @@ library html_extractor_spec;
 import 'package:angular/tools/common.dart';
 import 'package:angular/tools/html_extractor.dart';
 
-import 'package:unittest/unittest.dart' hide expect;
-import 'package:guinness/guinness.dart';
+import 'package:test/test.dart' hide expect;
+import 'package:guinness2/guinness2.dart';
 import 'mock_io_service.dart';
 
 void main() {

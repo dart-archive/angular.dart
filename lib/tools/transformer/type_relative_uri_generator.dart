@@ -41,7 +41,7 @@ class TypeRelativeUriGenerator extends Transformer with ResolverTransformer {
     var annotatedTypes = resolver.libraries
         .expand((lib) => lib.units)
         .expand((unit) => unit.types)
-        .where((type) => type.node != null)
+        .where((type) => type.computeNode() != null)
         .expand(_AnnotatedElement.fromElement)
         .where((e) => e.annotation.element == componentAnnotation)
         .map((e) => e.element);
@@ -128,7 +128,7 @@ class _AnnotatedElement {
   _AnnotatedElement(this.annotation, this.element);
 
   static Iterable<_AnnotatedElement> fromElement(Element element) {
-    AnnotatedNode node = element.node;
+    AnnotatedNode node = element.computeNode();
     return node.metadata.map(
         (annotation) => new _AnnotatedElement(annotation, element));
   }

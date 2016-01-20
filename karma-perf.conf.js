@@ -32,7 +32,7 @@ module.exports = function(config) {
     ],
 
     karmaDartImports: {
-      guinness: 'package:guinness/guinness_html.dart'
+      guinness: 'package:guinness2/guinness2_html.dart'
     },
 
     preprocessors: {
