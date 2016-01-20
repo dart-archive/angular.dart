@@ -111,7 +111,13 @@ inject(Function fn) {
     throw '';
   } catch (e, stack) {
     return _currentSpecInjector == null
-        ? () => _currentSpecInjector.inject(fn, stack)
+        ? () {
+          if (_currentSpecInjector == null) {
+            throw '_currentSpecInjector is null. Did you forget to call '
+                'setUpInjector?';
+          }
+          _currentSpecInjector.inject(fn, stack);
+        }
         : _currentSpecInjector.inject(fn, stack);
   }
 }

@@ -8,7 +8,7 @@ import 'package:barback/barback.dart';
 import 'package:code_transformers/resolver.dart';
 import 'package:code_transformers/tests.dart' as tests;
 
-import 'package:guinness/guinness.dart';
+import 'package:guinness2/guinness2.dart';
 
 main() {
   describe('TypeRelativeUriGenerator', () {

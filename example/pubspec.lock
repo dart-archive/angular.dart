@@ -4,7 +4,7 @@ packages:
   analyzer:
     description: analyzer
     source: hosted
-    version: "0.22.4"
+    version: "0.27.1+2"
   angular:
     description:
       path: ".."
@@ -15,6 +15,10 @@ packages:
     description: args
     source: hosted
     version: "0.12.2+1"
+  async:
+    description: async
+    source: hosted
+    version: "1.7.0"
   barback:
     description: barback
     source: hosted
@@ -23,14 +27,26 @@ packages:
     description: browser
     source: hosted
     version: "0.10.0+2"
+  charcode:
+    description: charcode
+    source: hosted
+    version: "1.1.0"
+  cli_util:
+    description: cli_util
+    source: hosted
+    version: "0.0.1+2"
   code_transformers:
     description: code_transformers
     source: hosted
-    version: "0.2.3+2"
+    version: "0.3.1"
   collection:
     description: collection
     source: hosted
-    version: "0.9.4"
+    version: "1.1.3"
+  crypto:
+    description: crypto
+    source: hosted
+    version: "0.9.1"
   csslib:
     description: csslib
     source: hosted
@@ -38,15 +54,31 @@ packages:
   di:
     description: di
     source: hosted
-    version: "3.3.3"
+    version: "3.3.6"
+  glob:
+    description: glob
+    source: hosted
+    version: "1.1.0"
+  html:
+    description: html
+    source: hosted
+    version: "0.12.2+1"
   html5lib:
     description: html5lib
     source: hosted
     version: "0.12.0"
+  http_multi_server:
+    description: http_multi_server
+    source: hosted
+    version: "2.0.0"
+  http_parser:
+    description: http_parser
+    source: hosted
+    version: "2.0.0"
   intl:
     description: intl
     source: hosted
-    version: "0.11.9"
+    version: "0.8.10+4"
   logging:
     description: logging
     source: hosted
@@ -54,51 +86,91 @@ packages:
   matcher:
     description: matcher
     source: hosted
-    version: "0.11.1"
+    version: "0.12.0+1"
+  meta:
+    description: meta
+    source: hosted
+    version: "0.8.8"
+  mime:
+    description: mime
+    source: hosted
+    version: "0.9.3"
   observe:
     description: observe
     source: hosted
-    version: "0.12.2"
+    version: "0.13.3"
+  package_config:
+    description: package_config
+    source: hosted
+    version: "0.1.3"
   path:
     description: path
     source: hosted
-    version: "1.3.0"
+    version: "1.3.9"
   perf_api:
     description: perf_api
     source: hosted
     version: "0.0.9"
-  petitparser:
-    description: petitparser
+  plugin:
+    description: plugin
     source: hosted
-    version: "1.2.2"
+    version: "0.1.0"
   pool:
     description: pool
     source: hosted
-    version: "1.0.1"
+    version: "1.2.1"
+  pub_semver:
+    description: pub_semver
+    source: hosted
+    version: "1.2.3"
   route_hierarchical:
     description: route_hierarchical
     source: hosted
     version: "0.6.1"
+  shelf:
+    description: shelf
+    source: hosted
+    version: "0.6.4+3"
+  shelf_static:
+    description: shelf_static
+    source: hosted
+    version: "0.2.3+2"
+  shelf_web_socket:
+    description: shelf_web_socket
+    source: hosted
+    version: "0.0.1+5"
   smoke:
     description: smoke
     source: hosted
-    version: "0.2.1+1"
+    version: "0.3.6"
+  source_map_stack_trace:
+    description: source_map_stack_trace
+    source: hosted
+    version: "1.0.4"
   source_maps:
     description: source_maps
     source: hosted
-    version: "0.9.4"
+    version: "0.10.1"
   source_span:
     description: source_span
     source: hosted
-    version: "1.0.0"
+    version: "1.2.1"
   stack_trace:
     description: stack_trace
     source: hosted
-    version: "1.1.1"
+    version: "1.6.0"
+  string_scanner:
+    description: string_scanner
+    source: hosted
+    version: "0.1.4+1"
+  test:
+    description: test
+    source: hosted
+    version: "0.12.7"
   unittest:
     description: unittest
     source: hosted
-    version: "0.11.0+5"
+    version: "0.11.6+1"
   utf:
     description: utf
     source: hosted
@@ -106,8 +178,20 @@ packages:
   watcher:
     description: watcher
     source: hosted
-    version: "0.9.3"
+    version: "0.9.7"
   web_components:
     description: web_components
     source: hosted
     version: "0.9.0"
+  when:
+    description: when
+    source: hosted
+    version: "0.2.0"
+  which:
+    description: which
+    source: hosted
+    version: "0.1.3"
+  yaml:
+    description: yaml
+    source: hosted
+    version: "2.1.8"

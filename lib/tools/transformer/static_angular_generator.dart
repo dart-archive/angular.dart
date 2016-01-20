@@ -28,7 +28,7 @@ class StaticAngularGenerator extends Transformer with ResolverTransformer {
     var id = asset.id;
     var lib = resolver.getLibrary(id);
     var transaction = resolver.createTextEditTransaction(lib);
-    var unit = lib.definingCompilationUnit.node;
+    var unit = lib.definingCompilationUnit.computeNode();
 
     for (var directive in unit.directives) {
       if (directive is ImportDirective &&

@@ -6,7 +6,7 @@ dependencies:
     path: ..
 dev_dependencies:
   benchmark_harness: '>=1.0.0'
-  unittest: '>=0.10.1 <0.12.0'
+  test: '>=0.12.0 <0.13.0'
   mock: '>=0.10.0 <0.12.0'
 transformers:
 - angular

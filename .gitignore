@@ -2,6 +2,7 @@
 .project
 node_modules
 packages
+.packages
 doc
 test_out
 gen

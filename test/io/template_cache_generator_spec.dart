@@ -5,7 +5,7 @@ import 'dart:io';
 
 import 'package:angular/tools/template_cache_generator.dart' as generator;
 
-import 'package:guinness/guinness.dart';
+import 'package:guinness2/guinness2.dart';
 
 void main() {
   describe('template_cache_generator', () {
