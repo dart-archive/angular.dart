@@ -1,10 +1,6 @@
-import 'package:guinness/guinness.dart';
-import 'package:unittest/unittest.dart' as unit;
+import 'package:guinness2/guinness2.dart';
 
 main() {
-  unit.filterStacks = true;
-  unit.formatStacks = false;
-
   _printWarnings();
 
   guinness.autoInit = false;
