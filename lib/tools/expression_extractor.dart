@@ -10,6 +10,7 @@ import 'package:angular/tools/io_impl.dart';
 import 'package:angular/tools/common.dart';
 
 import 'package:di/di.dart';
+import 'package:path/path.dart' as path;
 
 import 'package:angular/core/parser/parser.dart';
 import 'package:angular/core/parser/lexer.dart';
@@ -24,8 +25,9 @@ main(args) {
   }
   IoService ioService = new IoServiceImpl();
 
-  var packageRoots =
-      (args.length < 6) ? [Platform.packageRoot] : args.sublist(5);
+  var packageRoots = (args.length < 6)
+      ? [path.fromUri(Platform.packageRoot ?? '')]
+      : args.sublist(5);
   var sourceCrawler = new SourceCrawlerImpl(packageRoots);
   var sourceMetadataExtractor = new SourceMetadataExtractor();
   List<DirectiveInfo> directives =

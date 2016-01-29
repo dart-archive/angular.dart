@@ -9,6 +9,7 @@ import 'package:analyzer/src/generated/source.dart';
 import 'package:analyzer/src/generated/element.dart';
 import 'package:args/args.dart';
 import 'package:di/generator.dart';
+import 'package:path/path.dart' as path;
 import 'dart:convert';
 
 const String PACKAGE_PREFIX = 'package:';
@@ -80,7 +81,8 @@ Options parseArgs(List arguments) {
       ..addOption('sdk-path', abbr: 's',
           defaultsTo: Platform.environment['DART_SDK'],
           help: 'Dart SDK Path')
-      ..addOption('package-root', abbr: 'p', defaultsTo: Platform.packageRoot,
+      ..addOption('package-root', abbr: 'p',
+          defaultsTo: Platform.packageRoot ?? '',
           help: 'comma-separated list of package roots')
       ..addOption('template-root', abbr: 't', defaultsTo: '.',
           help: 'comma-separated list of paths from which templates with'
@@ -128,7 +130,8 @@ Options parseArgs(List arguments) {
 
   var options = new Options();
   options.sdkPath = args['sdk-path'];
-  options.packageRoots = args['package-root'].split(',');
+  options.packageRoots =
+      args['package-root'].split(',').map(path.fromUri).toList();
   options.templateRoots = args['template-root'].split(',');
   options.output = args['out'];
   if (args['url-rewrites'] != null) {
