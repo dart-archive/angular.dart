@@ -72,7 +72,6 @@ if [[ -z $ENV_SET ]]; then
   export PUB=${PUB:-"$DART_SDK/bin/pub"}
   export DARTANALYZER=${DARTANALYZER:-"$DART_SDK/bin/dartanalyzer"}
   export DARTDOC=${DARTDOC:-"$DART_SDK/bin/dartdoc"}
-  export DART_DOCGEN=${DART_DOCGEN:-"$DART_SDK/bin/docgen"}
   export DART_VM_OPTIONS="--old_gen_heap_size=2048"
   export DARTIUM_BIN=${DARTIUM_BIN:-"$DARTIUM"}
   export CHROME_BIN=${CHROME_BIN:-"google-chrome"}
@@ -86,7 +85,6 @@ if [[ -z $ENV_SET ]]; then
   echo PUB=$PUB
   echo DARTANALYZER=$DARTANALYZER
   echo DARTDOC=$DARTDOC
-  echo DART_DOCGEN=$DART_DOCGEN
   echo DARTIUM_BIN=$DARTIUM_BIN
   echo CHROME_BIN=$CHROME_BIN
   echo PATH=$PATH

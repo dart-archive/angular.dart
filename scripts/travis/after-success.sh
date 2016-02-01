@@ -19,7 +19,6 @@ echo BUILD_AGGREGATE_STATUS=$BUILD_AGGREGATE_STATUS
 
 if [ "$BUILD_LEADER" = "YES" ]; then
   if [ "$BUILD_AGGREGATE_STATUS" = "others_succeeded" ]; then
-    ./scripts/travis/publish-docs.sh
     ./scripts/travis/presubmit.sh
   else
     echo "ERROR: Some Failed, not submitting"
