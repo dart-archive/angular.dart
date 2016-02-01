@@ -74,12 +74,12 @@ module.exports = function(config) {
       'SL_Chrome': {
           base: 'SauceLabs',
           browserName: 'chrome',
-          version: '35'
+          version: '47'
       },
       'SL_Firefox': {
           base: 'SauceLabs',
           browserName: 'firefox',
-          version: '30'
+          version: '42'
       },
       'SL_Safari6': {
           base: 'SauceLabs',
@@ -123,7 +123,7 @@ module.exports = function(config) {
         tunnelIdentifier: env.TRAVIS_JOB_NUMBER,
         startConnect: false,
         options:  {
-            'selenium-version': '2.41.0',
+            'selenium-version': '2.48.2',
             'command-timeout': 600,
             'idle-timeout': 600,
             'max-duration': 5400
