@@ -141,11 +141,3 @@ _run_karma_tests() {(
 )}
 
 _run_karma_tests
-
-echo '-------------------------'
-echo '-- DOCS: Generate Docs --'
-echo '-------------------------'
-if [[ ${TRAVIS_JOB_NUMBER:(-2)} == ".1" ]]; then
-  echo $NGDART_SCRIPT_DIR/generate-documentation.sh;
-  $NGDART_SCRIPT_DIR/generate-documentation.sh;
-fi
