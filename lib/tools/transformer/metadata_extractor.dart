@@ -250,8 +250,8 @@ class AnnotationExtractor {
             'containing file cannot be imported (must be in a lib folder).', classElement);
         return null;
       }
-      if (classElement.node != null) {
-        classElement.node.accept(visitor);
+      if (classElement.computeNode() != null) {
+        classElement.computeNode().accept(visitor);
       }
 
       if (classElement.supertype != null) {

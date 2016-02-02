@@ -13,4 +13,3 @@ packages:
     description: protractor
     source: hosted
     version: "0.0.5"
-sdk: ">=1.5.0 <2.0.0"

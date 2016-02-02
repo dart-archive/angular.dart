@@ -150,7 +150,7 @@ class _LibrarySourceCrawler implements SourceCrawler {
 
   void crawl(String entryPoint, CompilationUnitVisitor visitor) {
     libraries.expand((lib) => lib.units)
-        .map((compilationUnitElement) => compilationUnitElement.node)
+        .map((compilationUnitElement) => compilationUnitElement.computeNode())
         .forEach(visitor);
   }
 }

@@ -14,14 +14,14 @@ homepage: https://angulardart.org
 environment:
   sdk: '>=1.13.0 <2.0.0'
 dependencies:
-  analyzer: '>=0.24.0 <0.27.0'
+  analyzer: '>=0.27.0 <0.28.0'
   args: '>=0.12.0 <0.13.0'
   args: '>=0.12.0 <0.13.0'
   barback: '>=0.13.0 <0.17.0'
   browser: '>=0.10.0 <0.11.0'
-  code_transformers: '>=0.2.7 <0.3.0'
+  code_transformers: '>=0.3.1 <0.4.0'
   collection: '>=1.1.0 <1.2.0'
-  di: '>=3.3.3 <4.0.0'
+  di: '>=3.3.7 <4.0.0'
   html5lib: '>=0.12.0 <0.13.0'
   intl: '>=0.8.7 <0.12.0'
   observe: '>=0.12.0 <0.14.0'
@@ -30,11 +30,12 @@ dependencies:
 dev_dependencies:
   benchmark_harness: '>=1.0.0 <2.0.0'
   guinness: '>=0.1.9 <0.2.0'
+  guinness2: '>=0.0.3 <1.0.0'
   mock: '>=0.10.0 <0.12.0'
   path: '>=1.1.0 <2.0.0'
   protractor: '0.0.5'
   unittest: '>=0.10.1 <0.12.0'
-  web_components: '>=0.11.1 <0.12.0'
+  web_components: '>=0.12.1 <0.13.0'
   browser_detect: '>=1.0.3 <2.0.0'
 dependency_overrides:
   analyzer: 0.24.0
