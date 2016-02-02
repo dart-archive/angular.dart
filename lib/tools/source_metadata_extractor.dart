@@ -164,7 +164,7 @@ class DirectiveMetadataCollectingAstVisitor extends RecursiveAstVisitor {
     while (clazz != null) {
       metadataExtractor(clazz, meta);
       if (clazz.element != null && clazz.element.supertype != null) {
-        clazz = clazz.element.supertype.element.node;
+        clazz = clazz.element.supertype.element.computeNode();
       } else {
         clazz = null;
       }

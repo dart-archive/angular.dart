@@ -66,7 +66,7 @@ class _Processor {
     var annotations = resolver.libraries
         .expand((lib) => lib.units)
         .expand((unit) => unit.types)
-        .where((type) => type.node != null)
+        .where((type) => type.computeNode() != null)
         .expand(_AnnotatedElement.fromElement)
         .where((e) =>
             (e.annotation.element == cacheAnnotation ||
@@ -127,7 +127,7 @@ class _Processor {
 
   bool isCachingSuppressed(Element e) {
     if (cacheAnnotation == null) return false;
-    AnnotatedNode node = e.node;
+    AnnotatedNode node = e.computeNode();
     for (var annotation in node.metadata) {
       if (annotation.element == cacheAnnotation) {
         for (var arg in annotation.arguments.arguments) {
@@ -264,7 +264,7 @@ class _AnnotatedElement {
   _AnnotatedElement(this.annotation, this.element);
 
   static Iterable<_AnnotatedElement> fromElement(Element element) {
-    AnnotatedNode node = element.node;
+    AnnotatedNode node = element.computeNode();
     return node.metadata.map(
         (annotation) => new _AnnotatedElement(annotation, element));
   }

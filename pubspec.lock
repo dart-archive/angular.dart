@@ -4,11 +4,15 @@ packages:
   analyzer:
     description: analyzer
     source: hosted
-    version: "0.24.6"
+    version: "0.27.1+2"
   args:
     description: args
     source: hosted
     version: "0.12.2+6"
+  async:
+    description: async
+    source: hosted
+    version: "1.8.0"
   barback:
     description: barback
     source: hosted
@@ -36,43 +40,63 @@ packages:
   code_transformers:
     description: code_transformers
     source: hosted
-    version: "0.2.9+3"
+    version: "0.3.1"
   collection:
     description: collection
     source: hosted
     version: "1.1.3"
+  crypto:
+    description: crypto
+    source: hosted
+    version: "0.9.1"
   csslib:
     description: csslib
     source: hosted
-    version: "0.12.1"
+    version: "0.12.2"
   dart_style:
     description: dart_style
     source: hosted
-    version: "0.1.8+2"
+    version: "0.2.4"
   di:
     description: di
     source: hosted
-    version: "3.3.4"
+    version: "3.3.7"
+  func:
+    description: func
+    source: hosted
+    version: "0.1.0"
   glob:
     description: glob
     source: hosted
-    version: "1.0.5"
+    version: "1.1.0"
   guinness:
     description: guinness
     source: hosted
-    version: "0.1.17"
+    version: "0.1.18"
+  guinness2:
+    description: guinness2
+    source: hosted
+    version: "0.0.3"
   html:
     description: html
     source: hosted
-    version: "0.12.2"
+    version: "0.12.2+1"
   html5lib:
     description: html5lib
     source: hosted
     version: "0.12.1"
+  http_multi_server:
+    description: http_multi_server
+    source: hosted
+    version: "2.0.0"
+  http_parser:
+    description: http_parser
+    source: hosted
+    version: "2.1.0"
   initialize:
     description: initialize
     source: hosted
-    version: "0.6.1+2"
+    version: "0.6.2+1"
   intl:
     description: intl
     source: hosted
@@ -85,10 +109,18 @@ packages:
     description: logging
     source: hosted
     version: "0.11.2"
+  matcher:
+    description: matcher
+    source: hosted
+    version: "0.12.0+1"
   meta:
     description: meta
     source: hosted
     version: "0.8.8"
+  mime:
+    description: mime
+    source: hosted
+    version: "0.9.3"
   mock:
     description: mock
     source: hosted
@@ -96,31 +128,59 @@ packages:
   observe:
     description: observe
     source: hosted
-    version: "0.13.1+2"
+    version: "0.13.4"
+  package_config:
+    description: package_config
+    source: hosted
+    version: "0.1.3"
   path:
     description: path
     source: hosted
-    version: "1.3.6"
+    version: "1.3.9"
   perf_api:
     description: perf_api
     source: hosted
     version: "0.0.9"
+  plugin:
+    description: plugin
+    source: hosted
+    version: "0.1.0"
   pool:
     description: pool
     source: hosted
-    version: "1.1.0"
+    version: "1.2.1"
   protractor:
     description: protractor
     source: hosted
     version: "0.0.5"
+  pub_semver:
+    description: pub_semver
+    source: hosted
+    version: "1.2.3"
   route_hierarchical:
     description: route_hierarchical
     source: hosted
     version: "0.6.2"
+  shelf:
+    description: shelf
+    source: hosted
+    version: "0.6.5"
+  shelf_static:
+    description: shelf_static
+    source: hosted
+    version: "0.2.3+3"
+  shelf_web_socket:
+    description: shelf_web_socket
+    source: hosted
+    version: "0.1.0"
   smoke:
     description: smoke
     source: hosted
-    version: "0.3.5"
+    version: "0.3.6"
+  source_map_stack_trace:
+    description: source_map_stack_trace
+    source: hosted
+    version: "1.0.4"
   source_maps:
     description: source_maps
     source: hosted
@@ -132,11 +192,19 @@ packages:
   stack_trace:
     description: stack_trace
     source: hosted
-    version: "1.4.2"
+    version: "1.6.0"
+  stream_channel:
+    description: stream_channel
+    source: hosted
+    version: "1.1.1"
   string_scanner:
     description: string_scanner
     source: hosted
-    version: "0.1.4"
+    version: "0.1.4+1"
+  test:
+    description: test
+    source: hosted
+    version: "0.12.9"
   unittest:
     description: unittest
     source: hosted
@@ -152,7 +220,7 @@ packages:
   web_components:
     description: web_components
     source: hosted
-    version: "0.11.4+2"
+    version: "0.12.2+2"
   when:
     description: when
     source: hosted
@@ -161,4 +229,8 @@ packages:
     description: which
     source: hosted
     version: "0.1.3"
-sdk: ">=1.13.0 <2.0.0"
+  yaml:
+    description: yaml
+    source: hosted
+    version: "2.1.8"
+sdk: ">=1.13.0 <1.16.0"
