@@ -72,7 +72,13 @@ class ViewPort {
     scope.rootScope.domWrite(() {
       dom.Node previousNode = _lastNode(insertAfter);
       _viewsInsertAfter(view, insertAfter);
-      _animate.insert(view.nodes, placeholder.parentNode, insertBefore: previousNode.nextNode);
+
+      // The condition is false when we use the emulated shadom DOM, and the view port
+      // is a direct child of a component. In this case, we redistribute the nodes by invoking notifyLightDom.
+      if (placeholder.parentNode != null) {
+        _animate.insert(view.nodes, placeholder.parentNode, insertBefore: previousNode.nextNode);
+      }
+
       _notifyLightDom();
     });
     return view;
