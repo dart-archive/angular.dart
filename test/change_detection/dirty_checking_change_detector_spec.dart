@@ -7,11 +7,8 @@ import 'package:angular/change_detection/dirty_checking_change_detector_static.d
 import 'package:angular/change_detection/dirty_checking_change_detector_dynamic.dart';
 import 'dart:collection';
 import 'dart:math';
-import 'package:observe/observe.dart'
-    show ObservableList,
-         ObservableMap,
-         ChangeNotifier,
-         observable;
+import 'package:observable/observable.dart' show Observable, ObservableList, ObservableMap;
+import 'package:observe/observe.dart' show observable;
 
 DirtyCheckingChangeDetector<String> detector;
 
@@ -1222,7 +1219,7 @@ class _User {
   }
 }
 
-class _ObservableUser extends ChangeNotifier {
+class _ObservableUser extends Observable {
   String __$first;
   String get first => __$first;
   void set first(String value) {

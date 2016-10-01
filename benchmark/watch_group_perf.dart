@@ -6,6 +6,7 @@ import 'package:angular/change_detection/dirty_checking_change_detector_dynamic.
 import 'package:angular/change_detection/dirty_checking_change_detector_static.dart';
 import 'package:angular/change_detection/watch_group.dart';
 import 'package:benchmark_harness/benchmark_harness.dart';
+import 'package:observable/observable.dart';
 import 'package:observe/observe.dart';
 import 'package:observe/mirrors_used.dart';
 import "dart:io";
@@ -419,7 +420,7 @@ class _Obj {
   methodT() => t;
 }
 
-class _ObservableObj extends ChangeNotifier {
+class _ObservableObj extends Observable {
   @reflectable @observable dynamic get a => __$a;
   dynamic __$a = 1;
   @reflectable set a(dynamic value) { __$a = notifyPropertyChange(#a, __$a, value); }
