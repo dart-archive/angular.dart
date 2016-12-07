@@ -1,7 +1,8 @@
 AngularDart [![Build Status](https://travis-ci.org/angular/angular.dart.svg?branch=master)](https://travis-ci.org/angular/angular.dart)
 ============
 
-** For the latest version of AngularDart, please check out the [new repo][Angular2]. ** 
+**For the latest version of AngularDart, please check out the [new repo][Angular2].** 
+
 A port of [Angular][ngJs] to [Dart][dart].
 
 ## Installing
