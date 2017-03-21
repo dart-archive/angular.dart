@@ -5,8 +5,15 @@ import '../_specs.dart';
 main() {
   describe('NgInclude', () {
     TestBed _;
+    MockHttpBackend backend;
 
     beforeEach((TestBed tb) => _ = tb);
+
+    beforeEachModule((Module module) {
+      backend = new MockHttpBackend();
+      module.bind(HttpBackend, toValue: backend);
+      module.bind(DummyCmp);
+    });
 
     it('should fetch template from literal url', async((Scope scope, TemplateCache cache) {
       cache.put('tpl.html', new HttpResponse(200, 'my name is {{name}}'));
@@ -49,7 +56,7 @@ main() {
       cache.put('tpl.html', new HttpResponse(200, '<p probe="probe">include</p>'));
 
       var getChildScope = () => scope.context['probe'] == null ?
-          null : scope.context['probe'].scope;
+      null : scope.context['probe'].scope;
 
       var element = _.compile('<div ng-include="{{template}}"></div>');
 
@@ -84,5 +91,30 @@ main() {
       expect(childScope2).toBeNotNull();
       expect(childScope2).not.toBe(childScope1);
     }));
+
+    it('should not crash when scope has been detached before template future is resolved',
+        async((Scope scope) {
+
+      var element = _.compile('<dummy></dummy>');
+
+      microLeap();
+      scope.apply();
+      microLeap();
+      scope.apply();
+      expect(element.text).toEqual('');
+
+      ngInjector(element).get(DummyCmp).scope.destroy();
+      backend.flushGET('tpl1.html').respond('hello');
+
+      microLeap();
+      scope.apply();
+      expect(element.text).toEqual('');
+    }));
   });
+}
+
+@Component(selector: 'dummy', template: '<div ng-include="{{template}}"></div>', useShadowDom: false)
+class DummyCmp implements ScopeAware {
+  Scope scope;
+  final template = 'tpl1.html';
 }
