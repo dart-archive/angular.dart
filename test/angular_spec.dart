@@ -41,6 +41,23 @@ main() {
       assertSymbolNamesAreOk(ALLOWED_NAMES, libraryInfo);
 
     });
+    
+    it('should not export unknown symbols from touch', () {
+      LibraryInfo libraryInfo;
+      try {
+        libraryInfo = getSymbolsFromLibrary("angular.touch");
+      } on UnimplementedError catch (e) {
+        return; // Not implemented, quietly skip.
+      }
+
+      var ALLOWED_NAMES = [
+          "angular.touch.NgSwipeLeft",
+          "angular.touch.NgSwipeRight",
+          "angular.touch.TouchModule"
+      ];
+      assertSymbolNamesAreOk(ALLOWED_NAMES, libraryInfo);
+
+    });
 
     it('should not export unknown symbols from touch', () {
       LibraryInfo libraryInfo;
