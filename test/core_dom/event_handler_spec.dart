@@ -37,9 +37,25 @@ main() {
       return ngAppElement.firstChild;
     }
 
-    it('should register and handle event', (TestBed _) {
+    it('should register and handle event using on-* syntax', (TestBed _) {
       var e = compile(_,
         '''<div on-abc="invoked=true;"></div>''');
+
+      _.triggerEvent(e, 'abc');
+      expect(_.rootScope.context['invoked']).toEqual(true);
+    });
+
+    it('should expose event', (TestBed _) {
+      var e = compile(_,
+        '''<div on-abc="storedEvent=event;"></div>''');
+
+      _.triggerEvent(e, 'abc', 'MouseEvent');
+      expect(_.rootScope.context['storedEvent']).toBeAnInstanceOf(MouseEvent);
+    });
+
+    it('should register and handle event using (^*) syntax', (TestBed _) {
+      var e = compile(_,
+        '''<div (^abc)="invoked=true;"></div>''');
 
       _.triggerEvent(e, 'abc');
       expect(_.rootScope.context['invoked']).toEqual(true);

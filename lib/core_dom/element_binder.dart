@@ -336,7 +336,7 @@ class ElementBinder {
 
     if (onEvents.isNotEmpty) {
       onEvents.forEach((event, value) {
-        parentEventHandler.register(EventHandler.attrNameToEventName(event));
+        parentEventHandler.register(event);
       });
     }
     return nodeInjector;

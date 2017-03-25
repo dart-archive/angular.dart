@@ -89,8 +89,8 @@ class DirectiveSelector {
     // Select [attributes]
     element.attributes.forEach((attrName, value) {
 
-      if (attrName.startsWith("on-")) {
-        builder.onEvents[attrName] = value;
+      if (EventHandler.isEventAttribute(attrName)) {
+        builder.onEvents[EventHandler.attrNameToEventName(attrName)] = value;
       } else if (attrName.startsWith(BIND_PREFIX)) {
         builder.bindAttrs[attrName.substring(BIND_PREFIX_LENGTH)] =
             _astParser(value, formatters: _formatters);
