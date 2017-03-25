@@ -2,6 +2,13 @@ library utils_spec;
 
 import '_specs.dart';
 import 'package:angular/utils.dart';
+import 'dart:collection';
+
+class _LinkedListEntry extends LinkedListEntry {
+  String val;
+  _LinkedListEntry(this.val);
+  String toString() => val;
+}
 
 main() {
   describe('relaxFnApply', () {
@@ -49,5 +56,76 @@ main() {
       expect(camelCase('')).toEqual('');
     });
   });
-}
 
+  vals(list) => list.map((e) => e.val);
+
+  describe("LinkedListEntryGroup", () {
+    var a, b, c;
+
+    beforeEach(() {
+      a = new _LinkedListEntry("a");
+      b = new _LinkedListEntry("b");
+      c = new _LinkedListEntry("c");
+    });
+
+    describe("unlink", () {
+      it("should unlink all the items in the sub list", () {
+        final list = new LinkedList()..addAll([a, b, c]);
+        final group1 = new LinkedListEntryGroup()..add(a)..add(b);
+        final group2 = new LinkedListEntryGroup()..add(c);
+
+        group1.unlink();
+
+        expect(vals(list)).toEqual(["c"]);
+      });
+
+      it("should ignore empty sublists", () {
+        final sub = new LinkedListEntryGroup();
+        expect(() => sub.unlink()).not.toThrow();
+      });
+    });
+
+    describe("move after", () {
+      it("should ignore empty sublists", () {
+        final list = new LinkedList()..addAll([a]);
+        final group1 = new LinkedListEntryGroup()..add(a);
+        final group2 = new LinkedListEntryGroup();
+
+        group2.moveAfter(group1);
+
+        expect(vals(list)).toEqual(["a"]);
+      });
+
+      it("should move nodes to the beginning of the list when given null", () {
+        final list = new LinkedList()..addAll([a, b, c]);
+        final group1 = new LinkedListEntryGroup()..add(a);
+        final group2 = new LinkedListEntryGroup()..add(b)..add(c);
+
+        group2.moveAfter(null);
+
+        expect(vals(list)).toEqual(["b", "c", "a"]);
+      });
+
+      it("should move nodes to the beginning of the list", () {
+        final list = new LinkedList()..addAll([a, b, c]);
+        final group1 = new LinkedListEntryGroup()..add(a)..add(b);
+        final group2 = new LinkedListEntryGroup()..add(c);
+
+        group1.moveAfter(group2);
+
+        expect(vals(list)).toEqual(["c", "a", "b"]);
+      });
+
+      it("should move nodes in the midde of the list", () {
+        final list = new LinkedList()..addAll([a, b, c]);
+        final group1 = new LinkedListEntryGroup()..add(a);
+        final group2 = new LinkedListEntryGroup()..add(b);
+        final sub3 = new LinkedListEntryGroup()..add(c);
+
+        group2.moveAfter(sub3);
+
+        expect(vals(list)).toEqual(["a", "c", "b"]);
+      });
+    });
+  });
+}

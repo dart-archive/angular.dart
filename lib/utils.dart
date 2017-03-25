@@ -1,5 +1,6 @@
 library angular.util;
 
+import 'dart:collection';
 import 'dart:async';
 
 bool toBool(x) {
@@ -138,4 +139,71 @@ Future<Iterable> mergeFutures(Future<Iterable> f1, Future<Iterable> f2) {
     assert(twoLists.length == 2);
     return []..addAll(twoLists[0])..addAll(twoLists[1]);
   });
+}
+
+class LinkedListEntryGroup<T extends LinkedListEntry<T>> {
+  LinkedListEntry<T> _first, _last;
+
+  void add(LinkedListEntry<T> e) {
+    if (_first == null) _first = e;
+    _last = e;
+  }
+
+  void unlink() {
+    if (_first == null) return;
+
+    var curr = _first;
+    while (true) {
+      final next = curr.next;
+
+      curr.unlink();
+
+      if (curr == _last) return;
+      curr = next;
+    }
+  }
+
+  bool get isEmpty => _first == null;
+
+  void moveAfter(LinkedListEntryGroup<T> group) {
+    if (isEmpty) return;
+
+    if (group == null) {
+      _prepend();
+    } else {
+      _insertAfter(group);
+    }
+  }
+
+  LinkedList<T> get _list => _first.list;
+
+  void _prepend() {
+    var curr = _last;
+    var insertionPoint = _list.first;
+    while (insertionPoint != _first) {
+      final prev = curr.previous;
+
+      curr.unlink();
+      insertionPoint.insertBefore(curr);
+
+      insertionPoint = curr;
+      curr = prev;
+    }
+  }
+
+  void _insertAfter(LinkedListEntryGroup<T> group) {
+    var insertionPoint = group._last;
+    if (insertionPoint.next == _first) return;
+    var curr = _first;
+
+    while (insertionPoint != _last) {
+      final next = curr.next;
+
+      curr.unlink();
+      insertionPoint.insertAfter(curr);
+
+      insertionPoint = curr;
+      curr = next;
+    }
+  }
 }

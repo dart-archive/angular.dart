@@ -65,7 +65,7 @@ const int KEEP_ME_LAST                  = 21;
 
 EventHandler eventHandler(DirectiveInjector di) => di._eventHandler;
 
-class DirectiveInjector implements DirectiveBinder {
+class DirectiveInjector extends LinkedListEntry<DirectiveInjector> implements DirectiveBinder {
   static bool _isInit = false;
 
   static initUID() {
@@ -122,6 +122,10 @@ class DirectiveInjector implements DirectiveBinder {
       ];
 
   final DirectiveInjector _parent;
+
+  //field is public to simplify unit testing
+  final LinkedList<DirectiveInjector> children = new LinkedList();
+
   final Injector _appInjector;
   final Node _node;
   final NodeAttrs _nodeAttrs;
@@ -174,9 +178,17 @@ class DirectiveInjector implements DirectiveBinder {
   DirectiveInjector(DirectiveInjector parent, appInjector, this._node, this._nodeAttrs,
       this._eventHandler, this.scope, this._animate, [View view, this._shadowBoundary])
       : _parent = parent,
-      _appInjector = appInjector,
-      _view = view == null && parent != null ? parent._view : view,
-      _constructionDepth = _NO_CONSTRUCTION;
+        _appInjector = appInjector,
+        _view = view == null && parent != null ? parent._view : view,
+        _constructionDepth = _NO_CONSTRUCTION {
+
+    if (_parent != null) {
+      _parent.children.add(this);
+      if (_isRootInjectorFor(_view)) _view.addRootDirectiveInjector(this);
+    }
+  }
+
+  bool _isRootInjectorFor(View view) => _parent._view != view;
 
   void bind(key, {dynamic toValue: DEFAULT_VALUE,
             Function toFactory: DEFAULT_VALUE,

@@ -13,6 +13,8 @@ class View {
   final List<dom.Node> nodes;
   final List insertionPoints = [];
 
+  LinkedListEntryGroup<DirectiveInjector> _rootInjectors = new LinkedListEntryGroup();
+
   View(this.nodes, this.scope);
 
   void addViewPort(ViewPort viewPort) {
@@ -32,6 +34,14 @@ class View {
   /// Schedules a [fn] to be executed in the next DOM read phase.
   void domRead(fn()) {
     scope.domRead(fn);
+  }
+
+  void addRootDirectiveInjector(DirectiveInjector inj) {
+    _rootInjectors.add(inj);
+  }
+
+  void remove() {
+    _rootInjectors.unlink();
   }
 }
 
@@ -91,6 +101,7 @@ class ViewPort {
 
     // The view removal is sync, and the corresponding DOM operation is async.
     views.remove(view);
+    view.remove();
     scope.rootScope.domWrite(() {
 
       /**
@@ -128,6 +139,17 @@ class ViewPort {
   void _viewsInsertAfter(View view, View insertAfter) {
     int index = insertAfter == null ? 0 : views.indexOf(insertAfter) + 1;
     views.insert(index, view);
+    view._rootInjectors.moveAfter(_findRootInjectorGroupToInsertAfter(index - 1));
+  }
+
+  LinkedListEntryGroup _findRootInjectorGroupToInsertAfter(int viewIndex) {
+    if (views.isEmpty) return null;
+
+    while (viewIndex >= 0 && views[viewIndex]._rootInjectors.isEmpty) {
+      viewIndex --;
+    }
+
+    return viewIndex >= 0 ? views[viewIndex]._rootInjectors : null;
   }
 
   /// Concatenates and returns the nodes for all the views.

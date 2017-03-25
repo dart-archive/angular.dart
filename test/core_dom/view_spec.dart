@@ -328,7 +328,64 @@ main() {
 
         expect(log.log, equals(['AFormatter', 'ADirective', 'BFormatter', 'ADirective', 'BDirective']));
       });
+    });
 
+    describe("director injector tree", () {
+      ViewPort viewPort;
+
+      beforeEach((Injector injector, TestBed _) {
+        viewPort = createViewPort(injector: injector);
+        viewPort.insert(a);
+        viewPort.insert(b, insertAfter: a);
+        _.rootScope.apply();
+      });
+
+      directiveInjectorNodes(dirInjectors) =>
+          dirInjectors.map((d) => (d.get(Node) as Element).tagName);
+
+      it("should remove the view's direcive injectors", (Injector appInjector) {
+        final rootInjector = new DirectiveInjector(null, appInjector, rootElement, null, null,
+            null, null, null);
+
+        new DirectiveInjector(rootInjector, appInjector, e("<A/>"), null, null, null, null, a);
+        new DirectiveInjector(rootInjector, appInjector, e("<B/>"), null, null, null, null, b);
+
+        viewPort.remove(a);
+
+        expect(directiveInjectorNodes(rootInjector.children)).toEqual(["B"]);
+      });
+
+      it("should move the view's direcive injectors", (Injector appInjector) {
+        final rootInjector = new DirectiveInjector(null, appInjector, rootElement, null, null,
+            null, null, null);
+
+        new DirectiveInjector(rootInjector, appInjector, e("<A1/>"), null, null, null, null, a);
+        new DirectiveInjector(rootInjector, appInjector, e("<A2/>"), null, null, null, null, a);
+        new DirectiveInjector(rootInjector, appInjector, e("<B1/>"), null, null, null, null, b);
+        new DirectiveInjector(rootInjector, appInjector, e("<B2/>"), null, null, null, null, b);
+
+        viewPort.move(a, moveAfter: b);
+
+        expect(directiveInjectorNodes(rootInjector.children)).toEqual(["B1", "B2", "A1", "A2"]);
+      });
+
+      it("should handle move when the dest view does not have directive injectors",
+          (Injector appInjector, TestBed _) {
+
+        final c = createView(appInjector, "<span>B</span>b");
+        viewPort.insert(c, insertAfter: b);
+        _.rootScope.apply();
+
+        final rootInjector = new DirectiveInjector(null, appInjector, rootElement, null, null,
+            null, null, null);
+
+        new DirectiveInjector(rootInjector, appInjector, e("<A/>"), null, null, null, null, a);
+        new DirectiveInjector(rootInjector, appInjector, e("<C/>"), null, null, null, null, c);
+
+        viewPort.move(a, moveAfter: b);
+
+        expect(directiveInjectorNodes(rootInjector.children)).toEqual(["A", "C"]);
+      });
     });
 
     //TODO: tests for attach/detach

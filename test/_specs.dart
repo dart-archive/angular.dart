@@ -34,6 +34,7 @@ export 'package:angular/routing/module.dart';
 export 'package:angular/animate/module.dart';
 export 'package:angular/touch/module.dart';
 export 'package:angular/mock/module.dart';
+export 'package:angular/utils.dart';
 export 'package:perf_api/perf_api.dart';
 
 es(String html) {

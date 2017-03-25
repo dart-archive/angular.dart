@@ -13,6 +13,7 @@ import 'package:logging/logging.dart';
 import 'package:collection/equality.dart';
 import 'package:angular/utils.dart';
 import 'package:angular/cache/module.dart';
+import 'package:angular/utils.dart';
 
 import 'package:angular/core/annotation.dart';
 import 'package:angular/core/module_internal.dart';
