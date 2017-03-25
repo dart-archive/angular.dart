@@ -142,7 +142,9 @@ abstract class Application {
   /**
    * Creates a selector for a DOM element.
    */
-  dom.Element selector(String selector) => element = _find(selector);
+  void selector(String selector) {
+    element = _find(selector);
+  }
 
   Application(): element = _find('[ng-app]', dom.window.document.documentElement) {
     traceDetectWTF(context);
@@ -152,28 +154,28 @@ abstract class Application {
             ..bind(dom.Node, toFactory: (Application app) => app.element, inject: [Application]);
   }
 
+  void addModule(Module module) {
+    modules.add(module);
+  }
+
+  Injector _injector;
+
   /**
    * Returns the injector for this module.
    */
-  Injector injector;
+  Injector get injector => _injector;
 
-  Application addModule(Module module) {
-    modules.add(module);
-    return this;
-  }
-
-  Application rootContextType(Type rootContext) {
+  void rootContextType(Type rootContext) {
     modules.add(new Module()..bind(Object, toImplementation: rootContext));
-    return this;
   }
 
-  Injector run() {
+  void run() {
     var scope = traceEnter(Application_bootstrap);
     try {
       publishToJavaScript();
       return zone.run(() {
         var rootElements = [element];
-        injector = createInjector();
+        _injector = createInjector();
         ExceptionHandler exceptionHandler = injector.getByKey(EXCEPTION_HANDLER_KEY);
         // Publish cache register interface
         injector.getByKey(JS_CACHE_REGISTER_KEY);
@@ -188,7 +190,6 @@ abstract class Application {
             exceptionHandler(e, s);
           }
         });
-        return injector;
       });
     } finally {
       traceLeave(scope);

@@ -300,9 +300,8 @@ main() {
           ..bind(ADirective)
           ..bind(Node, toFactory: () => document.body, inject: []);
 
-        Injector rootInjector = applicationFactory()
-            .addModule(rootModule)
-            .createInjector();
+        Application app = applicationFactory()..addModule(rootModule);
+        Injector rootInjector = app.createInjector();
         Log log = rootInjector.get(Log);
         Scope rootScope = rootInjector.get(Scope);
 

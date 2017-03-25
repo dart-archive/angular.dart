@@ -48,7 +48,8 @@ void main() {
         var module = new Module()
             ..bind(Bad1Component);
 
-        var injector = applicationFactory().addModule(module).createInjector();
+        var app = applicationFactory()..addModule(module);
+        var injector = app.createInjector();
         expect(() {
           injector.get(DirectiveMap);
         }).toThrowWith(message: 'Mapping for attribute foo is already defined (while '
@@ -59,7 +60,8 @@ void main() {
         var module = new Module()
             ..bind(Bad2Component);
 
-        var injector = applicationFactory().addModule(module).createInjector();
+        var app = applicationFactory()..addModule(module);
+        var injector = app.createInjector();
         expect(() {
           injector.get(DirectiveMap);
         }).toThrowWith(message: 'Attribute annotation for foo is defined more than once '
