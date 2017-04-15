@@ -76,8 +76,6 @@ Function ensureFunctionFromMap(Map map, String name) {
 getKeyed(object, key) {
   if (object is List) {
     return object[key.toInt()];
-  } else if (object is Map) {
-    return object["$key"]; // toString dangerous?
   } else if (object == null) {
     throw new EvalError('Accessing null object');
   } else {
@@ -96,8 +94,6 @@ setKeyed(object, key, value) {
     int index = key.toInt();
     if (object.length <= index) object.length = index + 1;
     object[index] = value;
-  } else if (object is Map) {
-    object["$key"] = value; // toString dangerous?
   } else {
     while (object is ContextLocals) {
       var ctx = object as ContextLocals;
