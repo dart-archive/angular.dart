@@ -34,6 +34,36 @@ bool isBrowser(String pattern) => dom.window.navigator.userAgent.indexOf(pattern
 
 //-----------------------------------------------------------------------------
 
+//-----------------------------------------------------------------------------
+// Utility functions
+
+/* This function simulates typing the given text into the input field. The
+ * text will be added wherever the insertion point happens to be. This method
+ * has as side-effect to set the focus on the input (without setting the
+ * focus, the text dispatch may not work).
+ */
+void simulateTypingText(InputElement input, String text) {
+  input..focus()..dispatchEvent(new TextEvent('textInput', data: text));
+}
+
+bool simulateTypingTextWithConfirmation(InputElement input, String text, 
+                                        { bool shouldWorkForChrome : true }) {
+  bool result;
+  String val = input.value;
+  try {
+    simulateTypingText(input, text);
+    result = input.value == val + text;
+  } catch (e) {
+    result = false;
+  }
+  if (!result && shouldWorkForChrome) expect(isBrowser('Chrome')).toBeFalsy();
+  return result;
+}
+
+bool isBrowser(String pattern) => dom.window.navigator.userAgent.indexOf(pattern) > 0;
+
+//-----------------------------------------------------------------------------
+
 void main() {
   describe('ng-model', () {
     TestBed _;
