@@ -26,6 +26,8 @@ class TranscludingComponentFactory implements ComponentFactory {
       new BoundTranscludingComponentFactory(this, ref, directives, injector);
 }
 
+RegExp _unsafeAttributeCharacters = new RegExp(r'[^a-zA-Z0-9:.\-_]');
+
 class BoundTranscludingComponentFactory implements BoundComponentFactory {
   final TranscludingComponentFactory _f;
   final DirectiveRef _ref;
@@ -33,6 +35,7 @@ class BoundTranscludingComponentFactory implements BoundComponentFactory {
   final Injector _injector;
 
   String _tag;
+  String _attribute;
   async.Future<Iterable<dom.StyleElement>> _styleElementsFuture;
   List<dom.StyleElement> _styleElements;
 
@@ -42,10 +45,11 @@ class BoundTranscludingComponentFactory implements BoundComponentFactory {
 
   BoundTranscludingComponentFactory(this._f, this._ref, this._directives, this._injector) {
     _tag = _ref.annotation.selector.toLowerCase();
-    _styleElementsFuture = _f.cssLoader(_tag, _component.cssUrls, type: _ref.type)
+    _attribute = _tag.replaceAll(_unsafeAttributeCharacters, '-');
+    _styleElementsFuture = _f.cssLoader(_tag, _attribute, _component.cssUrls, type: _ref.type)
         .then((styleElements) => _styleElements = styleElements);
 
-    final viewFactoryCache = new ShimmingViewFactoryCache(_f.viewFactoryCache, _tag,
+    final viewFactoryCache = new ShimmingViewFactoryCache(_f.viewFactoryCache, _attribute,
         _f.platformShim);
 
     _viewFactoryFuture = BoundComponentFactory._viewFactoryFuture(
@@ -86,7 +90,7 @@ class BoundTranscludingComponentFactory implements BoundComponentFactory {
 
       if (_component.useNgBaseCss && baseCss.urls.isNotEmpty) {
         if (baseCss.styles == null) {
-          final f = _f.cssLoader(_tag, baseCss.urls).then((cssList) {
+          final f = _f.cssLoader(_tag, _attribute, baseCss.urls).then((cssList) {
             baseCss.styles = cssList;
             shadowBoundary.insertStyleElements(cssList, prepend: true);
           });

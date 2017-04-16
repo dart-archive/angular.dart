@@ -8,7 +8,7 @@ final Logger _log = new Logger('WebPlatformShim');
  * without polyfills.
  */
 abstract class WebPlatformShim {
-  String shimCss(String css, { String selector, String cssUrl });
+  String shimCss(String css, { String selector, String attribute, String cssUrl });
 
   void shimShadowDom(dom.Element root, String selector);
 
@@ -37,7 +37,7 @@ class PlatformJsBasedShim implements WebPlatformShim {
     }
   }
 
-  String shimCss(String css, { String selector, String cssUrl }) {
+  String shimCss(String css, { String selector, String attribute, String cssUrl }) {
     if (! shimRequired) return css;
 
     var shimmedCss =  _shadowCss.callMethod('shimCssText', [css, selector]);
@@ -61,8 +61,8 @@ class PlatformJsBasedShim implements WebPlatformShim {
 class DefaultPlatformShim implements WebPlatformShim {
   bool get shimRequired => true;
 
-  String shimCss(String css, { String selector, String cssUrl }) {
-    final shimmedCss = cssShim.shimCssText(css, selector);
+  String shimCss(String css, { String selector, String attribute, String cssUrl }) {
+    final shimmedCss = cssShim.shimCssText(css, selector, attribute);
     return "/* Shimmed css for <$selector> from $cssUrl */\n$shimmedCss";
   }
 

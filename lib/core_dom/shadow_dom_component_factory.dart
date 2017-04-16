@@ -84,7 +84,7 @@ class BoundShadowDomComponentFactory implements BoundComponentFactory {
   BoundShadowDomComponentFactory(this._componentFactory, this._ref,
       DirectiveMap directives, this._injector) {
     _tag = _ref.annotation.selector.toLowerCase();
-    _styleElementsFuture = _componentFactory.cssLoader(_tag, _component.cssUrls, type: _ref.type)
+    _styleElementsFuture = _componentFactory.cssLoader(_tag, _tag, _component.cssUrls, type: _ref.type)
         .then((styleElements) => _styleElements = styleElements);
 
     final viewFactoryCache = new ShimmingViewFactoryCache(_componentFactory.viewCache,
@@ -130,7 +130,7 @@ class BoundShadowDomComponentFactory implements BoundComponentFactory {
 
         if (_component.useNgBaseCss && baseCss.urls.isNotEmpty) {
           if (baseCss.styles == null) {
-            final f = _componentFactory.cssLoader(_tag, baseCss.urls).then((cssList) {
+            final f = _componentFactory.cssLoader(_tag, _tag, baseCss.urls).then((cssList) {
               baseCss.styles = cssList;
               shadowBoundary.insertStyleElements(cssList, prepend: true);
             });
