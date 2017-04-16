@@ -282,8 +282,11 @@ class AnnotationExtractor {
             warn('Annotation $annotation is not public.', cls);
             return false;
           }
-          return element.enclosingElement.type.isAssignableTo(directiveType.type) ||
-                 element.enclosingElement.type.isAssignableTo(formatterType.type);
+
+          enclosingType = element.enclosingElement.type;
+
+          return enclosingType.isAssignableTo(directiveType.type) ||
+                 enclosingType.isAssignableTo(formatterType.type);
         }).toList();
 
     if (type.annotations.isEmpty) return null;
@@ -357,7 +360,7 @@ class AnnotationExtractor {
         var map = new MapLiteral(null, null, null, [], null);
         var label = new Label(new SimpleIdentifier(
             new _GeneratedToken(TokenType.STRING, 'map')),
-        new _GeneratedToken(TokenType.COLON, ':'));
+            new _GeneratedToken(TokenType.COLON, ':'));
         mapArg = new NamedExpression(label, map);
         annotation.arguments.arguments.add(mapArg);
       }
