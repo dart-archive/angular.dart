@@ -1,3 +1,4 @@
+[![Stories in Ready](https://badge.waffle.io/angular/angular.dart.png?label=ready&title=Ready)](https://waffle.io/angular/angular.dart)
 AngularDart [![Build Status](https://travis-ci.org/angular/angular.dart.svg?branch=master)](https://travis-ci.org/angular/angular.dart)
 ============
 
