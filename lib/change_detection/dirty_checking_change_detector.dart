@@ -181,12 +181,12 @@ class DirtyCheckingChangeDetectorGroup<H> implements ChangeDetectorGroup<H> {
 
   DirtyCheckingRecord _recordAdd(DirtyCheckingRecord record) {
     DirtyCheckingRecord previous = _recordTail;
-    DirtyCheckingRecord next = previous == null ? null : previous._nextRecord;
+    DirtyCheckingRecord next = previous._nextRecord;
 
     record._nextRecord = next;
     record._prevRecord = previous;
 
-    if (previous != null) previous._nextRecord = record;
+    previous._nextRecord = record;
     if (next != null) next._prevRecord = record;
 
     _recordTail = record;
@@ -202,7 +202,8 @@ class DirtyCheckingChangeDetectorGroup<H> implements ChangeDetectorGroup<H> {
     DirtyCheckingRecord previous = record._prevRecord;
     DirtyCheckingRecord next = record._nextRecord;
 
-    if (record == _recordHead && record == _recordTail) {
+    if (_recordHead == _recordTail) {
+      assert(record == _recordHead);
       // we are the last one, must leave marker behind.
       _recordHead = _recordTail = _marker;
       _marker._nextRecord = next;
