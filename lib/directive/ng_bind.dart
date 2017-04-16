@@ -27,5 +27,5 @@ class NgBind {
     }
   }
 
-  set value(value) => element.text = value == null ? '' : value.toString();
+  set value(value) => element.text = '$value';
 }
