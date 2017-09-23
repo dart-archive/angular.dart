@@ -4,7 +4,7 @@ import 'dart:collection';
 import 'package:angular/change_detection/change_detection.dart';
 import 'package:angular/change_detection/watch_group.dart';
 import 'dart:async';
-import 'package:observe/observe.dart' as obs;
+import 'package:observable/observable.dart' as obs;
 
 /**
  * [DirtyCheckingChangeDetector] determines which object properties have changed
