@@ -117,6 +117,8 @@ class _UnwrapExceptionDecorator extends Expression {
       return _expression.eval(scope, formatters);
     } on EvalError catch (e, s) {
       throw e.unwrap("$this", s);
+    } catch (e, s) {
+      throw new EvalError(e.toString()).unwrap("$this", s);
     }
   }
 
