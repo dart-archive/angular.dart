@@ -54,7 +54,6 @@ microLeap() {
     _asyncQueue.clear();
     // TODO: Support the case where multiple exceptions are thrown.
     // e.g. with a throwNextException() method.
-    assert(_asyncErrors.isEmpty);
     toRun.forEach((fn) => fn());
     if (_asyncErrors.isNotEmpty) {
       var e = _asyncErrors.removeAt(0);
