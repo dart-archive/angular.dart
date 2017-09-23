@@ -61,21 +61,35 @@ class HttpInterceptor {
                   this.responseError});
 }
 
-
 /**
 * The default transform data interceptor.abstract
 *
 * For requests, this interceptor will
 * automatically stringify any non-string non-file objects.
+* It also use JsonParser for serialization of objects that the SDK do not recognize,
+* such as DateTime objects.
+* The default JsonParser simple do a serialization of DateTime to ISO8601. Note that
+* the SDK only call the parser
+* for unknow objects, or objects that do not implement toJson method.
 *
 * For responses, this interceptor will unwrap JSON objects and
 * parse them into [Map]s.
 */
 class DefaultTransformDataHttpInterceptor implements HttpInterceptor {
+  static ObjectParser _parser;
+
+  DefaultTransformDataHttpInterceptor([ObjectParser parser]) {
+    if(parser != null) {
+      _parser = parser;
+    }else {
+      _parser = new JsonParser();
+    }
+  }
+  
   Function request = (HttpResponseConfig config) {
     if (config.data != null && config.data is! String &&
         config.data is! dom.File) {
-      config.data = JSON.encode(config.data);
+      config.data = _parser.encode(config.data);
     }
     return config;
   };
@@ -87,7 +101,7 @@ class DefaultTransformDataHttpInterceptor implements HttpInterceptor {
     if (r.data is String) {
       var d = r.data.replaceFirst(_PROTECTION_PREFIX, '');
       if (d.contains(_JSON_START) && d.contains(_JSON_END)) {
-        d = JSON.decode(d);
+        d = _parser.decode(d);
       }
       return new HttpResponse.copy(r, data: d);
     }
@@ -124,11 +138,11 @@ class HttpInterceptors {
     });
   }
 
- /**
-   * Default constructor.
+  /**
+   * Default constructor. Inject a Parser
    */
-  HttpInterceptors() {
-    _interceptors = [new DefaultTransformDataHttpInterceptor()];
+  HttpInterceptors([ObjectParser parser]) {
+    _interceptors = [new DefaultTransformDataHttpInterceptor(parser)];
   }
 
   /**
