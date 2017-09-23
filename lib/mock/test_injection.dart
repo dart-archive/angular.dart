@@ -123,7 +123,7 @@ inject(Function fn) {
  * repeatedly, as long as [inject] is not called. Invocation of [inject] creates the injector and
  * hence no more calls to [module] can be made.
  *
- *     setUp(module((Module model) {
+ *     setUp(module((Module module) {
  *       module.bind(Foo);
  *     });
  *
