@@ -39,8 +39,62 @@ class NgBooleanAttribute {
 
   void _toggleAttribute(attrName, on) {
     if (toBool(on)) {
+      if(_ngElement.node is dom.InputElement)
+      {
+        switch (attrName)
+        {
+          case 'checked':
+            _ngElement.node.checked = true;
+            break;
+          case 'disabled':
+            _ngElement.node.disabled = true;
+            break;
+          case 'multiple':
+            _ngElement.node.multiple = true;
+            break;
+          case 'open':
+            _ngElement.node.open = true;
+            break;
+          case 'readonly':
+            _ngElement.node.readonly = true;
+            break;
+          case 'required':
+            _ngElement.node.required = true;
+            break;
+          case 'selected':
+            _ngElement.node.selected = true;
+            break;
+        }
+      }
       _ngElement.setAttribute(attrName);
     } else {
+      if(_ngElement.node is dom.InputElement)
+      {
+        switch (attrName)
+        {
+          case 'checked':
+            _ngElement.node.checked = false;
+            break;
+          case 'disabled':
+            _ngElement.node.disabled = false;
+            break;
+          case 'multiple':
+            _ngElement.node.multiple = false;
+            break;
+          case 'open':
+            _ngElement.node.open = false;
+            break;
+          case 'readonly':
+            _ngElement.node.readonly = false;
+            break;
+          case 'required':
+            _ngElement.node.required = false;
+            break;
+          case 'selected':
+            _ngElement.node.selected = false;
+            break;
+        }
+      }
       _ngElement.removeAttribute(attrName);
     }
   }
