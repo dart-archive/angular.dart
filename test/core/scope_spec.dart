@@ -526,6 +526,19 @@ void main() {
             expect(errors.length).toEqual(1);
             expect(errors.first.error, startsWith('Model did not stabilize'));
           });
+
+		  it('should not throw "model unstable" error if new list but same data', (RootScope rootScope, VmTurnZone zone, ExceptionHandler e) {
+            // Generates a different, equal, list on each evaluation.
+            rootScope.context['list'] = new StableButDifferentInstanceList();
+
+            rootScope.watch('list.list', (n, v) => null, canChangeModel: true);
+            try {
+              zone.run(() => null);
+            } catch(_) {}
+
+            var errors = (e as LoggingExceptionHandler).errors;
+            expect(errors.length).toEqual(0);
+		  });
         });
 
         it(r'should allow stopping event propagation', (RootScope rootScope) {
@@ -1757,7 +1770,17 @@ class MockScopeStatsEmitter implements ScopeStatsEmitter {
 }
 
 class UnstableList {
-  List get list => new List.generate(3, (i) => i);
+  int value = 1;
+  List get list => new List.generate(3, (i) => value++);
+}
+
+class StableButDifferentInstanceList {
+  StableObject stableObject = new StableObject();
+  List get list => new List()..addAll([stableObject,stableObject,stableObject]);
+}
+
+class StableObject{
+
 }
 
 class Foo {

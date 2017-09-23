@@ -629,6 +629,14 @@ class DirtyCheckingRecord<H> implements WatchRecord<H> {
         currentValue = current;
       } else if (last is num && last.isNaN && current is num && current.isNaN) {
         // we need this for the compiled JavaScript since in JS NaN !== NaN.
+	  } else if (last is List && current is List && last.length == current.length) {
+        for (int i = 0; i < last.length; i++){
+          if (last[i] != current[i]){
+            previousValue = last;
+            currentValue = current;
+            return true;
+          }
+        }
       } else {
         previousValue = last;
         currentValue = current;
