@@ -1,9 +1,0 @@
-
-:host {
-    border-top: 2px solid white;
-    border-bottom: 2px solid white;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-}

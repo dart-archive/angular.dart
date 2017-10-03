@@ -1,9 +1,0 @@
-name: angulardart_specs
-version: 0.0.1
-authors:
-- Chirayu Krishnappa <chirayu@chirayuk.com>
-description: Specs for AngularDart examples.
-environment:
-  sdk: '>=1.3.0'
-dependencies:
-  protractor: '0.0.5'
